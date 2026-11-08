@@ -325,7 +325,9 @@ public sealed class Campaign
         List<FleetMove> moves = FactionsMove();
         Reveal();
         S.Mp = Ru.MovePoints;
-        S.Missions = S.Missions.Where(m => m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0).ToList();
+        // an encounter goes with the freighter it was met with, taken or not
+        foreach (Offer m in S.Missions.Where(m => ScriptOf(m).Encounter)) S.Active.Remove(m.Id);
+        S.Missions = S.Missions.Where(m => !ScriptOf(m).Encounter && (m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0)).ToList();
         int n = 1 + R.Below(2);
         for (int i = 0; i < n && S.Missions.Count < Ru.MissionsMax; i++) OfferMission();
         RollOfficers();
@@ -374,6 +376,7 @@ public sealed class Campaign
         }
         foreach (Freighter f in S.Freighters)
         {
+            if (f.Out > 0) { f.Out--; continue; }   // off her route while she is replaced
             if (f.I + f.Step < 0 || f.I + f.Step >= f.Route.Count) f.Step = -f.Step;
             int[] a = f.Route[f.I];
             f.I += f.Step;
@@ -468,23 +471,101 @@ public sealed class Campaign
             var pool = (at is { } p ? new List<Sector> { Hex(p.C, p.R) } : Where(def))
                 .Where(h => !S.Missions.Any(m => m.C == h.C && m.R == h.R)).ToList();
             if (pool.Count == 0) { if (id != null) return null; continue; }
-            Sector h = pool[(int)Math.Floor(R.Next() * pool.Count)];
-            var m = new Offer
-            {
-                Id = ++S.Mid, Script = sid, C = h.C, R = h.R, Turns = def.Story ? null : def.Turns,
-                Strength = Ru.Strengths[(int)Math.Floor(R.Next() * Ru.Strengths.Count)],
-                Reward = def.Reward + (def.Story ? 0 : Math.Floor(R.Next() * Ru.RewardSteps) * Ru.RewardStep),
-            };
-            if (data != null) foreach (var (k, v) in data) m.Set(k, v);
-            // a mission's intel shows its sector on the map
-            See(h);
-            if (def.FollowGroup) m.Group = GroupAt(h.C, h.R)?.Name;
-            var sc = new OfferScope(this, m);
-            foreach (SetupStep st in def.Setup)
-                m.Set(st.Set, st.Pick != null ? st.Pick[(int)Math.Floor(R.Next() * st.Pick.Count)] : st.Value!.Eval(sc));
-            S.Missions.Add(m);
-            return m;
+            return MakeOffer(def, pool[(int)Math.Floor(R.Next() * pool.Count)], data);
         }
+        return null;
+    }
+
+    // A mission offered in a sector, with the data it is handed: its terms rolled, its sector seen, its setup run.
+    private Offer MakeOffer(MissionScript def, Sector h, IReadOnlyDictionary<string, object>? data)
+    {
+        var m = new Offer
+        {
+            Id = ++S.Mid, Script = def.Id, C = h.C, R = h.R, Turns = def.Story ? null : def.Turns,
+            Strength = Ru.Strengths[(int)Math.Floor(R.Next() * Ru.Strengths.Count)],
+            Reward = def.Reward + (def.Story ? 0 : Math.Floor(R.Next() * Ru.RewardSteps) * Ru.RewardStep),
+        };
+        if (data != null) foreach (var (k, v) in data) m.Set(k, v);
+        // a mission's intel shows its sector on the map
+        See(h);
+        if (def.FollowGroup) m.Group = GroupAt(h.C, h.R)?.Name;
+        var sc = new OfferScope(this, m);
+        foreach (SetupStep st in def.Setup)
+            m.Set(st.Set, st.Pick != null ? st.Pick[(int)Math.Floor(R.Next() * st.Pick.Count)] : st.Value!.Eval(sc));
+        S.Missions.Add(m);
+        return m;
+    }
+
+    // ---- Freighters met in a sector -------------------------------------------------------------------------------------
+
+    /// <summary>The mission files of the two encounters (data/missions/escort.json and raid.json).</summary>
+    public const string EscortScript = "escort", RaidScript = "raid";
+
+    /// <summary>The freighters in a sector now; one off her route is in none.</summary>
+    public List<Freighter> FreightersAt(int c, int r) => S.Freighters.Where(f => f.Out == 0 && f.Here() == (c, r)).ToList();
+
+    /// <summary>What meeting a freighter offers: an escort for your own faction's or an ally's, a raid on anyone else's.</summary>
+    public string EncounterOf(Freighter f) => Friendly(f.Fac) ? EscortScript : RaidScript;
+
+    /// <summary>The encounter with a freighter in the fleet's sector (owner, 2026-11-07: "no mision flag needed. Just whenever
+    /// you are on the same tile as freighter, you get a mission option"): the one already offered this turn, or a new one,
+    /// handed her name (ship) and faction (freighter_fac). Null when she is not in the fleet's sector.</summary>
+    public Offer? Meet(Freighter f)
+    {
+        if (f.Out > 0 || f.Here() != (S.AtC, S.AtR)) return null;
+        Offer? had = S.Missions.FirstOrDefault(m => ScriptOf(m).Encounter && m.Value("ship") as string == f.Name && m.Value("freighter_fac") as string == f.Fac);
+        if (had != null) return had;
+        Offer met = MakeOffer(Data.Missions[EncounterOf(f)], At, new Dictionary<string, object> { ["ship"] = f.Name, ["freighter_fac"] = f.Fac });
+        Sync();
+        return met;
+    }
+
+    /// <summary>The freighter an encounter was met with, or null.</summary>
+    public Freighter? FreighterOf(Offer m) =>
+        S.Freighters.FirstOrDefault(f => f.Name == m.Value("ship") as string && f.Fac == m.Value("freighter_fac") as string);
+
+    /// <summary>What the cargo of every freighter taken pays when cashed out, credits.</summary>
+    public int HaulValue => S.Fleet.Sum(s => s.Haul);
+
+    /// <summary>Cashes out the cargo of the freighters taken (owner, 2026-11-07: "capturing enemy freighter: bring it to a
+    /// station to cash out"), at your own port or one that deals with you, never to the faction she was taken from: her
+    /// cargo pays its haul, and she is handed over with it. Returns why not, or null.</summary>
+    public string? CashOut()
+    {
+        var hauls = S.Fleet.Where(s => s.Haul > 0).ToList();
+        if (hauls.Count == 0) return "No cargo aboard.";
+        Sector at = At;
+        string buyer = IsPort(at) ? S.Side : IsMarket(at) ? at.Owner : "";
+        if (buyer == "") return "Cargo is cashed out at a port that deals with you.";
+        var sold = hauls.Where(s => s.Maker != buyer).ToList();
+        if (sold.Count == 0) return $"The {Data.Factions[buyer].Short} will not buy back their own cargo.";
+        foreach (CampShip s in sold)
+        {
+            S.Credits += s.Haul;
+            S.Fleet.Remove(s);
+            S.Log.Add($"Turn {S.Turn}: the {s.Name}'s cargo sold at {at.PortName} for {s.Haul} cr.");
+        }
+        return null;
+    }
+
+    // ---- Repair: ships do not mend on their own ---------------------------------------------------------------------------
+
+    /// <summary>The supply that is the repair kit (data/campaign/campaign.json supplies, "Repair kits").</summary>
+    public const string KitSupply = "parts";
+
+    /// <summary>The repair kits aboard the whole fleet.</summary>
+    public int Kits => S.Fleet.Sum(s => s.Supplies.GetValueOrDefault(KitSupply));
+
+    /// <summary>Patches a ship's hull in the field with one repair kit from the fleet's stores (its own first), anywhere,
+    /// between battles (owner, 2026-11-07: "ships dont auto heal, you have to repair them at stations", "or use you repair
+    /// kits"): rules.kit_repair_pct of the hull, never past whole. Returns why not, or null.</summary>
+    public string? FieldRepair(CampShip s)
+    {
+        if (s.HullPct >= 100) return $"The {s.Name} needs no repair.";
+        CampShip? from = s.Supplies.GetValueOrDefault(KitSupply) > 0 ? s : S.Fleet.FirstOrDefault(x => x.Supplies.GetValueOrDefault(KitSupply) > 0);
+        if (from == null) return "No repair kits aboard: buy them at a port (Supplies).";
+        from.Supplies[KitSupply]--;
+        s.HullPct = Math.Min(100, s.HullPct + Ru.KitRepairPct);
         return null;
     }
 
@@ -592,6 +673,7 @@ public sealed class Campaign
         string buyer = IsPort(at) ? S.Side : IsMarket(at) ? at.Owner : "";
         if (buyer == "") return "Ships are sold at a port that deals with you.";
         if (S.Fleet.Count <= 1) return "You cannot sell your last ship.";
+        if (s.Haul > 0) return $"The {s.Name} is a prize with her cargo: cash it out.";
         S.Credits += SaleQuote(s, buyer);
         S.Fleet.Remove(s);
         ChangeStanding(buyer, buyer == "vos" ? Ru.PirateSaleStanding : Ru.SaleStanding);

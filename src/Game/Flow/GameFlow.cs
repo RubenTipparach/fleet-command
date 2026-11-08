@@ -349,6 +349,35 @@ public sealed partial class GameFlow : Node
         if (Path != null) MoveHere();
     }
 
+    /// <summary>Draws the map again from the campaign as it stands (its fleets, freighters and missions).</summary>
+    public void Redraw() => _map.Refresh();
+
+    /// <summary>Meets a freighter in the fleet's sector: her encounter (an escort, or a raid) opens as a briefing to launch.</summary>
+    public void Meet(Freighter f)
+    {
+        if (Camp?.Meet(f) is not { } m) return;
+        Save();
+        OpenBrief(m);
+    }
+
+    /// <summary>Cashes out the cargo of the freighters taken, at a port that deals with you.</summary>
+    public void CashOut()
+    {
+        if (Camp == null) return;
+        int before = Camp.S.Credits;
+        Msg = Camp.CashOut() ?? $"Cargo sold for {Camp.S.Credits - before:N0} cr.";
+        Save();
+        Redraw();
+    }
+
+    /// <summary>Patches the most damaged ship with a repair kit.</summary>
+    public void FieldRepair()
+    {
+        if (Camp?.S.Fleet.OrderBy(s => s.HullPct).FirstOrDefault() is not { } s) return;
+        Msg = Camp.FieldRepair(s) ?? $"The {s.Name} is patched: hull {s.HullPct:0} %.";
+        Save();
+    }
+
     // an accepted mission in the sector the fleet has reached opens its briefing (as the mockup does on arrival)
     private void Arrived()
     {

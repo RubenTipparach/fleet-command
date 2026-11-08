@@ -1,0 +1,187 @@
+{
+ "_doc": "The freighters' container (openspec/changes/freighters, task 2.5), written by tools/blender/build_container.py: a low-poly box (size_m: across, up, along, drafted metres) whose faces sit in one square atlas (atlas_m metres a UV unit; each face's n, u, v axes, size and place in metres), and its baked maps. The diffuse is grey: each container's own colour tints it. Sources: assets/containers/SOURCES.md.",
+ "atlas_m": 24.0,
+ "blender": "4.4.3",
+ "faces": {
+  "back": {
+   "at": [
+    12.5,
+    6.5
+   ],
+   "n": [
+    0,
+    0,
+    -1
+   ],
+   "size": [
+    6.0,
+    6.0
+   ],
+   "u": [
+    -1,
+    0,
+    0
+   ],
+   "v": [
+    0,
+    1,
+    0
+   ]
+  },
+  "bottom": {
+   "at": [
+    12.5,
+    12.75
+   ],
+   "n": [
+    0,
+    -1,
+    0
+   ],
+   "size": [
+    12.0,
+    6.0
+   ],
+   "u": [
+    0,
+    0,
+    -1
+   ],
+   "v": [
+    1,
+    0,
+    0
+   ]
+  },
+  "doors": {
+   "at": [
+    12.5,
+    0.25
+   ],
+   "n": [
+    0,
+    0,
+    1
+   ],
+   "size": [
+    6.0,
+    6.0
+   ],
+   "u": [
+    1,
+    0,
+    0
+   ],
+   "v": [
+    0,
+    1,
+    0
+   ]
+  },
+  "port": {
+   "at": [
+    0.25,
+    0.25
+   ],
+   "n": [
+    1,
+    0,
+    0
+   ],
+   "size": [
+    12.0,
+    6.0
+   ],
+   "u": [
+    0,
+    0,
+    -1
+   ],
+   "v": [
+    0,
+    1,
+    0
+   ]
+  },
+  "stbd": {
+   "at": [
+    0.25,
+    6.5
+   ],
+   "n": [
+    -1,
+    0,
+    0
+   ],
+   "size": [
+    12.0,
+    6.0
+   ],
+   "u": [
+    0,
+    0,
+    1
+   ],
+   "v": [
+    0,
+    1,
+    0
+   ]
+  },
+  "top": {
+   "at": [
+    0.25,
+    12.75
+   ],
+   "n": [
+    0,
+    1,
+    0
+   ],
+   "size": [
+    12.0,
+    6.0
+   ],
+   "u": [
+    0,
+    0,
+    -1
+   ],
+   "v": [
+    -1,
+    0,
+    0
+   ]
+  }
+ },
+ "pieces": {
+  "ao": {
+   "file": "container_ao.png",
+   "sha256": "ddb00b83bf28726d1ca9dbfacf39ee8fe560f758b1129d4d9200ad270b76846e"
+  },
+  "diffuse": {
+   "file": "container_diffuse.png",
+   "sha256": "9f4849c6c831edeeea336f3e7261542b7d3d8fa9b7372ebdd770e371fd4b4476"
+  },
+  "normal": {
+   "file": "container_normal.png",
+   "sha256": "5c9909f08d14c094d4018b9f59723ef688e07ecb74fe887c6be7b616d9b61a19"
+  },
+  "rough": {
+   "file": "container_rough.png",
+   "sha256": "f4c938223559c35f860c2f0aa5de5bfaf8a586fff5b0a7ed9d60839224adb87c"
+  },
+  "specular": {
+   "file": "container_specular.png",
+   "sha256": "7240e7d1f900ba2bc0ab6e906ecf73a3c60c809ed331837a3bd274b90370522b"
+  }
+ },
+ "px": 2048,
+ "samples": 64,
+ "size_m": [
+  6.0,
+  6.0,
+  12.0
+ ],
+ "webp_quality": 90
+}

@@ -196,6 +196,46 @@
     "pilots": 2
    }
   },
+  "fr": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 4,
+   "team": {
+    "engineers": 2,
+    "pilots": 1,
+    "medics": 1
+   }
+  },
+  "krai_fr": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 4,
+   "team": {
+    "engineers": 2,
+    "pilots": 1,
+    "medics": 1
+   }
+  },
+  "hunt_fr": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 4,
+   "team": {
+    "engineers": 2,
+    "pilots": 1,
+    "medics": 1
+   }
+  },
+  "kelvane_fr": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 4,
+   "team": {
+    "engineers": 2,
+    "pilots": 1,
+    "medics": 1
+   }
+  },
   "tr": {
    "pads": 6,
    "hold_t": 30,

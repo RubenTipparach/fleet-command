@@ -1,5 +1,5 @@
 {
- "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v24, sha256 594bb2708517; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 c911be74453a; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt page v28, sha256 1cc96bf7794a; mockup 23, docs/mockups/kelvane-ship-concepts.html, Kelvane Institute page v10, sha256 2d4a622346f2): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
+ "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v24, sha256 594bb2708517; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 c911be74453a; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt page v29, sha256 1cc96bf7794a; mockup 23, docs/mockups/kelvane-ship-concepts.html, Kelvane Institute page v11, sha256 2d4a622346f2; mockup 24, docs/mockups/freighter-concepts.html, the freighters page v16, sha256 df412a92a41f): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
  "conventions": {
   "units": "metres",
   "up": "+Y",
@@ -141,7 +141,7 @@
   "ssarith": {
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 28,
+    "version": 29,
     "sha256": "1cc96bf7794a1e292c15dbaf90b196c61bdce45b93d3c3c8a919d9f134dcc1fa"
    },
    "hull_shader": {
@@ -160,13 +160,32 @@
   "kelvane": {
    "source": {
     "page": "docs/mockups/kelvane-ship-concepts.html",
-    "version": 10,
+    "version": 11,
     "sha256": "2d4a622346f2e613c6fb17cab6aa50b04ae7c7d385b51639c94a82b46145eb4f"
    },
    "hull_shader": {
     "source": "docs/mockups/lib/baked-fleet.js (on docs/mockups/kelvane-ship-concepts.html): hullLooks(), hullShader() (HULL_GLSL); maps by tools/blender/painted_bake.py --ship",
     "did": [
      "Each ship has its own unwrap and its own maps (assets/ships/kelvane/<id>_*.png, named in the ship's shader_params.maps), no tile: base colour (sRGB), ORM (occlusion, roughness, metalness in red, green, blue), a tangent-space normal map (OpenGL, +Y up), emission (sRGB: lamps, light strips), and a light map of the hull lights falling on the plating (linear).",
+     "PBR look: albedo = base; roughness and metalness from ORM green and blue (roughness 1, metalness 1 scaled by them); AO from ORM red; emission = the emission map + albedo * pow(light, light_gamma) * k, k the light's strength (0.3 in the page's studio light, 4.5 at night).",
+     "The glb's UVs are the bake's, v flipped for glTF (v = 0 the image's top row), so the PNGs map as they stand.",
+     "Battle damage as the other factions' hulls (DAMAGE_GLSL, dmgBreak): the hull shader takes the scorch, holes and fracture cells; a broken piece's emission and light map die with it (uLight)."
+    ],
+    "constants": {
+     "light_gamma": 1.6
+    }
+   }
+  },
+  "freighters": {
+   "source": {
+    "page": "docs/mockups/freighter-concepts.html",
+    "version": 16,
+    "sha256": "df412a92a41f34f84a3a389795d1807392640b40b6e7a7e071a788bcb8993351"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/baked-fleet.js (on docs/mockups/freighter-concepts.html): hullLooks(), hullShader() (HULL_GLSL); maps by tools/blender/painted_bake.py --ship",
+    "did": [
+     "Each ship has its own unwrap and its own maps (assets/ships/freighters/<id>_*.png, named in the ship's shader_params.maps), no tile: base colour (sRGB), ORM (occlusion, roughness, metalness in red, green, blue), a tangent-space normal map (OpenGL, +Y up), emission (sRGB: lamps, light strips), and a light map of the hull lights falling on the plating (linear).",
      "PBR look: albedo = base; roughness and metalness from ORM green and blue (roughness 1, metalness 1 scaled by them); AO from ORM red; emission = the emission map + albedo * pow(light, light_gamma) * k, k the light's strength (0.3 in the page's studio light, 4.5 at night).",
      "The glb's UVs are the bake's, v flipped for glTF (v = 0 the image's top row), so the PNGs map as they stand.",
      "Battle damage as the other factions' hulls (DAMAGE_GLSL, dmgBreak): the hull shader takes the scorch, holes and fracture cells; a broken piece's emission and light map die with it (uLight)."
@@ -2298,6 +2317,106 @@
   },
   "kelvane/hull_6": {
    "name": "hull_6",
+   "hull_shader": false,
+   "baked_hull": true,
+   "keep_uv": true,
+   "livery": false,
+   "base_colour": [
+    0.36,
+    0.38,
+    0.28
+   ],
+   "metalness": 0.4,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": [],
+   "stand_in": "a plain khaki; the hull's look is its own baked maps (shader_params.maps), drawn by src/Game/View/baked_hull.gdshader"
+  },
+  "freighters/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "baked_hull": true,
+   "keep_uv": true,
+   "livery": false,
+   "base_colour": [
+    0.36,
+    0.38,
+    0.28
+   ],
+   "metalness": 0.4,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": [],
+   "stand_in": "a plain khaki; the hull's look is its own baked maps (shader_params.maps), drawn by src/Game/View/baked_hull.gdshader"
+  },
+  "freighters/hull_2": {
+   "name": "hull_2",
+   "hull_shader": false,
+   "baked_hull": true,
+   "keep_uv": true,
+   "livery": false,
+   "base_colour": [
+    0.36,
+    0.38,
+    0.28
+   ],
+   "metalness": 0.4,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": [],
+   "stand_in": "a plain khaki; the hull's look is its own baked maps (shader_params.maps), drawn by src/Game/View/baked_hull.gdshader"
+  },
+  "freighters/hull_3": {
+   "name": "hull_3",
+   "hull_shader": false,
+   "baked_hull": true,
+   "keep_uv": true,
+   "livery": false,
+   "base_colour": [
+    0.36,
+    0.38,
+    0.28
+   ],
+   "metalness": 0.4,
+   "roughness": 0.6,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 0,
+   "vertex_colours": false,
+   "double_sided": false,
+   "transparent": false,
+   "textures": [],
+   "stand_in": "a plain khaki; the hull's look is its own baked maps (shader_params.maps), drawn by src/Game/View/baked_hull.gdshader"
+  },
+  "freighters/hull_4": {
+   "name": "hull_4",
    "hull_shader": false,
    "baked_hull": true,
    "keep_uv": true,
@@ -26820,7 +26939,7 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 28,
+    "version": 29,
     "sha256": "1cc96bf7794a1e292c15dbaf90b196c61bdce45b93d3c3c8a919d9f134dcc1fa"
    }
   },
@@ -28023,7 +28142,7 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 28,
+    "version": 29,
     "sha256": "1cc96bf7794a1e292c15dbaf90b196c61bdce45b93d3c3c8a919d9f134dcc1fa"
    }
   },
@@ -29460,7 +29579,7 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 28,
+    "version": 29,
     "sha256": "1cc96bf7794a1e292c15dbaf90b196c61bdce45b93d3c3c8a919d9f134dcc1fa"
    }
   },
@@ -30971,7 +31090,7 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 28,
+    "version": 29,
     "sha256": "1cc96bf7794a1e292c15dbaf90b196c61bdce45b93d3c3c8a919d9f134dcc1fa"
    }
   },
@@ -33475,7 +33594,7 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 28,
+    "version": 29,
     "sha256": "1cc96bf7794a1e292c15dbaf90b196c61bdce45b93d3c3c8a919d9f134dcc1fa"
    }
   },
@@ -36082,7 +36201,7 @@
    },
    "source": {
     "page": "docs/mockups/ssarith-ship-concepts.html",
-    "version": 28,
+    "version": 29,
     "sha256": "1cc96bf7794a1e292c15dbaf90b196c61bdce45b93d3c3c8a919d9f134dcc1fa"
    }
   },
@@ -38574,7 +38693,7 @@
    },
    "source": {
     "page": "docs/mockups/kelvane-ship-concepts.html",
-    "version": 10,
+    "version": 11,
     "sha256": "2d4a622346f2e613c6fb17cab6aa50b04ae7c7d385b51639c94a82b46145eb4f"
    }
   },
@@ -40207,7 +40326,7 @@
    },
    "source": {
     "page": "docs/mockups/kelvane-ship-concepts.html",
-    "version": 10,
+    "version": 11,
     "sha256": "2d4a622346f2e613c6fb17cab6aa50b04ae7c7d385b51639c94a82b46145eb4f"
    }
   },
@@ -42413,7 +42532,7 @@
    },
    "source": {
     "page": "docs/mockups/kelvane-ship-concepts.html",
-    "version": 10,
+    "version": 11,
     "sha256": "2d4a622346f2e613c6fb17cab6aa50b04ae7c7d385b51639c94a82b46145eb4f"
    }
   },
@@ -44824,7 +44943,7 @@
    },
    "source": {
     "page": "docs/mockups/kelvane-ship-concepts.html",
-    "version": 10,
+    "version": 11,
     "sha256": "2d4a622346f2e613c6fb17cab6aa50b04ae7c7d385b51639c94a82b46145eb4f"
    }
   },
@@ -47351,7 +47470,7 @@
    },
    "source": {
     "page": "docs/mockups/kelvane-ship-concepts.html",
-    "version": 10,
+    "version": 11,
     "sha256": "2d4a622346f2e613c6fb17cab6aa50b04ae7c7d385b51639c94a82b46145eb4f"
    }
   },
@@ -48952,8 +49071,10170 @@
    },
    "source": {
     "page": "docs/mockups/kelvane-ship-concepts.html",
-    "version": 10,
+    "version": 11,
     "sha256": "2d4a622346f2e613c6fb17cab6aa50b04ae7c7d385b51639c94a82b46145eb4f"
+   }
+  },
+  {
+   "faction": "freighters",
+   "id": "freighter_concord",
+   "label": "Freighter concord: Gauge carrier",
+   "cls": "Concord",
+   "name": "Gauge carrier",
+   "cargo": {
+    "model": "containers/container.glb",
+    "count": 32,
+    "items": [
+     {
+      "p": [
+       0,
+       7.6,
+       76
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       -8,
+       76
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       0,
+       -23.6,
+       76
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       -8,
+       76
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.78824,
+       0.81176,
+       0.83922
+      ]
+     },
+     {
+      "p": [
+       0,
+       7.6,
+       49.6
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       -8,
+       49.6
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       0,
+       -23.6,
+       49.6
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       -8,
+       49.6
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       0,
+       7.6,
+       23.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       -8,
+       23.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       0,
+       -23.6,
+       23.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       -8,
+       23.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       0,
+       7.6,
+       -3.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.3098,
+       0.63922,
+       0.64706
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       -8,
+       -3.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.76863,
+       0.41569,
+       0.2902
+      ]
+     },
+     {
+      "p": [
+       0,
+       -23.6,
+       -3.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.4902,
+       0.56078,
+       0.78824
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       -8,
+       -3.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.90196,
+       0.8902,
+       0.85882
+      ]
+     },
+     {
+      "p": [
+       0,
+       7.6,
+       -29.6
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.87843,
+       0.72157,
+       0.2902
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       -8,
+       -29.6
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.3098,
+       0.63922,
+       0.64706
+      ]
+     },
+     {
+      "p": [
+       0,
+       -23.6,
+       -29.6
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.76863,
+       0.41569,
+       0.2902
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       -8,
+       -29.6
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.4902,
+       0.56078,
+       0.78824
+      ]
+     },
+     {
+      "p": [
+       0,
+       7.6,
+       -56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.78824,
+       0.81176,
+       0.83922
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       -8,
+       -56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.87843,
+       0.72157,
+       0.2902
+      ]
+     },
+     {
+      "p": [
+       0,
+       -23.6,
+       -56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.3098,
+       0.63922,
+       0.64706
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       -8,
+       -56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.76863,
+       0.41569,
+       0.2902
+      ]
+     },
+     {
+      "p": [
+       0,
+       7.6,
+       -82.4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.56078,
+       0.6902,
+       0.35294
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       -8,
+       -82.4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.78824,
+       0.81176,
+       0.83922
+      ]
+     },
+     {
+      "p": [
+       0,
+       -23.6,
+       -82.4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.87843,
+       0.72157,
+       0.2902
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       -8,
+       -82.4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.3098,
+       0.63922,
+       0.64706
+      ]
+     },
+     {
+      "p": [
+       0,
+       7.6,
+       -108.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.90196,
+       0.8902,
+       0.85882
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       -8,
+       -108.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.56078,
+       0.6902,
+       0.35294
+      ]
+     },
+     {
+      "p": [
+       0,
+       -23.6,
+       -108.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.78824,
+       0.81176,
+       0.83922
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       -8,
+       -108.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.87843,
+       0.72157,
+       0.2902
+      ]
+     }
+    ],
+    "note": "p in the glb frame (metres), q a quaternion xyzw, s a uniform scale on the container's own glb (6 x 6 x 12 m, long along z), rgb a linear tint"
+   },
+   "file": "freighters/freighter_concord.glb",
+   "length_m": 300,
+   "beam_m": 44,
+   "height_m": 52,
+   "triangles": 684,
+   "draw_calls": 1,
+   "origin_offset_m": [
+    0,
+    8,
+    0
+   ],
+   "nodes": {
+    "pieces": [
+     "hull"
+    ],
+    "meshes": [
+     "hull_hull"
+    ],
+    "empties": [
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_nav_aft",
+     "light_beacon_dorsal",
+     "light_beacon_ventral",
+     "light_strobe_hull",
+     "light_strobe_hull_2",
+     "light_strobe_hull_3",
+     "light_strobe_hull_4",
+     "light_strobe_hull_5",
+     "engine_0",
+     "reactor",
+     "light_baked_flood_0",
+     "light_baked_flood_1",
+     "light_baked_flood_2",
+     "light_baked_flood_3",
+     "light_baked_flood_4",
+     "light_baked_flood_5",
+     "light_baked_flood_6",
+     "light_baked_flood_7",
+     "light_baked_flood_8",
+     "light_baked_flood_9",
+     "light_baked_flood_10",
+     "light_baked_flood_11",
+     "light_baked_flood_12",
+     "light_baked_flood_13",
+     "light_baked_flood_14",
+     "light_baked_flood_15",
+     "light_baked_flood_16",
+     "light_baked_flood_17",
+     "light_baked_flood_18",
+     "light_baked_flood_19",
+     "light_baked_flood_20",
+     "light_baked_flood_21",
+     "light_baked_flood_22",
+     "light_baked_flood_23",
+     "light_baked_flood_24",
+     "light_baked_flood_25",
+     "light_baked_flood_26",
+     "light_baked_flood_27",
+     "light_baked_flood_28",
+     "light_baked_flood_29",
+     "light_baked_flood_30",
+     "light_baked_flood_31",
+     "light_baked_flood_32"
+    ]
+   },
+   "materials": [
+    "freighters/hull"
+   ],
+   "shader_params": {
+    "maps": {
+     "base": "freighters/freighter_concord_base.png",
+     "orm": "freighters/freighter_concord_orm.png",
+     "normal": "freighters/freighter_concord_normal.png",
+     "emit": "freighters/freighter_concord_emit.png",
+     "light": "freighters/freighter_concord_light.png",
+     "albedo": "freighters/freighter_concord_albedo.png"
+    },
+    "light_gamma": 1.6,
+    "light_ref": 2.4,
+    "bake_px": 2048
+   },
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres): the hull shader's v_obj",
+    "core": [
+     0,
+     8,
+     -24.32
+    ],
+    "bodies": [
+     {
+      "node": "hull",
+      "name": "hb",
+      "system": "life",
+      "seeds": [
+       [
+        -18.287272,
+        11.878805,
+        -105.232855
+       ],
+       [
+        -2.319147,
+        -3.7816,
+        15.620171
+       ],
+       [
+        13.05598,
+        3.902139,
+        -105.387047
+       ],
+       [
+        -8.013682,
+        -5.252761,
+        91.268022
+       ],
+       [
+        9.817032,
+        -3.599625,
+        -134.945689
+       ],
+       [
+        6.906461,
+        -1.913189,
+        46.386792
+       ],
+       [
+        -3.676443,
+        3.597225,
+        -107.623509
+       ],
+       [
+        14.361757,
+        20.472525,
+        -122.076204
+       ],
+       [
+        -3.561221,
+        28.747091,
+        -127.864437
+       ],
+       [
+        -13.950496,
+        10.591888,
+        -148.00923
+       ],
+       [
+        4.792858,
+        -7.466092,
+        -31.069285
+       ],
+       [
+        -6.784002,
+        -0.410698,
+        -78.173896
+       ],
+       [
+        -19.442459,
+        -9.625612,
+        -134.416496
+       ]
+      ],
+      "centers": [
+       [
+        -18.287272,
+        11.878805,
+        -105.232855
+       ],
+       [
+        -2.319147,
+        -3.7816,
+        15.620171
+       ],
+       [
+        13.05598,
+        3.902139,
+        -105.387047
+       ],
+       [
+        -8.013682,
+        -5.252761,
+        91.268022
+       ],
+       [
+        9.817032,
+        -3.599625,
+        -134.945689
+       ],
+       [
+        6.906461,
+        -1.913189,
+        46.386792
+       ],
+       [
+        -3.676443,
+        3.597225,
+        -107.623509
+       ],
+       [
+        14.361757,
+        20.472525,
+        -122.076204
+       ],
+       [
+        -3.561221,
+        28.747091,
+        -127.864437
+       ],
+       [
+        -13.950496,
+        10.591888,
+        -148.00923
+       ],
+       [
+        4.792858,
+        -7.466092,
+        -31.069285
+       ],
+       [
+        -6.784002,
+        -0.410698,
+        -78.173896
+       ],
+       [
+        -19.442459,
+        -9.625612,
+        -134.416496
+       ]
+      ],
+      "stations": [],
+      "ch": [],
+      "ox": 0,
+      "faces": [
+       {
+        "cell": 0,
+        "other": 6,
+        "corners": [
+         [
+          4.749155,
+          29.829813,
+          -86.815086
+         ],
+         [
+          -2.760951,
+          29.829813,
+          -132.714188
+         ],
+         [
+          -21.264458,
+          -17.29356,
+          -82.558685
+         ],
+         [
+          -28.774563,
+          -17.29356,
+          -128.457779
+         ]
+        ],
+        "mid": [
+         -10.981858,
+         7.738015,
+         -106.428182
+        ],
+        "across": [
+         0.161475,
+         0,
+         0.986877
+        ],
+        "depth": [
+         -0.986877,
+         0,
+         0.161475
+        ]
+       },
+       {
+        "cell": 0,
+        "other": 8,
+        "corners": [
+         [
+          0.314189,
+          35.316612,
+          -98.053085
+         ],
+         [
+          -34.191486,
+          35.316612,
+          -120.50544
+         ],
+         [
+          10.783948,
+          4.588643,
+          -114.143425
+         ],
+         [
+          -23.721725,
+          4.588643,
+          -136.595779
+         ]
+        ],
+        "mid": [
+         -10.924247,
+         20.312948,
+         -116.548646
+        ],
+        "across": [
+         0.838181,
+         0,
+         0.545392
+        ],
+        "depth": [
+         -0.545392,
+         0,
+         0.838181
+        ]
+       },
+       {
+        "cell": 0,
+        "other": 12,
+        "corners": [
+         [
+          -8.915438,
+          15.984041,
+          -131.166443
+         ],
+         [
+          -29.441225,
+          15.984041,
+          -130.353958
+         ],
+         [
+          -8.100627,
+          -11.995207,
+          -110.581757
+         ],
+         [
+          -28.626413,
+          -11.995207,
+          -109.769279
+         ]
+        ],
+        "mid": [
+         -18.864865,
+         1.126597,
+         -119.824675
+        ],
+        "across": [
+         0.999217,
+         0,
+         -0.039552
+        ],
+        "depth": [
+         0.039552,
+         0,
+         0.999217
+        ]
+       },
+       {
+        "cell": 0,
+        "other": 9,
+        "corners": [
+         [
+          -10.634962,
+          20.525625,
+          -126.344566
+         ],
+         [
+          -28.794666,
+          20.525625,
+          -128.185638
+         ],
+         [
+          -10.681572,
+          5.086976,
+          -125.884819
+         ],
+         [
+          -28.841276,
+          5.086976,
+          -127.725899
+         ]
+        ],
+        "mid": [
+         -16.118884,
+         11.235347,
+         -126.621043
+        ],
+        "across": [
+         0.9949,
+         0,
+         0.100865
+        ],
+        "depth": [
+         -0.100865,
+         0,
+         0.9949
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 5,
+        "corners": [
+         [
+          -15.813687,
+          15.8011,
+          35.300613
+         ],
+         [
+          14.6342,
+          15.8011,
+          26.17058
+         ],
+         [
+          -15.28042,
+          -16.116465,
+          37.079014
+         ],
+         [
+          15.167467,
+          -16.116465,
+          27.948982
+         ]
+        ],
+        "mid": [
+         2.293657,
+         -2.847394,
+         31.003482
+        ],
+        "across": [
+         -0.957864,
+         0,
+         0.287223
+        ],
+        "depth": [
+         -0.287223,
+         0,
+         -0.957864
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 10,
+        "corners": [
+         [
+          15.935889,
+          15.740315,
+          -7.171466
+         ],
+         [
+          -15.956444,
+          15.740315,
+          -12.029489
+         ],
+         [
+          15.570025,
+          -15.401815,
+          -4.769619
+         ],
+         [
+          -16.322308,
+          -15.401815,
+          -9.627642
+         ]
+        ],
+        "mid": [
+         1.236855,
+         -5.623846,
+         -7.724557
+        ],
+        "across": [
+         0.988597,
+         0,
+         0.150589
+        ],
+        "depth": [
+         -0.150589,
+         0,
+         0.988597
+        ]
+       },
+       {
+        "cell": 2,
+        "other": 6,
+        "corners": [
+         [
+          6.972548,
+          28.953876,
+          -127.020515
+         ],
+         [
+          1.291499,
+          28.953876,
+          -84.516907
+         ],
+         [
+          7.937448,
+          -24.941763,
+          -126.891548
+         ],
+         [
+          2.256399,
+          -24.941763,
+          -84.387939
+         ]
+        ],
+        "mid": [
+         4.689768,
+         3.749682,
+         -106.505278
+        ],
+        "across": [
+         0.132482,
+         0,
+         -0.991185
+        ],
+        "depth": [
+         0.991185,
+         0,
+         0.132482
+        ]
+       },
+       {
+        "cell": 2,
+        "other": 7,
+        "corners": [
+         [
+          27.7206,
+          26.954411,
+          -97.973351
+         ],
+         [
+          -2.612124,
+          26.954411,
+          -100.346611
+         ],
+         [
+          29.880938,
+          -1.025027,
+          -125.584633
+         ],
+         [
+          -0.451788,
+          -1.025027,
+          -127.957901
+         ]
+        ],
+        "mid": [
+         13.708868,
+         12.187332,
+         -113.731625
+        ],
+        "across": [
+         0.996953,
+         0,
+         0.078003
+        ],
+        "depth": [
+         -0.078003,
+         0,
+         0.996953
+        ]
+       },
+       {
+        "cell": 2,
+        "other": 4,
+        "corners": [
+         [
+          28.726082,
+          11.001195,
+          -124.814545
+         ],
+         [
+          -1.311435,
+          11.001195,
+          -121.523117
+         ],
+         [
+          29.712305,
+          -24.887762,
+          -115.814255
+         ],
+         [
+          -0.32521,
+          -24.887762,
+          -112.522835
+         ]
+        ],
+        "mid": [
+         11.436506,
+         0.151257,
+         -120.166368
+        ],
+        "across": [
+         0.99405,
+         0,
+         -0.108925
+        ],
+        "depth": [
+         0.108925,
+         0,
+         0.99405
+        ]
+       },
+       {
+        "cell": 2,
+        "other": 11,
+        "corners": [
+         [
+          -3.921293,
+          13.394526,
+          -95.079498
+         ],
+         [
+          13.537752,
+          13.394526,
+          -82.35083
+         ],
+         [
+          -1.736001,
+          -15.571393,
+          -98.076912
+         ],
+         [
+          15.723044,
+          -15.571393,
+          -85.348251
+         ]
+        ],
+        "mid": [
+         3.135989,
+         1.74572,
+         -91.780471
+        ],
+        "across": [
+         -0.808049,
+         0,
+         -0.589115
+        ],
+        "depth": [
+         0.589115,
+         0,
+         -0.808049
+        ]
+       },
+       {
+        "cell": 3,
+        "other": 5,
+        "corners": [
+         [
+          15.646756,
+          15.977482,
+          75.668472
+         ],
+         [
+          -16.078426,
+          15.977482,
+          65.121872
+         ],
+         [
+          16.354446,
+          -15.793652,
+          73.539673
+         ],
+         [
+          -15.370735,
+          -15.793652,
+          62.993073
+         ]
+        ],
+        "mid": [
+         -0.553611,
+         -3.582975,
+         68.827407
+        ],
+        "across": [
+         0.948938,
+         0,
+         0.315461
+        ],
+        "depth": [
+         -0.315461,
+         0,
+         0.948938
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 12,
+        "corners": [
+         [
+          -9.025705,
+          11.900129,
+          -156.813629
+         ],
+         [
+          -8.244301,
+          11.900129,
+          -113.609238
+         ],
+         [
+          -1.440368,
+          -24.942911,
+          -156.950821
+         ],
+         [
+          -0.658964,
+          -24.942911,
+          -113.746429
+         ]
+        ],
+        "mid": [
+         -4.812714,
+         -6.612619,
+         -134.681092
+        ],
+        "across": [
+         -0.018083,
+         0,
+         -0.999836
+        ],
+        "depth": [
+         0.999836,
+         0,
+         -0.018083
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 9,
+        "corners": [
+         [
+          16.624704,
+          24.27762,
+          -152.908401
+         ],
+         [
+          -2.199911,
+          24.27762,
+          -118.659286
+         ],
+         [
+          0.024838,
+          -11.92208,
+          -162.032318
+         ],
+         [
+          -18.799778,
+          -11.92208,
+          -127.783211
+         ]
+        ],
+        "mid": [
+         -2.066732,
+         3.496131,
+         -141.47746
+        ],
+        "across": [
+         0.481675,
+         0,
+         -0.87635
+        ],
+        "depth": [
+         0.87635,
+         0,
+         0.481675
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 6,
+        "corners": [
+         [
+          -11.080403,
+          14.543642,
+          -132.104355
+         ],
+         [
+          15.337439,
+          14.543642,
+          -119.057495
+         ],
+         [
+          -15.16096,
+          -24.474842,
+          -123.841858
+         ],
+         [
+          11.256882,
+          -24.474842,
+          -110.795006
+         ]
+        ],
+        "mid": [
+         3.070294,
+         -0.0012,
+         -121.284599
+        ],
+        "across": [
+         -0.896617,
+         0,
+         -0.442808
+        ],
+        "depth": [
+         0.442808,
+         0,
+         -0.896617
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 7,
+        "corners": [
+         [
+          -12.85095,
+          21.337267,
+          -143.834274
+         ],
+         [
+          23.34318,
+          21.337267,
+          -156.61586
+         ],
+         [
+          -0.608567,
+          0.492097,
+          -109.167015
+         ],
+         [
+          35.585564,
+          0.492097,
+          -121.948601
+         ]
+        ],
+        "mid": [
+         12.089394,
+         8.43645,
+         -128.510947
+        ],
+        "across": [
+         -0.942932,
+         0,
+         0.332987
+        ],
+        "depth": [
+         -0.332987,
+         0,
+         -0.942932
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 8,
+        "corners": [
+         [
+          12.135607,
+          19.824022,
+          -147.506134
+         ],
+         [
+          12.135607,
+          13.94105,
+          -120.633087
+         ],
+         [
+          -9.578455,
+          11.254034,
+          -149.382248
+         ],
+         [
+          -9.578455,
+          5.371063,
+          -122.509201
+         ]
+        ],
+        "mid": [
+         3.127905,
+         12.573733,
+         -131.405063
+        ],
+        "across": [
+         -0.467818,
+         0,
+         -0.883825
+        ],
+        "depth": [
+         0.883825,
+         0,
+         -0.467818
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 2,
+        "corners": [
+         [
+          -1.311435,
+          11.001195,
+          -121.523117
+         ],
+         [
+          28.726082,
+          11.001195,
+          -124.814545
+         ],
+         [
+          -0.32521,
+          -24.887762,
+          -112.522835
+         ],
+         [
+          29.712305,
+          -24.887762,
+          -115.814255
+         ]
+        ],
+        "mid": [
+         11.436506,
+         0.151257,
+         -120.166368
+        ],
+        "across": [
+         -0.99405,
+         0,
+         0.108925
+        ],
+        "depth": [
+         -0.108925,
+         0,
+         -0.99405
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 1,
+        "corners": [
+         [
+          14.6342,
+          15.8011,
+          26.17058
+         ],
+         [
+          -15.813687,
+          15.8011,
+          35.300613
+         ],
+         [
+          15.167467,
+          -16.116465,
+          27.948982
+         ],
+         [
+          -15.28042,
+          -16.116465,
+          37.079014
+         ]
+        ],
+        "mid": [
+         2.293657,
+         -2.847394,
+         31.003482
+        ],
+        "across": [
+         0.957864,
+         0,
+         -0.287223
+        ],
+        "depth": [
+         0.287223,
+         0,
+         0.957864
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 3,
+        "corners": [
+         [
+          -16.078426,
+          15.977482,
+          65.121872
+         ],
+         [
+          15.646756,
+          15.977482,
+          75.668472
+         ],
+         [
+          -15.370735,
+          -15.793652,
+          62.993073
+         ],
+         [
+          16.354446,
+          -15.793652,
+          73.539673
+         ]
+        ],
+        "mid": [
+         -0.553611,
+         -3.582975,
+         68.827407
+        ],
+        "across": [
+         -0.948938,
+         0,
+         -0.315461
+        ],
+        "depth": [
+         0.315461,
+         0,
+         -0.948938
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 2,
+        "corners": [
+         [
+          1.291499,
+          28.953876,
+          -84.516907
+         ],
+         [
+          6.972548,
+          28.953876,
+          -127.020515
+         ],
+         [
+          2.256399,
+          -24.941763,
+          -84.387939
+         ],
+         [
+          7.937448,
+          -24.941763,
+          -126.891548
+         ]
+        ],
+        "mid": [
+         4.689768,
+         3.749682,
+         -106.505278
+        ],
+        "across": [
+         -0.132482,
+         0,
+         0.991185
+        ],
+        "depth": [
+         -0.991185,
+         0,
+         -0.132482
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 0,
+        "corners": [
+         [
+          -2.760951,
+          29.829813,
+          -132.714188
+         ],
+         [
+          4.749155,
+          29.829813,
+          -86.815086
+         ],
+         [
+          -28.774563,
+          -17.29356,
+          -128.457779
+         ],
+         [
+          -21.264458,
+          -17.29356,
+          -82.558685
+         ]
+        ],
+        "mid": [
+         -10.981858,
+         7.738015,
+         -106.428182
+        ],
+        "across": [
+         -0.161475,
+         0,
+         -0.986877
+        ],
+        "depth": [
+         0.986877,
+         0,
+         -0.161475
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 11,
+        "corners": [
+         [
+          -23.509359,
+          17.76013,
+          -92.627319
+         ],
+         [
+          8.783786,
+          17.76013,
+          -89.219711
+         ],
+         [
+          -22.932257,
+          -22.873318,
+          -98.096405
+         ],
+         [
+          9.36089,
+          -22.873318,
+          -94.688789
+         ]
+        ],
+        "mid": [
+         -5.230223,
+         1.593263,
+         -92.898703
+        ],
+        "across": [
+         -0.994479,
+         0,
+         -0.104939
+        ],
+        "depth": [
+         0.104939,
+         0,
+         -0.994479
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 7,
+        "corners": [
+         [
+          2.936322,
+          31.024506,
+          -95.680435
+         ],
+         [
+          -16.941601,
+          31.024506,
+          -120.489784
+         ],
+         [
+          20.299265,
+          0.550546,
+          -109.592094
+         ],
+         [
+          0.421341,
+          0.550546,
+          -134.401443
+         ]
+        ],
+        "mid": [
+         5.342657,
+         12.034875,
+         -114.849856
+        ],
+        "across": [
+         0.625279,
+         0,
+         0.780401
+        ],
+        "depth": [
+         -0.780401,
+         0,
+         0.625279
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 12,
+        "corners": [
+         [
+          -3.041531,
+          13.791121,
+          -134.326004
+         ],
+         [
+          -31.60264,
+          13.791121,
+          -117.519562
+         ],
+         [
+          5.190403,
+          -24.370457,
+          -120.33654
+         ],
+         [
+          -23.370705,
+          -24.370457,
+          -103.530098
+         ]
+        ],
+        "mid": [
+         -11.559451,
+         -3.014194,
+         -121.020002
+        ],
+        "across": [
+         0.861858,
+         0,
+         -0.50715
+        ],
+        "depth": [
+         0.50715,
+         0,
+         0.861858
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 4,
+        "corners": [
+         [
+          15.337439,
+          14.543642,
+          -119.057495
+         ],
+         [
+          -11.080403,
+          14.543642,
+          -132.104355
+         ],
+         [
+          11.256882,
+          -24.474842,
+          -110.795006
+         ],
+         [
+          -15.16096,
+          -24.474842,
+          -123.841858
+         ]
+        ],
+        "mid": [
+         3.070294,
+         -0.0012,
+         -121.284599
+        ],
+        "across": [
+         0.896617,
+         0,
+         0.442808
+        ],
+        "depth": [
+         -0.442808,
+         0,
+         0.896617
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 8,
+        "corners": [
+         [
+          6.065067,
+          27.594658,
+          -103.496101
+         ],
+         [
+          -18.137815,
+          27.594658,
+          -103.633873
+         ],
+         [
+          6.230631,
+          4.186396,
+          -132.580521
+         ],
+         [
+          -17.972252,
+          4.186396,
+          -132.718292
+         ]
+        ],
+        "mid": [
+         -3.618832,
+         16.172158,
+         -117.743973
+        ],
+        "across": [
+         0.999984,
+         0,
+         0.005692
+        ],
+        "depth": [
+         -0.005692,
+         0,
+         0.999984
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 6,
+        "corners": [
+         [
+          -16.941601,
+          31.024506,
+          -120.489784
+         ],
+         [
+          2.936322,
+          31.024506,
+          -95.680435
+         ],
+         [
+          0.421341,
+          0.550546,
+          -134.401443
+         ],
+         [
+          20.299265,
+          0.550546,
+          -109.592094
+         ]
+        ],
+        "mid": [
+         5.342657,
+         12.034875,
+         -114.849856
+        ],
+        "across": [
+         -0.625279,
+         0,
+         -0.780401
+        ],
+        "depth": [
+         0.780401,
+         0,
+         -0.625279
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 8,
+        "corners": [
+         [
+          20.225067,
+          40.042614,
+          -148.812622
+         ],
+         [
+          3.89646,
+          40.042614,
+          -98.251892
+         ],
+         [
+          5.208991,
+          4.125013,
+          -153.662064
+         ],
+         [
+          -11.119617,
+          4.125013,
+          -103.101341
+         ]
+        ],
+        "mid": [
+         5.400268,
+         24.609808,
+         -124.97032
+        ],
+        "across": [
+         0.307321,
+         0,
+         -0.951606
+        ],
+        "depth": [
+         0.951606,
+         0,
+         0.307321
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 2,
+        "corners": [
+         [
+          -2.612124,
+          26.954411,
+          -100.346611
+         ],
+         [
+          27.7206,
+          26.954411,
+          -97.973351
+         ],
+         [
+          -0.451788,
+          -1.025027,
+          -127.957901
+         ],
+         [
+          29.880938,
+          -1.025027,
+          -125.584633
+         ]
+        ],
+        "mid": [
+         13.708868,
+         12.187332,
+         -113.731625
+        ],
+        "across": [
+         -0.996953,
+         0,
+         -0.078003
+        ],
+        "depth": [
+         0.078003,
+         0,
+         -0.996953
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 4,
+        "corners": [
+         [
+          23.34318,
+          21.337267,
+          -156.61586
+         ],
+         [
+          -12.85095,
+          21.337267,
+          -143.834274
+         ],
+         [
+          35.585564,
+          0.492097,
+          -121.948601
+         ],
+         [
+          -0.608567,
+          0.492097,
+          -109.167015
+         ]
+        ],
+        "mid": [
+         12.089394,
+         8.43645,
+         -128.510947
+        ],
+        "across": [
+         0.942932,
+         0,
+         -0.332987
+        ],
+        "depth": [
+         0.332987,
+         0,
+         0.942932
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 9,
+        "corners": [
+         [
+          10.710413,
+          27.51503,
+          -155.04686
+         ],
+         [
+          -31.726452,
+          27.51503,
+          -133.160889
+         ],
+         [
+          19.563814,
+          3.400689,
+          -137.880112
+         ],
+         [
+          -22.873051,
+          3.400689,
+          -115.994156
+         ]
+        ],
+        "mid": [
+         -8.755859,
+         19.669489,
+         -137.936834
+        ],
+        "across": [
+         0.888765,
+         0,
+         -0.458363
+        ],
+        "depth": [
+         0.458363,
+         0,
+         0.888765
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 7,
+        "corners": [
+         [
+          3.89646,
+          40.042614,
+          -98.251892
+         ],
+         [
+          20.225067,
+          40.042614,
+          -148.812622
+         ],
+         [
+          -11.119617,
+          4.125013,
+          -103.101341
+         ],
+         [
+          5.208991,
+          4.125013,
+          -153.662064
+         ]
+        ],
+        "mid": [
+         5.400268,
+         24.609808,
+         -124.97032
+        ],
+        "across": [
+         -0.307321,
+         0,
+         0.951606
+        ],
+        "depth": [
+         -0.951606,
+         0,
+         -0.307321
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 0,
+        "corners": [
+         [
+          -34.191486,
+          35.316612,
+          -120.50544
+         ],
+         [
+          0.314189,
+          35.316612,
+          -98.053085
+         ],
+         [
+          -23.721725,
+          4.588643,
+          -136.595779
+         ],
+         [
+          10.783948,
+          4.588643,
+          -114.143425
+         ]
+        ],
+        "mid": [
+         -10.924247,
+         20.312948,
+         -116.548646
+        ],
+        "across": [
+         -0.838181,
+         0,
+         -0.545392
+        ],
+        "depth": [
+         0.545392,
+         0,
+         -0.838181
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 4,
+        "corners": [
+         [
+          12.135607,
+          13.94105,
+          -120.633087
+         ],
+         [
+          12.135607,
+          19.824022,
+          -147.506134
+         ],
+         [
+          -9.578455,
+          5.371063,
+          -122.509201
+         ],
+         [
+          -9.578455,
+          11.254034,
+          -149.382248
+         ]
+        ],
+        "mid": [
+         3.127905,
+         12.573733,
+         -131.405063
+        ],
+        "across": [
+         0.467818,
+         0,
+         0.883825
+        ],
+        "depth": [
+         -0.883825,
+         0,
+         0.467818
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 6,
+        "corners": [
+         [
+          -18.137815,
+          27.594658,
+          -103.633873
+         ],
+         [
+          6.065067,
+          27.594658,
+          -103.496101
+         ],
+         [
+          -17.972252,
+          4.186396,
+          -132.718292
+         ],
+         [
+          6.230631,
+          4.186396,
+          -132.580521
+         ]
+        ],
+        "mid": [
+         -3.618832,
+         16.172158,
+         -117.743973
+        ],
+        "across": [
+         -0.999984,
+         0,
+         -0.005692
+        ],
+        "depth": [
+         0.005692,
+         0,
+         -0.999984
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 8,
+        "corners": [
+         [
+          -31.726452,
+          27.51503,
+          -133.160889
+         ],
+         [
+          10.710413,
+          27.51503,
+          -155.04686
+         ],
+         [
+          -22.873051,
+          3.400689,
+          -115.994156
+         ],
+         [
+          19.563814,
+          3.400689,
+          -137.880112
+         ]
+        ],
+        "mid": [
+         -8.755859,
+         19.669489,
+         -137.936834
+        ],
+        "across": [
+         -0.888765,
+         0,
+         0.458363
+        ],
+        "depth": [
+         -0.458363,
+         0,
+         -0.888765
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 12,
+        "corners": [
+         [
+          -33.698193,
+          14.494187,
+          -127.242485
+         ],
+         [
+          -5.335305,
+          14.494187,
+          -115.782845
+         ],
+         [
+          -20.479929,
+          -11.091938,
+          -159.957993
+         ],
+         [
+          7.88296,
+          -11.091938,
+          -148.498352
+         ]
+        ],
+        "mid": [
+         -16.696477,
+         0.483138,
+         -141.212863
+        ],
+        "across": [
+         -0.92718,
+         0,
+         -0.374615
+        ],
+        "depth": [
+         0.374615,
+         0,
+         -0.92718
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 4,
+        "corners": [
+         [
+          -2.199911,
+          24.27762,
+          -118.659286
+         ],
+         [
+          16.624704,
+          24.27762,
+          -152.908401
+         ],
+         [
+          -18.799778,
+          -11.92208,
+          -127.783211
+         ],
+         [
+          0.024838,
+          -11.92208,
+          -162.032318
+         ]
+        ],
+        "mid": [
+         -2.066732,
+         3.496131,
+         -141.47746
+        ],
+        "across": [
+         -0.481675,
+         0,
+         0.87635
+        ],
+        "depth": [
+         -0.87635,
+         0,
+         -0.481675
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 0,
+        "corners": [
+         [
+          -28.794666,
+          20.525625,
+          -128.185638
+         ],
+         [
+          -10.634962,
+          20.525625,
+          -126.344566
+         ],
+         [
+          -28.841276,
+          5.086976,
+          -127.725899
+         ],
+         [
+          -10.681572,
+          5.086976,
+          -125.884819
+         ]
+        ],
+        "mid": [
+         -16.118884,
+         11.235347,
+         -126.621043
+        ],
+        "across": [
+         -0.9949,
+         0,
+         -0.100865
+        ],
+        "depth": [
+         0.100865,
+         0,
+         -0.9949
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 11,
+        "corners": [
+         [
+          16.203505,
+          16.121857,
+          -55.843941
+         ],
+         [
+          -15.454195,
+          16.121857,
+          -48.063454
+         ],
+         [
+          15.09404,
+          -15.837563,
+          -60.358196
+         ],
+         [
+          -16.56366,
+          -15.837563,
+          -52.577709
+         ]
+        ],
+        "mid": [
+         -0.995572,
+         -3.938395,
+         -54.621591
+        ],
+        "across": [
+         0.971102,
+         0,
+         -0.238667
+        ],
+        "depth": [
+         0.238667,
+         0,
+         0.971102
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 1,
+        "corners": [
+         [
+          -15.956444,
+          15.740315,
+          -12.029489
+         ],
+         [
+          15.935889,
+          15.740315,
+          -7.171466
+         ],
+         [
+          -16.322308,
+          -15.401815,
+          -9.627642
+         ],
+         [
+          15.570025,
+          -15.401815,
+          -4.769619
+         ]
+        ],
+        "mid": [
+         1.236855,
+         -5.623846,
+         -7.724557
+        ],
+        "across": [
+         -0.988597,
+         0,
+         -0.150589
+        ],
+        "depth": [
+         0.150589,
+         0,
+         -0.988597
+        ]
+       },
+       {
+        "cell": 11,
+        "other": 6,
+        "corners": [
+         [
+          8.783786,
+          17.76013,
+          -89.219711
+         ],
+         [
+          -23.509359,
+          17.76013,
+          -92.627319
+         ],
+         [
+          9.36089,
+          -22.873318,
+          -94.688789
+         ],
+         [
+          -22.932257,
+          -22.873318,
+          -98.096405
+         ]
+        ],
+        "mid": [
+         -5.230223,
+         1.593263,
+         -92.898703
+        ],
+        "across": [
+         0.994479,
+         0,
+         0.104939
+        ],
+        "depth": [
+         -0.104939,
+         0,
+         0.994479
+        ]
+       },
+       {
+        "cell": 11,
+        "other": 10,
+        "corners": [
+         [
+          -15.454195,
+          16.121857,
+          -48.063454
+         ],
+         [
+          16.203505,
+          16.121857,
+          -55.843941
+         ],
+         [
+          -16.56366,
+          -15.837563,
+          -52.577709
+         ],
+         [
+          15.09404,
+          -15.837563,
+          -60.358196
+         ]
+        ],
+        "mid": [
+         -0.995572,
+         -3.938395,
+         -54.621591
+        ],
+        "across": [
+         -0.971102,
+         0,
+         0.238667
+        ],
+        "depth": [
+         -0.238667,
+         0,
+         -0.971102
+        ]
+       },
+       {
+        "cell": 11,
+        "other": 2,
+        "corners": [
+         [
+          13.537752,
+          13.394526,
+          -82.35083
+         ],
+         [
+          -3.921293,
+          13.394526,
+          -95.079498
+         ],
+         [
+          15.723044,
+          -15.571393,
+          -85.348251
+         ],
+         [
+          -1.736001,
+          -15.571393,
+          -98.076912
+         ]
+        ],
+        "mid": [
+         3.135989,
+         1.74572,
+         -91.780471
+        ],
+        "across": [
+         0.808049,
+         0,
+         0.589115
+        ],
+        "depth": [
+         -0.589115,
+         0,
+         0.808049
+        ]
+       },
+       {
+        "cell": 12,
+        "other": 4,
+        "corners": [
+         [
+          -8.244301,
+          11.900129,
+          -113.609238
+         ],
+         [
+          -9.025705,
+          11.900129,
+          -156.813629
+         ],
+         [
+          -0.658964,
+          -24.942911,
+          -113.746429
+         ],
+         [
+          -1.440368,
+          -24.942911,
+          -156.950821
+         ]
+        ],
+        "mid": [
+         -4.812714,
+         -6.612619,
+         -134.681092
+        ],
+        "across": [
+         0.018083,
+         0,
+         0.999836
+        ],
+        "depth": [
+         -0.999836,
+         0,
+         0.018083
+        ]
+       },
+       {
+        "cell": 12,
+        "other": 9,
+        "corners": [
+         [
+          -5.335305,
+          14.494187,
+          -115.782845
+         ],
+         [
+          -33.698193,
+          14.494187,
+          -127.242485
+         ],
+         [
+          7.88296,
+          -11.091938,
+          -148.498352
+         ],
+         [
+          -20.479929,
+          -11.091938,
+          -159.957993
+         ]
+        ],
+        "mid": [
+         -16.696477,
+         0.483138,
+         -141.212863
+        ],
+        "across": [
+         0.92718,
+         0,
+         0.374615
+        ],
+        "depth": [
+         -0.374615,
+         0,
+         0.92718
+        ]
+       },
+       {
+        "cell": 12,
+        "other": 6,
+        "corners": [
+         [
+          -31.60264,
+          13.791121,
+          -117.519562
+         ],
+         [
+          -3.041531,
+          13.791121,
+          -134.326004
+         ],
+         [
+          -23.370705,
+          -24.370457,
+          -103.530098
+         ],
+         [
+          5.190403,
+          -24.370457,
+          -120.33654
+         ]
+        ],
+        "mid": [
+         -11.559451,
+         -3.014194,
+         -121.020002
+        ],
+        "across": [
+         -0.861858,
+         0,
+         0.50715
+        ],
+        "depth": [
+         -0.50715,
+         0,
+         -0.861858
+        ]
+       },
+       {
+        "cell": 12,
+        "other": 0,
+        "corners": [
+         [
+          -29.441225,
+          15.984041,
+          -130.353958
+         ],
+         [
+          -8.915438,
+          15.984041,
+          -131.166443
+         ],
+         [
+          -28.626413,
+          -11.995207,
+          -109.769279
+         ],
+         [
+          -8.100627,
+          -11.995207,
+          -110.581757
+         ]
+        ],
+        "mid": [
+         -18.864865,
+         1.126597,
+         -119.824675
+        ],
+        "across": [
+         -0.999217,
+         0,
+         0.039552
+        ],
+        "depth": [
+         -0.039552,
+         0,
+         -0.999217
+        ]
+       }
+      ],
+      "sdf": {
+       "file": "freighters/freighter_concord_sdf.bin",
+       "lo": [
+        -24,
+        -20,
+        -152
+       ],
+       "hi": [
+        24,
+        36,
+        152
+       ],
+       "dims": [
+        48,
+        56,
+        304
+       ],
+       "scale": 10,
+       "format": "one byte a cell, x fastest then y then z: 128 + scale x metres inside the hull (tools/blender/hull_sdf.py), sampled at cell centres; the cut faces' inside test in place of stations"
+      }
+     }
+    ],
+    "pieces": []
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/freighter-concepts.html",
+    "version": 16,
+    "sha256": "df412a92a41f34f84a3a389795d1807392640b40b6e7a7e071a788bcb8993351"
+   }
+  },
+  {
+   "faction": "freighters",
+   "id": "freighter_krai",
+   "label": "Freighter krai warhost: Spear train",
+   "cls": "Krai Warhost",
+   "name": "Spear train",
+   "cargo": {
+    "model": "containers/container.glb",
+    "count": 26,
+    "items": [
+     {
+      "p": [
+       -15.6,
+       0,
+       92
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.18039,
+       0.21961,
+       0.27451
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       92
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       76
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       76
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       60
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       60
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.18039,
+       0.21961,
+       0.27451
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       44
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.18039,
+       0.21961,
+       0.27451
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       44
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       28
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       28
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       12
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       12
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.18039,
+       0.21961,
+       0.27451
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       -4
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.18039,
+       0.21961,
+       0.27451
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       -4
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.22745,
+       0.27451,
+       0.3451
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       -20
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.22745,
+       0.27451,
+       0.3451
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       -20
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.54118,
+       0.35294,
+       0.16471
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       -36
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.54118,
+       0.35294,
+       0.16471
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       -36
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.18039,
+       0.21961,
+       0.27451
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       -52
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.18039,
+       0.21961,
+       0.27451
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       -52
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.22745,
+       0.27451,
+       0.3451
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       -68
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.22745,
+       0.27451,
+       0.3451
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       -68
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.54118,
+       0.35294,
+       0.16471
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       -84
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.54118,
+       0.35294,
+       0.16471
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       -84
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.18039,
+       0.21961,
+       0.27451
+      ]
+     },
+     {
+      "p": [
+       -15.6,
+       0,
+       -100
+      ],
+      "q": [
+       -0.70323,
+       0.07391,
+       0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.18039,
+       0.21961,
+       0.27451
+      ]
+     },
+     {
+      "p": [
+       15.6,
+       0,
+       -100
+      ],
+      "q": [
+       -0.70323,
+       -0.07391,
+       -0.07391,
+       0.70323
+      ],
+      "s": 2,
+      "rgb": [
+       0.22745,
+       0.27451,
+       0.3451
+      ]
+     }
+    ],
+    "note": "p in the glb frame (metres), q a quaternion xyzw, s a uniform scale on the container's own glb (6 x 6 x 12 m, long along z), rgb a linear tint"
+   },
+   "file": "freighters/freighter_krai.glb",
+   "length_m": 320,
+   "beam_m": 38.799999,
+   "height_m": 46,
+   "triangles": 468,
+   "draw_calls": 1,
+   "origin_offset_m": [
+    0,
+    1,
+    0
+   ],
+   "nodes": {
+    "pieces": [
+     "hull"
+    ],
+    "meshes": [
+     "hull_hull_2"
+    ],
+    "empties": [
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_nav_aft",
+     "light_beacon_dorsal",
+     "light_beacon_ventral",
+     "light_strobe_hull",
+     "light_strobe_hull_2",
+     "light_strobe_hull_3",
+     "light_strobe_hull_4",
+     "light_strobe_hull_5",
+     "engine_0",
+     "reactor",
+     "light_baked_flood_0",
+     "light_baked_flood_1",
+     "light_baked_flood_2",
+     "light_baked_flood_3",
+     "light_baked_flood_4",
+     "light_baked_flood_5",
+     "light_baked_flood_6",
+     "light_baked_flood_7",
+     "light_baked_flood_8",
+     "light_baked_flood_9",
+     "light_baked_flood_10",
+     "light_baked_flood_11",
+     "light_baked_flood_12",
+     "light_baked_flood_13",
+     "light_baked_flood_14",
+     "light_baked_flood_15",
+     "light_baked_flood_16",
+     "light_baked_flood_17",
+     "light_baked_flood_18",
+     "light_baked_flood_19",
+     "light_baked_flood_20",
+     "light_baked_flood_21",
+     "light_baked_flood_22",
+     "light_baked_flood_23",
+     "light_baked_flood_24",
+     "light_baked_flood_25",
+     "light_baked_flood_26",
+     "light_baked_flood_27",
+     "light_baked_flood_28",
+     "light_baked_flood_29",
+     "light_baked_flood_30",
+     "light_baked_flood_31",
+     "light_baked_flood_32"
+    ]
+   },
+   "materials": [
+    "freighters/hull_2"
+   ],
+   "shader_params": {
+    "maps": {
+     "base": "freighters/freighter_krai_base.png",
+     "orm": "freighters/freighter_krai_orm.png",
+     "normal": "freighters/freighter_krai_normal.png",
+     "emit": "freighters/freighter_krai_emit.png",
+     "light": "freighters/freighter_krai_light.png",
+     "albedo": "freighters/freighter_krai_albedo.png"
+    },
+    "light_gamma": 1.6,
+    "light_ref": 2.4,
+    "bake_px": 2048
+   },
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres): the hull shader's v_obj",
+    "core": [
+     0,
+     1,
+     -25.92
+    ],
+    "bodies": [
+     {
+      "node": "hull",
+      "name": "hb",
+      "system": "life",
+      "seeds": [
+       [
+        -13.484535,
+        -7.042321,
+        -126.237645
+       ],
+       [
+        9.338762,
+        -6.304492,
+        -142.844388
+       ],
+       [
+        -5.339059,
+        -4.30653,
+        -78.577489
+       ],
+       [
+        2.81911,
+        -1.791685,
+        24.409099
+       ],
+       [
+        4.78722,
+        4.775493,
+        -59.661874
+       ],
+       [
+        -15.414647,
+        3.168083,
+        -154.807354
+       ],
+       [
+        -6.349016,
+        4.542884,
+        88.033086
+       ],
+       [
+        0.513607,
+        -12.613848,
+        -12.887494
+       ],
+       [
+        1.277153,
+        -7.808982,
+        49.702245
+       ],
+       [
+        -5.704321,
+        -5.385875,
+        1.759718
+       ],
+       [
+        3.182582,
+        -0.608097,
+        113.922017
+       ],
+       [
+        1.890691,
+        1.116309,
+        132.718236
+       ],
+       [
+        7.431403,
+        -0.952376,
+        -15.286802
+       ]
+      ],
+      "centers": [
+       [
+        -13.484535,
+        -7.042321,
+        -126.237645
+       ],
+       [
+        9.338762,
+        -6.304492,
+        -142.844388
+       ],
+       [
+        -5.339059,
+        -4.30653,
+        -78.577489
+       ],
+       [
+        2.81911,
+        -1.791685,
+        24.409099
+       ],
+       [
+        4.78722,
+        4.775493,
+        -59.661874
+       ],
+       [
+        -15.414647,
+        3.168083,
+        -154.807354
+       ],
+       [
+        -6.349016,
+        4.542884,
+        88.033086
+       ],
+       [
+        0.513607,
+        -12.613848,
+        -12.887494
+       ],
+       [
+        1.277153,
+        -7.808982,
+        49.702245
+       ],
+       [
+        -5.704321,
+        -5.385875,
+        1.759718
+       ],
+       [
+        3.182582,
+        -0.608097,
+        113.922017
+       ],
+       [
+        1.890691,
+        1.116309,
+        132.718236
+       ],
+       [
+        7.431403,
+        -0.952376,
+        -15.286802
+       ]
+      ],
+      "stations": [],
+      "ch": [],
+      "ox": 0,
+      "faces": [
+       {
+        "cell": 0,
+        "other": 1,
+        "corners": [
+         [
+          19.132139,
+          26.765862,
+          -103.91243
+         ],
+         [
+          -13.29767,
+          26.765862,
+          -148.481979
+         ],
+         [
+          20.294016,
+          -28.202597,
+          -104.757835
+         ],
+         [
+          -12.135794,
+          -28.202597,
+          -149.327393
+         ]
+        ],
+        "mid": [
+         -2.072887,
+         -6.673406,
+         -134.541017
+        ],
+        "across": [
+         0.588357,
+         0,
+         0.808602
+        ],
+        "depth": [
+         -0.808602,
+         0,
+         0.588357
+        ]
+       },
+       {
+        "cell": 0,
+        "other": 2,
+        "corners": [
+         [
+          -17.389828,
+          21.539234,
+          -102.606186
+         ],
+         [
+          19.726316,
+          21.539234,
+          -108.949608
+         ],
+         [
+          -16.963371,
+          -23.200153,
+          -100.110931
+         ],
+         [
+          20.152773,
+          -23.200153,
+          -106.454361
+         ]
+        ],
+        "mid": [
+         -9.411797,
+         -5.674425,
+         -102.407567
+        ],
+        "across": [
+         -0.985708,
+         0,
+         0.168465
+        ],
+        "depth": [
+         -0.168465,
+         0,
+         -0.985708
+        ]
+       },
+       {
+        "cell": 0,
+        "other": 5,
+        "corners": [
+         [
+          1.041183,
+          16.013121,
+          -135.15387
+         ],
+         [
+          -24.121559,
+          16.013121,
+          -133.453918
+         ],
+         [
+          0.226833,
+          -17.869318,
+          -147.207947
+         ],
+         [
+          -24.935907,
+          -17.869318,
+          -145.508011
+         ]
+        ],
+        "mid": [
+         -14.449591,
+         -1.937119,
+         -140.522499
+        ],
+        "across": [
+         0.997726,
+         0,
+         -0.067404
+        ],
+        "depth": [
+         0.067404,
+         0,
+         0.997726
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 0,
+        "corners": [
+         [
+          -13.29767,
+          26.765862,
+          -148.481979
+         ],
+         [
+          19.132139,
+          26.765862,
+          -103.91243
+         ],
+         [
+          -12.135794,
+          -28.202597,
+          -149.327393
+         ],
+         [
+          20.294016,
+          -28.202597,
+          -104.757835
+         ]
+        ],
+        "mid": [
+         -2.072887,
+         -6.673406,
+         -134.541017
+        ],
+        "across": [
+         -0.588357,
+         0,
+         -0.808602
+        ],
+        "depth": [
+         0.808602,
+         0,
+         -0.588357
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 5,
+        "corners": [
+         [
+          14.418515,
+          29.671595,
+          -160.209793
+         ],
+         [
+          -2.011734,
+          29.671595,
+          -126.212822
+         ],
+         [
+          -1.841413,
+          -22.742439,
+          -168.067978
+         ],
+         [
+          -18.271662,
+          -22.742439,
+          -134.071014
+         ]
+        ],
+        "mid": [
+         -3.037943,
+         -1.568204,
+         -148.825871
+        ],
+        "across": [
+         0.435134,
+         0,
+         -0.900366
+        ],
+        "depth": [
+         0.900366,
+         0,
+         0.435134
+        ]
+       },
+       {
+        "cell": 2,
+        "other": 0,
+        "corners": [
+         [
+          19.726316,
+          21.539234,
+          -108.949608
+         ],
+         [
+          -17.389828,
+          21.539234,
+          -102.606186
+         ],
+         [
+          20.152773,
+          -23.200153,
+          -106.454361
+         ],
+         [
+          -16.963371,
+          -23.200153,
+          -100.110931
+         ]
+        ],
+        "mid": [
+         -9.411797,
+         -5.674425,
+         -102.407567
+        ],
+        "across": [
+         0.985708,
+         0,
+         -0.168465
+        ],
+        "depth": [
+         0.168465,
+         0,
+         0.985708
+        ]
+       },
+       {
+        "cell": 2,
+        "other": 4,
+        "corners": [
+         [
+          -17.252621,
+          18.145018,
+          -68.630829
+         ],
+         [
+          11.030455,
+          18.145018,
+          -83.771881
+         ],
+         [
+          -9.251393,
+          -21.905191,
+          -53.684753
+         ],
+         [
+          19.031683,
+          -21.905191,
+          -68.825806
+         ]
+        ],
+        "mid": [
+         -0.27592,
+         0.234481,
+         -69.119682
+        ],
+        "across": [
+         -0.881617,
+         0,
+         0.471965
+        ],
+        "depth": [
+         -0.471965,
+         0,
+         -0.881617
+        ]
+       },
+       {
+        "cell": 3,
+        "other": 8,
+        "corners": [
+         [
+          -16.006067,
+          20.611687,
+          42.000603
+         ],
+         [
+          14.311222,
+          20.611687,
+          43.84885
+         ],
+         [
+          -15.394115,
+          -21.738968,
+          31.962595
+         ],
+         [
+          14.923173,
+          -21.738968,
+          33.810841
+         ]
+        ],
+        "mid": [
+         2.048132,
+         -4.800333,
+         37.055672
+        ],
+        "across": [
+         -0.998147,
+         0,
+         -0.06085
+        ],
+        "depth": [
+         0.06085,
+         0,
+         -0.998147
+        ]
+       },
+       {
+        "cell": 3,
+        "other": 9,
+        "corners": [
+         [
+          14.479194,
+          21.319227,
+          3.1401
+         ],
+         [
+          -14.726392,
+          21.319227,
+          14.130765
+         ],
+         [
+          16.755671,
+          -22.199993,
+          9.189402
+         ],
+         [
+          -12.449914,
+          -22.199993,
+          20.180067
+         ]
+        ],
+        "mid": [
+         -1.442606,
+         -3.58878,
+         13.084409
+        ],
+        "across": [
+         0.935922,
+         0,
+         -0.352207
+        ],
+        "depth": [
+         0.352207,
+         0,
+         0.935922
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 12,
+        "corners": [
+         [
+          -15.252176,
+          14.631197,
+          -34.559635
+         ],
+         [
+          14.800885,
+          14.631197,
+          -36.35041
+         ],
+         [
+          -15.47156,
+          -13.993263,
+          -38.241367
+         ],
+         [
+          14.581502,
+          -13.993263,
+          -40.032143
+         ]
+        ],
+        "mid": [
+         6.109311,
+         1.911558,
+         -37.474338
+        ],
+        "across": [
+         -0.998229,
+         0,
+         0.059482
+        ],
+        "depth": [
+         -0.059482,
+         0,
+         -0.998229
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 2,
+        "corners": [
+         [
+          11.030455,
+          18.145018,
+          -83.771881
+         ],
+         [
+          -17.252621,
+          18.145018,
+          -68.630829
+         ],
+         [
+          19.031683,
+          -21.905191,
+          -68.825806
+         ],
+         [
+          -9.251393,
+          -21.905191,
+          -53.684753
+         ]
+        ],
+        "mid": [
+         -0.27592,
+         0.234481,
+         -69.119682
+        ],
+        "across": [
+         0.881617,
+         0,
+         -0.471965
+        ],
+        "depth": [
+         0.471965,
+         0,
+         0.881617
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 7,
+        "corners": [
+         [
+          -8.235044,
+          -4.552361,
+          -37.50465
+         ],
+         [
+          7.677821,
+          -4.552361,
+          -36.050747
+         ],
+         [
+          -7.675247,
+          -21.17038,
+          -43.631596
+         ],
+         [
+          8.237618,
+          -21.17038,
+          -42.177692
+         ]
+        ],
+        "mid": [
+         2.650413,
+         -3.919178,
+         -36.274684
+        ],
+        "across": [
+         -0.995852,
+         0,
+         -0.090988
+        ],
+        "depth": [
+         0.090988,
+         0,
+         -0.995852
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 1,
+        "corners": [
+         [
+          -2.011734,
+          29.671595,
+          -126.212822
+         ],
+         [
+          14.418515,
+          29.671595,
+          -160.209793
+         ],
+         [
+          -18.271662,
+          -22.742439,
+          -134.071014
+         ],
+         [
+          -1.841413,
+          -22.742439,
+          -168.067978
+         ]
+        ],
+        "mid": [
+         -3.037943,
+         -1.568204,
+         -148.825871
+        ],
+        "across": [
+         -0.435134,
+         0,
+         0.900366
+        ],
+        "depth": [
+         -0.900366,
+         0,
+         -0.435134
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 0,
+        "corners": [
+         [
+          -24.121559,
+          16.013121,
+          -133.453918
+         ],
+         [
+          1.041183,
+          16.013121,
+          -135.15387
+         ],
+         [
+          -24.935907,
+          -17.869318,
+          -145.508011
+         ],
+         [
+          0.226833,
+          -17.869318,
+          -147.207947
+         ]
+        ],
+        "mid": [
+         -14.449591,
+         -1.937119,
+         -140.522499
+        ],
+        "across": [
+         -0.997726,
+         0,
+         0.067404
+        ],
+        "depth": [
+         -0.067404,
+         0,
+         -0.997726
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 10,
+        "corners": [
+         [
+          -14.331431,
+          18.174128,
+          108.89566
+         ],
+         [
+          15.449591,
+          18.174128,
+          97.931107
+         ],
+         [
+          -16.872368,
+          -21.214705,
+          101.994179
+         ],
+         [
+          12.908653,
+          -21.214705,
+          91.029625
+         ]
+        ],
+        "mid": [
+         -1.583217,
+         1.967394,
+         100.977551
+        ],
+        "across": [
+         -0.938419,
+         0,
+         0.3455
+        ],
+        "depth": [
+         -0.3455,
+         0,
+         -0.938419
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 8,
+        "corners": [
+         [
+          15.179303,
+          18.247692,
+          65.985786
+         ],
+         [
+          -13.582578,
+          18.247692,
+          60.263424
+         ],
+         [
+          12.980473,
+          -17.406361,
+          77.037605
+         ],
+         [
+          -15.781408,
+          -17.406361,
+          71.315239
+         ]
+        ],
+        "mid": [
+         -2.535931,
+         -1.633049,
+         68.867666
+        ],
+        "across": [
+         0.980777,
+         0,
+         0.195132
+        ],
+        "depth": [
+         -0.195132,
+         0,
+         0.980777
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 12,
+        "corners": [
+         [
+          -7.437963,
+          4.024838,
+          5.544068
+         ],
+         [
+          -22.69046,
+          4.024838,
+          -38.432644
+         ],
+         [
+          20.09219,
+          -14.271079,
+          -4.004248
+         ],
+         [
+          4.839693,
+          -14.271079,
+          -47.980961
+         ]
+        ],
+        "mid": [
+         3.972505,
+         -6.783112,
+         -14.087148
+        ],
+        "across": [
+         0.327682,
+         0,
+         0.944788
+        ],
+        "depth": [
+         -0.944788,
+         0,
+         0.327682
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 9,
+        "corners": [
+         [
+          -14.148251,
+          6.203106,
+          -17.970461
+         ],
+         [
+          13.243782,
+          6.203106,
+          -6.342195
+         ],
+         [
+          -18.53861,
+          -18.531647,
+          -7.628343
+         ],
+         [
+          8.853422,
+          -18.531647,
+          3.999923
+         ]
+        ],
+        "mid": [
+         -2.595357,
+         -8.999861,
+         -5.563888
+        ],
+        "across": [
+         -0.920492,
+         0,
+         -0.390761
+        ],
+        "depth": [
+         0.390761,
+         0,
+         -0.920492
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 4,
+        "corners": [
+         [
+          7.677821,
+          -4.552361,
+          -36.050747
+         ],
+         [
+          -8.235044,
+          -4.552361,
+          -37.50465
+         ],
+         [
+          8.237618,
+          -21.17038,
+          -42.177692
+         ],
+         [
+          -7.675247,
+          -21.17038,
+          -43.631596
+         ]
+        ],
+        "mid": [
+         2.650413,
+         -3.919178,
+         -36.274684
+        ],
+        "across": [
+         0.995852,
+         0,
+         0.090988
+        ],
+        "depth": [
+         -0.090988,
+         0,
+         0.995852
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 3,
+        "corners": [
+         [
+          14.311222,
+          20.611687,
+          43.84885
+         ],
+         [
+          -16.006067,
+          20.611687,
+          42.000603
+         ],
+         [
+          14.923173,
+          -21.738968,
+          33.810841
+         ],
+         [
+          -15.394115,
+          -21.738968,
+          31.962595
+         ]
+        ],
+        "mid": [
+         2.048132,
+         -4.800333,
+         37.055672
+        ],
+        "across": [
+         0.998147,
+         0,
+         0.06085
+        ],
+        "depth": [
+         -0.06085,
+         0,
+         0.998147
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 6,
+        "corners": [
+         [
+          -13.582578,
+          18.247692,
+          60.263424
+         ],
+         [
+          15.179303,
+          18.247692,
+          65.985786
+         ],
+         [
+          -15.781408,
+          -17.406361,
+          71.315239
+         ],
+         [
+          12.980473,
+          -17.406361,
+          77.037605
+         ]
+        ],
+        "mid": [
+         -2.535931,
+         -1.633049,
+         68.867666
+        ],
+        "across": [
+         -0.980777,
+         0,
+         -0.195132
+        ],
+        "depth": [
+         0.195132,
+         0,
+         -0.980777
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 7,
+        "corners": [
+         [
+          13.243782,
+          6.203106,
+          -6.342195
+         ],
+         [
+          -14.148251,
+          6.203106,
+          -17.970461
+         ],
+         [
+          8.853422,
+          -18.531647,
+          3.999923
+         ],
+         [
+          -18.53861,
+          -18.531647,
+          -7.628343
+         ]
+        ],
+        "mid": [
+         -2.595357,
+         -8.999861,
+         -5.563888
+        ],
+        "across": [
+         0.920492,
+         0,
+         0.390761
+        ],
+        "depth": [
+         -0.390761,
+         0,
+         0.920492
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 3,
+        "corners": [
+         [
+          -14.726392,
+          21.319227,
+          14.130765
+         ],
+         [
+          14.479194,
+          21.319227,
+          3.1401
+         ],
+         [
+          -12.449914,
+          -22.199993,
+          20.180067
+         ],
+         [
+          16.755671,
+          -22.199993,
+          9.189402
+         ]
+        ],
+        "mid": [
+         -1.442606,
+         -3.58878,
+         13.084409
+        ],
+        "across": [
+         -0.935922,
+         0,
+         0.352207
+        ],
+        "depth": [
+         -0.352207,
+         0,
+         -0.935922
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 12,
+        "corners": [
+         [
+          11.364806,
+          21.229998,
+          7.674313
+         ],
+         [
+          -15.528672,
+          21.229998,
+          -13.049289
+         ],
+         [
+          15.402538,
+          -10.880042,
+          2.434459
+         ],
+         [
+          -11.490941,
+          -10.880042,
+          -18.289143
+         ]
+        ],
+        "mid": [
+         0.863541,
+         -3.169126,
+         -6.763542
+        ],
+        "across": [
+         0.792107,
+         0,
+         0.610382
+        ],
+        "depth": [
+         -0.610382,
+         0,
+         0.792107
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 6,
+        "corners": [
+         [
+          15.449591,
+          18.174128,
+          97.931107
+         ],
+         [
+          -14.331431,
+          18.174128,
+          108.89566
+         ],
+         [
+          12.908653,
+          -21.214705,
+          91.029625
+         ],
+         [
+          -16.872368,
+          -21.214705,
+          101.994179
+         ]
+        ],
+        "mid": [
+         -1.583217,
+         1.967394,
+         100.977551
+        ],
+        "across": [
+         0.938419,
+         0,
+         -0.3455
+        ],
+        "depth": [
+         0.3455,
+         0,
+         0.938419
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 11,
+        "corners": [
+         [
+          -15.020281,
+          20.413807,
+          120.263924
+         ],
+         [
+          14.869997,
+          20.413807,
+          122.318321
+         ],
+         [
+          -15.26961,
+          -19.314167,
+          123.89151
+         ],
+         [
+          14.620667,
+          -19.314167,
+          125.945915
+         ]
+        ],
+        "mid": [
+         2.536636,
+         0.254106,
+         123.320126
+        ],
+        "across": [
+         -0.997646,
+         0,
+         -0.06857
+        ],
+        "depth": [
+         0.06857,
+         0,
+         -0.997646
+        ]
+       },
+       {
+        "cell": 11,
+        "other": 10,
+        "corners": [
+         [
+          14.869997,
+          20.413807,
+          122.318321
+         ],
+         [
+          -15.020281,
+          20.413807,
+          120.263924
+         ],
+         [
+          14.620667,
+          -19.314167,
+          125.945915
+         ],
+         [
+          -15.26961,
+          -19.314167,
+          123.89151
+         ]
+        ],
+        "mid": [
+         2.536636,
+         0.254106,
+         123.320126
+        ],
+        "across": [
+         0.997646,
+         0,
+         0.06857
+        ],
+        "depth": [
+         -0.06857,
+         0,
+         0.997646
+        ]
+       },
+       {
+        "cell": 12,
+        "other": 4,
+        "corners": [
+         [
+          14.800885,
+          14.631197,
+          -36.35041
+         ],
+         [
+          -15.252176,
+          14.631197,
+          -34.559635
+         ],
+         [
+          14.581502,
+          -13.993263,
+          -40.032143
+         ],
+         [
+          -15.47156,
+          -13.993263,
+          -38.241367
+         ]
+        ],
+        "mid": [
+         6.109311,
+         1.911558,
+         -37.474338
+        ],
+        "across": [
+         0.998229,
+         0,
+         -0.059482
+        ],
+        "depth": [
+         0.059482,
+         0,
+         0.998229
+        ]
+       },
+       {
+        "cell": 12,
+        "other": 7,
+        "corners": [
+         [
+          -22.69046,
+          4.024838,
+          -38.432644
+         ],
+         [
+          -7.437963,
+          4.024838,
+          5.544068
+         ],
+         [
+          4.839693,
+          -14.271079,
+          -47.980961
+         ],
+         [
+          20.09219,
+          -14.271079,
+          -4.004248
+         ]
+        ],
+        "mid": [
+         3.972505,
+         -6.783112,
+         -14.087148
+        ],
+        "across": [
+         -0.327682,
+         0,
+         -0.944788
+        ],
+        "depth": [
+         0.944788,
+         0,
+         -0.327682
+        ]
+       },
+       {
+        "cell": 12,
+        "other": 9,
+        "corners": [
+         [
+          -15.528672,
+          21.229998,
+          -13.049289
+         ],
+         [
+          11.364806,
+          21.229998,
+          7.674313
+         ],
+         [
+          -11.490941,
+          -10.880042,
+          -18.289143
+         ],
+         [
+          15.402538,
+          -10.880042,
+          2.434459
+         ]
+        ],
+        "mid": [
+         0.863541,
+         -3.169126,
+         -6.763542
+        ],
+        "across": [
+         -0.792107,
+         0,
+         -0.610382
+        ],
+        "depth": [
+         0.610382,
+         0,
+         -0.792107
+        ]
+       }
+      ],
+      "sdf": {
+       "file": "freighters/freighter_krai_sdf.bin",
+       "lo": [
+        -21.4,
+        -24,
+        -162
+       ],
+       "hi": [
+        21.6,
+        26,
+        162
+       ],
+       "dims": [
+        43,
+        50,
+        324
+       ],
+       "scale": 10,
+       "format": "one byte a cell, x fastest then y then z: 128 + scale x metres inside the hull (tools/blender/hull_sdf.py), sampled at cell centres; the cut faces' inside test in place of stations"
+      }
+     }
+    ],
+    "pieces": []
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/freighter-concepts.html",
+    "version": 16,
+    "sha256": "df412a92a41f34f84a3a389795d1807392640b40b6e7a7e071a788bcb8993351"
+   }
+  },
+  {
+   "faction": "freighters",
+   "id": "freighter_ssarith",
+   "label": "Freighter ssarith hunt: Tally carrier",
+   "cls": "Ssarith Hunt",
+   "name": "Tally carrier",
+   "cargo": {
+    "model": "containers/container.glb",
+    "count": 35,
+    "items": [
+     {
+      "p": [
+       17.6,
+       0,
+       79.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       -17.6,
+       0,
+       79.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       0,
+       13.6,
+       79.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       12.8,
+       13.6,
+       79.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       -12.8,
+       13.6,
+       79.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       17.6,
+       0,
+       51.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -17.6,
+       0,
+       51.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.48235,
+       0.46275,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       0,
+       13.6,
+       51.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       12.8,
+       13.6,
+       51.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -12.8,
+       13.6,
+       51.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.48235,
+       0.46275,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       17.6,
+       0,
+       23.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -17.6,
+       0,
+       23.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.17255,
+       0.41569,
+       0.25882
+      ]
+     },
+     {
+      "p": [
+       0,
+       13.6,
+       23.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       12.8,
+       13.6,
+       23.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -12.8,
+       13.6,
+       23.8
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.17255,
+       0.41569,
+       0.25882
+      ]
+     },
+     {
+      "p": [
+       17.6,
+       0,
+       -4.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       -17.6,
+       0,
+       -4.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       0,
+       13.6,
+       -4.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       12.8,
+       13.6,
+       -4.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       -12.8,
+       13.6,
+       -4.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       17.6,
+       0,
+       -32.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -17.6,
+       0,
+       -32.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.48235,
+       0.46275,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       0,
+       13.6,
+       -32.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.48235,
+       0.46275,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       12.8,
+       13.6,
+       -32.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -12.8,
+       13.6,
+       -32.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.48235,
+       0.46275,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       17.6,
+       0,
+       -60.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -17.6,
+       0,
+       -60.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.17255,
+       0.41569,
+       0.25882
+      ]
+     },
+     {
+      "p": [
+       0,
+       13.6,
+       -60.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.17255,
+       0.41569,
+       0.25882
+      ]
+     },
+     {
+      "p": [
+       12.8,
+       13.6,
+       -60.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -12.8,
+       13.6,
+       -60.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.17255,
+       0.41569,
+       0.25882
+      ]
+     },
+     {
+      "p": [
+       17.6,
+       0,
+       -88.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       -17.6,
+       0,
+       -88.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       0,
+       13.6,
+       -88.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       12.8,
+       13.6,
+       -88.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     },
+     {
+      "p": [
+       -12.8,
+       13.6,
+       -88.2
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.36078,
+       0.35294,
+       0.22353
+      ]
+     }
+    ],
+    "note": "p in the glb frame (metres), q a quaternion xyzw, s a uniform scale on the container's own glb (6 x 6 x 12 m, long along z), rgb a linear tint"
+   },
+   "file": "freighters/freighter_ssarith.glb",
+   "length_m": 340,
+   "beam_m": 52,
+   "height_m": 32,
+   "triangles": 1680,
+   "draw_calls": 1,
+   "origin_offset_m": [
+    0,
+    0,
+    0
+   ],
+   "nodes": {
+    "pieces": [
+     "hull"
+    ],
+    "meshes": [
+     "hull_hull_3"
+    ],
+    "empties": [
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_nav_aft",
+     "light_beacon_dorsal",
+     "light_beacon_ventral",
+     "light_strobe_hull",
+     "light_strobe_hull_2",
+     "light_strobe_hull_3",
+     "light_strobe_hull_4",
+     "light_strobe_hull_5",
+     "light_strobe_hull_6",
+     "engine_0",
+     "reactor",
+     "light_baked_flood_0",
+     "light_baked_flood_1",
+     "light_baked_flood_2",
+     "light_baked_flood_3",
+     "light_baked_flood_4",
+     "light_baked_flood_5",
+     "light_baked_flood_6",
+     "light_baked_flood_7",
+     "light_baked_flood_8",
+     "light_baked_flood_9",
+     "light_baked_flood_10",
+     "light_baked_flood_11",
+     "light_baked_flood_12",
+     "light_baked_flood_13",
+     "light_baked_flood_14",
+     "light_baked_flood_15",
+     "light_baked_flood_16",
+     "light_baked_flood_17",
+     "light_baked_flood_18",
+     "light_baked_flood_19",
+     "light_baked_flood_20",
+     "light_baked_flood_21",
+     "light_baked_flood_22",
+     "light_baked_flood_23",
+     "light_baked_flood_24",
+     "light_baked_flood_25",
+     "light_baked_flood_26",
+     "light_baked_flood_27",
+     "light_baked_flood_28",
+     "light_baked_flood_29",
+     "light_baked_flood_30",
+     "light_baked_flood_31",
+     "light_baked_flood_32",
+     "window_0",
+     "window_1",
+     "window_2",
+     "window_3",
+     "window_4",
+     "window_5",
+     "window_6",
+     "window_7",
+     "window_8",
+     "window_9",
+     "window_10",
+     "window_11",
+     "window_12",
+     "window_13",
+     "window_14",
+     "window_15",
+     "window_16",
+     "window_17",
+     "window_18",
+     "window_19",
+     "window_20",
+     "window_21",
+     "window_22",
+     "window_23",
+     "window_24",
+     "window_25",
+     "window_26",
+     "window_27",
+     "window_28",
+     "window_29",
+     "window_30",
+     "window_31",
+     "window_32",
+     "window_33",
+     "window_34",
+     "window_35",
+     "window_36",
+     "window_37",
+     "window_38",
+     "window_39",
+     "window_40",
+     "window_41",
+     "window_42",
+     "window_43",
+     "window_44",
+     "window_45",
+     "window_46",
+     "window_47",
+     "window_48",
+     "window_49",
+     "window_50",
+     "window_51",
+     "window_52",
+     "window_53",
+     "window_54",
+     "window_55",
+     "window_56",
+     "window_57",
+     "window_58",
+     "window_59",
+     "window_60",
+     "window_61",
+     "window_62",
+     "window_63",
+     "window_64",
+     "window_65",
+     "window_66",
+     "window_67",
+     "window_68",
+     "window_69",
+     "window_70",
+     "window_71",
+     "window_72",
+     "window_73",
+     "window_74",
+     "window_75",
+     "window_76",
+     "window_77",
+     "window_78",
+     "window_79",
+     "window_80",
+     "window_81",
+     "window_82",
+     "window_83"
+    ]
+   },
+   "materials": [
+    "freighters/hull_3"
+   ],
+   "shader_params": {
+    "maps": {
+     "base": "freighters/freighter_ssarith_base.png",
+     "orm": "freighters/freighter_ssarith_orm.png",
+     "normal": "freighters/freighter_ssarith_normal.png",
+     "emit": "freighters/freighter_ssarith_emit.png",
+     "light": "freighters/freighter_ssarith_light.png",
+     "albedo": "freighters/freighter_ssarith_albedo.png"
+    },
+    "light_gamma": 1.6,
+    "light_ref": 2.4,
+    "bake_px": 2048
+   },
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres): the hull shader's v_obj",
+    "core": [
+     0,
+     0,
+     -27.52
+    ],
+    "bodies": [
+     {
+      "node": "hull",
+      "name": "hb",
+      "system": "life",
+      "seeds": [
+       [
+        1.445501,
+        -7.869289,
+        -59.213953
+       ],
+       [
+        -10.405349,
+        -5.673796,
+        -114.182053
+       ],
+       [
+        -5.204522,
+        1.299728,
+        -12.525605
+       ],
+       [
+        -1.401071,
+        5.093764,
+        80.937777
+       ],
+       [
+        -15.993598,
+        11.018357,
+        -152.897558
+       ],
+       [
+        7.327669,
+        10.8246,
+        -163.660674
+       ],
+       [
+        5.929968,
+        9.232609,
+        -127.702182
+       ],
+       [
+        7.150994,
+        -3.856646,
+        55.512766
+       ],
+       [
+        6.130376,
+        -8.512898,
+        -156.025933
+       ],
+       [
+        6.175191,
+        -6.324357,
+        -24.449725
+       ],
+       [
+        -15.719609,
+        11.774869,
+        -122.030865
+       ],
+       [
+        -7.998957,
+        4.287096,
+        -77.081835
+       ],
+       [
+        3.487935,
+        -2.926779,
+        145.761977
+       ]
+      ],
+      "centers": [
+       [
+        1.445501,
+        -7.869289,
+        -59.213953
+       ],
+       [
+        -10.405349,
+        -5.673796,
+        -114.182053
+       ],
+       [
+        -5.204522,
+        1.299728,
+        -12.525605
+       ],
+       [
+        -1.401071,
+        5.093764,
+        80.937777
+       ],
+       [
+        -15.993598,
+        11.018357,
+        -152.897558
+       ],
+       [
+        7.327669,
+        10.8246,
+        -163.660674
+       ],
+       [
+        5.929968,
+        9.232609,
+        -127.702182
+       ],
+       [
+        7.150994,
+        -3.856646,
+        55.512766
+       ],
+       [
+        6.130376,
+        -8.512898,
+        -156.025933
+       ],
+       [
+        6.175191,
+        -6.324357,
+        -24.449725
+       ],
+       [
+        -15.719609,
+        11.774869,
+        -122.030865
+       ],
+       [
+        -7.998957,
+        4.287096,
+        -77.081835
+       ],
+       [
+        3.487935,
+        -2.926779,
+        145.761977
+       ]
+      ],
+      "stations": [],
+      "ch": [],
+      "ox": 0,
+      "faces": [
+       {
+        "cell": 0,
+        "other": 11,
+        "corners": [
+         [
+          19.484896,
+          12.42654,
+          -70.506096
+         ],
+         [
+          -14.833648,
+          12.42654,
+          -52.366287
+         ],
+         [
+          11.965483,
+          -14.325132,
+          -84.73201
+         ],
+         [
+          -22.35306,
+          -14.325132,
+          -66.592194
+         ]
+        ],
+        "mid": [
+         -3.276728,
+         -1.791096,
+         -68.147894
+        ],
+        "across": [
+         0.884095,
+         0,
+         -0.467308
+        ],
+        "depth": [
+         0.467308,
+         0,
+         0.884095
+        ]
+       },
+       {
+        "cell": 0,
+        "other": 9,
+        "corners": [
+         [
+          -17.164255,
+          13.976031,
+          -39.914719
+         ],
+         [
+          15.597114,
+          13.976031,
+          -44.371918
+         ],
+         [
+          -16.995792,
+          -14.402478,
+          -38.676487
+         ],
+         [
+          15.765575,
+          -14.402478,
+          -43.13369
+         ]
+        ],
+        "mid": [
+         3.810346,
+         -7.096823,
+         -41.831839
+        ],
+        "across": [
+         -0.990872,
+         0,
+         0.134809
+        ],
+        "depth": [
+         -0.134809,
+         0,
+         -0.990872
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 6,
+        "corners": [
+         [
+          9.854788,
+          16.584726,
+          -90.008347
+         ],
+         [
+          -25.68001,
+          16.584726,
+          -132.942276
+         ],
+         [
+          30.318878,
+          -21.203238,
+          -106.945709
+         ],
+         [
+          -5.215921,
+          -21.203238,
+          -149.879639
+         ]
+        ],
+        "mid": [
+         -2.237691,
+         1.779407,
+         -120.942117
+        ],
+        "across": [
+         0.637603,
+         0,
+         0.770365
+        ],
+        "depth": [
+         -0.770365,
+         0,
+         0.637603
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 10,
+        "corners": [
+         [
+          13.659205,
+          13.803265,
+          -112.294777
+         ],
+         [
+          -16.114655,
+          13.803265,
+          -92.135551
+         ],
+         [
+          -10.956601,
+          -10.047593,
+          -148.650711
+         ],
+         [
+          -40.730461,
+          -10.047593,
+          -128.49147
+         ]
+        ],
+        "mid": [
+         -13.062479,
+         3.050537,
+         -118.106459
+        ],
+        "across": [
+         0.82805,
+         0,
+         -0.560655
+        ],
+        "depth": [
+         0.560655,
+         0,
+         0.82805
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 11,
+        "corners": [
+         [
+          -15.605123,
+          14.028961,
+          -99.169373
+         ],
+         [
+          16.872736,
+          14.028961,
+          -101.275948
+         ],
+         [
+          -15.10441,
+          -14.844535,
+          -91.449715
+         ],
+         [
+          17.373447,
+          -14.844535,
+          -93.55629
+         ]
+        ],
+        "mid": [
+         -9.202153,
+         -0.69335,
+         -95.631944
+        ],
+        "across": [
+         -0.997903,
+         0,
+         0.064726
+        ],
+        "depth": [
+         -0.064726,
+         0,
+         -0.997903
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 8,
+        "corners": [
+         [
+          8.141482,
+          -1.186273,
+          -131.44278
+         ],
+         [
+          -19.539085,
+          -1.186273,
+          -142.3815
+         ],
+         [
+          7.647609,
+          -22.482096,
+          -130.193024
+         ],
+         [
+          -20.032959,
+          -22.482096,
+          -141.131744
+         ]
+        ],
+        "mid": [
+         -2.137486,
+         -7.093347,
+         -135.103993
+        ],
+        "across": [
+         0.930015,
+         0,
+         0.36752
+        ],
+        "depth": [
+         -0.36752,
+         0,
+         0.930015
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 4,
+        "corners": [
+         [
+          -3.569234,
+          0.669475,
+          -135.79335
+         ],
+         [
+          -23.838797,
+          0.669475,
+          -132.867615
+         ],
+         [
+          -4.687214,
+          -17.669336,
+          -143.538742
+         ],
+         [
+          -24.956778,
+          -17.669336,
+          -140.613007
+         ]
+        ],
+        "mid": [
+         -13.199473,
+         2.67228,
+         -133.539806
+        ],
+        "across": [
+         0.989743,
+         0,
+         -0.142861
+        ],
+        "depth": [
+         0.142861,
+         0,
+         0.989743
+        ]
+       },
+       {
+        "cell": 2,
+        "other": 9,
+        "corners": [
+         [
+          20.291357,
+          14.107811,
+          -10.21254
+         ],
+         [
+          -12.758941,
+          14.107811,
+          -41.753895
+         ],
+         [
+          11.225694,
+          -14.280673,
+          -0.713173
+         ],
+         [
+          -21.824604,
+          -14.280673,
+          -32.254528
+         ]
+        ],
+        "mid": [
+         0.485335,
+         -2.512314,
+         -18.487665
+        ],
+        "across": [
+         0.723428,
+         0,
+         0.6904
+        ],
+        "depth": [
+         -0.6904,
+         0,
+         0.723428
+        ]
+       },
+       {
+        "cell": 2,
+        "other": 7,
+        "corners": [
+         [
+          -17.190306,
+          14.174611,
+          25.963142
+         ],
+         [
+          17.028875,
+          14.174611,
+          19.749065
+         ],
+         [
+          -17.574188,
+          -14.638627,
+          23.849207
+         ],
+         [
+          16.644993,
+          -14.638627,
+          17.63513
+         ]
+        ],
+        "mid": [
+         0.973236,
+         -1.278459,
+         21.49358
+        ],
+        "across": [
+         -0.983908,
+         0,
+         0.178674
+        ],
+        "depth": [
+         -0.178674,
+         0,
+         -0.983908
+        ]
+       },
+       {
+        "cell": 3,
+        "other": 7,
+        "corners": [
+         [
+          18.900364,
+          13.489587,
+          69.084633
+         ],
+         [
+          -16.438366,
+          13.489587,
+          57.197948
+         ],
+         [
+          15.960164,
+          -14.150249,
+          77.825752
+         ],
+         [
+          -19.378565,
+          -14.150249,
+          65.939072
+         ]
+        ],
+        "mid": [
+         2.874961,
+         0.618559,
+         68.225271
+        ],
+        "across": [
+         0.947818,
+         0,
+         0.318812
+        ],
+        "depth": [
+         -0.318812,
+         0,
+         0.947818
+        ]
+       },
+       {
+        "cell": 3,
+        "other": 12,
+        "corners": [
+         [
+          -15.474606,
+          13.517587,
+          116.134102
+         ],
+         [
+          15.470424,
+          13.517587,
+          113.80024
+         ],
+         [
+          -15.733354,
+          -14.368727,
+          112.703308
+         ],
+         [
+          15.211675,
+          -14.368727,
+          110.369453
+         ]
+        ],
+        "mid": [
+         1.043432,
+         1.083493,
+         113.349877
+        ],
+        "across": [
+         -0.997168,
+         0,
+         0.075206
+        ],
+        "depth": [
+         -0.075206,
+         0,
+         -0.997168
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 8,
+        "corners": [
+         [
+          5.515532,
+          9.836552,
+          -134.170227
+         ],
+         [
+          -0.765463,
+          9.836552,
+          -178.589645
+         ],
+         [
+          -18.251427,
+          -17.623695,
+          -130.80954
+         ],
+         [
+          -24.532421,
+          -17.623695,
+          -175.228943
+         ]
+        ],
+        "mid": [
+         -4.931611,
+         1.252729,
+         -154.461746
+        ],
+        "across": [
+         0.140009,
+         0,
+         0.99015
+        ],
+        "depth": [
+         -0.99015,
+         0,
+         0.140009
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 10,
+        "corners": [
+         [
+          -31.318962,
+          22.808094,
+          -137.606644
+         ],
+         [
+          -2.360362,
+          22.808094,
+          -137.863693
+         ],
+         [
+          -31.311445,
+          -11.747936,
+          -136.759781
+         ],
+         [
+          -2.352845,
+          -11.747936,
+          -137.01683
+         ]
+        ],
+        "mid": [
+         -15.856603,
+         11.396613,
+         -137.464212
+        ],
+        "across": [
+         -0.999961,
+         0,
+         0.008876
+        ],
+        "depth": [
+         -0.008876,
+         0,
+         -0.999961
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 6,
+        "corners": [
+         [
+          -13.747805,
+          22.257603,
+          -131.855835
+         ],
+         [
+          6.452815,
+          22.257603,
+          -149.433258
+         ],
+         [
+          -14.948833,
+          -11.961779,
+          -133.236115
+         ],
+         [
+          5.251786,
+          -11.961779,
+          -150.813522
+         ]
+        ],
+        "mid": [
+         -5.031815,
+         10.125483,
+         -140.29987
+        ],
+        "across": [
+         -0.75439,
+         0,
+         0.656427
+        ],
+        "depth": [
+         -0.656427,
+         0,
+         -0.75439
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 5,
+        "corners": [
+         [
+          3.980058,
+          22.949129,
+          -140.48317
+         ],
+         [
+          -11.859277,
+          22.949129,
+          -174.803467
+         ],
+         [
+          3.779172,
+          -6.380327,
+          -140.390472
+         ],
+         [
+          -12.060163,
+          -6.380327,
+          -174.710754
+         ]
+        ],
+        "mid": [
+         -4.332964,
+         10.921478,
+         -158.279116
+        ],
+        "across": [
+         0.419041,
+         0,
+         0.907967
+        ],
+        "depth": [
+         -0.907967,
+         0,
+         0.419041
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 1,
+        "corners": [
+         [
+          -23.838797,
+          0.669475,
+          -132.867615
+         ],
+         [
+          -3.569234,
+          0.669475,
+          -135.79335
+         ],
+         [
+          -24.956778,
+          -17.669336,
+          -140.613007
+         ],
+         [
+          -4.687214,
+          -17.669336,
+          -143.538742
+         ]
+        ],
+        "mid": [
+         -13.199473,
+         2.67228,
+         -133.539806
+        ],
+        "across": [
+         -0.989743,
+         0,
+         0.142861
+        ],
+        "depth": [
+         -0.142861,
+         0,
+         -0.989743
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 8,
+        "corners": [
+         [
+          31.791885,
+          7.888645,
+          -138.859879
+         ],
+         [
+          31.791885,
+          -6.216607,
+          -174.586075
+         ],
+         [
+          -13.384883,
+          10.308575,
+          -139.815308
+         ],
+         [
+          -13.384883,
+          -3.796677,
+          -175.541504
+         ]
+        ],
+        "mid": [
+         6.729023,
+         1.155851,
+         -159.843304
+        ],
+        "across": [
+         -0.987926,
+         0,
+         -0.154928
+        ],
+        "depth": [
+         0.154928,
+         0,
+         -0.987926
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 6,
+        "corners": [
+         [
+          -3.189145,
+          22.624493,
+          -145.505386
+         ],
+         [
+          32.780697,
+          22.624493,
+          -144.107254
+         ],
+         [
+          -3.149621,
+          -0.377324,
+          -146.522217
+         ],
+         [
+          32.820221,
+          -0.377324,
+          -145.124069
+         ]
+        ],
+        "mid": [
+         6.628818,
+         10.028604,
+         -145.681428
+        ],
+        "across": [
+         -0.999245,
+         0,
+         -0.038841
+        ],
+        "depth": [
+         0.038841,
+         0,
+         -0.999245
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 4,
+        "corners": [
+         [
+          -11.859277,
+          22.949129,
+          -174.803467
+         ],
+         [
+          3.980058,
+          22.949129,
+          -140.48317
+         ],
+         [
+          -12.060163,
+          -6.380327,
+          -174.710754
+         ],
+         [
+          3.779172,
+          -6.380327,
+          -140.390472
+         ]
+        ],
+        "mid": [
+         -4.332964,
+         10.921478,
+         -158.279116
+        ],
+        "across": [
+         -0.419041,
+         0,
+         -0.907967
+        ],
+        "depth": [
+         0.907967,
+         0,
+         -0.419041
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 1,
+        "corners": [
+         [
+          -25.68001,
+          16.584726,
+          -132.942276
+         ],
+         [
+          9.854788,
+          16.584726,
+          -90.008347
+         ],
+         [
+          -5.215921,
+          -21.203238,
+          -149.879639
+         ],
+         [
+          30.318878,
+          -21.203238,
+          -106.945709
+         ]
+        ],
+        "mid": [
+         -2.237691,
+         1.779407,
+         -120.942117
+        ],
+        "across": [
+         -0.637603,
+         0,
+         -0.770365
+        ],
+        "depth": [
+         0.770365,
+         0,
+         -0.637603
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 10,
+        "corners": [
+         [
+          -8.541495,
+          22.710175,
+          -144.259003
+         ],
+         [
+          1.638749,
+          22.710175,
+          -105.397133
+         ],
+         [
+          -12.167154,
+          -10.284272,
+          -143.309235
+         ],
+         [
+          -1.98691,
+          -10.284272,
+          -104.447357
+         ]
+        ],
+        "mid": [
+         -4.894821,
+         10.503739,
+         -124.866524
+        ],
+        "across": [
+         -0.253409,
+         0,
+         -0.967359
+        ],
+        "depth": [
+         0.967359,
+         0,
+         -0.253409
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 8,
+        "corners": [
+         [
+          26.709688,
+          12.148025,
+          -149.103302
+         ],
+         [
+          -13.791686,
+          12.148025,
+          -149.389877
+         ],
+         [
+          26.563118,
+          -20.916557,
+          -128.388596
+         ],
+         [
+          -13.938256,
+          -20.916557,
+          -128.675171
+         ]
+        ],
+        "mid": [
+         6.030172,
+         0.359855,
+         -141.864058
+        ],
+        "across": [
+         0.999975,
+         0,
+         0.007075
+        ],
+        "depth": [
+         -0.007075,
+         0,
+         0.999975
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 4,
+        "corners": [
+         [
+          6.452815,
+          22.257603,
+          -149.433258
+         ],
+         [
+          -13.747805,
+          22.257603,
+          -131.855835
+         ],
+         [
+          5.251786,
+          -11.961779,
+          -150.813522
+         ],
+         [
+          -14.948833,
+          -11.961779,
+          -133.236115
+         ]
+        ],
+        "mid": [
+         -5.031815,
+         10.125483,
+         -140.29987
+        ],
+        "across": [
+         0.75439,
+         0,
+         -0.656427
+        ],
+        "depth": [
+         0.656427,
+         0,
+         0.75439
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 5,
+        "corners": [
+         [
+          32.780697,
+          22.624493,
+          -144.107254
+         ],
+         [
+          -3.189145,
+          22.624493,
+          -145.505386
+         ],
+         [
+          32.820221,
+          -0.377324,
+          -145.124069
+         ],
+         [
+          -3.149621,
+          -0.377324,
+          -146.522217
+         ]
+        ],
+        "mid": [
+         6.628818,
+         10.028604,
+         -145.681428
+        ],
+        "across": [
+         0.999245,
+         0,
+         0.038841
+        ],
+        "depth": [
+         -0.038841,
+         0,
+         0.999245
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 3,
+        "corners": [
+         [
+          -16.438366,
+          13.489587,
+          57.197948
+         ],
+         [
+          18.900364,
+          13.489587,
+          69.084633
+         ],
+         [
+          -19.378565,
+          -14.150249,
+          65.939072
+         ],
+         [
+          15.960164,
+          -14.150249,
+          77.825752
+         ]
+        ],
+        "mid": [
+         2.874961,
+         0.618559,
+         68.225271
+        ],
+        "across": [
+         -0.947818,
+         0,
+         -0.318812
+        ],
+        "depth": [
+         0.318812,
+         0,
+         -0.947818
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 2,
+        "corners": [
+         [
+          17.028875,
+          14.174611,
+          19.749065
+         ],
+         [
+          -17.190306,
+          14.174611,
+          25.963142
+         ],
+         [
+          16.644993,
+          -14.638627,
+          17.63513
+         ],
+         [
+          -17.574188,
+          -14.638627,
+          23.849207
+         ]
+        ],
+        "mid": [
+         0.973236,
+         -1.278459,
+         21.49358
+        ],
+        "across": [
+         0.983908,
+         0,
+         -0.178674
+        ],
+        "depth": [
+         0.178674,
+         0,
+         0.983908
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 4,
+        "corners": [
+         [
+          -0.765463,
+          9.836552,
+          -178.589645
+         ],
+         [
+          5.515532,
+          9.836552,
+          -134.170227
+         ],
+         [
+          -24.532421,
+          -17.623695,
+          -175.228943
+         ],
+         [
+          -18.251427,
+          -17.623695,
+          -130.80954
+         ]
+        ],
+        "mid": [
+         -4.931611,
+         1.252729,
+         -154.461746
+        ],
+        "across": [
+         -0.140009,
+         0,
+         -0.99015
+        ],
+        "depth": [
+         0.99015,
+         0,
+         -0.140009
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 5,
+        "corners": [
+         [
+          31.791885,
+          -6.216607,
+          -174.586075
+         ],
+         [
+          31.791885,
+          7.888645,
+          -138.859879
+         ],
+         [
+          -13.384883,
+          -3.796677,
+          -175.541504
+         ],
+         [
+          -13.384883,
+          10.308575,
+          -139.815308
+         ]
+        ],
+        "mid": [
+         6.729023,
+         1.155851,
+         -159.843304
+        ],
+        "across": [
+         0.987926,
+         0,
+         0.154928
+        ],
+        "depth": [
+         -0.154928,
+         0,
+         0.987926
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 6,
+        "corners": [
+         [
+          -13.791686,
+          12.148025,
+          -149.389877
+         ],
+         [
+          26.709688,
+          12.148025,
+          -149.103302
+         ],
+         [
+          -13.938256,
+          -20.916557,
+          -128.675171
+         ],
+         [
+          26.563118,
+          -20.916557,
+          -128.388596
+         ]
+        ],
+        "mid": [
+         6.030172,
+         0.359855,
+         -141.864058
+        ],
+        "across": [
+         -0.999975,
+         0,
+         -0.007075
+        ],
+        "depth": [
+         0.007075,
+         0,
+         -0.999975
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 1,
+        "corners": [
+         [
+          -19.539085,
+          -1.186273,
+          -142.3815
+         ],
+         [
+          8.141482,
+          -1.186273,
+          -131.44278
+         ],
+         [
+          -20.032959,
+          -22.482096,
+          -141.131744
+         ],
+         [
+          7.647609,
+          -22.482096,
+          -130.193024
+         ]
+        ],
+        "mid": [
+         -2.137486,
+         -7.093347,
+         -135.103993
+        ],
+        "across": [
+         -0.930015,
+         0,
+         -0.36752
+        ],
+        "depth": [
+         0.36752,
+         0,
+         -0.930015
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 0,
+        "corners": [
+         [
+          15.597114,
+          13.976031,
+          -44.371918
+         ],
+         [
+          -17.164255,
+          13.976031,
+          -39.914719
+         ],
+         [
+          15.765575,
+          -14.402478,
+          -43.13369
+         ],
+         [
+          -16.995792,
+          -14.402478,
+          -38.676487
+         ]
+        ],
+        "mid": [
+         3.810346,
+         -7.096823,
+         -41.831839
+        ],
+        "across": [
+         0.990872,
+         0,
+         -0.134809
+        ],
+        "depth": [
+         0.134809,
+         0,
+         0.990872
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 2,
+        "corners": [
+         [
+          -12.758941,
+          14.107811,
+          -41.753895
+         ],
+         [
+          20.291357,
+          14.107811,
+          -10.21254
+         ],
+         [
+          -21.824604,
+          -14.280673,
+          -32.254528
+         ],
+         [
+          11.225694,
+          -14.280673,
+          -0.713173
+         ]
+        ],
+        "mid": [
+         0.485335,
+         -2.512314,
+         -18.487665
+        ],
+        "across": [
+         -0.723428,
+         0,
+         -0.6904
+        ],
+        "depth": [
+         0.6904,
+         0,
+         -0.723428
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 6,
+        "corners": [
+         [
+          1.638749,
+          22.710175,
+          -105.397133
+         ],
+         [
+          -8.541495,
+          22.710175,
+          -144.259003
+         ],
+         [
+          -1.98691,
+          -10.284272,
+          -104.447357
+         ],
+         [
+          -12.167154,
+          -10.284272,
+          -143.309235
+         ]
+        ],
+        "mid": [
+         -4.894821,
+         10.503739,
+         -124.866524
+        ],
+        "across": [
+         0.253409,
+         0,
+         0.967359
+        ],
+        "depth": [
+         -0.967359,
+         0,
+         0.253409
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 1,
+        "corners": [
+         [
+          -16.114655,
+          13.803265,
+          -92.135551
+         ],
+         [
+          13.659205,
+          13.803265,
+          -112.294777
+         ],
+         [
+          -40.730461,
+          -10.047593,
+          -128.49147
+         ],
+         [
+          -10.956601,
+          -10.047593,
+          -148.650711
+         ]
+        ],
+        "mid": [
+         -13.062479,
+         3.050537,
+         -118.106459
+        ],
+        "across": [
+         -0.82805,
+         0,
+         0.560655
+        ],
+        "depth": [
+         -0.560655,
+         0,
+         -0.82805
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 4,
+        "corners": [
+         [
+          -2.360362,
+          22.808094,
+          -137.863693
+         ],
+         [
+          -31.318962,
+          22.808094,
+          -137.606644
+         ],
+         [
+          -2.352845,
+          -11.747936,
+          -137.01683
+         ],
+         [
+          -31.311445,
+          -11.747936,
+          -136.759781
+         ]
+        ],
+        "mid": [
+         -15.856603,
+         11.396613,
+         -137.464212
+        ],
+        "across": [
+         0.999961,
+         0,
+         -0.008876
+        ],
+        "depth": [
+         0.008876,
+         0,
+         0.999961
+        ]
+       },
+       {
+        "cell": 11,
+        "other": 0,
+        "corners": [
+         [
+          -14.833648,
+          12.42654,
+          -52.366287
+         ],
+         [
+          19.484896,
+          12.42654,
+          -70.506096
+         ],
+         [
+          -22.35306,
+          -14.325132,
+          -66.592194
+         ],
+         [
+          11.965483,
+          -14.325132,
+          -84.73201
+         ]
+        ],
+        "mid": [
+         -3.276728,
+         -1.791096,
+         -68.147894
+        ],
+        "across": [
+         -0.884095,
+         0,
+         0.467308
+        ],
+        "depth": [
+         -0.467308,
+         0,
+         -0.884095
+        ]
+       },
+       {
+        "cell": 11,
+        "other": 1,
+        "corners": [
+         [
+          16.872736,
+          14.028961,
+          -101.275948
+         ],
+         [
+          -15.605123,
+          14.028961,
+          -99.169373
+         ],
+         [
+          17.373447,
+          -14.844535,
+          -93.55629
+         ],
+         [
+          -15.10441,
+          -14.844535,
+          -91.449715
+         ]
+        ],
+        "mid": [
+         -9.202153,
+         -0.69335,
+         -95.631944
+        ],
+        "across": [
+         0.997903,
+         0,
+         -0.064726
+        ],
+        "depth": [
+         0.064726,
+         0,
+         0.997903
+        ]
+       },
+       {
+        "cell": 12,
+        "other": 3,
+        "corners": [
+         [
+          15.470424,
+          13.517587,
+          113.80024
+         ],
+         [
+          -15.474606,
+          13.517587,
+          116.134102
+         ],
+         [
+          15.211675,
+          -14.368727,
+          110.369453
+         ],
+         [
+          -15.733354,
+          -14.368727,
+          112.703308
+         ]
+        ],
+        "mid": [
+         1.043432,
+         1.083493,
+         113.349877
+        ],
+        "across": [
+         0.997168,
+         0,
+         -0.075206
+        ],
+        "depth": [
+         0.075206,
+         0,
+         0.997168
+        ]
+       }
+      ],
+      "sdf": {
+       "file": "freighters/freighter_ssarith_sdf.bin",
+       "lo": [
+        -28,
+        -18,
+        -172
+       ],
+       "hi": [
+        28,
+        18,
+        172
+       ],
+       "dims": [
+        56,
+        36,
+        344
+       ],
+       "scale": 10,
+       "format": "one byte a cell, x fastest then y then z: 128 + scale x metres inside the hull (tools/blender/hull_sdf.py), sampled at cell centres; the cut faces' inside test in place of stations"
+      }
+     }
+    ],
+    "pieces": []
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {
+     "panes": 1
+    }
+   },
+   "source": {
+    "page": "docs/mockups/freighter-concepts.html",
+    "version": 16,
+    "sha256": "df412a92a41f34f84a3a389795d1807392640b40b6e7a7e071a788bcb8993351"
+   }
+  },
+  {
+   "faction": "freighters",
+   "id": "freighter_kelvane",
+   "label": "Freighter kelvane institute: Twin ledger",
+   "cls": "Kelvane Institute",
+   "name": "Twin ledger",
+   "cargo": {
+    "model": "containers/container.glb",
+    "count": 64,
+    "items": [
+     {
+      "p": [
+       22.6,
+       -6.3,
+       82
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       6.3,
+       82
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       -6.3,
+       82
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       6.3,
+       82
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       -6.3,
+       82
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       6.3,
+       82
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       -6.3,
+       82
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       6.3,
+       82
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       -6.3,
+       56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       6.3,
+       56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       -6.3,
+       56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       6.3,
+       56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       -6.3,
+       56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       6.3,
+       56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       -6.3,
+       56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       6.3,
+       56
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       -6.3,
+       30
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       6.3,
+       30
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       -6.3,
+       30
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       6.3,
+       30
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       -6.3,
+       30
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       6.3,
+       30
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       -6.3,
+       30
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       6.3,
+       30
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       -6.3,
+       4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       6.3,
+       4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       -6.3,
+       4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       6.3,
+       4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       -6.3,
+       4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       6.3,
+       4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       -6.3,
+       4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       1,
+       1,
+       1
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       6.3,
+       4
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       -6.3,
+       -22
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       6.3,
+       -22
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       -6.3,
+       -22
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       6.3,
+       -22
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       -6.3,
+       -22
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       6.3,
+       -22
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       -6.3,
+       -22
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       6.3,
+       -22
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       -6.3,
+       -48
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       6.3,
+       -48
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       -6.3,
+       -48
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       6.3,
+       -48
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       -6.3,
+       -48
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       6.3,
+       -48
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       -6.3,
+       -48
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       6.3,
+       -48
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.43529,
+       0.39216,
+       0.31373
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       -6.3,
+       -74
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       6.3,
+       -74
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       -6.3,
+       -74
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       6.3,
+       -74
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       -6.3,
+       -74
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       6.3,
+       -74
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       -6.3,
+       -74
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       6.3,
+       -74
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.84706,
+       0.81176,
+       0.72157
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       -6.3,
+       -100
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       22.6,
+       6.3,
+       -100
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       -6.3,
+       -100
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       9.6,
+       6.3,
+       -100
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       -6.3,
+       -100
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -9.6,
+       6.3,
+       -100
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       -6.3,
+       -100
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     },
+     {
+      "p": [
+       -22.6,
+       6.3,
+       -100
+      ],
+      "q": [
+       0,
+       0,
+       0,
+       1
+      ],
+      "s": 2,
+      "rgb": [
+       0.7098,
+       0.60392,
+       0.36863
+      ]
+     }
+    ],
+    "note": "p in the glb frame (metres), q a quaternion xyzw, s a uniform scale on the container's own glb (6 x 6 x 12 m, long along z), rgb a linear tint"
+   },
+   "file": "freighters/freighter_kelvane.glb",
+   "length_m": 274,
+   "beam_m": 80,
+   "height_m": 16,
+   "triangles": 930,
+   "draw_calls": 1,
+   "origin_offset_m": [
+    0,
+    0,
+    23
+   ],
+   "nodes": {
+    "pieces": [
+     "hull"
+    ],
+    "meshes": [
+     "hull_hull_4"
+    ],
+    "empties": [
+     "light_nav_port",
+     "light_nav_starboard",
+     "light_nav_aft",
+     "light_strobe_hull",
+     "light_strobe_hull_2",
+     "light_strobe_hull_3",
+     "light_strobe_hull_4",
+     "light_strobe_hull_5",
+     "engine_0",
+     "reactor",
+     "light_baked_flood_0",
+     "light_baked_flood_1",
+     "light_baked_flood_2",
+     "light_baked_flood_3",
+     "light_baked_flood_4",
+     "light_baked_flood_5",
+     "light_baked_flood_6",
+     "light_baked_flood_7",
+     "light_baked_flood_8",
+     "light_baked_flood_9",
+     "light_baked_flood_10",
+     "light_baked_flood_11",
+     "light_baked_flood_12",
+     "light_baked_flood_13",
+     "light_baked_flood_14",
+     "light_baked_flood_15",
+     "light_baked_flood_16"
+    ]
+   },
+   "materials": [
+    "freighters/hull_4"
+   ],
+   "shader_params": {
+    "maps": {
+     "base": "freighters/freighter_kelvane_base.png",
+     "orm": "freighters/freighter_kelvane_orm.png",
+     "normal": "freighters/freighter_kelvane_normal.png",
+     "emit": "freighters/freighter_kelvane_emit.png",
+     "light": "freighters/freighter_kelvane_light.png",
+     "albedo": "freighters/freighter_kelvane_albedo.png"
+    },
+    "light_gamma": 1.6,
+    "light_ref": 2.4,
+    "bake_px": 2048
+   },
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres): the hull shader's v_obj",
+    "core": [
+     0,
+     0,
+     -45.24
+    ],
+    "bodies": [
+     {
+      "node": "hull",
+      "name": "hb",
+      "system": "life",
+      "seeds": [
+       [
+        -1.482182,
+        -0.038523,
+        -152.934672
+       ],
+       [
+        -37.533577,
+        -4.566884,
+        -32.519993
+       ],
+       [
+        -31.460402,
+        -4.856694,
+        110.413501
+       ],
+       [
+        37.456516,
+        0.569229,
+        -34.487163
+       ],
+       [
+        34.864521,
+        -7.230211,
+        60.461002
+       ],
+       [
+        14.021546,
+        -1.559634,
+        -146.318234
+       ],
+       [
+        -34.4469,
+        -5.683888,
+        -150.896792
+       ],
+       [
+        36.79494,
+        -1.375371,
+        -63.688862
+       ],
+       [
+        37.690753,
+        -5.289167,
+        -21.09259
+       ],
+       [
+        -19.147797,
+        -5.589199,
+        -123.75812
+       ],
+       [
+        29.167168,
+        6.858951,
+        -132.882361
+       ],
+       [
+        -14.542554,
+        1.134842,
+        -147.529927
+       ],
+       [
+        36.720704,
+        2.066144,
+        76.733018
+       ]
+      ],
+      "centers": [
+       [
+        -1.482182,
+        -0.038523,
+        -152.934672
+       ],
+       [
+        -37.533577,
+        -4.566884,
+        -32.519993
+       ],
+       [
+        -31.460402,
+        -4.856694,
+        110.413501
+       ],
+       [
+        37.456516,
+        0.569229,
+        -34.487163
+       ],
+       [
+        34.864521,
+        -7.230211,
+        60.461002
+       ],
+       [
+        14.021546,
+        -1.559634,
+        -146.318234
+       ],
+       [
+        -34.4469,
+        -5.683888,
+        -150.896792
+       ],
+       [
+        36.79494,
+        -1.375371,
+        -63.688862
+       ],
+       [
+        37.690753,
+        -5.289167,
+        -21.09259
+       ],
+       [
+        -19.147797,
+        -5.589199,
+        -123.75812
+       ],
+       [
+        29.167168,
+        6.858951,
+        -132.882361
+       ],
+       [
+        -14.542554,
+        1.134842,
+        -147.529927
+       ],
+       [
+        36.720704,
+        2.066144,
+        76.733018
+       ]
+      ],
+      "stations": [],
+      "ch": [],
+      "ox": 0,
+      "faces": [
+       {
+        "cell": 0,
+        "other": 11,
+        "corners": [
+         [
+          -13.346524,
+          14.951022,
+          -166.248947
+         ],
+         [
+          3.236117,
+          14.951022,
+          -126.177589
+         ],
+         [
+          -15.641714,
+          -14.971053,
+          -165.299133
+         ],
+         [
+          0.940927,
+          -14.971053,
+          -125.227776
+         ]
+        ],
+        "mid": [
+         -8.012368,
+         0.548159,
+         -150.2323
+        ],
+        "across": [
+         -0.382379,
+         0,
+         -0.924005
+        ],
+        "depth": [
+         0.924005,
+         0,
+         -0.382379
+        ]
+       },
+       {
+        "cell": 0,
+        "other": 5,
+        "corners": [
+         [
+          -2.76183,
+          14.859499,
+          -124.8638
+         ],
+         [
+          14.762076,
+          14.859499,
+          -165.926056
+         ],
+         [
+          -5.216448,
+          -14.715421,
+          -125.911346
+         ],
+         [
+          12.307458,
+          -14.715421,
+          -166.973602
+         ]
+        ],
+        "mid": [
+         6.269682,
+         -0.799079,
+         -149.626453
+        ],
+        "across": [
+         -0.392515,
+         0,
+         0.919746
+        ],
+        "depth": [
+         -0.919746,
+         0,
+         -0.392515
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 9,
+        "corners": [
+         [
+          -26.819048,
+          14.576866,
+          -78.052658
+         ],
+         [
+          -45.679581,
+          14.576866,
+          -81.853325
+         ],
+         [
+          -26.880476,
+          -13.733038,
+          -77.747826
+         ],
+         [
+          -45.741009,
+          -13.733038,
+          -81.548492
+         ]
+        ],
+        "mid": [
+         -28.340687,
+         -5.078042,
+         -78.139057
+        ],
+        "across": [
+         0.980294,
+         0,
+         0.197543
+        ],
+        "depth": [
+         -0.197543,
+         0,
+         0.980294
+        ]
+       },
+       {
+        "cell": 1,
+        "other": 2,
+        "corners": [
+         [
+          -45.827663,
+          12.499113,
+          39.463085
+         ],
+         [
+          -27.029392,
+          12.499113,
+          38.664356
+         ],
+         [
+          -45.829967,
+          -14.304191,
+          39.408836
+         ],
+         [
+          -27.031696,
+          -14.304191,
+          38.610107
+         ]
+        ],
+        "mid": [
+         -34.496989,
+         -4.711789,
+         38.946754
+        ],
+        "across": [
+         -0.999099,
+         0,
+         0.042451
+        ],
+        "depth": [
+         -0.042451,
+         0,
+         -0.999099
+        ]
+       },
+       {
+        "cell": 2,
+        "other": 1,
+        "corners": [
+         [
+          -27.029392,
+          12.499113,
+          38.664356
+         ],
+         [
+          -45.827663,
+          12.499113,
+          39.463085
+         ],
+         [
+          -27.031696,
+          -14.304191,
+          38.610107
+         ],
+         [
+          -45.829967,
+          -14.304191,
+          39.408836
+         ]
+        ],
+        "mid": [
+         -34.496989,
+         -4.711789,
+         38.946754
+        ],
+        "across": [
+         0.999099,
+         0,
+         -0.042451
+        ],
+        "depth": [
+         0.042451,
+         0,
+         0.999099
+        ]
+       },
+       {
+        "cell": 3,
+        "other": 8,
+        "corners": [
+         [
+          26.838905,
+          13.979398,
+          -20.455791
+         ],
+         [
+          46.535187,
+          13.979398,
+          -20.800228
+         ],
+         [
+          26.632912,
+          -12.961519,
+          -32.235359
+         ],
+         [
+          46.329193,
+          -12.961519,
+          -32.579796
+         ]
+        ],
+        "mid": [
+         37.573634,
+         -2.359969,
+         -27.789877
+        ],
+        "across": [
+         -0.999847,
+         0,
+         0.017485
+        ],
+        "depth": [
+         -0.017485,
+         0,
+         -0.999847
+        ]
+       },
+       {
+        "cell": 3,
+        "other": 7,
+        "corners": [
+         [
+          46.23254,
+          13.276211,
+          -50.205261
+         ],
+         [
+          26.664564,
+          13.276211,
+          -49.76194
+         ],
+         [
+          46.272373,
+          -13.140514,
+          -48.447021
+         ],
+         [
+          26.704397,
+          -13.140514,
+          -48.0037
+         ]
+        ],
+        "mid": [
+         37.125728,
+         -0.403071,
+         -49.088012
+        ],
+        "across": [
+         0.999743,
+         0,
+         -0.02265
+        ],
+        "depth": [
+         0.02265,
+         0,
+         0.999743
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 12,
+        "corners": [
+         [
+          25.844683,
+          13.343595,
+          60.633331
+         ],
+         [
+          45.367146,
+          13.343595,
+          58.406364
+         ],
+         [
+          27.570839,
+          -13.487843,
+          75.765472
+         ],
+         [
+          47.093304,
+          -13.487843,
+          73.538506
+         ]
+        ],
+        "mid": [
+         35.792613,
+         -2.582034,
+         68.59701
+        ],
+        "across": [
+         -0.993557,
+         0,
+         0.113337
+        ],
+        "depth": [
+         -0.113337,
+         0,
+         -0.993557
+        ]
+       },
+       {
+        "cell": 4,
+        "other": 8,
+        "corners": [
+         [
+          45.879292,
+          12.867784,
+          20.4722
+         ],
+         [
+          26.716021,
+          12.867784,
+          19.808098
+         ],
+         [
+          45.901306,
+          -13.85543,
+          19.836927
+         ],
+         [
+          26.738035,
+          -13.85543,
+          19.172827
+         ]
+        ],
+        "mid": [
+         36.277637,
+         -6.259689,
+         19.684206
+        ],
+        "across": [
+         0.9994,
+         0,
+         0.034634
+        ],
+        "depth": [
+         -0.034634,
+         0,
+         0.9994
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 9,
+        "corners": [
+         [
+          -5.903207,
+          14.809305,
+          -136.665375
+         ],
+         [
+          9.578804,
+          14.809305,
+          -113.902725
+         ],
+         [
+          -3.464423,
+          -14.55223,
+          -138.324127
+         ],
+         [
+          12.017589,
+          -14.55223,
+          -115.561462
+         ]
+        ],
+        "mid": [
+         -2.563126,
+         -3.574417,
+         -135.038177
+        ],
+        "across": [
+         -0.562395,
+         0,
+         -0.826869
+        ],
+        "depth": [
+         0.826869,
+         0,
+         -0.562395
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 10,
+        "corners": [
+         [
+          -2.529025,
+          14.75251,
+          -119.990501
+         ],
+         [
+          35.708771,
+          14.75251,
+          -163.094147
+         ],
+         [
+          6.622365,
+          -14.668125,
+          -111.872185
+         ],
+         [
+          44.860161,
+          -14.668125,
+          -154.975845
+         ]
+        ],
+        "mid": [
+         21.594357,
+         2.649658,
+         -139.600298
+        ],
+        "across": [
+         -0.663621,
+         0,
+         0.748069
+        ],
+        "depth": [
+         -0.748069,
+         0,
+         -0.663621
+        ]
+       },
+       {
+        "cell": 5,
+        "other": 0,
+        "corners": [
+         [
+          14.762076,
+          14.859499,
+          -165.926056
+         ],
+         [
+          -2.76183,
+          14.859499,
+          -124.8638
+         ],
+         [
+          12.307458,
+          -14.715421,
+          -166.973602
+         ],
+         [
+          -5.216448,
+          -14.715421,
+          -125.911346
+         ]
+        ],
+        "mid": [
+         6.269682,
+         -0.799079,
+         -149.626453
+        ],
+        "across": [
+         0.392515,
+         0,
+         -0.919746
+        ],
+        "depth": [
+         0.919746,
+         0,
+         0.392515
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 11,
+        "corners": [
+         [
+          -33.584026,
+          14.638238,
+          -129.731445
+         ],
+         [
+          -27.16527,
+          14.638238,
+          -167.678055
+         ],
+         [
+          -23.938965,
+          -14.321932,
+          -128.09996
+         ],
+         [
+          -17.52021,
+          -14.321932,
+          -166.046585
+         ]
+        ],
+        "mid": [
+         -24.494727,
+         -2.274523,
+         -149.213359
+        ],
+        "across": [
+         -0.166783,
+         0,
+         0.985994
+        ],
+        "depth": [
+         -0.985994,
+         0,
+         -0.166783
+        ]
+       },
+       {
+        "cell": 6,
+        "other": 9,
+        "corners": [
+         [
+          -44.786835,
+          13.759602,
+          -127.253769
+         ],
+         [
+          -20.024004,
+          13.759602,
+          -141.213516
+         ],
+         [
+          -44.743938,
+          -14.981441,
+          -127.177673
+         ],
+         [
+          -19.981106,
+          -14.981441,
+          -141.137421
+         ]
+        ],
+        "mid": [
+         -26.797349,
+         -5.636544,
+         -137.327456
+        ],
+        "across": [
+         -0.871114,
+         0,
+         0.49108
+        ],
+        "depth": [
+         -0.49108,
+         0,
+         -0.871114
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 10,
+        "corners": [
+         [
+          46.652641,
+          14.23514,
+          -98.424988
+         ],
+         [
+          27.095245,
+          14.23514,
+          -96.269012
+         ],
+         [
+          46.302853,
+          -12.751888,
+          -101.598
+         ],
+         [
+          26.745457,
+          -12.751888,
+          -99.442024
+         ]
+        ],
+        "mid": [
+         32.981054,
+         2.74179,
+         -98.285611
+        ],
+        "across": [
+         0.993979,
+         0,
+         -0.109574
+        ],
+        "depth": [
+         0.109574,
+         0,
+         0.993979
+        ]
+       },
+       {
+        "cell": 7,
+        "other": 3,
+        "corners": [
+         [
+          26.664564,
+          13.276211,
+          -49.76194
+         ],
+         [
+          46.23254,
+          13.276211,
+          -50.205261
+         ],
+         [
+          26.704397,
+          -13.140514,
+          -48.0037
+         ],
+         [
+          46.272373,
+          -13.140514,
+          -48.447021
+         ]
+        ],
+        "mid": [
+         37.125728,
+         -0.403071,
+         -49.088012
+        ],
+        "across": [
+         -0.999743,
+         0,
+         0.02265
+        ],
+        "depth": [
+         -0.02265,
+         0,
+         -0.999743
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 4,
+        "corners": [
+         [
+          26.716021,
+          12.867784,
+          19.808098
+         ],
+         [
+          45.879292,
+          12.867784,
+          20.4722
+         ],
+         [
+          26.738035,
+          -13.85543,
+          19.172827
+         ],
+         [
+          45.901306,
+          -13.85543,
+          19.836927
+         ]
+        ],
+        "mid": [
+         36.277637,
+         -6.259689,
+         19.684206
+        ],
+        "across": [
+         -0.9994,
+         0,
+         -0.034634
+        ],
+        "depth": [
+         0.034634,
+         0,
+         -0.9994
+        ]
+       },
+       {
+        "cell": 8,
+        "other": 3,
+        "corners": [
+         [
+          46.535187,
+          13.979398,
+          -20.800228
+         ],
+         [
+          26.838905,
+          13.979398,
+          -20.455791
+         ],
+         [
+          46.329193,
+          -12.961519,
+          -32.579796
+         ],
+         [
+          26.632912,
+          -12.961519,
+          -32.235359
+         ]
+        ],
+        "mid": [
+         37.573634,
+         -2.359969,
+         -27.789877
+        ],
+        "across": [
+         0.999847,
+         0,
+         -0.017485
+        ],
+        "depth": [
+         0.017485,
+         0,
+         0.999847
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 5,
+        "corners": [
+         [
+          9.578804,
+          14.809305,
+          -113.902725
+         ],
+         [
+          -5.903207,
+          14.809305,
+          -136.665375
+         ],
+         [
+          12.017589,
+          -14.55223,
+          -115.561462
+         ],
+         [
+          -3.464423,
+          -14.55223,
+          -138.324127
+         ]
+        ],
+        "mid": [
+         -2.563126,
+         -3.574417,
+         -135.038177
+        ],
+        "across": [
+         0.562395,
+         0,
+         0.826869
+        ],
+        "depth": [
+         -0.826869,
+         0,
+         0.562395
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 11,
+        "corners": [
+         [
+          6.094685,
+          14.859204,
+          -126.366936
+         ],
+         [
+          -36.798756,
+          14.859204,
+          -134.676559
+         ],
+         [
+          7.655969,
+          -14.702127,
+          -134.426132
+         ],
+         [
+          -35.237473,
+          -14.702127,
+          -142.735748
+         ]
+        ],
+        "mid": [
+         -16.845176,
+         -2.227179,
+         -135.644023
+        ],
+        "across": [
+         0.981747,
+         0,
+         0.190191
+        ],
+        "depth": [
+         -0.190191,
+         0,
+         0.981747
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 6,
+        "corners": [
+         [
+          -20.024004,
+          13.759602,
+          -141.213516
+         ],
+         [
+          -44.786835,
+          13.759602,
+          -127.253769
+         ],
+         [
+          -19.981106,
+          -14.981441,
+          -141.137421
+         ],
+         [
+          -44.743938,
+          -14.981441,
+          -127.177673
+         ]
+        ],
+        "mid": [
+         -26.797349,
+         -5.636544,
+         -137.327456
+        ],
+        "across": [
+         0.871114,
+         0,
+         -0.49108
+        ],
+        "depth": [
+         0.49108,
+         0,
+         0.871114
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 1,
+        "corners": [
+         [
+          -45.679581,
+          14.576866,
+          -81.853325
+         ],
+         [
+          -26.819048,
+          14.576866,
+          -78.052658
+         ],
+         [
+          -45.741009,
+          -13.733038,
+          -81.548492
+         ],
+         [
+          -26.880476,
+          -13.733038,
+          -77.747826
+         ]
+        ],
+        "mid": [
+         -28.340687,
+         -5.078042,
+         -78.139057
+        ],
+        "across": [
+         -0.980294,
+         0,
+         -0.197543
+        ],
+        "depth": [
+         0.197543,
+         0,
+         -0.980294
+        ]
+       },
+       {
+        "cell": 9,
+        "other": 10,
+        "corners": [
+         [
+          4.578896,
+          13.788262,
+          -112.656281
+         ],
+         [
+          1.727928,
+          13.788262,
+          -127.752815
+         ],
+         [
+          9.509946,
+          -6.033173,
+          -113.587509
+         ],
+         [
+          6.658978,
+          -6.033173,
+          -128.684036
+         ]
+        ],
+        "mid": [
+         5.009686,
+         0.634876,
+         -128.32024
+        ],
+        "across": [
+         0.185569,
+         0,
+         0.982631
+        ],
+        "depth": [
+         -0.982631,
+         0,
+         0.185569
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 5,
+        "corners": [
+         [
+          35.708771,
+          14.75251,
+          -163.094147
+         ],
+         [
+          -2.529025,
+          14.75251,
+          -119.990501
+         ],
+         [
+          44.860161,
+          -14.668125,
+          -154.975845
+         ],
+         [
+          6.622365,
+          -14.668125,
+          -111.872185
+         ]
+        ],
+        "mid": [
+         21.594357,
+         2.649658,
+         -139.600298
+        ],
+        "across": [
+         0.663621,
+         0,
+         -0.748069
+        ],
+        "depth": [
+         0.748069,
+         0,
+         0.663621
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 7,
+        "corners": [
+         [
+          27.095245,
+          14.23514,
+          -96.269012
+         ],
+         [
+          46.652641,
+          14.23514,
+          -98.424988
+         ],
+         [
+          26.745457,
+          -12.751888,
+          -99.442024
+         ],
+         [
+          46.302853,
+          -12.751888,
+          -101.598
+         ]
+        ],
+        "mid": [
+         32.981054,
+         2.74179,
+         -98.285611
+        ],
+        "across": [
+         -0.993979,
+         0,
+         0.109574
+        ],
+        "depth": [
+         -0.109574,
+         0,
+         -0.993979
+        ]
+       },
+       {
+        "cell": 10,
+        "other": 9,
+        "corners": [
+         [
+          1.727928,
+          13.788262,
+          -127.752815
+         ],
+         [
+          4.578896,
+          13.788262,
+          -112.656281
+         ],
+         [
+          6.658978,
+          -6.033173,
+          -128.684036
+         ],
+         [
+          9.509946,
+          -6.033173,
+          -113.587509
+         ]
+        ],
+        "mid": [
+         5.009686,
+         0.634876,
+         -128.32024
+        ],
+        "across": [
+         -0.185569,
+         0,
+         -0.982631
+        ],
+        "depth": [
+         0.982631,
+         0,
+         -0.185569
+        ]
+       },
+       {
+        "cell": 11,
+        "other": 9,
+        "corners": [
+         [
+          -36.798756,
+          14.859204,
+          -134.676559
+         ],
+         [
+          6.094685,
+          14.859204,
+          -126.366936
+         ],
+         [
+          -35.237473,
+          -14.702127,
+          -142.735748
+         ],
+         [
+          7.655969,
+          -14.702127,
+          -134.426132
+         ]
+        ],
+        "mid": [
+         -16.845176,
+         -2.227179,
+         -135.644023
+        ],
+        "across": [
+         -0.981747,
+         0,
+         -0.190191
+        ],
+        "depth": [
+         0.190191,
+         0,
+         -0.981747
+        ]
+       },
+       {
+        "cell": 11,
+        "other": 6,
+        "corners": [
+         [
+          -27.16527,
+          14.638238,
+          -167.678055
+         ],
+         [
+          -33.584026,
+          14.638238,
+          -129.731445
+         ],
+         [
+          -17.52021,
+          -14.321932,
+          -166.046585
+         ],
+         [
+          -23.938965,
+          -14.321932,
+          -128.09996
+         ]
+        ],
+        "mid": [
+         -24.494727,
+         -2.274523,
+         -149.213359
+        ],
+        "across": [
+         0.166783,
+         0,
+         -0.985994
+        ],
+        "depth": [
+         0.985994,
+         0,
+         0.166783
+        ]
+       },
+       {
+        "cell": 11,
+        "other": 0,
+        "corners": [
+         [
+          3.236117,
+          14.951022,
+          -126.177589
+         ],
+         [
+          -13.346524,
+          14.951022,
+          -166.248947
+         ],
+         [
+          0.940927,
+          -14.971053,
+          -125.227776
+         ],
+         [
+          -15.641714,
+          -14.971053,
+          -165.299133
+         ]
+        ],
+        "mid": [
+         -8.012368,
+         0.548159,
+         -150.2323
+        ],
+        "across": [
+         0.382379,
+         0,
+         0.924005
+        ],
+        "depth": [
+         -0.924005,
+         0,
+         0.382379
+        ]
+       },
+       {
+        "cell": 12,
+        "other": 4,
+        "corners": [
+         [
+          45.367146,
+          13.343595,
+          58.406364
+         ],
+         [
+          25.844683,
+          13.343595,
+          60.633331
+         ],
+         [
+          47.093304,
+          -13.487843,
+          73.538506
+         ],
+         [
+          27.570839,
+          -13.487843,
+          75.765472
+         ]
+        ],
+        "mid": [
+         35.792613,
+         -2.582034,
+         68.59701
+        ],
+        "across": [
+         0.993557,
+         0,
+         -0.113337
+        ],
+        "depth": [
+         0.113337,
+         0,
+         0.993557
+        ]
+       }
+      ],
+      "sdf": {
+       "file": "freighters/freighter_kelvane_sdf.bin",
+       "lo": [
+        -42,
+        -10,
+        -162
+       ],
+       "hi": [
+        42,
+        10,
+        116
+       ],
+       "dims": [
+        84,
+        20,
+        278
+       ],
+       "scale": 10,
+       "format": "one byte a cell, x fastest then y then z: 128 + scale x metres inside the hull (tools/blender/hull_sdf.py), sampled at cell centres; the cut faces' inside test in place of stations"
+      }
+     }
+    ],
+    "pieces": []
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/freighter-concepts.html",
+    "version": 16,
+    "sha256": "df412a92a41f34f84a3a389795d1807392640b40b6e7a7e071a788bcb8993351"
    }
   }
  ]

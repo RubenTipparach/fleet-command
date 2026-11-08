@@ -2,7 +2,8 @@
 // bar hangs from the top of the screen: Menu, the captain, credits, prestige, turn, moves, the Missions key with the log of
 // accepted missions, standing with each faction, and the fleet's ships with their hull bars. The sector panel names the
 // picked sector (or your position) and what is in it, the route there with Move here, each mission's row with its Briefing
-// key, and the port's keys (Shipyard, Loadout, Supplies, Crew, and Market at a port that deals with you). The zoom and Fleet
+// key, each freighter your ships see there (with the fleet beside her, her Escort or Raid key: Campaign.Meet), the cargo
+// of the freighters taken with Cash out, the repair kits with Use a kit, and the port's keys (Shipyard, Loadout, Supplies, Crew, and Market at a port that deals with you). The zoom and Fleet
 // keys sit bottom left, End turn bottom right. The briefing shows a mission's file as the captain reads it; the port is
 // its own panel (PortPanel.cs). Hovering the map names whose space the pointer is over. Every action goes to GameFlow or
 // Campaign; nothing here decides anything.
@@ -163,7 +164,11 @@ public sealed partial class MapHud : FlowPanel
         Sector at = c.At;
         bool port = c.IsPort(at), market = c.IsMarket(at);
         Terrain t = c.TerrainOf(h);
-        float hgt = 286 + missions.Count * 84 + (groups.Count > 0 ? 28 : 0) + (!here && !t.Impassable ? 56 : 0) + (market ? 54 : 0);
+        // the freighters here that your ships see; with the fleet beside one, her encounter's key (an escort or a raid)
+        var freighters = seen || here ? c.FreightersAt(col, row) : new List<Freighter>();
+        bool hauls = here && c.HaulValue > 0, kits = here && (c.Kits > 0 || c.S.Fleet.Any(s => s.HullPct < 100));
+        float hgt = 286 + missions.Count * 84 + (groups.Count > 0 ? 28 : 0) + (!here && !t.Impassable ? 56 : 0) + (market ? 54 : 0)
+            + freighters.Count * 54 + (hauls ? 54 : 0) + (kits ? 54 : 0);
         Rect2 b = Sheet(SidePanel(hgt), here ? "Your position" : "Selected sector");
         float x = b.Position.X, y = b.Position.Y + 30, w = b.Size.X;
         Text((h.Known ? h.PortName ?? t.Name : "Unexplored").ToUpperInvariant(), x, y + 6, 28, C.Text, HorizontalAlignment.Left, w, 700, 1);
@@ -206,6 +211,31 @@ public sealed partial class MapHud : FlowPanel
             Offer mm = m;
             Button($"sec.brief.{m.Id}", new Rect2(rr.End.X - 128, rr.Position.Y + 15, 118, 44), "Briefing", () => F.OpenBrief(mm), on: true);
             y += 84;
+        }
+        foreach (Freighter f in freighters)
+        {
+            Freighter ff = f;
+            bool escort = c.EncounterOf(f) == Campaign.Campaign.EscortScript;
+            DrawRect(new Rect2(x, y + 15, 11, 11), FacColor(f.Fac));
+            Text($"Freighter {f.Name} · {FacName(f.Fac)}", x + 18, y + 26, 18, C.Text, HorizontalAlignment.Left, w - 190, 600);
+            if (here) Button($"sec.meet.{f.Name}", new Rect2(b.End.X - 170, y, 170, 44), escort ? "Escort" : "Raid", () => F.Meet(ff), on: true,
+                tip: new Tip(escort ? "Escort" : "Raid", new (string, string, Color?)[] { ("Then", escort ? "see her through the raiders" : "take her cargo, or stop her", null) }));
+            y += 54;
+        }
+        if (hauls)
+        {
+            Text($"Cargo aboard: {c.HaulValue:N0} cr", x, y + 26, 18, C.Sky, HorizontalAlignment.Left, w - 190, 600);
+            Button("sec.cashout", new Rect2(b.End.X - 170, y, 170, 44), "Cash out", F.CashOut, on: true, dis: !(port || market),
+                tip: new Tip("Cash out", new (string, string, Color?)[] { ("Where", "a port that deals with you", null) }));
+            y += 54;
+        }
+        if (kits)
+        {
+            CampShip? worst = c.S.Fleet.OrderBy(s => s.HullPct).FirstOrDefault();
+            Text($"Repair kits: {c.Kits}" + (worst != null && worst.HullPct < 100 ? $" · {worst.Name} {worst.HullPct:0} %" : ""), x, y + 26, 18, C.Lilac, HorizontalAlignment.Left, w - 190, 600);
+            Button("sec.kit", new Rect2(b.End.X - 170, y, 170, 44), "Use a kit", F.FieldRepair, dis: c.Kits == 0 || worst == null || worst.HullPct >= 100,
+                tip: new Tip("Use a kit", new (string, string, Color?)[] { ("Mends", $"{c.Data.Rules.KitRepairPct:0} % of the most damaged hull", null) }));
+            y += 54;
         }
         // the port where the fleet stands: its keys, open only at a friendly port; a port that deals with you has a market
         string plate = port ? $"Port: {at.PortName}" : market ? $"{FacName(at.Owner)} port: {at.PortName}"

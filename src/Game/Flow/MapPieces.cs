@@ -1,8 +1,9 @@
 // MapPieces: the campaign map's miniatures, built as the mockup builds them (game-flow mockup v15: flightStand,
-// stationModel, freighterModel, makeStandee's planet, labelSprite, bannerMesh, strengthFlag, missionStandee, turnBadge).
+// stationModel, makeStandee's planet, labelSprite, bannerMesh, strengthFlag, missionStandee, turnBadge).
 // Ships and stations stand on clear flight posts over a black hex base ringed in their faction's colour (the player's own
 // on gold); planets float in their hex with an atmosphere and an orbit ring; banners are cloth (banner.gdshader). Every
-// piece is drawn from what the campaign says it is; nothing here decides anything. CampaignMap places them.
+// piece is drawn from what the campaign says it is; nothing here decides anything. CampaignMap places them. A freighter is
+// her faction's approved freighter with her containers (CampaignMap.ShipModel), no longer the mockup's freighterModel.
 using System;
 using System.Collections.Generic;
 using FleetCommand.Campaign;
@@ -84,22 +85,6 @@ public static class MapPieces
             g.AddChild(sp);
         }
         g.AddChild(M(new CylinderMesh { TopRadius = 0.03f, BottomRadius = 0.05f, Height = 0.42f, RadialSegments = 8 }, metal, Vector3.Zero));
-        return g;
-    }
-
-    /// <summary>A freighter placeholder: a spine with three cargo pods (the middle in the faction's colour), a bridge aft and
-    /// a drive. Bow +z.</summary>
-    public static Node3D Freighter(string fac, Color col)
-    {
-        var g = new Node3D { Name = "Freighter" };
-        var hull = new StandardMaterial3D { AlbedoColor = HullTint(fac), Metallic = 0.4f, Roughness = 0.55f };
-        var band = new StandardMaterial3D { AlbedoColor = col, EmissionEnabled = true, Emission = col, EmissionEnergyMultiplier = 0.2f, Roughness = 0.6f };
-        g.AddChild(M(new BoxMesh { Size = new Vector3(0.03f, 0.03f, 0.4f) }, hull, Vector3.Zero));
-        for (int k = 0; k < 3; k++) g.AddChild(M(new BoxMesh { Size = new Vector3(0.085f, 0.07f, 0.085f) }, k == 1 ? band : hull, new Vector3(0, 0, 0.1f - k * 0.1f)));
-        g.AddChild(M(new BoxMesh { Size = new Vector3(0.06f, 0.05f, 0.06f) }, hull, new Vector3(0, 0.02f, -0.17f)));
-        var drive = M(new CylinderMesh { TopRadius = 0.022f, BottomRadius = 0.03f, Height = 0.04f, RadialSegments = 10 }, Unlit(new Color("#9fd2ff")), new Vector3(0, 0, -0.215f));
-        drive.RotationDegrees = new Vector3(90, 0, 0);
-        g.AddChild(drive);
         return g;
     }
 

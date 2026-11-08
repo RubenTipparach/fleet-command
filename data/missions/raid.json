@@ -1,0 +1,87 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "raid",
+ "name": "Freighter raid",
+ "glyph": "R",
+ "kind": "encounter",
+ "type": "Raid",
+ "reward_cr": 300,
+ "turns": 1,
+ "takes": [
+  "ship",
+  "freighter_fac"
+ ],
+ "where": "plain || !plain",
+ "objective": "Stop the {ship}: take her and her cargo, or see that she never delivers it.",
+ "brief": "The {name(freighter_fac)} freighter {ship} is in this sector with her escort. Beat her down until she strikes and her cargo is yours, to cash out at a port that deals with you; or stop her for good.",
+ "battle": [
+  {
+   "name": "Freighter raid",
+   "groups": [
+    {
+     "id": "freighter",
+     "faction": "{freighter_fac}",
+     "count": 1,
+     "role": "enemy",
+     "tag": "prize",
+     "hull": "freighter",
+     "label": "{ship}",
+     "ship_name": "{ship}",
+     "range_km": 60
+    },
+    {
+     "id": "escorts",
+     "faction": "{freighter_fac}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Escorts",
+     "range_km": 90
+    }
+   ],
+   "objectives": [
+    {
+     "id": "stop",
+     "text": "Stop the {ship}",
+     "primary": true,
+     "done": "destroyed(freighter) + taken(freighter) == 1"
+    },
+    {
+     "id": "cargo",
+     "text": "Take her with her cargo",
+     "done": "taken(freighter) == 1"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win && met('cargo') == 1",
+   "credits": "pay",
+   "standing": {
+    "{freighter_fac}": -4
+   },
+   "haul": "{freighter_fac}",
+   "haul_cr": "round(reward * 3)",
+   "log": "The {ship} struck with her holds full: bring her to a port to cash out her cargo."
+  },
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{freighter_fac}": -4
+   },
+   "log": "The {ship} is gone, and her cargo with her."
+  },
+  {
+   "standing": {
+    "{freighter_fac}": -2
+   },
+   "log": "The {ship} got away."
+  }
+ ]
+}

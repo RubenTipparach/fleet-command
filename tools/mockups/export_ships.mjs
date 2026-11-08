@@ -49,6 +49,9 @@ const FACTIONS = [
   // mockup 23 (owner, 2026-11-07: "perfect, implment these ships in game"): the Kelvane Institute's line and its fighter, baked
   // as the Hunt's are, on the same page code (docs/mockups/lib/baked-fleet.js)
   { faction: 'kelvane', page: 'docs/mockups/kelvane-ship-concepts.html', skip: [], baked: 'Kelvane' },
+  // mockup 24 (owner, 2026-11-07: "implement in game"): the four freighters, baked on the same page code, each with its
+  // containers (window.MOCKUP_CARGO) written into its manifest entry as "cargo"
+  { faction: 'freighters', page: 'docs/mockups/freighter-concepts.html', skip: [], baked: 'Freighter' },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -389,7 +392,15 @@ async function exportInPage(cfg) {
     const info = cfg.baked ? { label: cfg.baked + ' ' + ship.cls.toLowerCase() + ': ' + ship.name, cls: ship.cls, name: ship.name }
       : cfg.faction === 'concord' ? { label: ship.C.label, cls: ship.C.cls, name: ship.C.name, registry: ship.C.reg, livery: ship.liv }
       : { label: 'Krai ' + ship.D.label.toLowerCase(), role: ship.D.role, plan: 'data/ships/krai/' + ship.id + '_plan.json' };
-    return { out, man: { faction: cfg.faction, id: ship.id, ...info, file: cfg.faction + '/' + ship.id + '.glb', length_m: r6(size.z), beam_m: r6(size.x), height_m: r6(size.y), triangles: tris, draw_calls: meshNames.length,
+    // A freighter's containers (mockup 24, window.MOCKUP_CARGO): the one container (assets/containers/container.glb) placed in
+    // the glb frame, its turn conjugated by the half turn (q = R q_m R^-1, R about Y), its scale and colour; the game draws them
+    // as one MultiMesh under the ship (src/Game/View/Cargo.cs). Not in the ship's glb: one container mesh serves every freighter.
+    const cargo = window.MOCKUP_CARGO ? window.MOCKUP_CARGO(ship.id) : [];
+    const qR = new THREE.Quaternion(0, 1, 0, 0), qRi = qR.clone().invert();
+    const cargoOut = cargo.map((k) => { const p = turn(V3(...k.p)).sub(c), q = qR.clone().multiply(new THREE.Quaternion(...k.q)).multiply(qRi);
+      return { p: v3(p), q: [r6(q.x), r6(q.y), r6(q.z), r6(q.w)], s: r6(k.s), rgb: k.rgb.map(r6) }; });
+    return { out, man: { faction: cfg.faction, id: ship.id, ...info, ...(cargoOut.length ? { cargo: { model: 'containers/container.glb', count: cargoOut.length, items: cargoOut,
+        note: 'p in the glb frame (metres), q a quaternion xyzw, s a uniform scale on the container\'s own glb (6 x 6 x 12 m, long along z), rgb a linear tint' } } : {}), file: cfg.faction + '/' + ship.id + '.glb', length_m: r6(size.z), beam_m: r6(size.x), height_m: r6(size.y), triangles: tris, draw_calls: meshNames.length,
       origin_offset_m: v3(c), nodes: { pieces: [...partNodes.keys()], meshes: meshNames, empties }, materials: [...new Set(drawn)], shader_params: shaderParams, break: breakup,
       checks: { flipped_triangles: flipped, flipped_on_single_sided: flippedSingle, skipped_meshes: skipped } } };
   }
@@ -544,7 +555,7 @@ for (const F of FACTIONS.filter((f) => !ONLY || ONLY.includes(f.faction))) {
   }
 }
 const said = (f) => (sources[f] ? `page v${sources[f].version ?? '?'}, sha256 ${sources[f].sha256.slice(0, 12)}` : 'not in this run');
-manifest._doc = `Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord ${said('concord')}; mockup 7, docs/mockups/krai-ship-concepts.html, Krai ${said('krai')}; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt ${said('ssarith')}; mockup 23, docs/mockups/kelvane-ship-concepts.html, Kelvane Institute ${said('kelvane')}): each ship built intact by its page\'s own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file\'s sha256 and published version each ship came from: an export is stale when the page\'s sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb\'s frame unless a key says mockup space. materials: every exported material by faction/name, with what the page\'s shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.`;
+manifest._doc = `Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord ${said('concord')}; mockup 7, docs/mockups/krai-ship-concepts.html, Krai ${said('krai')}; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt ${said('ssarith')}; mockup 23, docs/mockups/kelvane-ship-concepts.html, Kelvane Institute ${said('kelvane')}; mockup 24, docs/mockups/freighter-concepts.html, the freighters ${said('freighters')}): each ship built intact by its page\'s own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file\'s sha256 and published version each ship came from: an export is stale when the page\'s sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb\'s frame unless a key says mockup space. materials: every exported material by faction/name, with what the page\'s shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.`;
 manifest.conventions = { units: 'metres', up: '+Y', bow: '-Z', port: '-X', origin: 'the centre of the ship\'s bounding box (all three axes)',
   mockup_space: 'the pages build in +X port, +Y up, +Z bow; p_mockup = (-(x + o.x), y + o.y, -(z + o.z)) for a glb point (x, y, z), o = the ship\'s origin_offset_m; the hull shaders\' tri-planar detail and livery are in mockup space',
   nodes: 'root: the ship id; under it one node per piece of the mockup at the piece\'s pivot (hull, secondary, neck, command, wing, pod_<side>, pylon_<side>, nacelle_<side>, blade, crest); under each piece its meshes, merged by zone and material, named <piece>[_<zone>]_<material>, and its empties',
