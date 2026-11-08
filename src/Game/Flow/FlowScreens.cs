@@ -187,8 +187,14 @@ public sealed partial class FactionScreen : FlowPanel
         ["vhorr"] = "res://assets/emblems/vhorr/placeholder.svg",
     };
     private static readonly Dictionary<string, Texture2D?> EmblemTex = new();
-    /// <summary>A phone's screen: the badges are too small to tap, so the grid of keys picks (the page's narrow query).</summary>
-    private bool Narrow => Size.X < 1100 || Size.Y < 560;
+    /// <summary>The window in real pixels: the flow is drawn on a 1500 x 1080 canvas stretched to the window, so a phone is
+    /// told by its pixels, not the canvas's.</summary>
+    private static Vector2 Physical => DisplayServer.WindowGetSize();
+    /// <summary>Canvas units per real pixel.</summary>
+    private float PerPx => Size.X / Math.Max(1, Physical.X);
+    /// <summary>A phone's screen: the badges are too small to tap, so the grid of keys picks (the page's narrow query,
+    /// max-width 920 px or max-height 520 px).</summary>
+    private bool Narrow => Physical.X <= 920 || Physical.Y <= 520;
 
     private bool CanPlay(CampFaction fac) => fac.Playable && X.Data.Factions.TryGetValue(fac.Id, out Faction? bf) && bf.Skin != null;
 
@@ -241,26 +247,28 @@ public sealed partial class FactionScreen : FlowPanel
     // yet in the game dimmed and not pickable. Along the bottom left in landscape, under the title in portrait.
     private void KeyGrid(IReadOnlyList<string> ids)
     {
+        // sized in real pixels (the page's .fgrid): keys 52 px tall or more, the grid 400 px wide in landscape, the width in portrait
         const int Cols = 5;
+        float k = PerPx, gap = 4 * k;
         bool tall = Size.Y > Size.X;
-        float gw = tall ? Size.X - 32 : Math.Min(560, Size.X * 0.48f), kw = (gw - (Cols - 1) * 6) / Cols, kh = Math.Max(64, kw * 0.82f);
+        float gw = tall ? Size.X - 16 * k : Math.Min(400 * k, Size.X * 0.46f), kw = (gw - (Cols - 1) * gap) / Cols, kh = Math.Max(52 * k, kw * 0.9f);
         int rows = (ids.Count + Cols - 1) / Cols;
-        float x0 = 16, y0 = tall ? 120 : Size.Y - 16 - rows * kh - (rows - 1) * 6;
+        float x0 = 8 * k, y0 = tall ? 108 * k : Size.Y - 8 * k - rows * kh - (rows - 1) * gap;
         for (int i = 0; i < ids.Count; i++)
         {
             if (!F.Data.Factions.TryGetValue(ids[i], out CampFaction? fac)) continue;
             bool play = CanPlay(fac), picked = F.Picked == fac.Id;
-            var r = new Rect2(x0 + i % Cols * (kw + 6), y0 + i / Cols * (kh + 6), kw, kh);
+            var r = new Rect2(x0 + i % Cols * (kw + gap), y0 + i / Cols * (kh + gap), kw, kh);
             HitState st = Ui.Reg($"fac.{fac.Id}", r, play ? _ => F.Picked = fac.Id : null, null, play ? null : new Tip(fac.Name, new (string, string, Color?)[] { ("In the game", "not yet: its console skin is to build", null) }));
             Kit.Piece(this, "button." + (picked || st.Down ? "pressed" : st.Hot && play ? "hover" : "idle"), r, play ? 1 : 0.45f);
-            float isz = kh - 26;
+            float isz = kh - 18 * k;
             if (Tex(fac.Id) is { } tex)
             {
-                float k = Math.Min(isz / tex.GetWidth(), isz / tex.GetHeight());
-                var sz = new Vector2(tex.GetWidth(), tex.GetHeight()) * k;
-                DrawTextureRect(tex, new Rect2(new Vector2(r.GetCenter().X - sz.X / 2, r.Position.Y + 4), sz), false, play ? Colors.White : new Color(1, 1, 1, 0.5f));
+                float q = Math.Min(isz / tex.GetWidth(), isz / tex.GetHeight());
+                var sz = new Vector2(tex.GetWidth(), tex.GetHeight()) * q;
+                DrawTextureRect(tex, new Rect2(new Vector2(r.GetCenter().X - sz.X / 2, r.Position.Y + 3 * k), sz), false, play ? Colors.White : new Color(1, 1, 1, 0.5f));
             }
-            Text(fac.Short, r.GetCenter().X, r.End.Y - 6, 13, play ? C.Text : C.Lilac, HorizontalAlignment.Center, kw - 4, 600);
+            Text(fac.Short, r.GetCenter().X, r.End.Y - 4 * k, (int)Math.Round(10 * k), play ? C.Text : C.Lilac, HorizontalAlignment.Center, kw - 4, 600);
         }
     }
 
