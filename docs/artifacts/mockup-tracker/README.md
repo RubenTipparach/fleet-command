@@ -148,3 +148,4 @@
 - 2026-11-08, cloud session: version 154, version id `1794117974-ada4`: merged onto the live version `1794116455-0531` (M4 v32, battle consoles 25-29 and 31-33 at v2); M1 v28; M24 is the freighters (v16, from PR #54); the Space Chart moved to M34 at v6.
 - 2026-11-08, cloud session: version 155, version id `1794120768-b0c1`: M1 v29 and M34 v7 (twice the cross-hatching, no printed nebulae or belts, planets on hexagon stands).
 - 2026-11-08, cloud session: version 156, version id `1794121175-840d`: M34 v7 beside M35 (hull texture designs, v20, from PR #49) after merging main.
+- Version 161 published 2026-11-08, version id `1794141205-9779`: M1 v30, M34 v8 (approved for implementation in the owner's words, recorded in the tracker's reviews), merged onto the live version (M4 v33, M36 Placeholder fleets, the Faction readiness page).
