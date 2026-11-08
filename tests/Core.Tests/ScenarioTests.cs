@@ -70,8 +70,9 @@ public class ScenarioTests
         // ssarith are also implemented")
         foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && s.Name is not ("The Hunt" or "Hunt wrecks")))
             Assert.Contains(hunt, s => s.Name == c.Name);
-        // its ships are its own line's, but its depot in Relief, the mockups' station, as every side's is
-        string[] line = { "hunt_ff_lance", "hunt_ff_prow", "hunt_ff_harpoon", "hunt_ff_trident", "hunt_ca", "hunt_cv" };
+        // its ships are its own line's, its freighter (the Tally carrier, mockup 24) among them, but its depot in Relief, the
+        // mockups' station, as every side's is
+        string[] line = { "hunt_ff_lance", "hunt_ff_prow", "hunt_ff_harpoon", "hunt_ff_trident", "hunt_ca", "hunt_cv", "hunt_fr" };
         Assert.All(TestData.Data.Scenarios, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith" && TestData.Data.Classes[o.Class].Shape != "station"), o => Assert.Contains(o.Class, line)));
         Assert.All(hunt, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith" && TestData.Data.Classes[o.Class].Shape != "station"), o => Assert.NotNull(TestData.Data.Classes[o.Class].Model)));
         Assert.Equal("ssarith", TestData.Data.Factions["ssarith"].Skin);
