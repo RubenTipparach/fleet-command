@@ -266,7 +266,7 @@ const api = {
   pad: [28, 26, 26, 26],
   // The name plate's live field: the dark window between the chevron block and the bolt box (84-421 x 10-46), clear of the
   // Fleet key at 370.
-  plate: { x: 100, y: 36, max: 262, font: '700 22px "Saira Condensed"', col: KC.bone },
+  plate: { x: 100, y: 36, max: 262, font: '700 18px "Saira Condensed"', col: KC.bone },
   // The battle's helm ring under the ship, in ember.
   ring: ['rgba(255,181,71,0)', 'rgba(255,181,71,0.14)', 'rgba(255,210,140,0.9)'],
   // Names for the player's side where the page shows it as the Hegemony: ships named as verdicts and deeds, captains by
