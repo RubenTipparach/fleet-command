@@ -138,3 +138,4 @@
 - 2026-11-06, cloud session (branch `claude/brave-faraday-ilpu2q`): version 141, version id `1793949867-c088`: M1 v18 (the faction screen on a walnut table, stores, crew lists, kept routes, options), over the desktop session's v140.
 - 2026-11-06, cloud session: version 142, version id `1793950629-6aac`: M1 v19 (the faction view fits phones in portrait).
 - Artifact versions 151 and 152 (2026-11-08, cloud session, version ids `1794107972-5c0a`, `1794107983-6a0f`; M4 at v31): the battle consoles for the Axiom, Exponent, Red Tithe, Vos, Kethran, Tarsine, Aelith, Ombrai and Vhorr (M25-M33), each behind its own faction card; merged onto the live version with another session's edits (M1 v27, M20 v4, M24 Space chart, whose page is on branch `claude/brave-faraday-ilpu2q`).
+- Artifact version 153 (2026-11-08, cloud session, version id `1794116455-0531`): M25-M27 and M28, M29, M31-M33 at v2; M4 at v32.
