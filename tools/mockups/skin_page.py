@@ -33,6 +33,42 @@ SKINS = {
         "title": "Kelvane Battle Console",
         "what": "Mockup 20: the battle console in the Kelvane Institute skin (OpenSpec change kelvane-battle-console)",
     },
+    "vos": {
+        "title": "Vos Battle Console",
+        "what": "Mockup 28: the battle console in the Vos Syndicate skin (OpenSpec change vos-battle-console)",
+    },
+    "kethran": {
+        "title": "Kethran Battle Console",
+        "what": "Mockup 29: the battle console in the Kethran Hegemony skin (OpenSpec change kethran-battle-console)",
+    },
+    "tarsine": {
+        "title": "Tarsine Battle Console",
+        "what": "Mockup 30: the battle console in the Tarsine Remnant skin (OpenSpec change tarsine-battle-console)",
+    },
+    "axiom": {
+        "title": "Axiom Battle Console",
+        "what": "Mockup 25: the battle console in the Axiom skin (OpenSpec change axiom-battle-console)",
+    },
+    "exponent": {
+        "title": "Exponent Battle Console",
+        "what": "Mockup 26: the battle console in the Exponent skin (OpenSpec change exponent-battle-console)",
+    },
+    "redtithe": {
+        "title": "Red Tithe Battle Console",
+        "what": "Mockup 27: the battle console in the Red Tithe skin (OpenSpec change redtithe-battle-console)",
+    },
+    "aelith": {
+        "title": "Aelith Battle Console",
+        "what": "Mockup 31: the battle console in the Aelith Conclave skin (OpenSpec change aelith-battle-console)",
+    },
+    "ombrai": {
+        "title": "Ombrai Battle Console",
+        "what": "Mockup 32: the battle console in the Ombrai skin (OpenSpec change ombrai-battle-console)",
+    },
+    "vhorr": {
+        "title": "Vhorr Battle Console",
+        "what": "Mockup 33: the battle console in the Vhorr Brood skin (OpenSpec change vhorr-battle-console)",
+    },
 }
 # Every skin's library, kit and type are inlined in the source page itself (openspec/changes/fleet-skins: the console
 # follows the ship you command, so one page carries every skin); a faction's page differs only in its meta, title and

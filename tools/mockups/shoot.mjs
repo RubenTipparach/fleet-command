@@ -26,7 +26,9 @@ const pageName = path.basename(target).replace(/\.html$/, '') || 'page';
 fs.mkdirSync(outDir, { recursive: true });
 
 const proxy = process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' } : undefined;
-const browser = await chromium.launch({ proxy, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// The 2D canvas stays on the CPU: on the software GPU every toDataURL of a painted piece reads back from swiftshader, and
+// a page of painted skins took over four minutes to load (2026-11-07); WebGL still runs on swiftshader.
+const browser = await chromium.launch({ proxy, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-accelerated-2d-canvas'] });
 let errors = 0;
 for (const [sizeName, viewport] of SIZES) {
   const page = await browser.newPage({ viewport });

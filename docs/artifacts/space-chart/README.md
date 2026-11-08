@@ -1,4 +1,6 @@
-# Mockup 24: Space Chart
+# Mockup 34: Space Chart
+
+Numbered 24 when first published; renumbered 34 on 2026-11-08, when the freighters (mockup 24 since 2026-11-07) were merged.
 
 - Link: https://claude.ai/artifact/A4E9dHbWA5qdvi1Z77sAjX
 - Shows: the campaign's space chart, opened straight onto the paper map. It is a printed star map on old paper (nebula,

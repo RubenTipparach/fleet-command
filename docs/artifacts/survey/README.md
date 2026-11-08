@@ -55,3 +55,5 @@
 - 2026-11-07, cloud session: version 12 of the cloud account copy, version id `1794024680-3741`: I8, which Gallery bus variants go on (mockup 23 v9). The desktop copy is still to republish.
 - 2026-11-07, cloud session: version 13 of the cloud account copy, version id `1794029174-df5e`: I7 and I8 updated, the carrier parks 215, the Gallery fighter (mockup 23 v10). The desktop copy is still to republish.
 - 2026-11-07, desktop session (PR #53): I9 added (whether the Institute cloaks); committed, not yet published (the artifact tools stopped answering in this session); the next desktop session publishes it.
+- 2026-11-07, cloud session: version 34 of the main-account survey (https://claude.ai/artifact/81ey21Ngrr8WPTdhce7y8a), version id `1794091162-4ac5`: section N, three new factions (the Axiom, the Exponent, the Red Tithe), N1-N6.
+- 2026-11-07, desktop session (branch `claude/kelvane-ssarith-game`): I10 added (the Institute's campaign names, provisional), H6 (the Hunt's mines and troop team) and I11 (the Institute ships' plan view); committed with I9, not yet published (the artifact tools are not answering in this session).

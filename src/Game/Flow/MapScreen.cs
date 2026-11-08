@@ -48,7 +48,7 @@ public sealed partial class MapScreen : Control
     public void NewMap(Campaign.Campaign c)
     {
         Map?.QueueFree();
-        Map = new CampaignMap();
+        Map = new CampaignMap { ClassModel = cls => _f.X.Data.Classes.TryGetValue(cls, out var k) ? k.Model : null };
         _vp.AddChild(Map);
         Map.Init(c);
         Map.Select(_f.Sel);

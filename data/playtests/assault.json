@@ -14,7 +14,7 @@
   },
   {
    "do": "select",
-   "arg": "corrin|ruhn|candour"
+   "arg": "corrin|ruhn|candour|hunt_lance"
   },
   {
    "do": "station",

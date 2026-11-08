@@ -12,18 +12,18 @@
 - [x] 1.7 The owner's notes of 2026-11-07: the print a star map with a nebula background; rustic dark green walls with
   walnut trim and sconces; the room and the print darker; main merged and the fog of war drawn on the chart (`campaign-space` 2.2) (mockup 1 v22)
 - [x] 1.8 The chart as its own artifact (owner, 2026-11-07: "Our space chart mockup is not available to me as an artifact, please
-  make it"): `docs/mockups/space-chart.html` (mockup 24), written from mockup 1 by `tools/mockups/chart_page.py` and opening straight
+  make it"): `docs/mockups/space-chart.html` (mockup 34, first numbered 24), written from mockup 1 by `tools/mockups/chart_page.py` and opening straight
   onto the map through mockup 1's `startAt()`
 - [x] 1.9 The chart on phones (owner, 2026-11-07: "Space chart not working on mobile"): the nebula's noise from a seeded lattice
   texture so it compiles on WebGL 1; the sheet at 32 px a unit on a touch screen; `softDraw()` for browsers with no canvas filter
 - [x] 1.10 Panels on a phone (owner, 2026-11-07: "Panels on my phone stuck open, I can't see"): the sector panel's Hide key, a
-  Sector map key to bring it back, the portrait top bar in two rows (mockup 1 v25, mockup 24 v3; the game's sync task `game-flow-engine` 2.11)
+  Sector map key to bring it back, the portrait top bar in two rows (mockup 1 v25, mockup 34 v3; the game's sync task `game-flow-engine` 2.11)
 - [x] 1.11 The drawn pieces (owner, 2026-11-08: "hand drawn billboard puffs of cloud", "very pirate and very space"):
   `docs/mockups/lib/drawn.js` (ink, wash, hatching; clouds, storms, planets, suns, rocks, the compass rose), billboards on the
-  chart, hand-lettered names, rhumb lines (mockup 1 v26, mockup 24 v4)
+  chart, hand-lettered names, rhumb lines (mockup 1 v26, mockup 34 v4)
 - [x] 1.12 The planets drawn live by our planet shader (`docs/mockups/lib/planet-shader.js`, after Francisco Cidade's CC0 Pixel
   Planet: six kinds, spinning, clouds, caps, rings, finer pixels, cross-hatched night sides), and the clouds, rocks and sun
-  cross-hatched in three zones (owner, 2026-11-08: "More cross hatch", "less pixelated") (mockup 1 v27, mockup 24 v5)
+  cross-hatched in three zones (owner, 2026-11-08: "More cross hatch", "less pixelated") (mockup 1 v27, mockup 34 v5)
 
 ## 2. After the owner's notes
 

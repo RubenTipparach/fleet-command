@@ -500,12 +500,17 @@ public sealed partial class CampaignMap : Node3D
 
     private static readonly Dictionary<string, PackedScene?> Models = new();
 
-    /// <summary>A ship's model on the map: the hull's own approved glb (its schematic names it), or the faction's by tier
-    /// for the Concord and the Krai, a stand-in wedge for the rest. Bow toward +z, <paramref name="length"/> units long.</summary>
+    /// <summary>A battle class's approved glb (data/battle/classes.json model), or null: set by MapScreen from the battle's data.</summary>
+    public Func<string, string?> ClassModel { get; init; } = _ => null;
+
+    /// <summary>A ship's model on the map: the hull's own approved glb (its schematic names it, else its battle class's model),
+    /// or the faction's by tier for the Concord and the Krai, a stand-in wedge for the rest; a freighter carries her
+    /// containers (Cargo). Bow toward +z, <paramref name="length"/> units long.</summary>
     private Node3D ShipModel(string fac, string? hullId, int tier, float length)
     {
         string? path = null;
-        if (hullId != null && _c.Data.Hulls.TryGetValue(hullId, out Hull? hull) && hull.Schematic != "") path = $"res://assets/ships/{hull.Schematic}.glb";
+        if (hullId != null && _c.Data.Hulls.TryGetValue(hullId, out Hull? hull))
+            path = hull.Schematic != "" ? $"res://assets/ships/{hull.Schematic}.glb" : ClassModel(hull.BattleClass) is { } m ? "res://" + m : null;
         path ??= fac switch
         {
             "concord" => tier >= 3 ? "res://assets/ships/concord/albatross.glb" : "res://assets/ships/concord/petrel_level.glb",
@@ -524,7 +529,7 @@ public sealed partial class CampaignMap : Node3D
                 model.Scale = Vector3.One * (length / len);
                 // the glb's bow is -z; a standee's bow is +z (the map's headings)
                 model.RotationDegrees = new Vector3(0, 180, 0);
-                try { ShipSkin.Apply(model, path["res://assets/ships/".Length..], model.Scale.X); }
+                try { ShipSkin.Apply(model, path["res://assets/ships/".Length..], model.Scale.X); Cargo.Load(model, path["res://assets/ships/".Length..]); }
                 catch (InvalidOperationException) { /* a ship the export manifest does not dress keeps its own materials */ }
                 holder.AddChild(model);
                 return holder;
@@ -561,7 +566,7 @@ public sealed partial class CampaignMap : Node3D
 
     private int PiecesIn(int c, int r) =>
         (_c.S.AtC == c && _c.S.AtR == r ? 1 : 0) + (_c.Hex(c, r).IsPort && _c.Hex(c, r).Known ? 1 : 0) + _c.S.Groups.Count(g => g.C == c && g.R == r && _vis.Contains((c, r)))
-        + _c.S.Missions.Count(m => m.C == c && m.R == r) + _c.S.Freighters.Count(f => f.Route[f.I][0] == c && f.Route[f.I][1] == r && _c.SideOf(f.Fac) == "own");
+        + _c.S.Missions.Count(m => m.C == c && m.R == r) + _c.S.Freighters.Count(f => f.Out == 0 && f.Here() == (c, r) && Shown(f));
 
     // where a piece stands in its sector: centred alone, at its own slot when the sector is shared (owner, 2026-11-05)
     private Vector3 Slot(string role, int c, int r)
@@ -574,6 +579,12 @@ public sealed partial class CampaignMap : Node3D
             "freighter" => new Vector3(0.66f, 0, -0.12f), "mission" => new Vector3(-0.5f, 0, -0.28f), _ => Vector3.Zero,
         };
     }
+
+    /// <summary>A freighter's length on the map, units: as long as a fleet's flagship, bigger than its escorts.</summary>
+    private const float FreighterLen = 0.9f;
+
+    /// <summary>Whether the map shows a freighter: your own always, anyone's in a sector your ships see now.</summary>
+    private bool Shown(Freighter f) => _c.SideOf(f.Fac) == "own" || _c.IsVisible(f.Here().C, f.Here().R);
 
     /// <summary>A fleet's strength, 1 to 5 (the mockup's fleetStrength and groupStrength).</summary>
     private int FleetStrength() => Math.Clamp((int)Math.Round(_c.S.Fleet.Sum(s => _c.Data.Hulls[s.Hull].Tier) / 1.5, MidpointRounding.AwayFromZero), 1, 5);
@@ -641,21 +652,24 @@ public sealed partial class CampaignMap : Node3D
                 port.Position = Slot("place", hx.X, hx.Y);
             }
 
-        // freighters and their routes: your own freighters on their routes, and your allies' routes (dimmer), never a rival's
+        // freighters and their routes: your own and your allies' routes (allies' dimmer), never a rival's; your own freighters
+        // always, and anyone's where your ships see (owner, 2026-11-07: "whenever you are on the same tile as freighter, you
+        // get a mission option"), each her faction's approved freighter with her containers; one off her route, none
         int fi = 0;
         foreach (Freighter f in _c.S.Freighters)
         {
             int n = fi++;
             string? seen = _c.SideOf(f.Fac);
-            if (seen == null) continue;
-            var lift = new Vector3(((n % 3) - 1) * 0.05f, 0.035f, ((n % 3) - 1) * 0.05f);
-            var pts = f.Route.Select(k => HexPos(k[0], k[1]) + lift).ToList();
-            _routes.AddChild(Dashed(pts, FacColor(f.Fac), seen == "own" ? 0.95f : 0.5f, 0.22f, 0.14f));
-            if (seen != "own") continue;
+            if (seen != null)
+            {
+                var lift = new Vector3(((n % 3) - 1) * 0.05f, 0.035f, ((n % 3) - 1) * 0.05f);
+                var pts = f.Route.Select(k => HexPos(k[0], k[1]) + lift).ToList();
+                _routes.AddChild(Dashed(pts, FacColor(f.Fac), seen == "own" ? 0.95f : 0.5f, 0.22f, 0.14f));
+            }
+            if (f.Out > 0 || !Shown(f)) continue;
             var g = new Node3D { Name = "Freighter " + f.Name };
             g.AddChild(MapPieces.FlightStand(FacColor(f.Fac), 0.2f, 0.75f, false));
-            Node3D model = MapPieces.Freighter(f.Fac, FacColor(f.Fac));
-            model.Scale = Vector3.One * 1.5f;
+            Node3D model = ShipModel(f.Fac, _c.Data.FreighterOf(f.Fac).Id, 1, FreighterLen);
             var mh = new Node3D { Position = new Vector3(0, 0.06f + 0.26f, 0), Rotation = new Vector3(0, (float)f.Dir, 0) };
             mh.AddChild(model);
             g.AddChild(mh);

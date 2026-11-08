@@ -1,5 +1,5 @@
 {
- "_doc": "The campaign's data (openspec/changes/game-flow-engine): factions, sector terrain, hulls by tier, ship systems and supplies, the rules' numbers, and the map (its territory seeds; its star systems, each a star with its belt of asteroids at belt_r sectors, a share of that ring taken, and a nebula of that many sectors beside it; the deep space between them, dust clouds and asteroid fields with no star, clear_of_stars sectors from any; how far your fleet and friendly ships see; ports, fleets and freight routes). A planet with no star within 3 sectors is a rogue planet. The one copy the game and the campaign mockup (docs/mockups/game-flow.html, inlined by tools/mockups/inline_data.py) read. Missions are in data/missions/. Prices are points; the campaign charges points x credit_rate credits. Hulls: each faction's by tier (1 the smallest); battle_class is the ship class it fights as (data/battle/classes.json), schematic its top-down picture (assets/ships/schematics/), empty while the hull is a stand-in. Supplies: at most one per hp_per hull points, per_fit per fitted system fit, or fixed.",
+ "_doc": "The campaign's data (openspec/changes/game-flow-engine): factions, sector terrain, hulls by tier, ship systems and supplies, the rules' numbers, and the map (its territory seeds; its star systems, each a star with its belt of asteroids at belt_r sectors, a share of that ring taken, and a nebula of that many sectors beside it; the deep space between them, dust clouds and asteroid fields with no star, clear_of_stars sectors from any; how far your fleet and friendly ships see; ports, fleets and freight routes). A planet with no star within 3 sectors is a rogue planet. The one copy the game and the campaign mockup (docs/mockups/game-flow.html, inlined by tools/mockups/inline_data.py) read. Missions are in data/missions/. Prices are points; the campaign charges points x credit_rate credits. Hulls: each faction's by tier (1 the smallest); battle_class is the ship class it fights as (data/battle/classes.json), schematic its top-down picture (assets/ships/schematics/), empty while the hull is a stand-in. Supplies: at most one per hp_per hull points, per_fit per fitted system fit, or fixed. Freighters (openspec/changes/freighter-missions; owner, 2026-11-07): each faction's freighter is the hull its 'freighter' names (the faction's own approved freighter, mockup 24; a faction with none flies the neutral 'freighter' stand-in); freighter hulls are neutral and never for sale. Ships do not mend between battles: a hull is repaired at your own port (repair_share of its price) or in the field with a repair kit (the parts supply), each mending kit_repair_pct of the hull. A freighter destroyed or taken is off its route for freighter_refit_turns turns.",
  "rules": {
   "cols": 30,
   "rows": 22,
@@ -41,7 +41,9 @@
   ],
   "reward_steps": 5,
   "reward_step_cr": 50,
-  "repair_share": 0.5
+  "repair_share": 0.5,
+  "kit_repair_pct": 25,
+  "freighter_refit_turns": 6
  },
  "factions": {
   "concord": {
@@ -59,7 +61,8 @@
     "Meridian",
     "Osprey",
     "Vigil"
-   ]
+   ],
+   "freighter": "freighter_concord"
   },
   "krai": {
    "name": "Krai Warhost",
@@ -76,7 +79,8 @@
     "Skarr",
     "Dovak",
     "Ulgar"
-   ]
+   ],
+   "freighter": "freighter_krai"
   },
   "ssarith": {
    "name": "Ssarith Hunt",
@@ -93,6 +97,24 @@
     "SH-4",
     "SH-5",
     "SH-6"
+   ],
+   "freighter": "freighter_ssarith"
+  },
+  "kelvane": {
+   "name": "Kelvane Institute",
+   "short": "Kelvane",
+   "color": "#ffc865",
+   "rival": "",
+   "playable": true,
+   "prefix": "",
+   "home": "Lyceum",
+   "names": [
+    "Patience",
+    "Candour",
+    "Parallax",
+    "Vernier",
+    "Aperture",
+    "Quorum"
    ]
   },
   "vos": {
@@ -310,7 +332,7 @@
    "name": "Hooded lance",
    "cls": "Frigate",
    "battle_class": "hunt_ff_lance",
-   "schematic": ""
+   "schematic": "ssarith/hooded_lance"
   },
   "hunt_2": {
    "side": "ssarith",
@@ -318,7 +340,7 @@
    "name": "Trident",
    "cls": "Frigate",
    "battle_class": "hunt_ff_trident",
-   "schematic": ""
+   "schematic": "ssarith/trident"
   },
   "hunt_3": {
    "side": "ssarith",
@@ -326,7 +348,47 @@
    "name": "Hunt cruiser",
    "cls": "Cruiser",
    "battle_class": "hunt_ca",
-   "schematic": ""
+   "schematic": "ssarith/cruiser"
+  },
+  "kelvane_1": {
+   "side": "kelvane",
+   "tier": 1,
+   "name": "Kelvane frigate",
+   "cls": "Frigate",
+   "battle_class": "kelvane_ff",
+   "schematic": "kelvane/kelvane_frigate"
+  },
+  "kelvane_2": {
+   "side": "kelvane",
+   "tier": 2,
+   "name": "Kelvane destroyer",
+   "cls": "Destroyer",
+   "battle_class": "kelvane_dd",
+   "schematic": "kelvane/kelvane_destroyer"
+  },
+  "kelvane_3": {
+   "side": "kelvane",
+   "tier": 3,
+   "name": "Kelvane cruiser",
+   "cls": "Cruiser",
+   "battle_class": "kelvane_rv",
+   "schematic": "kelvane/kelvane_cruiser"
+  },
+  "kelvane_4": {
+   "side": "kelvane",
+   "tier": 4,
+   "name": "Kelvane battlecruiser",
+   "cls": "Battlecruiser",
+   "battle_class": "kelvane_bc",
+   "schematic": "kelvane/kelvane_battlecruiser"
+  },
+  "kelvane_5": {
+   "side": "kelvane",
+   "tier": 5,
+   "name": "Kelvane carrier",
+   "cls": "Carrier",
+   "battle_class": "kelvane_cv",
+   "schematic": "kelvane/kelvane_carrier"
   },
   "vos_raider": {
    "side": "vos",
@@ -343,6 +405,33 @@
    "name": "Freighter",
    "cls": "Freighter",
    "battle_class": "kff",
+   "schematic": "",
+   "for_sale": false
+  },
+  "freighter_concord": {
+   "side": "neutral",
+   "tier": 1,
+   "name": "Gauge carrier",
+   "cls": "Freighter",
+   "battle_class": "fr",
+   "schematic": "",
+   "for_sale": false
+  },
+  "freighter_krai": {
+   "side": "neutral",
+   "tier": 1,
+   "name": "Spear train",
+   "cls": "Freighter",
+   "battle_class": "krai_fr",
+   "schematic": "",
+   "for_sale": false
+  },
+  "freighter_ssarith": {
+   "side": "neutral",
+   "tier": 1,
+   "name": "Tally carrier",
+   "cls": "Freighter",
+   "battle_class": "hunt_fr",
    "schematic": "",
    "for_sale": false
   }
@@ -498,10 +587,10 @@
   },
   {
    "id": "parts",
-   "name": "Spare parts",
+   "name": "Repair kits",
    "cost": 4,
    "hp_per": 20,
-   "d": "Repair systems in the field after a battle."
+   "d": "Patch a hull in the field: each kit mends a quarter of it, anywhere, between battles."
   }
  ],
  "map": {
@@ -572,9 +661,9 @@
     13
    ],
    [
-    "neutral",
+    "kelvane",
     12,
-    13
+    14
    ]
   ],
   "seed_jitter": 2.2,
@@ -773,6 +862,20 @@
     "ssarith"
    ],
    [
+    "planet",
+    13,
+    15,
+    "Lyceum",
+    "kelvane"
+   ],
+   [
+    "station",
+    10,
+    13,
+    "Lyceum Depot",
+    "kelvane"
+   ],
+   [
     "station",
     14,
     18,
@@ -900,6 +1003,20 @@
     "c": 20,
     "r": 2,
     "size": 1
+   },
+   {
+    "name": "Institute Survey",
+    "fac": "kelvane",
+    "c": 14,
+    "r": 12,
+    "size": 2
+   },
+   {
+    "name": "Institute Courier",
+    "fac": "kelvane",
+    "c": 11,
+    "r": 15,
+    "size": 1
    }
   ],
   "fleet_range": {
@@ -952,6 +1069,11 @@
     "ssarith",
     "Calder",
     "Pell Reach"
+   ],
+   [
+    "kelvane",
+    "Lyceum",
+    "Lyceum Depot"
    ],
    [
     "vos",

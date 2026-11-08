@@ -1,0 +1,456 @@
+{
+ "skin": "vhorr",
+ "method": "organic: no nine-slice; every slot sculpted at its exact rect (Organic Panel Bible rule 4)",
+ "units": "CSS px of the 1920 x 1080 console",
+ "written_by": "tools/mockups/vhorr_battle_blockout.py, from docs/mockups/battle-console.html's own rectangles",
+ "layouts": {
+  "battle": {
+   "size": [
+    1920,
+    1080
+   ],
+   "slots": [
+    {
+     "id": "nameplate",
+     "piece": "nameplate",
+     "kind": "hero",
+     "rect": [
+      10,
+      6,
+      356,
+      56
+     ],
+     "protected": [
+      {
+       "kind": "label",
+       "what": "name",
+       "rect": [
+        24,
+        18,
+        326,
+        32
+       ]
+      }
+     ]
+    },
+    {
+     "id": "panel.station",
+     "piece": "frame.panel",
+     "kind": "nine",
+     "rect": [
+      6,
+      68,
+      468,
+      420
+     ],
+     "protected": [
+      {
+       "kind": "live-drawing",
+       "what": "screen",
+       "rect": [
+        26,
+        90,
+        428,
+        378
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "officer",
+       "rect": [
+        56,
+        66,
+        250,
+        26
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "title",
+       "rect": [
+        284,
+        66,
+        190,
+        26
+       ]
+      }
+     ]
+    },
+    {
+     "id": "panel.ship",
+     "piece": "frame.panel",
+     "kind": "nine",
+     "rect": [
+      6,
+      494,
+      468,
+      276
+     ],
+     "protected": [
+      {
+       "kind": "live-drawing",
+       "what": "screen",
+       "rect": [
+        26,
+        516,
+        428,
+        234
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "title",
+       "rect": [
+        224,
+        478,
+        250,
+        26
+       ]
+      }
+     ]
+    },
+    {
+     "id": "panel.weapons",
+     "piece": "frame.panel",
+     "kind": "nine",
+     "rect": [
+      6,
+      776,
+      468,
+      160
+     ],
+     "protected": [
+      {
+       "kind": "live-drawing",
+       "what": "screen",
+       "rect": [
+        26,
+        798,
+        428,
+        118
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "title",
+       "rect": [
+        284,
+        760,
+        190,
+        26
+       ]
+      }
+     ]
+    },
+    {
+     "id": "dial",
+     "piece": "dial",
+     "kind": "hero",
+     "rect": [
+      6,
+      948,
+      120,
+      120
+     ],
+     "protected": [
+      {
+       "kind": "live-drawing",
+       "what": "radar",
+       "rect": [
+        16,
+        958,
+        100,
+        100
+       ]
+      }
+     ]
+    },
+    {
+     "id": "crest",
+     "piece": "crest",
+     "kind": "hero",
+     "rect": [
+      400,
+      972,
+      72,
+      72
+     ],
+     "protected": []
+    },
+    {
+     "id": "strip.top",
+     "piece": "strip.top",
+     "kind": "nine",
+     "rect": [
+      480,
+      0,
+      1440,
+      72
+     ],
+     "protected": [
+      {
+       "kind": "bar-cells",
+       "what": "readouts",
+       "rect": [
+        572,
+        12,
+        1256,
+        48
+       ]
+      }
+     ]
+    },
+    {
+     "id": "strip.bottom",
+     "piece": "strip.bottom",
+     "kind": "nine",
+     "rect": [
+      480,
+      1008,
+      1440,
+      72
+     ],
+     "protected": [
+      {
+       "kind": "bar-cells",
+       "what": "readouts",
+       "rect": [
+        572,
+        1020,
+        1256,
+        48
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "expanded": {
+   "size": [
+    1920,
+    1080
+   ],
+   "slots": [
+    {
+     "id": "panel.expanded",
+     "piece": "frame.panel",
+     "kind": "nine",
+     "rect": [
+      6,
+      34,
+      1268,
+      1040
+     ],
+     "protected": [
+      {
+       "kind": "live-drawing",
+       "what": "screen",
+       "rect": [
+        26,
+        56,
+        1228,
+        998
+       ]
+      },
+      {
+       "kind": "label",
+       "what": "title",
+       "rect": [
+        994,
+        32,
+        270,
+        26
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "tray": {
+   "size": [
+    1920,
+    1080
+   ],
+   "slots": [
+    {
+     "id": "tray",
+     "piece": "frame.panel",
+     "kind": "nine",
+     "rect": [
+      2400,
+      40,
+      460,
+      212
+     ],
+     "protected": [
+      {
+       "kind": "child-slot",
+       "what": "key",
+       "rect": [
+        2420,
+        60,
+        150,
+        48
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "key.square",
+       "rect": [
+        2590,
+        60,
+        48,
+        48
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "tab",
+       "rect": [
+        2660,
+        64,
+        120,
+        40
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "inset",
+       "rect": [
+        2420,
+        132,
+        180,
+        100
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "divider",
+       "rect": [
+        2620,
+        140,
+        160,
+        10
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "lamp.alert.yellow",
+       "rect": [
+        2800,
+        64,
+        40,
+        40
+       ]
+      }
+     ]
+    },
+    {
+     "id": "key",
+     "piece": "button.idle",
+     "kind": "nine",
+     "rect": [
+      2420,
+      60,
+      150,
+      48
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "label",
+       "rect": [
+        2460,
+        74,
+        70,
+        20
+       ]
+      }
+     ]
+    },
+    {
+     "id": "key.square",
+     "piece": "button.idle",
+     "kind": "nine",
+     "rect": [
+      2590,
+      60,
+      48,
+      48
+     ],
+     "protected": []
+    },
+    {
+     "id": "tab",
+     "piece": "tab.idle",
+     "kind": "nine",
+     "rect": [
+      2660,
+      64,
+      120,
+      40
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "label",
+       "rect": [
+        2690,
+        75,
+        60,
+        18
+       ]
+      }
+     ]
+    },
+    {
+     "id": "inset",
+     "piece": "frame.inset",
+     "kind": "nine",
+     "rect": [
+      2420,
+      132,
+      180,
+      100
+     ],
+     "protected": [
+      {
+       "kind": "live-drawing",
+       "what": "screen",
+       "rect": [
+        2432,
+        144,
+        156,
+        76
+       ]
+      }
+     ]
+    },
+    {
+     "id": "divider",
+     "piece": "divider",
+     "kind": "nine",
+     "rect": [
+      2620,
+      140,
+      160,
+      10
+     ],
+     "protected": []
+    },
+    {
+     "id": "lamp.alert.yellow",
+     "piece": "lamp.alert.yellow",
+     "kind": "hero",
+     "rect": [
+      2800,
+      64,
+      40,
+      40
+     ],
+     "protected": []
+    }
+   ]
+  }
+ }
+}

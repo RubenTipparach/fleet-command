@@ -119,6 +119,13 @@ def pieces():
     tri = Polygon([(48 + math.cos(a) * 19, 46 + math.sin(a) * 19) for a in [-math.pi / 2 + i * 2 * math.pi / 3 for i in range(3)]])
     add("crest", "hero", (96, 96), crest, [disc(48, 44, 26)],
         holo=[("triangle", tri), ("crystal", Polygon([(48, 34), (55, 45), (48, 56), (41, 45)]))], roll=2.0, dz=-8.0)
+    # The column's backing (CLAUDE.md section 7, "No black behind a metallic skin's panels"; openspec/changes/
+    # aelith-battle-console): one pillowed shell of the same gold, the height of the screen, the battle console's panels
+    # standing on it in their own shells. A pearl on the centre line wherever two panels part (the 6 px gaps at rows 65,
+    # 491, 773 and 939 of the battle console's column), as on every Conclave shell; no well, so no hologram is drawn on
+    # it. The band the expanded panel's backing tiles from (x 100-390) keeps only those pearls.
+    add("console.backing", "hero", (480, 1080), rbox(0.5, 0.5, 479.5, 1079.5, 22), [],
+        studs=[(240, y, 2.4) for y in (65, 491, 773, 939)], roll=3.0, dz=-6.0)
     return P
 
 
@@ -126,7 +133,7 @@ def check_all(P):
     """Run every piece through the fit rules; return (failures, report lines, films)."""
     bad, lines, films = 0, [], {}
     for name, p in P.items():
-        gap = min(w.exterior.distance(p["plate"].exterior) for w in p["wells"])
+        gap = min((w.exterior.distance(p["plate"].exterior) for w in p["wells"]), default=2 * INSET)  # a plate with no well
         inset = min(INSET, gap / 2)
         f = [behind_layer(w, p["plate"], grow=min(8.0, gap), inset=inset) for w in p["wells"]]
         films[name] = f

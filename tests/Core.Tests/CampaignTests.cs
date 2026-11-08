@@ -61,7 +61,7 @@ public sealed class CampaignTests
         Assert.Contains("here.field", Assert.Throws<DataError>(() => Expr.Parse(text, "here.field")).Message);
 
     [Fact]
-    public void Every_mission_file_loads() => Assert.Equal(18, Camp.Missions.Count);
+    public void Every_mission_file_loads() => Assert.Equal(20, Camp.Missions.Count);
 
     [Fact]
     public void A_mission_naming_something_the_campaign_lacks_is_refused()
@@ -232,6 +232,7 @@ public sealed class CampaignTests
                 c.S.Missions.Clear();
                 var data = def.Id == "prize_home"
                     ? new Dictionary<string, object> { ["fac"] = "krai", ["tier"] = 2.0, ["hull"] = "krai_ff", ["cls"] = "frigate", ["prize_name"] = "Vekk", ["taken_grade"] = "outstanding" }
+                    : def.Encounter ? new Dictionary<string, object> { ["ship"] = "Larkspur", ["freighter_fac"] = def.Id == "escort" ? side : "vos" }
                     : null;
                 Offer? m = null;
                 for (int t = 0; t < 6 && m == null; t++) { m = c.OfferMission(def.Id, data: data); if (m == null) c.EndTurn(); }
@@ -284,6 +285,129 @@ public sealed class CampaignTests
         Debrief d = MissionRun.Finish(c, m, plan, b);
         Assert.True(d.Win);
         Assert.Contains(c.S.Missions, x => x.Script == "prize_home" && x.C == c.S.HomeC && x.R == c.S.HomeR);
+    }
+
+    [Fact]
+    public void Each_faction_flies_its_own_approved_freighter_and_one_with_none_the_stand_in()
+    {
+        Assert.Equal("fr", Camp.FreighterOf("concord").BattleClass);
+        Assert.Equal("krai_fr", Camp.FreighterOf("krai").BattleClass);
+        Assert.Equal("hunt_fr", Camp.FreighterOf("ssarith").BattleClass);
+        Assert.Equal("freighter", Camp.FreighterOf("vos").Id);
+        Assert.All(new[] { "concord", "krai", "ssarith" }, f => Assert.False(Camp.FreighterOf(f).ForSale));
+        // the convoy missions field them, not warships
+        foreach (string id in new[] { "defend", "ambush", "distress", "escort", "raid" })
+            Assert.Contains(Camp.Missions[id].Battles.SelectMany(b => b.Groups), g => g.Hull == "freighter");
+    }
+
+    [Fact]
+    public void An_encounter_is_never_offered_at_random_only_on_meeting_a_freighter()
+    {
+        Assert.DoesNotContain(Camp.Contracts, m => m.Encounter);
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        for (int t = 0; t < 12; t++) { c.EndTurn(); Assert.DoesNotContain(c.S.Missions, m => c.ScriptOf(m).Encounter); }
+    }
+
+    // the fleet put in a freighter's sector (as if it had flown there)
+    private static Freighter Beside(Campaign.Campaign c, string fac)
+    {
+        Freighter f = c.S.Freighters.First(x => x.Fac == fac);
+        (c.S.AtC, c.S.AtR) = f.Here();
+        return f;
+    }
+
+    [Fact]
+    public void Sharing_a_sector_with_a_freighter_offers_her_escort_if_she_is_friendly_and_a_raid_if_not()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        Freighter own = Beside(c, "concord");
+        Assert.Contains(own, c.FreightersAt(c.S.AtC, c.S.AtR));
+        Offer e = c.Meet(own)!;
+        Assert.Equal("escort", e.Script);
+        Assert.Equal((own.Name, "concord"), (e.Value("ship"), e.Value("freighter_fac")));
+        Assert.Same(e, c.Meet(own));   // one encounter a freighter a turn
+        Freighter rival = Beside(c, "krai");
+        Assert.Null(c.Meet(own));      // she is not here
+        Assert.Equal("raid", c.Meet(rival)!.Script);
+        // gone at the end of the turn, when she moves on
+        c.EndTurn();
+        Assert.DoesNotContain(c.S.Missions, m => c.ScriptOf(m).Encounter);
+    }
+
+    [Fact]
+    public void A_raided_freighter_that_strikes_joins_the_fleet_with_her_cargo_and_is_cashed_out_at_a_port()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        Freighter f = Beside(c, "krai");
+        Offer m = c.Meet(f)!;
+        MissionPlan plan = MissionRun.Plan(c, m, TestData.Data)!;
+        var b = new Battle(TestData.Data, plan.Scenario);
+        Ship fr = b.ShipById(plan.Groups["freighter"][0])!;
+        Assert.Equal("krai_fr", fr.Class.Id);
+        Assert.True(fr.Prize);
+        Assert.Equal(Stance.Hold, fr.Stance);   // she keeps her course, never closing to fight
+        fr.Hull = fr.Class.HullHp * 0.2;
+        foreach (string id in plan.Groups["escorts"]) { Ship s = b.ShipById(id)!; s.Hull = 0; s.Alive = false; }
+        b.Step();
+        Assert.True(fr.Struck);
+        int fleet = c.S.Fleet.Count;
+        Debrief d = MissionRun.Finish(c, m, plan, b);
+        Assert.True(d.Win);
+        CampShip haul = c.S.Fleet.Single(s => s.Haul > 0);
+        Assert.Equal(fleet + 1, c.S.Fleet.Count);
+        Assert.Equal(f.Name, haul.Name);
+        Assert.Equal("freighter_krai", haul.Hull);
+        Assert.Equal((int)Math.Round(m.Reward * 3), haul.Haul);
+        Assert.Equal(c.Data.Rules.FreighterRefitTurns, f.Out);   // off her route while she is replaced
+        Assert.DoesNotContain(f, c.FreightersAt(c.S.AtC, c.S.AtR));
+        // she sails with the fleet but stays out of its battles
+        c.S.Missions.Clear();
+        MissionPlan next = MissionRun.Plan(c, c.OfferMission("patrol")!, TestData.Data)!;
+        Assert.Equal(fleet, next.FleetShips.Count);
+        Assert.NotNull(c.Sell(haul));   // not sold as a hull: cashed out
+        // cashed out at a port of your own
+        Assert.NotNull(c.CashOut());   // not here, at sea
+        (c.S.AtC, c.S.AtR) = (c.S.HomeC, c.S.HomeR);
+        int credits = c.S.Credits;
+        Assert.Null(c.CashOut());
+        Assert.Equal(credits + haul.Haul, c.S.Credits);
+        Assert.DoesNotContain(haul, c.S.Fleet);
+    }
+
+    [Fact]
+    public void A_boarded_and_captured_ship_counts_as_taken()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        Offer m = c.Meet(Beside(c, "krai"))!;
+        MissionPlan plan = MissionRun.Plan(c, m, TestData.Data)!;
+        var b = new Battle(TestData.Data, plan.Scenario);
+        Ship fr = b.ShipById(plan.Groups["freighter"][0])!;
+        fr.Captured = true;
+        fr.Side = 0;
+        Assert.True(MissionRun.MetNow(c, plan, b)["cargo"]);
+    }
+
+    [Fact]
+    public void Ships_do_not_mend_between_battles_but_at_a_port_or_with_a_repair_kit()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        CampShip s = c.S.Fleet[0];
+        s.HullPct = 40;
+        for (int t = 0; t < 5; t++) c.EndTurn();
+        Assert.Equal(40, s.HullPct);
+        // a kit mends a quarter, anywhere; none left, none mended
+        s.Supplies[Campaign.Campaign.KitSupply] = 1;
+        Assert.Null(c.FieldRepair(s));
+        Assert.Equal(40 + c.Data.Rules.KitRepairPct, s.HullPct);
+        Assert.Equal(0, c.Kits);
+        Assert.NotNull(c.FieldRepair(s));
+        Assert.Equal(40 + c.Data.Rules.KitRepairPct, s.HullPct);
+        // never past whole
+        s.HullPct = 90;
+        s.Supplies[Campaign.Campaign.KitSupply] = 1;
+        Assert.Null(c.FieldRepair(s));
+        Assert.Equal(100, s.HullPct);
+        Assert.NotNull(c.FieldRepair(s));
     }
 
     [Fact]
@@ -438,6 +562,7 @@ public sealed class MissionPreviewTests
             {
                 var data = f.EndsWith("prize_home.json")
                     ? new Dictionary<string, object> { ["fac"] = "krai", ["tier"] = 2.0, ["hull"] = "krai_ff", ["cls"] = "frigate", ["prize_name"] = "Vekk", ["taken_grade"] = "victory" }
+                    : f.EndsWith("escort.json") || f.EndsWith("raid.json") ? new Dictionary<string, object> { ["ship"] = "Larkspur", ["freighter_fac"] = "krai" }
                     : null;
                 PreviewResult r = MissionPreview.Run(TestData.Read, CampaignTests.MissionFiles, f, TestData.Read(f), "concord", 7, data, end);
                 Assert.True(r.Ok, $"{f} {end}: {r.Error}");

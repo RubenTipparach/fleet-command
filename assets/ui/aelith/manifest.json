@@ -234,6 +234,14 @@
         96
       ],
       "file": "crest.png"
+    },
+    "console.backing": {
+      "kind": "hero",
+      "size": [
+        480,
+        1080
+      ],
+      "file": "console.backing.png"
     }
   }
 }
