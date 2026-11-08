@@ -8,13 +8,13 @@
  },
  "kethran": {
   "name": "Kethran Hegemony",
-  "hull": "#8c6a64",
-  "trim": "#d9483b"
+  "hull": "#4a4f55",
+  "trim": "#9e2a1e"
  },
  "vos": {
   "name": "Vos Syndicate",
-  "hull": "#b39a6e",
-  "trim": "#e3a33a"
+  "hull": "#a8482a",
+  "trim": "#d6a043"
  },
  "krai": {
   "name": "Krai Warhost",
@@ -38,5 +38,40 @@
   "name": "Unclaimed",
   "hull": "#a0a6ae",
   "trim": "#7c8794"
+ },
+ "axiom": {
+  "name": "The Axiom",
+  "hull": "#e8ecf6",
+  "trim": "#4b3fd8"
+ },
+ "exponent": {
+  "name": "The Exponent",
+  "hull": "#5d686d",
+  "trim": "#8c4522"
+ },
+ "redtithe": {
+  "name": "Red Tithe",
+  "hull": "#2e3236",
+  "trim": "#5a1a12"
+ },
+ "tarsine": {
+  "name": "Tarsine Remnant",
+  "hull": "#6a5e50",
+  "trim": "#7a3b1c"
+ },
+ "aelith": {
+  "name": "Aelith Conclave",
+  "hull": "#e8e4da",
+  "trim": "#c9a646"
+ },
+ "ombrai": {
+  "name": "Ombrai",
+  "hull": "#3b2a5c",
+  "trim": "#3b1763"
+ },
+ "vhorr": {
+  "name": "Vhorr Brood",
+  "hull": "#5a3424",
+  "trim": "#2b1d2a"
  }
 }

@@ -315,6 +315,312 @@
     "hackers": 2,
     "pilots": 2
    }
+  },
+  "axiom_ff": {
+   "pads": 2,
+   "hold_t": 8,
+   "marines": 4
+  },
+  "axiom_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 6
+  },
+  "axiom_ca": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "axiom_bb": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "exponent_ff": {
+   "pads": 2,
+   "hold_t": 8,
+   "marines": 4
+  },
+  "exponent_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 6
+  },
+  "exponent_ca": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "exponent_cv": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "redtithe_ff": {
+   "pads": 2,
+   "hold_t": 8,
+   "marines": 4
+  },
+  "redtithe_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 6
+  },
+  "redtithe_ca": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "redtithe_fl": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "vos_ff": {
+   "pads": 2,
+   "hold_t": 8,
+   "marines": 4
+  },
+  "vos_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 6
+  },
+  "vos_ca": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "vos_cap": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "kethran_ff": {
+   "pads": 2,
+   "hold_t": 8,
+   "marines": 4
+  },
+  "kethran_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 6
+  },
+  "kethran_ca": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "kethran_dn": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "tarsine_ff": {
+   "pads": 2,
+   "hold_t": 8,
+   "marines": 4
+  },
+  "tarsine_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 6
+  },
+  "tarsine_ca": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "tarsine_dn": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "aelith_ff": {
+   "pads": 2,
+   "hold_t": 8,
+   "marines": 4
+  },
+  "aelith_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 6
+  },
+  "aelith_ca": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "aelith_cap": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "ombrai_ff": {
+   "pads": 2,
+   "hold_t": 8,
+   "marines": 4
+  },
+  "ombrai_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 6
+  },
+  "ombrai_ca": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "ombrai_cap": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "vhorr_ff": {
+   "pads": 2,
+   "hold_t": 8,
+   "marines": 4
+  },
+  "vhorr_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 6
+  },
+  "vhorr_ca": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "vhorr_cv": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
   }
  },
  "beam_fx": {

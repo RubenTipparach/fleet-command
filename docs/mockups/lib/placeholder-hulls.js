@@ -130,25 +130,29 @@
     const key = JSON.stringify(F.colours);
     if (MATS[key]) return MATS[key];
     const c = F.colours, std = (hex, rough, metal) => new THREE.MeshStandardMaterial({ color: new THREE.Color(hex), roughness: rough, metalness: metal, flatShading: !!F.hull.facet, side: THREE.DoubleSide });
-    return (MATS[key] = [std(c.hull, 0.55, 0.35), std(c.trim, 0.5, 0.4), std(c.accent || c.trim, 0.45, 0.5), std(c.dark, 0.7, 0.3),
-      new THREE.MeshBasicMaterial({ color: new THREE.Color(c.glow), side: THREE.DoubleSide })]);
+    const all = [std(c.hull, 0.55, 0.35), std(c.trim, 0.5, 0.4), std(c.accent || c.trim, 0.45, 0.5), std(c.dark, 0.7, 0.3),
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(c.glow), side: THREE.DoubleSide })];
+    all.forEach((m, i) => { m.name = ROLES[i]; });   // the glb's material names: hull, trim, accent, dark, glow
+    return (MATS[key] = all);
   }
 
-  // Build one class of one faction as a THREE.Mesh, named for the class id, with its length in userData.
+  // Build one class of one faction as a THREE.Group named for the class id, with its length in userData: the body as the
+  // mesh "hull" and each limb as its own mesh ("limb_<i>", its mirror "limb_<i>_port", an iteration "_<k>"), so the game can
+  // blow each one off as a piece (tools/mockups/export_ships.mjs writes them as the break's pieces).
   function build(THREE, F, C) {
-    const B = new Builder();
-    body(B, F, C);
-    for (const Lm of C.limbs || []) {
+    const mats = materials(THREE, F), group = new THREE.Group();
+    const add = (name, fill) => { const B = new Builder(); fill(B); const m = new THREE.Mesh(B.geometry(THREE), mats); m.name = name; group.add(m); };
+    add('hull', (B) => body(B, F, C));
+    (C.limbs || []).forEach((Lm, i) => {
       const copies = Math.max(1, Lm.iterate || 1);
       for (let k = 0; k < copies; k++) {
-        const sc = Math.pow(Lm.scale || 0.618, k), dz = -0.22 * k;
-        limb(B, F, C, Lm, 1, sc, dz);
-        if (Lm.mirror) limb(B, F, C, Lm, -1, sc, dz);
+        const sc = Math.pow(Lm.scale || 0.618, k), dz = -0.22 * k, tag = 'limb_' + i + (k ? '_' + k : '');
+        add(tag, (B) => limb(B, F, C, Lm, 1, sc, dz));
+        if (Lm.mirror) add(tag + '_port', (B) => limb(B, F, C, Lm, -1, sc, dz));
       }
-    }
-    const mesh = new THREE.Mesh(B.geometry(THREE), materials(THREE, F));
-    mesh.name = C.id; mesh.userData = { length_m: C.length_m, faction: F.name, cls: C.name };
-    return mesh;
+    });
+    group.name = C.id; group.userData = { length_m: C.length_m, faction: F.name, cls: C.name };
+    return group;
   }
 
   window.PlaceholderHulls = { build, sample, sect };

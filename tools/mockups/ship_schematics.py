@@ -34,7 +34,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SHIPS = ROOT / "assets" / "ships"
 OUT = SHIPS / "schematics"
 SHEET = ROOT / "docs" / "screenshots" / "schematics" / "sheet.png"
-FACTIONS = ("concord", "krai", "ssarith", "kelvane")
+# the approved lines, and the placeholder lines of mockup 36 (data/ships/placeholders.json)
+FACTIONS = ("concord", "krai", "ssarith", "kelvane", "axiom", "exponent", "redtithe", "vos", "kethran", "tarsine", "aelith", "ombrai", "vhorr")
 
 SIZE_PX = 1024          # the square canvas of each layer
 MARGIN = 0.06           # fraction of the canvas left clear on each side of the longest extent

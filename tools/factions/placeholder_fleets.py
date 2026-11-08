@@ -127,13 +127,13 @@ F['kethran'] = {'name': 'Kethran Hegemony', 'colours': {'hull': '#4a4f55', 'trim
            'rise': [0.9, 1, 1, 0.85, 0.6, 0.35, 0.08], 'centre': [0, 0, 0, 0, -0.05, -0.1, -0.15]},
   'tradition': 'Rank and the foundry: faceted plate to a blade prow, blade wings, a rank crest that grows with standing',
   'classes': [
-    cls('kethran_ff', 'Lancer', 'Frigate', 'LN', 60, 0.46, 0.22, ['2 heavy guns', '1 missile rack'], [wing(0.6)],
+    cls('kethran_ff', 'Lancer', 'Frigate', 'LN', 60, 0.46, 0.22, ['2 heavy guns', '1 missile rack'], [wing(0.35)],
         [stripe('accent', 0.4, 0.43, -180, 180), stripe('trim', 0.0, 0.3, -20, 20)], 'The lowest rank that may fly alone'),
-    cls('kethran_dd', 'Warden', 'Destroyer', 'WD', 92, 0.46, 0.22, ['4 heavy guns', '2 missile racks'], [wing(0.8), crest(0.3)],
+    cls('kethran_dd', 'Warden', 'Destroyer', 'WD', 92, 0.46, 0.22, ['4 heavy guns', '2 missile racks'], [wing(0.45), crest(0.3)],
         [stripe('accent', 0.38, 0.41, -180, 180), stripe('trim', 0.0, 0.35, -20, 20)], 'Holds a border world for its lord'),
-    cls('kethran_ca', 'Bastion', 'Cruiser', 'BN', 140, 0.48, 0.24, ['6 heavy guns', '2 missile racks', 'spinal driver'], [wing(1.0), crest(0.55)],
+    cls('kethran_ca', 'Bastion', 'Cruiser', 'BN', 140, 0.48, 0.24, ['6 heavy guns', '2 missile racks', 'spinal driver'], [wing(0.55), crest(0.55)],
         [stripe('accent', 0.36, 0.39, -180, 180), stripe('accent', 0.5, 0.52, -180, 180), stripe('trim', 0.0, 0.4, -20, 20)], 'A fortress that moves'),
-    cls('kethran_dn', 'Throne', 'Dreadnought', 'TR', 210, 0.5, 0.25, ['10 heavy guns', '4 missile racks', 'spinal driver'], [wing(1.2), crest(0.9)],
+    cls('kethran_dn', 'Throne', 'Dreadnought', 'TR', 210, 0.5, 0.25, ['10 heavy guns', '4 missile racks', 'spinal driver'], [wing(0.65), crest(0.9)],
         [stripe('accent', 0.34, 0.37, -180, 180), stripe('accent', 0.48, 0.5, -180, 180), stripe('trim', 0.0, 0.45, -20, 20)], 'A lord\'s seat in war'),
   ]}
 
@@ -151,7 +151,7 @@ F['tarsine'] = {'name': 'Tarsine Remnant', 'colours': {'hull': '#6a5e50', 'trim'
         [stripe('glow', 0.25, 0.75, 80, 100), stripe('accent', 0.9, 0.95, -180, 180)], 'Guards what the Remnant still holds'),
     cls('tarsine_ca', 'Monument', 'Cruiser', 'MN', 170, 0.34, 0.3, ['6 ancient beams', '2 missile racks'], [butt(1), butt(-1)],
         [stripe('glow', 0.2, 0.8, 80, 100), stripe('accent', 0.88, 0.93, -180, 180), stripe('trim', 0.0, 0.2, -180, 180)], 'Built to be seen from every world'),
-    cls('tarsine_dn', 'Dominion', 'Dreadnought', 'DM', 300, 0.34, 0.3, ['12 ancient beams', '4 missile racks', 'the first-age cannon'], [butt(1), butt(-1)],
+    cls('tarsine_dn', 'Dominion', 'Dreadnought', 'DM', 270, 0.34, 0.3, ['12 ancient beams', '4 missile racks', 'the first-age cannon'], [butt(1), butt(-1)],
         [stripe('glow', 0.15, 0.85, 80, 100), stripe('accent', 0.86, 0.9, -180, 180), stripe('trim', 0.0, 0.25, -180, 180)], 'From when the Remnant ruled'),
   ]}
 

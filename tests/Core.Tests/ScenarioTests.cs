@@ -54,6 +54,9 @@ public class ScenarioTests
             {
                 bool allied = s.Name is "Allied fleet" or "Four races";
                 if (allied && o.Side == 1 && o.Faction is "kethran" or "vos") continue;
+                // the placeholder lines (mockup 36; owner, 2026-11-08: "cool start implementation") stand in the damage ranges
+                // only, still targets with their own placeholder hulls, never in a fight
+                if (s.DamageRange && o.Side == 1 && o.Id.StartsWith("ph_") && TestData.Data.Classes[o.Class].Model != null) continue;
                 Assert.True(o.Faction is "concord" or "krai" or "ssarith" or "kelvane", $"{s.Id}: {o.Id} is of the {o.Faction}");
                 // a station is drawn as the mockup's station (its stationModel: scenes/standins/station.tscn), not a ship's stand-in
                 ShipClass c = TestData.Data.Classes[o.Class];

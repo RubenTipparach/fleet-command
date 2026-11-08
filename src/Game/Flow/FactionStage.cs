@@ -110,7 +110,7 @@ public sealed partial class FactionStage : Node3D
         foreach (JsonElement s in m.GetProperty("slots").EnumerateArray())
         {
             string fac = s.GetProperty("faction").GetString()!;
-            var slot = new Slot { Fac = fac, Root = new Node3D { Name = fac, Position = new Vector3(s.GetProperty("x").GetSingle(), 0, 0) } };
+            var slot = new Slot { Fac = fac, Root = new Node3D { Name = fac, Position = new Vector3(s.GetProperty("x").GetSingle(), 0, s.TryGetProperty("z", out JsonElement z) ? z.GetSingle() : 0) } };
             AddChild(slot.Root);
             slot.Holder = new Node3D { Name = "Holder", Position = new Vector3(0, _float, 0) };
             slot.Root.AddChild(slot.Holder);
@@ -278,6 +278,7 @@ public sealed partial class FactionStage : Node3D
             // the page's intensity is in three.js 0.147's legacy light units, about pi times a physical (and Godot) unit's
             // light, so the pool on the wood is as warm and bright as the page's (owner, 2026-11-06: "that light cone is wrong")
             s.Lamp.LightEnergy = (0.25f + 6.5f * s.On) * Mathf.Pi;
+            s.Lamp.ShadowEnabled = s.On > 0.05f;   // only a lit lamp casts shadows: thirteen shadowed lamps are too many for a phone (the page's stepFaction)
             s.Beam.SetShaderParameter("level", s.On);
             s.Dust.SetShaderParameter("level", s.On);
             s.Dust.SetShaderParameter("t", _t);

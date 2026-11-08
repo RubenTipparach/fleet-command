@@ -19,7 +19,7 @@ approved lines, where the Concord runs from 52 m to 188 m:
 - frigates are 50-72 m;
 - destroyers are 78-110 m;
 - cruisers are 118-170 m;
-- capitals are 168-300 m.
+- capitals are 168-270 m, short of the freighters (every freighter is longer than any warship).
 
 The Tarsine Remnant is the largest at every step, because it does not shrink what it built in the first age.
 
@@ -32,7 +32,7 @@ The armament is a role sketch for the class card, not tuning. The battle numbers
 | Red Tithe | Boarding: a ram keel, boarding tubes, the flagship carrying the Hall where debts are posted | Cutter 54 m | Reaver 82 m | Bloodship 124 m | Tithe Hall 176 m (flagship) |
 | Vos Syndicate | Clans that take ships whole: boarding forks, salvaged outrigger hulls | Skiff 50 m | Corsair 78 m | Privateer 118 m | Galleon 168 m |
 | Kethran Hegemony | Rank and the foundry: faceted plate, a blade prow, a rank crest that grows with standing | Lancer 60 m | Warden 92 m | Bastion 140 m | Throne 210 m (dreadnought) |
-| Tarsine Remnant | Unchanged since the first age: one monolith plan at every size, buttresses, lamps in arched windows | Votary 72 m | Custodian 110 m | Monument 170 m | Dominion 300 m (dreadnought) |
+| Tarsine Remnant | Unchanged since the first age: one monolith plan at every size, buttresses, lamps in arched windows | Votary 72 m | Custodian 110 m | Monument 170 m | Dominion 270 m (dreadnought) |
 | Aelith Conclave | Shells round a core of light, one more shell for each age of service | Seeker 56 m | Envoy 84 m | Archive 130 m | Sanctum 196 m |
 | Ombrai | The watchers: flat dark hulls, petals closed forward, a lit eye under the bow | Veil 54 m | Shade 82 m | Vigil 126 m | Eclipse 186 m |
 | Vhorr Brood | Grown, not built: hulls grown in chambers, carapace bands, feeding tendrils | Drone 52 m | Ravager 80 m | Broodship 130 m | Hive 220 m (carrier) |
@@ -79,6 +79,21 @@ Mockup 36 has:
 - a card with the emblem, the faction's tradition and the class table.
 
 It is checked at desktop, phone landscape and phone portrait sizes.
+
+## D6. In the game (approved for implementation, 2026-11-08)
+
+- **Models**: `tools/mockups/export_ships.mjs` builds each hull with the page's own generator (`exportPlaceholdersInPage`)
+  and writes `assets/ships/<faction>/<id>.glb` with a manifest entry. The body and each limb are a node at their own
+  centre, and the break lists them as pieces, so a destroyed placeholder throws them off whole.
+- **Classes**: `tools/factions/placeholder_classes.py` writes them. Each class's numbers and mounts are those of the
+  approved class in its role, without the Concord's special weapons. Its battle length is its true length times 2.7, the
+  framing every class uses. The script also gives each class its comms and boarding entries, adds the faction's
+  campaign hulls, and puts each line in a row of its own in the damage ranges.
+- **Hits**: the damage view samples the plain surfaces where a ship has no hull shader, so shots raise fireballs. There
+  are no scorch marks yet.
+- **Changes for the game**:
+  - the Kethran wings are narrower, so no hull is wider than it is long (the schematics find the nose from the long axis);
+  - the Dominion is 270 m, so the freighters stay the longest ships.
 
 ## Open questions
 
