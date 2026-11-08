@@ -143,9 +143,9 @@
         // the night side cross-hatched: one more set of lines for each band deeper into shadow
         float dark = 1.0 - band;
         float ink = 0.0;
-        if (dark > 0.35) ink = max(ink, lines(px, 0.785, 8.0, 0.7));
-        if (dark > 0.55) ink = max(ink, lines(px, -0.785, 8.0, 0.7));
-        if (dark > 0.8) ink = max(ink, lines(px, 0.0, 6.0, 0.6));
+        if (dark > 0.35) ink = max(ink, lines(px, 0.785, 4.0, 0.55));   // twice the density (owner, 2026-11-08)
+        if (dark > 0.55) ink = max(ink, lines(px, -0.785, 4.0, 0.55));
+        if (dark > 0.8) ink = max(ink, lines(px, 0.0, 3.0, 0.5));
         ink *= 1.0 - glow;
         c = mix(c, uInk, ink * 0.62);
         // coastlines, band edges and crater rims inked
@@ -158,14 +158,14 @@
         // the atmosphere: a thin washed rim on the lit side, hatched faintly
         vec2 d = p / r; float side = clamp(dot(vec3(d, 0.2), L) * 1.5 + 0.2, 0.0, 1.0);
         float a = (1.0 - (r - 1.0) / 0.12) * side * 0.65;
-        col = vec4(uAtmo, a * (1.0 - 0.5 * lines(px, 0.785, 7.0, 0.7)));
+        col = vec4(uAtmo, a * (1.0 - 0.5 * lines(px, 0.785, 3.5, 0.55)));
       }
       if (ringHit && (!behind || r >= 1.0)) {   // the far half only where the disc does not cover it
         // the ring: washed in its colour, its far side darker, its edges inked, hatched where the planet's shadow falls
         float e = min(ringR - 1.42, 1.82 - ringR);
         vec3 rc = mix(uRingCol, vec3(0.93, 0.87, 0.74), 0.3) * (behind ? 0.72 : 1.0);
         float shadowed = (!behind && q.x > 0.0 && abs(q.x) < 1.0) ? 1.0 : 0.0;
-        rc = mix(rc, uInk, lines(px, -0.785, 7.0, 0.7) * (0.2 + 0.55 * shadowed));
+        rc = mix(rc, uInk, lines(px, -0.785, 3.5, 0.55) * (0.2 + 0.55 * shadowed));
         rc = mix(rc, uInk, 1.0 - smoothstep(0.0, 0.05, e));
         rc = mix(rc, uInk, (1.0 - smoothstep(0.0, 0.018, abs(ringR - 1.6))) * 0.7);   // the gap in the ring
         col = vec4(rc, 1.0);

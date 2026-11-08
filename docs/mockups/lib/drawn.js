@@ -88,14 +88,20 @@
     g.restore();
     g.save(); pathOf(g, pts); g.clip(); g.strokeStyle = css(mix(col, [0, 0, 0], 0.35), edge); g.lineWidth = Math.max(2, sz * 0.03); pathOf(g, pts); g.stroke(); g.restore();
   }
-  // Hatching: wobbly parallel pen lines at `angle`, `gap` px apart, inside a clip the caller has set, over a box.
+  // Hatching: wobbly parallel pen lines at `angle`, `gap` px apart, inside a clip the caller has set, over a box. Each line
+  // wanders on its own seeded wave; all the lines go into one path and one stroke, since a hatch is hundreds of lines (the
+  // pen pressure of ink() would cost a stroke per segment, thousands of times more, for a swell nobody sees at this width).
   function hatch(g, box, angle, gap, R, { w = 1, col = INK, alpha = 0.7 } = {}) {
     const [x0, y0, x1, y1] = box, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, L = Math.hypot(x1 - x0, y1 - y0) / 2 + 4;
-    const dx = Math.cos(angle), dy = Math.sin(angle), nx = -dy, ny = dx;
+    const dx = Math.cos(angle), dy = Math.sin(angle), nx = -dy, ny = dx, step = Math.max(3, gap * 1.5);
+    g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = css(col); g.globalAlpha = alpha; g.lineWidth = w;
+    g.beginPath();
     for (let s = -L; s <= L; s += gap * (0.8 + 0.4 * R())) {
       const ox = cx + nx * s, oy = cy + ny * s, a = -L * (0.85 + 0.15 * R()), b = L * (0.85 + 0.15 * R());
-      ink(g, [[ox + dx * a, oy + dy * a], [ox + dx * b, oy + dy * b]], { w, col, R, amp: 0.6, alpha });
+      const n = Math.max(2, Math.ceil((b - a) / step)), f = wave(R, n + 1, 3), amp = Math.min(1.2, gap * 0.15);
+      for (let i = 0; i <= n; i++) { const u = a + (b - a) * i / n, o = f(i) * amp, x = ox + dx * u + nx * o, y = oy + dy * u + ny * o; i ? g.lineTo(x, y) : g.moveTo(x, y); }
     }
+    g.stroke(); g.restore();
   }
   // The outline of a union of circles seen from a point inside them: the farthest crossing along each ray, so lobes
   // meet in cusps the way a drawn cloud's do.
@@ -150,7 +156,7 @@
       // tone by the pen, three zones deeper into the shadow (lower right): single lines through the mid-tone, crossed in
       // the shadow, a third set in the deepest part
       const box = [l.x - l.r, l.y - l.r, l.x + l.r, l.y + l.r], zone = (ox, oy, k) => { g.beginPath(); g.rect(l.x - l.r - 2, l.y - l.r - 2, 2 * l.r + 4, 2 * l.r + 4); g.arc(l.x + ox * l.r, l.y + oy * l.r, l.r * k, 0, TAU, true); g.clip('evenodd'); };
-      const lw = W / (storm ? 150 : 175), gap = W * (storm ? 0.026 : 0.032);
+      const lw = W / (storm ? 190 : 220), gap = W * (storm ? 0.013 : 0.016);   // twice the density (owner, 2026-11-08: "2x cross hatch density")
       g.save(); zone(-0.85, -0.8, 1.12);
       g.fillStyle = css(mix(col, [0.05, 0.03, 0.1], 0.35), storm ? 0.45 : 0.25); g.fillRect(l.x - l.r, l.y - l.r, 2 * l.r, 2 * l.r);
       hatch(g, box, -0.9, gap, R, { w: lw, alpha: storm ? 0.7 : 0.55 });
@@ -198,7 +204,7 @@
         for (let k = 10; k >= 0; k--) { const t = k / 10, w = half * (1 - t) * 1.1, s = Math.sin(t * Math.PI * 2.2) * 0.18 * (1 - t * 0.5); pts.push([cx + Math.cos(a + w + s) * (r + (len - r) * t), cy + Math.sin(a + w + s) * (r + (len - r) * t)]); }
       }
       wash(g, pts, flame ? [0.95, 0.55, 0.2] : [0.98, 0.78, 0.3], R, { blooms: 2, alpha: 0.95, edge: 0.3 });
-      if (!flame) { g.save(); pathOf(g, [[cx, cy], pts[1], pts[2]]); g.clip(); hatch(g, [cx - len, cy - len, cx + len, cy + len], a + 0.6, W * 0.014, R, { w: W / 420, col: '#8a3a10', alpha: 0.6 }); g.restore(); }
+      if (!flame) { g.save(); pathOf(g, [[cx, cy], pts[1], pts[2]]); g.clip(); hatch(g, [cx - len, cy - len, cx + len, cy + len], a + 0.6, W * 0.007, R, { w: W / 500, col: '#8a3a10', alpha: 0.6 }); g.restore(); }
       ink(g, pts, { w: W / 220, R, closed: true, amp: 0.5 });
     }
     const disc = Array.from({ length: 100 }, (_, i) => { const a = i / 100 * TAU; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; });
@@ -209,8 +215,8 @@
     g.fillStyle = rim; g.fillRect(0, 0, W, H);
     // the disc's far side (lower right) hatched and cross-hatched in burnt ink
     g.save(); g.beginPath(); g.rect(0, 0, W, H); g.arc(cx - r * 0.3, cy - r * 0.3, r * 1.08, 0, TAU, true); g.clip('evenodd');
-    hatch(g, [cx - r, cy - r, cx + r, cy + r], -0.8, W * 0.022, R, { w: W / 380, col: '#8a3a10', alpha: 0.7 });
-    hatch(g, [cx - r, cy - r, cx + r, cy + r], 0.8, W * 0.026, R, { w: W / 400, col: '#8a3a10', alpha: 0.55 });
+    hatch(g, [cx - r, cy - r, cx + r, cy + r], -0.8, W * 0.011, R, { w: W / 460, col: '#8a3a10', alpha: 0.7 });
+    hatch(g, [cx - r, cy - r, cx + r, cy + r], 0.8, W * 0.013, R, { w: W / 480, col: '#8a3a10', alpha: 0.55 });
     g.restore();
     // a few curling strokes of the surface's churn
     for (let k = 0; k < 4; k++) { const a = R() * TAU, rr = r * (0.3 + R() * 0.45), pts = []; for (let j = 0; j <= 10; j++) { const b = a + j * 0.12; pts.push([cx + Math.cos(b) * rr, cy + Math.sin(b) * rr]); } ink(g, pts, { w: W / 360, R, col: '#8a3a10', alpha: 0.6 }); }
@@ -228,7 +234,7 @@
     wash(g, out, tone, R, { blooms: 4, alpha: 1 });
     g.save(); pathOf(g, out); g.clip();
     g.beginPath(); g.rect(0, 0, W, H); g.arc(cx - r * 0.35, cy - r * 0.35, r * 1.15, 0, TAU, true); g.clip('evenodd');
-    g.fillStyle = 'rgba(30, 20, 15, 0.45)'; g.fillRect(0, 0, W, H); hatch(g, [0, 0, W, H], -0.8, W * 0.085, R, { w: W / 60, alpha: 0.7 }); hatch(g, [0, 0, W, H], 0.8, W * 0.095, R, { w: W / 70, alpha: 0.6 });
+    g.fillStyle = 'rgba(30, 20, 15, 0.45)'; g.fillRect(0, 0, W, H); hatch(g, [0, 0, W, H], -0.8, W * 0.0425, R, { w: W / 80, alpha: 0.7 }); hatch(g, [0, 0, W, H], 0.8, W * 0.0475, R, { w: W / 90, alpha: 0.6 });
     g.restore();
     for (let k = 0; k < 1 + Math.floor(R() * 2); k++) { const x = cx + (R() - 0.6) * r, y = cy + (R() - 0.6) * r * 0.6, cr = r * (0.12 + R() * 0.12), pts = []; for (let j = 0; j <= 16; j++) { const a = Math.PI * 0.9 + j / 16 * Math.PI * 1.2; pts.push([x + Math.cos(a) * cr, y + Math.sin(a) * cr * 0.7]); } ink(g, pts, { w: W / 110, R, amp: 0.3 }); }
     ink(g, out, { w: W / 45, R, closed: true, amp: 0.6 });

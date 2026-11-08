@@ -27,6 +27,9 @@
 - [x] 1.13 Planets half size and whole, clouds smaller with hatched shadows over their sectors (owner, 2026-11-08: "planet rings
   and the bottom of the planet are getting clipped. they should be 1/2 size", "can the clouds be smaller? and cast a shadow") (mockup 1
   v28, mockup 34 v6)
+- [x] 1.14 Twice the cross-hatch density, the printed nebulae and belts removed (their billboards stand instead), planets on
+  hexagon flight stands (owner, 2026-11-08: "2x cross hatch density", "nebula and asteroid drawings dont need to appear as part of
+  map texture", "give planets those hexagon standees as well") (mockup 1 v29, mockup 34 v7)
 
 ## 2. After the owner's notes
 
