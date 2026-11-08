@@ -79,6 +79,7 @@ shot institute-carrier-pads 1920x1080 --steps=300 --scenario=concord_range --tar
 shot institute-frigate 1920x1080 --steps=300 --scenario=concord_range --target=t_iff --target-view --zoom=0.3
 shot institute-wrecks 1920x1080 --steps=2400 --scenario=concord_institute_wrecks --target=kw_parallax --target-view --zoom=0.7
 shot kelvane-patience 1920x1080 --steps=600 --scenario=kelvane_battle
+shot kelvane-patience-ship 1920x1080 --steps=600 --scenario=kelvane_battle --expand=ship
 # the Kelvane Institute's console end to end (2026-11-07, owner: "end to end test all kelvane ui systems"): every station
 # expanded, every ship page, the radar and the phone shapes, each in the Institute's own scenes
 for st in helm power tactical pd science comms repair transport fleet; do
