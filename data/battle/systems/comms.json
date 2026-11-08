@@ -348,13 +348,13 @@
    "team": {}
   },
   "mon": {
-   "pads": 0,
+   "pads": 1,
    "hold_t": 0,
    "marines": 0,
    "team": {}
   },
   "pod": {
-   "pads": 0,
+   "pads": 1,
    "hold_t": 40,
    "marines": 0,
    "team": {}

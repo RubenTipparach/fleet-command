@@ -24,6 +24,17 @@ public static class Aiming
         return hp <= 0 ? SystemStatus.Destroyed : hp < b.Tuning.StatusDisabledBelow ? SystemStatus.Disabled : hp < 1 ? SystemStatus.Damaged : SystemStatus.Active;
     }
 
+    /// <summary>A ship's name as the player's side knows it: its own, or "Unknown contact" while it is beyond every friendly
+    /// ship's sensors and unscanned (Battle.Identified; owner, 2026-11-08: "The one big thing we need is sensor systems").
+    /// Every place that names an enemy asks this, so none gives away what the sensors have not found.</summary>
+    public static string ContactName(Battle b, Ship o) => b.Identified(o) ? o.Name : "Unknown contact";
+
+    /// <summary>A ship's class as the player's side knows it ("Unknown" until identified).</summary>
+    public static string ContactClass(Battle b, Ship o) => b.Identified(o) ? o.Class.Name : "Unknown";
+
+    /// <summary>A ship's class code as the player's side knows it ("?" until identified).</summary>
+    public static string ContactCode(Battle b, Ship o) => b.Identified(o) ? o.Class.Code : "?";
+
     /// <summary>A contact's colour: your side's ships Accord, the Vos Caution, every other enemy Alert.</summary>
     public static Color ContactColor(Palette c, Ship me, Ship o) => o.Side == me.Side ? c.Accord : o.Faction.Id == "vos" ? c.Caution : c.Alert;
 

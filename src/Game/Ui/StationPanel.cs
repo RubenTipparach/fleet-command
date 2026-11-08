@@ -162,7 +162,7 @@ public sealed partial class StationPanel : ConsolePanel
         }
         if (!Big) return;
         y += 3 * (ks + gap) + 20;
-        if (t != null) Pairs("helm.t", x0, y, new (string, string, Color?)[] { ("Target", t.Name, null), ("Range", $"{Rules.DistKm(s, t):0.0} km", null), ("Speed", $"{Math.Round(t.V)} M/S", null) });
+        if (t != null) Pairs("helm.t", x0, y, new (string, string, Color?)[] { ("Target", Aiming.ContactName(B, t), null), ("Range", $"{Rules.DistKm(s, t):0.0} km", null), ("Speed", $"{Math.Round(t.V)} M/S", null) });
         else Lbl("No target", x0, y);
         Pairs("helm.m", x0, y + 34, new (string, string, Color?)[] { ("Max speed", $"{Math.Round(B.Rules.MaxSpeed(s))} M/S", null), ("Engine boxes", s.Power["engines"].ToString(), null) });
     }
