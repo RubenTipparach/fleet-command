@@ -73,7 +73,7 @@ python .claude/skills/obs-record/scripts/obs_record.py \
   --capture game --start-on "^PLAYTEST_START" --stop-on "^PLAYTEST_END" \
   --fps 60 --out output/playtests/<date>-first-battle.mp4 --contact-sheet
 ffmpeg -i output/playtests/<date>-first-battle.mp4 -c:v libx264 -crf 18 -preset slow -pix_fmt yuv420p -an \
-  "G:/My Drive/dungeon-crawler-2026/fleet-command-<date>-first-battle.mp4"
+  "G:/My Drive/dungeon-crawler-2026/fleet-command/concord/fleet-command-<date>-first-battle.mp4"
 ```
 
 - Record in **real time**: a take shows how the game feels.
@@ -84,7 +84,7 @@ ffmpeg -i output/playtests/<date>-first-battle.mp4 -c:v libx264 -crf 18 -preset 
 
 ## Upload to Google Drive
 
-Every recorded take is uploaded at full resolution as an H.264 MP4, to `G:/My Drive/dungeon-crawler-2026/` (Drive for Desktop),
+Every recorded take is uploaded at full resolution as an H.264 MP4, to `G:/My Drive/dungeon-crawler-2026/fleet-command/<faction>/` (Drive for Desktop; the side the take plays, or `all-factions/`),
 named `fleet-command-<YYYY-MM-DD>-<what>.mp4`. Confirm it with the Google Drive connector
 (`search_files` for the title); the connector cannot upload video itself. Put the link in the report
 and the reply. If the folder is missing, say so and give the owner the copy command.

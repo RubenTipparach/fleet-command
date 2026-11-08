@@ -19,7 +19,7 @@ drives them):
   before either, so a take never opens on a loading screen.
 - A phone-size take runs the desktop build in a phone-shaped window (`--resolution 844x390`, a Godot
   command-line option) so the expanded panels and the side view are recorded too.
-- Every take's share copy (H.264 `-crf 26 -preset slow`) goes to `G:/My Drive/dungeon-crawler-2026/`
+- Every take's share copy (H.264 `-crf 26 -preset slow`) goes to `G:/My Drive/dungeon-crawler-2026/fleet-command/<faction>/`
   as `fleet-command-<YYYY-MM-DD>-<what>.mp4`, confirmed with the Google Drive connector, linked to
   the owner. On a Mac, match `--window-title "Fleet Command"`.
 - A cloud session cannot run OBS.
