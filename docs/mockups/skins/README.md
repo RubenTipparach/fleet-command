@@ -7,6 +7,11 @@ Each file here is one faction skin for mockup 4 (`docs/mockups/console-skins.htm
 A module is plain JavaScript in an IIFE that calls `window.FCK.register(id, def)`. It draws everything in canvas,
 deterministically (seeded randomness only: `FCK.rng(FCK.hash('<id>.<piece>'))`), and fetches nothing.
 
+A skin that also dresses a battle console keeps its whole look in `docs/mockups/lib/<id>.js` (one implementation, CLAUDE.md
+section 6.1), which both pages inline; its module here is then a thin wrapper that registers the library's painters with
+this page's tokens (the Krai, the Ssarith Hunt, the Kelvane Institute, the Axiom, the Exponent and the Red Tithe). The
+shared helpers `arcPts`, `rrPts` and `trace` are on `FCDraw` (`docs/mockups/lib/kitdraw.js`) as well as `FCK`.
+
 ## What `def` must have
 
 The page refuses a skin missing any of these (see `REQUIRED` in the page):
