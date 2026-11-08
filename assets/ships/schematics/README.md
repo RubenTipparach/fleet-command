@@ -6,14 +6,14 @@ picture, for the battle console and for the store's preview of a ship being boug
 | File | What it is |
 |---|---|
 | `<faction>/<id>.hull.png` | The filled hull, lit from above by its faces' normals. 1024 px square |
-| `<faction>/<id>.wire.png` | The quad edges seen from above (hidden edges left out) and the outline, anti-aliased. 1024 px square |
+| `<faction>/<id>.wire.png` | The quad edges seen from above, the ones the hull hides drawn at 0.4 alpha as if through glass (owner, 2026-11-07: "the schematic should be semi transparent"), and the outline, anti-aliased. 1024 px square |
 | `manifest.json` | For each ship: its two files, pixel size, metres per pixel, the pixel the glb origin falls on, the axis convention, quad and triangle counts, and the source glb with its sha256 |
 
 ## The layers
 
 Both layers are pure white RGB; the drawing is in the alpha channel. A skin tints each one with its own colour and
 lays them together: the hull tinted with a dark skin colour, then the wire tinted with a bright one on top. The hull's
-alpha stays between 0.15 and 0.55, so it always reads darker than the wire (alpha up to 1).
+alpha stays between 0.1 and 0.38, so it reads as tinted glass, darker than the wire (alpha up to 1), with the hidden edges showing through it.
 
 ## Placing things over the picture
 
@@ -23,7 +23,7 @@ top. Height (y) is not drawn. So a weapon mount's empty from the glb can be mark
 
 ## What made them
 
-`tools/mockups/ship_schematics.py` reads each glb in `assets/ships/concord/` and `assets/ships/krai/`, welds its
+`tools/mockups/ship_schematics.py` reads each glb in `assets/ships/concord/`, `krai/`, `ssarith/` and `kelvane/`, welds its
 vertices, pairs its triangles back into quads (near-coplanar, convex, best pairs first), and renders both layers at
 4x and scales them down. It also writes the contact sheet `docs/screenshots/schematics/sheet.png`: each ship's hull
 layer, wire layer, the two recombined in three tints, and a 200 px copy. Look at it after a change.

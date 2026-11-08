@@ -1,0 +1,420 @@
+{
+ "connections": [
+  {
+   "from": "fbm2_0",
+   "from_port": 0,
+   "to": "shader_8",
+   "to_port": 0
+  },
+  {
+   "from": "fbm2_1",
+   "from_port": 0,
+   "to": "shader_8",
+   "to_port": 1
+  },
+  {
+   "from": "fbm2_2",
+   "from_port": 0,
+   "to": "shader_8",
+   "to_port": 2
+  },
+  {
+   "from": "fbm2_3",
+   "from_port": 0,
+   "to": "shader_8",
+   "to_port": 3
+  },
+  {
+   "from": "fbm2_4",
+   "from_port": 0,
+   "to": "shader_8",
+   "to_port": 4
+  },
+  {
+   "from": "fbm2_5",
+   "from_port": 0,
+   "to": "shader_8",
+   "to_port": 5
+  },
+  {
+   "from": "fbm2_6",
+   "from_port": 0,
+   "to": "shader_8",
+   "to_port": 6
+  },
+  {
+   "from": "fbm2_7",
+   "from_port": 0,
+   "to": "shader_8",
+   "to_port": 7
+  },
+  {
+   "from": "shader_8",
+   "from_port": 0,
+   "to": "normal_map_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_8",
+   "from_port": 0,
+   "to": "occlusion2_0",
+   "to_port": 0
+  },
+  {
+   "from": "shader_8",
+   "from_port": 1,
+   "to": "Material",
+   "to_port": 0
+  },
+  {
+   "from": "shader_8",
+   "from_port": 3,
+   "to": "Material",
+   "to_port": 1
+  },
+  {
+   "from": "shader_8",
+   "from_port": 2,
+   "to": "Material",
+   "to_port": 2
+  },
+  {
+   "from": "normal_map_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 4
+  },
+  {
+   "from": "occlusion2_0",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 5
+  },
+  {
+   "from": "shader_8",
+   "from_port": 0,
+   "to": "Material",
+   "to_port": 6
+  }
+ ],
+ "label": "Wall Green Rustic",
+ "name": "Material",
+ "node_position": {
+  "x": 0,
+  "y": 0
+ },
+ "nodes": [
+  {
+   "name": "fbm2_0",
+   "node_position": {
+    "x": 220,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 5,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.6,
+    "scale_x": 3,
+    "scale_y": 3
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_1",
+   "node_position": {
+    "x": 440,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 4,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.55,
+    "scale_x": 9,
+    "scale_y": 9
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_2",
+   "node_position": {
+    "x": 660,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 3,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 4,
+    "scale_y": 40
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_3",
+   "node_position": {
+    "x": 880,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 3,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 40,
+    "scale_y": 5
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_4",
+   "node_position": {
+    "x": 1100,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 4,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 16,
+    "scale_y": 16
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_5",
+   "node_position": {
+    "x": 1320,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 3,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.5,
+    "scale_x": 192,
+    "scale_y": 192
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_6",
+   "node_position": {
+    "x": 1540,
+    "y": 0
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 6,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.6,
+    "scale_x": 6,
+    "scale_y": 6
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "fbm2_7",
+   "node_position": {
+    "x": 0,
+    "y": 160
+   },
+   "parameters": {
+    "folds": 0,
+    "iterations": 5,
+    "noise": 2,
+    "offset": 0.0,
+    "persistence": 0.55,
+    "scale_x": 7,
+    "scale_y": 7
+   },
+   "type": "fbm2"
+  },
+  {
+   "name": "shader_8",
+   "node_position": {
+    "x": 220,
+    "y": 160
+   },
+   "parameters": {},
+   "seed_int": 0,
+   "shader_model": {
+    "code": "",
+    "global": "",
+    "inputs": [
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "tone",
+      "longdesc": "tone",
+      "name": "tone",
+      "shortdesc": "tone",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "cloud",
+      "longdesc": "cloud",
+      "name": "cloud",
+      "shortdesc": "cloud",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "strokea",
+      "longdesc": "strokea",
+      "name": "strokea",
+      "shortdesc": "strokea",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "strokeb",
+      "longdesc": "strokeb",
+      "name": "strokeb",
+      "shortdesc": "strokeb",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "lump",
+      "longdesc": "lump",
+      "name": "lump",
+      "shortdesc": "lump",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "grain",
+      "longdesc": "grain",
+      "name": "grain",
+      "shortdesc": "grain",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "crack",
+      "longdesc": "crack",
+      "name": "crack",
+      "shortdesc": "crack",
+      "type": "f"
+     },
+     {
+      "default": "0.0",
+      "function": true,
+      "label": "wear",
+      "longdesc": "wear",
+      "name": "wear",
+      "shortdesc": "wear",
+      "type": "f"
+     }
+    ],
+    "instance": "\nfloat hs_$name(vec2 p) { vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }\nfloat sat_$name(float x) { return clamp(x, 0.0, 1.0); }\n\nfloat crack_$name(vec2 uv) { float r = 1.0 - abs(2.0 * $crack(uv) - 1.0); return smoothstep(0.965, 0.995, r); }\n// worn through in a few places, where an old knock or rub took the paint: patches gathered where a broad mask is high\nfloat worn_$name(vec2 uv) { return smoothstep(0.70, 0.76, $wear(uv) + 0.12 * ($grain(uv) - 0.5)) * smoothstep(0.55, 0.75, $tone(uv)); }\nfloat height_$name(vec2 uv) {\n\tfloat h = 0.5 + 0.22 * ($lump(uv) - 0.5) + 0.08 * ($strokea(uv) + $strokeb(uv) - 1.0) + 0.06 * ($grain(uv) - 0.5);\n\treturn h - 0.18 * crack_$name(uv) - 0.05 * worn_$name(uv);\n}\nvec3 albedo_$name(vec2 uv) {\n\tvec3 deep = vec3(0.075, 0.15, 0.10), mid = vec3(0.13, 0.24, 0.16), olive = vec3(0.17, 0.25, 0.14);\n\tvec3 c = mix(deep, mid, smoothstep(0.25, 0.75, $tone(uv)));\n\tc = mix(c, olive, 0.35 * smoothstep(0.5, 0.8, $cloud(uv)));\n\tc *= 0.9 + 0.12 * ($strokea(uv) + $strokeb(uv) - 1.0) + 0.06 * ($grain(uv) - 0.5);\n\tc = mix(c, vec3(0.50, 0.47, 0.38) * (0.9 + 0.2 * $grain(uv)), 0.85 * worn_$name(uv));\n\tc = mix(c, c * 0.35, crack_$name(uv));\n\treturn c;\n}\nfloat rough_$name(vec2 uv) { return 0.86 + 0.06 * worn_$name(uv); }\nfloat metal_$name(vec2 uv) { return 0.0; }\n",
+    "longdesc": "wall green rustic",
+    "name": "wall green rustic",
+    "outputs": [
+     {
+      "f": "sat_$name(height_$name($uv))",
+      "longdesc": "out0",
+      "shortdesc": "out0",
+      "type": "f"
+     },
+     {
+      "longdesc": "out1",
+      "rgba": "vec4(clamp(albedo_$name($uv), vec3(0.0), vec3(1.0)), 1.0)",
+      "shortdesc": "out1",
+      "type": "rgba"
+     },
+     {
+      "f": "sat_$name(rough_$name($uv))",
+      "longdesc": "out2",
+      "shortdesc": "out2",
+      "type": "f"
+     },
+     {
+      "f": "sat_$name(metal_$name($uv))",
+      "longdesc": "out3",
+      "shortdesc": "out3",
+      "type": "f"
+     }
+    ],
+    "parameters": [],
+    "shortdesc": "wall green rustic"
+   },
+   "type": "shader"
+  },
+  {
+   "name": "normal_map_0",
+   "node_position": {
+    "x": 440,
+    "y": 160
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 0.036,
+    "param2": 0,
+    "param4": 1
+   },
+   "type": "normal_map"
+  },
+  {
+   "name": "occlusion2_0",
+   "node_position": {
+    "x": 660,
+    "y": 160
+   },
+   "parameters": {
+    "param0": 11,
+    "param1": 5,
+    "param2": 1.1,
+    "param3": 1
+   },
+   "type": "occlusion2"
+  },
+  {
+   "export_paths": {},
+   "name": "Material",
+   "node_position": {
+    "x": 880,
+    "y": 160
+   },
+   "parameters": {
+    "albedo_color": {
+     "a": 1.0,
+     "b": 1,
+     "g": 1,
+     "r": 1,
+     "type": "Color"
+    },
+    "ao": 1.0,
+    "depth_scale": 0.0,
+    "emission_energy": 1.0,
+    "flags_transparent": false,
+    "metallic": 1.0,
+    "normal": 1.0,
+    "roughness": 1.0,
+    "size": 11,
+    "sss": 0.0
+   },
+   "type": "material"
+  }
+ ],
+ "parameters": {},
+ "type": "graph"
+}

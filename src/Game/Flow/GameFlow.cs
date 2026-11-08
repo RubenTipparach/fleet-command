@@ -295,10 +295,14 @@ public sealed partial class GameFlow : Node
     public void MoveHere()
     {
         if (Camp == null || Path == null) return;
-        if (Path.Legs[0].Count == 0) { Msg = "No moves left this turn to make the first step. End the turn."; return; }
         Course = (Path, (Camp.S.AtC, Camp.S.AtR));
+        // with no moves left the course is still set: it is the fleet's order, flown from the next End turn (owner,
+        // 2026-11-07: "pressing the move button if move is already exhasuted wont queue up move for the next turns")
+        bool none = Path.Legs[0].Count == 0;
         var steps = Camp.Move(Path);
-        Msg = Camp.S.OrderC != null ? $"Under way: {Path.Turns - 1} more turn{(Path.Turns > 2 ? "s" : "")} to go." : "";
+        Msg = none ? $"Course set: under way at End turn, {Path.Turns - 1} turn{(Path.Turns > 2 ? "s" : "")} to go."
+            : Camp.S.OrderC != null ? $"Under way: {Path.Turns - 1} more turn{(Path.Turns > 2 ? "s" : "")} to go." : "";
+        if (none) { SelectHex(Sel); Save(); return; }
         _map.Map?.Rebuild(null, steps);
         SelectHex(Sel);
         Arrived();
@@ -343,6 +347,35 @@ public sealed partial class GameFlow : Node
         Brief = null;
         SelectHex((m.C, m.R));
         if (Path != null) MoveHere();
+    }
+
+    /// <summary>Draws the map again from the campaign as it stands (its fleets, freighters and missions).</summary>
+    public void Redraw() => _map.Refresh();
+
+    /// <summary>Meets a freighter in the fleet's sector: her encounter (an escort, or a raid) opens as a briefing to launch.</summary>
+    public void Meet(Freighter f)
+    {
+        if (Camp?.Meet(f) is not { } m) return;
+        Save();
+        OpenBrief(m);
+    }
+
+    /// <summary>Cashes out the cargo of the freighters taken, at a port that deals with you.</summary>
+    public void CashOut()
+    {
+        if (Camp == null) return;
+        int before = Camp.S.Credits;
+        Msg = Camp.CashOut() ?? $"Cargo sold for {Camp.S.Credits - before:N0} cr.";
+        Save();
+        Redraw();
+    }
+
+    /// <summary>Patches the most damaged ship with a repair kit.</summary>
+    public void FieldRepair()
+    {
+        if (Camp?.S.Fleet.OrderBy(s => s.HullPct).FirstOrDefault() is not { } s) return;
+        Msg = Camp.FieldRepair(s) ?? $"The {s.Name} is patched: hull {s.HullPct:0} %.";
+        Save();
     }
 
     // an accepted mission in the sector the fleet has reached opens its briefing (as the mockup does on arrival)

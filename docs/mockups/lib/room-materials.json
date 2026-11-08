@@ -1,0 +1,69 @@
+{
+ "note": "The Material Maker maps of the campaign map's room (docs/mockups/game-flow.html, buildRoom): the poster's paper (the page prints the map over it), the red carpet and the green plaster walls; inlined by tools/mockups/inline_data.py. Rendered from tools/materials/ptex/<material>.ptex (tools/materials/export_materials.sh); the specular maps are derived from each graph's own roughness and occlusion (tools/materials/postprocess.py).",
+ "webp_quality": 86,
+ "pieces": {
+  "map_paper/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/map_paper/albedo.png"
+  },
+  "carpet_red/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/carpet_red/albedo.png"
+  },
+  "carpet_red/normal": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/carpet_red/normal.png"
+  },
+  "carpet_red/orm": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/carpet_red/orm.png"
+  },
+  "carpet_red/specular": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/carpet_red/specular.png"
+  },
+  "wall_green_rustic/albedo": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/wall_green_rustic/albedo.png"
+  },
+  "wall_green_rustic/normal": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/wall_green_rustic/normal.png"
+  },
+  "wall_green_rustic/orm": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/wall_green_rustic/orm.png"
+  },
+  "wall_green_rustic/specular": {
+   "size": [
+    1024,
+    1024
+   ],
+   "file": "../../../assets/textures/materials/wall_green_rustic/specular.png"
+  }
+ }
+}

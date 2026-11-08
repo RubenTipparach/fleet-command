@@ -15,7 +15,7 @@ public class CraftTests
     private static Battle Scene(string id) => new(TestData.Data, TestData.Data.ScenarioById(id));
     private static void Run(Battle b, double s) { for (int i = 0; i < Math.Round(s / b.Tuning.StepS) && b.Over == null; i++) b.Step(); }
 
-    public static readonly TheoryData<string> Sides = new() { "concord", "krai" };
+    public static readonly TheoryData<string> Sides = new() { "concord", "krai", "kelvane", "ssarith" };
 
     [Theory, MemberData(nameof(Sides))]
     public void Fighters_launch_together_and_strip_the_targets_point_defence_on_Defences(string side)
@@ -161,7 +161,7 @@ public class CraftTests
     public static TheoryData<string> PackageScenes()
     {
         var d = new TheoryData<string>();
-        foreach (string id in new[] { "tractor", "mines", "shuttle", "fighters" }) { d.Add("concord_" + id); d.Add("krai_" + id); }
+        foreach (string id in new[] { "tractor", "mines", "shuttle", "fighters" }) { d.Add("concord_" + id); d.Add("krai_" + id); d.Add("kelvane_" + id); d.Add("ssarith_" + id); }
         return d;
     }
 

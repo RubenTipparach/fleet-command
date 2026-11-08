@@ -33,7 +33,8 @@ The editor is an Avalonia app, so the same code runs on Windows and macOS. Its w
 |---|---|
 | `id` | lower case, digits and `_`; unique across files |
 | `name`, `glyph` | the mission's name, and the one letter on its banner on the map |
-| `kind` | `contract` (offered for `turns`, default 3, then gone) or `story` (waits until done) |
+| `kind` | `contract` (offered for `turns`, default 3, then gone; may be withdrawn from), `story` (waits until done; no withdrawal), `special` (offered as a contract, no withdrawal) or `encounter` (never offered at random: offered when the fleet shares a sector with a freighter, handed her name as `ship` and her faction as `freighter_fac`, and gone at the end of the turn; `escort.json` for a friendly freighter, `raid.json` for anyone else's; owner, 2026-11-07: "no mision flag needed. Just whenever you are on the same tile as freighter, you get a mission option") |
+| `weight` | how often a contract is offered against the others, default 1 (Patrol 4; the nebula, belt and orbital patrols 2) |
 | `type` | the Missions guide's mission type it plays (shown in the briefing) |
 | `reward_cr` | base reward in credits; a contract adds 0 to 200 cr when offered |
 | `where` | an expression, true for each sector the mission may be offered in |
@@ -47,11 +48,16 @@ The editor is an Avalonia app, so the same code runs on Windows and macOS. Its w
 | `result` | a list of outcomes; the first whose `when` holds (or that has none) is applied |
 
 A battle is `{ when?, name?, intel?, groups, markers?, objectives }`:
-- A **group** is `{ id, faction, count, role, label?, tag?, tier?, bearing_deg?, range_km?, ship_name? }`.
+- A **group** is `{ id, faction, count, role, label?, tag?, tier?, hull?, bearing_deg?, range_km?, ship_name? }`.
+  - `hull: "freighter"` fields the faction's freighter (`factions.<id>.freighter` in `data/campaign/campaign.json`, its own
+    approved freighter) in place of warships; a freighter keeps her course at 600 m/s and never closes to fight, on any side.
+    An encounter has one such group: the freighter met. Destroyed or taken, she is off her route for
+    `rules.freighter_refit_turns` turns.
   - `role` is `enemy`, `ally` (wingmen beside your fleet) or `neutral` (ships to protect, which hold their fire).
   - `tag` is `flagship`, `prize`, `rescue`, `decoy` or `drone`. A **drone** (an enemy group, a shakedown's targets)
     stands where it is put, never fires, and is a light hulk: no shields, 30 % of its hull. A **prize** is taken, not destroyed: beaten down to a quarter of
-    its hull (`capture_hull_frac` in `data/battle/tuning.json`), it strikes and is boarded.
+    its hull (`capture_hull_frac` in `data/battle/tuning.json`), it strikes and is boarded. A ship boarded and captured by
+    your marines counts as taken too.
   - Enemy groups spread ahead at 100 km unless `bearing_deg` (clockwise from ahead) and `range_km` place them.
 - A **marker** is a beacon to fly to: `{ id, label, bearing_deg?, range_km?, at?, after?, radius_m? }`.
   - It sits at `bearing_deg` (clockwise from ahead) and `range_km` (default 80) from the fleet's start, or at the start itself
@@ -64,11 +70,14 @@ A battle is `{ when?, name?, intel?, groups, markers?, objectives }`:
   - The primary objectives decide win or lose; the rest are bonuses.
   - `by_withdraw` means withdrawing meets it, as breaking out of an ambush does.
 
-An outcome is `{ when?, credits?, prestige?, standing?, prize?, next?, log? }`:
+An outcome is `{ when?, credits?, prestige?, standing?, prize?, haul?, haul_cr?, next?, log? }`:
 - `credits` is an expression; `pay` is the grade's share of the reward, rounded to 10 cr.
 - `prestige` defaults to the grade's (`rules.prestige` in `data/campaign/campaign.json`, doubled for story missions).
 - `standing` maps a faction (text, so `{side}` works) to a change.
 - `prize` adds a ship of that faction to your fleet.
+- `haul` (a faction) and `haul_cr` (an expression) go together: the battle's freighter joins your fleet with her cargo,
+  worth `haul_cr` credits when cashed out at a port that deals with you (never the faction she was taken from); she sails
+  with the fleet but stays out of its battles. With no room in the fleet her cargo is moved across and paid at half.
 - `next` lists missions to offer: `{ mission, at: where | home | here | fleet, data: { name: text } }`.
 
 ## Grades

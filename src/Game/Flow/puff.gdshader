@@ -10,11 +10,15 @@ varying vec2 v_uv;
 varying vec4 v_tint;
 varying float v_seed;
 
-float h21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+// the value noise's lattice hash: PCG on the integer cell (CLAUDE.md section 10: never fract(sin) or a fract product,
+// which loses its precision far from the origin and drew the clouds in blocks; owner, 2026-11-07: "need to fix pixely
+// clouds")
+uint pcg(uint v) { uint s = v * 747796405u + 2891336453u; uint w = ((s >> ((s >> 28u) + 4u)) ^ s) * 277803737u; return (w >> 22u) ^ w; }
+float h21(ivec2 c) { return float(pcg(uint(c.x) * 1597334677u ^ pcg(uint(c.y)))) * (1.0 / 4294967295.0); }
 float vn(vec2 p) {
-	vec2 i = floor(p), f = fract(p);
+	ivec2 i = ivec2(floor(p)); vec2 f = fract(p);
 	f = f * f * (3.0 - 2.0 * f);
-	return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), f.x), f.y);
+	return mix(mix(h21(i), h21(i + ivec2(1, 0)), f.x), mix(h21(i + ivec2(0, 1)), h21(i + ivec2(1, 1)), f.x), f.y);
 }
 float fbm2(vec2 p) { return 0.5 * vn(p) + 0.3 * vn(p * 2.1 + 3.7) + 0.2 * vn(p * 4.3 + 8.1); }
 
@@ -33,7 +37,9 @@ void fragment() {
 	vec2 p = v_uv;
 	float d = length(p);
 	if (d > 1.0) discard;
-	float n = fbm2(p * 2.2 + v_seed * 13.1), n2 = vn(p * 7.0 + v_seed * 5.0);
+	// each puff its own patch of the noise, the offset kept small so the noise keeps its precision
+	vec2 off = vec2(fract(v_seed * 0.6180339), fract(v_seed * 0.7548777)) * 97.0;
+	float n = fbm2(p * 2.2 + off), n2 = vn(p * 7.0 + off.yx);
 	float dens = smoothstep(1.0, 0.4, d + (n - 0.5) * 0.7 + (n2 - 0.5) * 0.22);
 	if (dens < 0.01) discard;
 	vec3 right = INV_VIEW_MATRIX[0].xyz, up = INV_VIEW_MATRIX[1].xyz, back = INV_VIEW_MATRIX[2].xyz;

@@ -97,3 +97,20 @@ under a sky of its own; named `skins_` to keep apart from the other packages' sk
 | `skins_slate_drift` | Slate-blue drifts, a faint lavender knot | `concord_four_races` |
 | `skins_amber_lull` | Still amber clouds low on the horizon, a pale honey core | `krai_four_races` |
 | `skins_pearl_mist` | Pale pearl-grey mist with faint rose and blue, a soft white core | `ssarith_four_races` |
+
+## The Kelvane Institute's skies (2026-11-07)
+
+Eight more composed by `tools/space/nebula_recipes.py` (seeds 2401-2408) for the Institute's scenarios (change
+`kelvane-ships-engine`), painted by `tools/space/nebula_skies.py --only` and rendered by `tools/space/sky_panorama.py
+--only`; named `institute_`:
+
+| Sky | Look | Scenario |
+| --- | --- | --- |
+| `institute_champagne_haze` | A pale champagne haze, amber knots, a soft cream core | `concord_institute` |
+| `institute_brass_lanes` | Brass-brown clouds parted by long dark lanes, a warm gold core | `krai_institute` |
+| `institute_parchment_veil` | A faint parchment veil with rose in its folds, a quiet white core | `concord_institute_wrecks` |
+| `institute_lamp_amber` | Deep amber clouds round a lamp-bright yellow core | `krai_institute_wrecks` |
+| `institute_phosphor_drift` | Phosphor-green drifts over dark teal, a pale mint core | `kelvane_battle` |
+| `institute_ink_tide` | Blue-black ink clouds rolling in, an amber spark at their edge | `kelvane_duel` |
+| `institute_beamline` | A violet-white filament across the sky, blue glow along it | `kelvane_arming` |
+| `institute_quartz_field` | Cold quartz-white wisps scattered wide, a small blue core | `kelvane_four_races` |

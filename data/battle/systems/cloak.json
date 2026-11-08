@@ -8,7 +8,7 @@
   "edge_thin_frac": 0.3
  },
  "cloak": {
-  "_doc": "A fitted ship fades out over fade_s and back in over fade_s; cloaking or cloaked it draws cost_e, its shields neither hold nor regenerate, and it cannot fire. Fully cloaked it is seen only by its own side, from within detect_km, or once a sweep of the seer's side reveals it. A sweep spends sweep_e of the battery and reveals every cloaked ship of the other side within base_km + per_eccm_km a point of ECCM (and the science officer's officer_sweep_km a level) for reveal_s; again after sweep_cool_s. A revealed cloaked ship is hit at hit_penalty less. fitted: the classes that carry a cloak (the mockup's ca, dd, kdd and kff, the Krai line's cruiser and frigate built on ca and dd, and the Hunt, built to wait unseen). own_alpha: how much of a cloaked ship still shows as a shimmer, to its own side and once revealed; sweep_fx_s: how long a sweep's ring takes to spread.",
+  "_doc": "A fitted ship fades out over fade_s and back in over fade_s; cloaking or cloaked it draws cost_e, its shields neither hold nor regenerate, and it cannot fire. Fully cloaked it is seen only by its own side, from within detect_km, or once a sweep of the seer's side reveals it. A sweep spends sweep_e of the battery and reveals every cloaked ship of the other side within base_km + per_eccm_km a point of ECCM (and the science officer's officer_sweep_km a level) for reveal_s; again after sweep_cool_s. A revealed cloaked ship is hit at hit_penalty less. fitted: the classes that carry a cloak (the mockup's ca, dd, kdd and kff, the Krai line's cruiser and frigate built on ca and dd, the Hunt, built to wait unseen, and, provisionally until the owner says (survey K1), the Kelvane cruiser and destroyer, whose mounts are laid out as ca's and dd's). own_alpha: how much of a cloaked ship still shows as a shimmer, to its own side and once revealed; sweep_fx_s: how long a sweep's ring takes to spread.",
   "cost_e": 5,
   "fade_s": 3,
   "detect_km": 15,
@@ -33,7 +33,7 @@
    "hunt_ff_harpoon",
    "hunt_ff_trident",
    "hunt_ca",
-   "hunt_cv"
+   "hunt_cv", "kelvane_rv", "kelvane_dd"
   ]
  },
  "ai_cloak": {
@@ -52,7 +52,7 @@
   "officer_scan": 0.25
  },
  "security": {
-  "_doc": "Boarding defence. The ship's marines aboard are its teams of up to team, at the plan's posts. A team walks at walk_m_s or is beamed to a room (one pad charge). A team and a squad within engage_m on one deck fight: a volley every volley_s, each marine one shot at hit_chance (the boarding rule's), the security chief's officer_aboard a level added to ours. A team that has held its room ambush_s has an ambush set: its first volley adds ambush_bonus (and the chief's officer_ambush) and the boarders get no shots in it. A boarding enemy beams a squad of up to board_squad aboard every board_every_s while it can board (within board_range_km, the facing toward it at or below shield_down_hp) into a room no team holds; unopposed at its goal the squad damages the room's system (room_system) by sabotage_dmg every sabotage_s; holding the bridge capture_s takes the ship. marines: the marines aboard each class (the mockup's classes, the Krai and Hunt lines after the classes they are built on), until the classes carry their own.",
+  "_doc": "Boarding defence. The ship's marines aboard are its teams of up to team, at the plan's posts. A team walks at walk_m_s or is beamed to a room (one pad charge). A team and a squad within engage_m on one deck fight: a volley every volley_s, each marine one shot at hit_chance (the boarding rule's), the security chief's officer_aboard a level added to ours. A team that has held its room ambush_s has an ambush set: its first volley adds ambush_bonus (and the chief's officer_ambush) and the boarders get no shots in it. A boarding enemy beams a squad of up to board_squad aboard every board_every_s while it can board (within board_range_km, the facing toward it at or below shield_down_hp) into a room no team holds; unopposed at its goal the squad damages the room's system (room_system) by sabotage_dmg every sabotage_s; holding the bridge capture_s takes the ship. marines: the marines aboard each class (the mockup's classes, the Krai, Hunt and Kelvane lines after the classes they are built on or match in size), until the classes carry their own.",
   "walk_m_s": 3,
   "team": 3,
   "engage_m": 5,
@@ -96,7 +96,7 @@
    "hunt_ff_harpoon": 10,
    "hunt_ff_trident": 10,
    "hunt_ca": 10,
-   "hunt_cv": 10
+   "hunt_cv": 10, "kelvane_ff": 4, "kelvane_dd": 6, "kelvane_rv": 12, "kelvane_bc": 14, "kelvane_cv": 10
   }
  },
  "deck_plans": {
@@ -154,9 +154,17 @@
    "hunt_ff_trident": "petrel",
    "hunt_ca": "petrel",
    "hunt_cv": "petrel",
+   "fr": "petrel",
+   "krai_fr": "krai_frigate",
+   "hunt_fr": "petrel",
+   "kelvane_fr": "petrel",
    "tr": "petrel",
    "sb": "petrel",
-   "kelvane_rv": "petrel"
+   "kelvane_rv": "petrel",
+   "kelvane_ff": "petrel",
+   "kelvane_dd": "petrel",
+   "kelvane_bc": "petrel",
+   "kelvane_cv": "petrel"
   }
  }
 }

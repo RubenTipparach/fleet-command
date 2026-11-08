@@ -1,5 +1,5 @@
 {
- "_doc": "The scripted captain's Disable scene (the battle console mockup's, openspec/changes/weapon-targeting): pick the scenario, take the torpedoes offline on the weapons panel (they land by arc and would wreck the hull), lock the target, open Tactical and aim at the engines, read the hit details (shift+click the aim) and shut them, then fight with the aim moving from the engines to weapons control as each goes Disabled. Played from both sides (concord_disable, krai_disable).",
+ "_doc": "The scripted captain's Disable scene (the battle console mockup's, openspec/changes/weapon-targeting): pick the scenario, take the torpedoes offline on the weapons panel (they land by arc and would wreck the hull), lock the target, open Tactical and aim at the engines, read the hit details (shift+click the aim) and shut them, then fight with the aim moving from the engines to weapons control as each goes Disabled. Played from every side (concord_disable, krai_disable, kelvane_disable, ssarith_disable).",
  "beats": [
   { "do": "wait_ready" },
   { "do": "pick_scene" },

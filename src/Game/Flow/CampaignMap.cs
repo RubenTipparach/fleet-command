@@ -32,6 +32,10 @@ public sealed partial class CampaignMap : Node3D
     private Vector3 _puffEye = new(1e9f, 0, 0);
     private readonly List<Label3D> _labels = new();
     private readonly List<Node3D> _spin = new();
+    // the fog of war as last drawn: the sectors seen, and a key of what was known and seen, so the board is rebuilt only
+    // when the fog changes
+    private HashSet<(int C, int R)> _vis = new();
+    private string _fogKey = "";
     private readonly Dictionary<string, Piece> _fleets = new();
     private float _time;
     private (Vector3 From, Vector3 To, float T)? _camGlide;
@@ -45,6 +49,8 @@ public sealed partial class CampaignMap : Node3D
         public float T;
         public float EndDir;
         public float Lift;
+        /// <summary>The model's heading when its flight began (radians), where its first turn starts from.</summary>
+        public float Yaw0;
     }
 
     /// <summary>The camera: the point it looks at on the map plane and its distance. Its angle is fixed (the mockup's polar
@@ -54,6 +60,9 @@ public sealed partial class CampaignMap : Node3D
     public const float Polar = 0.88f, MinDist = 7, MaxDist = 70;
     /// <summary>Sectors a second a fleet flies (the mockup's FLIGHT_SECTORS_S).</summary>
     public const float FlightSectorsS = 2.6f;
+    /// <summary>Seconds a fleet takes to turn half round on the spot before it moves on (owner, 2026-11-07: "turn first,
+    /// then move, not turn and move at the same time"); a smaller turn takes its share.</summary>
+    public const float FlightTurnS = 0.5f;
     /// <summary>Beyond this distance the name labels leave (they would pile on one another); the pieces never do.</summary>
     public const float FarDist = 34;
 
@@ -106,7 +115,6 @@ public sealed partial class CampaignMap : Node3D
         AddChild(_pieces);
         AddChild(_path);
         BuildStars();
-        BuildBoard();
         _ring = MapPieces.HexRing(0.82f, 0.95f, new Color("#ffb547"));
         _hover = MapPieces.HexRing(0.9f, 0.95f, new Color(1, 1, 1, 0.45f));
         ((StandardMaterial3D)_hover.MaterialOverride).Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
@@ -265,6 +273,21 @@ public sealed partial class CampaignMap : Node3D
         return region;
     }
 
+    // The fog as it stands: the board (glass, borders, stars, clouds, rocks, ports) is rebuilt when what is known or seen
+    // has changed since it was last drawn.
+    private void Fog()
+    {
+        _vis = _c.Visible();
+        string key = $"{_c.S.Sectors.Count(h => h.Known)}:{string.Join(",", _vis.OrderBy(v => v).Select(v => v.C * 100 + v.R))}:{string.Join(",", _c.S.Sectors.Select(h => h.KnownOwner[0]))}";
+        if (key == _fogKey) return;
+        _fogKey = key;
+        foreach (Node n in _board.GetChildren()) { _board.RemoveChild(n); n.QueueFree(); }
+        _puffList.Clear();
+        _spin.Clear();
+        _labels.RemoveAll(l => !IsInstanceValid(l) || !l.IsInsideTree());
+        BuildBoard();
+    }
+
     private void BuildBoard()
     {
         var regions = NebulaRegions();
@@ -274,17 +297,24 @@ public sealed partial class CampaignMap : Node3D
         var mm = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, UseColors = true, Mesh = hex, InstanceCount = _c.S.Sectors.Count };
         var turn = new Basis(Vector3.Up, Mathf.Pi / 6);
         var rocks = new List<Transform3D>();
+        var fog = new List<Transform3D>();
         for (int i = 0; i < _c.S.Sectors.Count; i++)
         {
             Sector h = _c.S.Sectors[i];
             Vector3 p = HexPos(h.C, h.R);
             mm.SetInstanceTransform(i, new Transform3D(turn, p + new Vector3(0, -0.06f, 0)));
-            Color col = new Color("#080c12").Lerp(FacColor(h.Owner), h.Owner == "neutral" ? 0.02f : 0.06f);
+            // the fog of war: an unexplored sector is black glass with nothing in it; a revealed one shows what was seen
+            // there and its empire as last known, darker while nothing of yours sees it now (owner, 2026-11-07: "outside the
+            // empire it should be black fully, then revealed when either friendly our your ship moves through the fog")
+            if (!h.Known) { mm.SetInstanceColor(i, new Color(0, 0, 0, 0)); fog.Add(new Transform3D(turn, p + new Vector3(0, -0.02f, 0))); continue; }
+            string owner = h.KnownOwner;
+            Color col = new Color("#080c12").Lerp(FacColor(owner), owner == "neutral" ? 0.02f : 0.06f);
             if (h.Terrain == "nebula") col = col.Lerp(regions[(h.C, h.R)].Main, 0.18f);
             if (h.Terrain == "asteroids") col = col.Lerp(new Color("#2a241e"), 0.4f);
             if (h.Terrain == "star") col = new Color("#2a1d0c");
-            if (h.IsPort) col = new Color("#1c2430").Lerp(FacColor(h.Owner), h.Owner == "neutral" ? 0.25f : 0.42f).Lerp(new Color("#ffd9a0"), 0.12f);
-            mm.SetInstanceColor(i, new Color(col, 0.5f));
+            if (h.IsPort) col = new Color("#1c2430").Lerp(FacColor(owner), owner == "neutral" ? 0.25f : 0.42f).Lerp(new Color("#ffd9a0"), 0.12f);
+            if (!_vis.Contains((h.C, h.R))) col = col.Darkened(0.45f);
+            mm.SetInstanceColor(i, new Color(col, _vis.Contains((h.C, h.R)) ? 0.5f : 0.7f));
 
             if (h.Terrain == "star")
             {
@@ -338,6 +368,13 @@ public sealed partial class CampaignMap : Node3D
                 DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled,
             },
         });
+        // the unexplored: flat black, unlit and opaque, so it reflects nothing and nothing shows through
+        if (fog.Count > 0)
+        {
+            var fm = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = new CylinderMesh { TopRadius = 1.0f, BottomRadius = 1.0f, Height = 0.08f, RadialSegments = 6, Rings = 1 }, InstanceCount = fog.Count };
+            for (int i = 0; i < fog.Count; i++) fm.SetInstanceTransform(i, fog[i]);
+            _board.AddChild(new MultiMeshInstance3D { Multimesh = fm, MaterialOverride = MapPieces.Unlit(Colors.Black), Name = "Fog" });
+        }
         var rm = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = new SphereMesh { Radius = 1, Height = 1.6f, RadialSegments = 6, Rings = 3 }, InstanceCount = rocks.Count };
         for (int i = 0; i < rocks.Count; i++) rm.SetInstanceTransform(i, rocks[i]);
         _board.AddChild(new MultiMeshInstance3D { Multimesh = rm, MaterialOverride = MapPieces.Rock, Name = "Rocks" });
@@ -357,19 +394,22 @@ public sealed partial class CampaignMap : Node3D
         bool any = false;
         foreach (Sector h in _c.S.Sectors)
         {
+            // borders as last known, and none in the unexplored or into it
+            if (!h.Known) continue;
+            string owner = h.KnownOwner;
             Vector3 p = HexPos(h.C, h.R);
-            Color col = FacColor(h.Owner);
+            Color col = FacColor(owner);
             Vector3 C(int i, float r, float y) { float a = Mathf.Pi / 3 * i; return new Vector3(p.X + r * Mathf.Cos(a), y, p.Z + r * Mathf.Sin(a)); }
             for (int k = 0; k < 6; k++)
             {
-                Color gc = col * (h.Owner == "neutral" ? 0.35f : 0.5f);
+                Color gc = col * (owner == "neutral" ? 0.35f : 0.5f);
                 gc.A = 0.8f;
                 grid.SetColor(gc); grid.AddVertex(C(k, 0.98f, 0.01f));
                 grid.SetColor(gc); grid.AddVertex(C(k + 1, 0.98f, 0.01f));
                 float dir = Mathf.Pi / 3 * k + Mathf.Pi / 6;
                 var (nc, nr) = HexGrid.At(p.X + Mathf.Sqrt(3) * Mathf.Cos(dir), p.Z + Mathf.Sqrt(3) * Mathf.Sin(dir));
-                bool same = _c.OnMap(nc, nr) && _c.Hex(nc, nr).Owner == h.Owner;
-                if (h.Owner == "neutral" || same) continue;
+                bool same = _c.OnMap(nc, nr) && _c.Hex(nc, nr).KnownOwner == owner;
+                if (owner == "neutral" || same || (_c.OnMap(nc, nr) && !_c.Hex(nc, nr).Known)) continue;
                 Color rc = new(col, 0.9f);
                 Vector3 a = C(k, 0.98f, 0.02f), b = C(k + 1, 0.98f, 0.02f), ai = C(k, 0.86f, 0.02f), bi = C(k + 1, 0.86f, 0.02f);
                 foreach (Vector3 v in new[] { a, b, bi, a, bi, ai }) { rib.SetColor(rc); rib.AddVertex(v); }
@@ -425,9 +465,9 @@ public sealed partial class CampaignMap : Node3D
     // planets and stations, built once: they never move (they turn slowly)
     private void BuildPorts()
     {
-        foreach (Sector h in _c.S.Sectors.Where(s => s.IsPort))
+        foreach (Sector h in _c.S.Sectors.Where(s => s.IsPort && s.Known))
         {
-            string fac = h.Owner;
+            string fac = h.KnownOwner;
             Color col = FacColor(fac);
             var g = new Node3D { Name = h.PortName ?? "Port" };
             if (h.Planet != null)
@@ -460,12 +500,17 @@ public sealed partial class CampaignMap : Node3D
 
     private static readonly Dictionary<string, PackedScene?> Models = new();
 
-    /// <summary>A ship's model on the map: the hull's own approved glb (its schematic names it), or the faction's by tier
-    /// for the Concord and the Krai, a stand-in wedge for the rest. Bow toward +z, <paramref name="length"/> units long.</summary>
+    /// <summary>A battle class's approved glb (data/battle/classes.json model), or null: set by MapScreen from the battle's data.</summary>
+    public Func<string, string?> ClassModel { get; init; } = _ => null;
+
+    /// <summary>A ship's model on the map: the hull's own approved glb (its schematic names it, else its battle class's model),
+    /// or the faction's by tier for the Concord and the Krai, a stand-in wedge for the rest; a freighter carries her
+    /// containers (Cargo). Bow toward +z, <paramref name="length"/> units long.</summary>
     private Node3D ShipModel(string fac, string? hullId, int tier, float length)
     {
         string? path = null;
-        if (hullId != null && _c.Data.Hulls.TryGetValue(hullId, out Hull? hull) && hull.Schematic != "") path = $"res://assets/ships/{hull.Schematic}.glb";
+        if (hullId != null && _c.Data.Hulls.TryGetValue(hullId, out Hull? hull))
+            path = hull.Schematic != "" ? $"res://assets/ships/{hull.Schematic}.glb" : ClassModel(hull.BattleClass) is { } m ? "res://" + m : null;
         path ??= fac switch
         {
             "concord" => tier >= 3 ? "res://assets/ships/concord/albatross.glb" : "res://assets/ships/concord/petrel_level.glb",
@@ -484,7 +529,7 @@ public sealed partial class CampaignMap : Node3D
                 model.Scale = Vector3.One * (length / len);
                 // the glb's bow is -z; a standee's bow is +z (the map's headings)
                 model.RotationDegrees = new Vector3(0, 180, 0);
-                try { ShipSkin.Apply(model, path["res://assets/ships/".Length..], model.Scale.X); }
+                try { ShipSkin.Apply(model, path["res://assets/ships/".Length..], model.Scale.X); Cargo.Load(model, path["res://assets/ships/".Length..]); }
                 catch (InvalidOperationException) { /* a ship the export manifest does not dress keeps its own materials */ }
                 holder.AddChild(model);
                 return holder;
@@ -520,8 +565,8 @@ public sealed partial class CampaignMap : Node3D
     }
 
     private int PiecesIn(int c, int r) =>
-        (_c.S.AtC == c && _c.S.AtR == r ? 1 : 0) + (_c.Hex(c, r).IsPort ? 1 : 0) + _c.S.Groups.Count(g => g.C == c && g.R == r)
-        + _c.S.Missions.Count(m => m.C == c && m.R == r) + _c.S.Freighters.Count(f => f.Route[f.I][0] == c && f.Route[f.I][1] == r && _c.SideOf(f.Fac) == "own");
+        (_c.S.AtC == c && _c.S.AtR == r ? 1 : 0) + (_c.Hex(c, r).IsPort && _c.Hex(c, r).Known ? 1 : 0) + _c.S.Groups.Count(g => g.C == c && g.R == r && _vis.Contains((c, r)))
+        + _c.S.Missions.Count(m => m.C == c && m.R == r) + _c.S.Freighters.Count(f => f.Out == 0 && f.Here() == (c, r) && Shown(f));
 
     // where a piece stands in its sector: centred alone, at its own slot when the sector is shared (owner, 2026-11-05)
     private Vector3 Slot(string role, int c, int r)
@@ -534,6 +579,12 @@ public sealed partial class CampaignMap : Node3D
             "freighter" => new Vector3(0.66f, 0, -0.12f), "mission" => new Vector3(-0.5f, 0, -0.28f), _ => Vector3.Zero,
         };
     }
+
+    /// <summary>A freighter's length on the map, units: as long as a fleet's flagship, bigger than its escorts.</summary>
+    private const float FreighterLen = 0.9f;
+
+    /// <summary>Whether the map shows a freighter: your own always, anyone's in a sector your ships see now.</summary>
+    private bool Shown(Freighter f) => _c.SideOf(f.Fac) == "own" || _c.IsVisible(f.Here().C, f.Here().R);
 
     /// <summary>A fleet's strength, 1 to 5 (the mockup's fleetStrength and groupStrength).</summary>
     private int FleetStrength() => Math.Clamp((int)Math.Round(_c.S.Fleet.Sum(s => _c.Data.Hulls[s.Hull].Tier) / 1.5, MidpointRounding.AwayFromZero), 1, 5);
@@ -568,7 +619,10 @@ public sealed partial class CampaignMap : Node3D
     /// moves sector by sector from where they stood.</summary>
     public void Rebuild(IEnumerable<FleetMove>? moves = null, List<(int C, int R)>? ownSteps = null)
     {
+        Fog();
         var was = _fleets.ToDictionary(kv => kv.Key, kv => kv.Value.Node.Position);
+        // each piece's heading before the rebuild, where its first turn starts from
+        var yaws = _fleets.Where(kv => kv.Value.Model != null && IsInstanceValid(kv.Value.Model)).ToDictionary(kv => kv.Key, kv => kv.Value.Model!.Rotation.Y);
         foreach (Node n in _pieces.GetChildren()) { _pieces.RemoveChild(n); n.QueueFree(); }
         foreach (Node n in _routes.GetChildren()) { _routes.RemoveChild(n); n.QueueFree(); }
         _fleets.Clear();
@@ -581,7 +635,8 @@ public sealed partial class CampaignMap : Node3D
         _pieces.AddChild(own.Node);
         _fleets["__own"] = own;
 
-        foreach (FactionFleet g in _c.S.Groups)
+        // other fleets only where you can see them now (the fog's visible sectors)
+        foreach (FactionFleet g in _c.S.Groups.Where(g => _vis.Contains((g.C, g.R))))
         {
             Piece p = ShipStandee(g.Fac, g.Name, 1, null, Math.Clamp(g.Size, 1, 3), (float)g.Dir, GroupStrength(g), false);
             p.Node.Position = Slot("ship", g.C, g.R);
@@ -597,21 +652,24 @@ public sealed partial class CampaignMap : Node3D
                 port.Position = Slot("place", hx.X, hx.Y);
             }
 
-        // freighters and their routes: your own freighters on their routes, and your allies' routes (dimmer), never a rival's
+        // freighters and their routes: your own and your allies' routes (allies' dimmer), never a rival's; your own freighters
+        // always, and anyone's where your ships see (owner, 2026-11-07: "whenever you are on the same tile as freighter, you
+        // get a mission option"), each her faction's approved freighter with her containers; one off her route, none
         int fi = 0;
         foreach (Freighter f in _c.S.Freighters)
         {
             int n = fi++;
             string? seen = _c.SideOf(f.Fac);
-            if (seen == null) continue;
-            var lift = new Vector3(((n % 3) - 1) * 0.05f, 0.035f, ((n % 3) - 1) * 0.05f);
-            var pts = f.Route.Select(k => HexPos(k[0], k[1]) + lift).ToList();
-            _routes.AddChild(Dashed(pts, FacColor(f.Fac), seen == "own" ? 0.95f : 0.5f, 0.22f, 0.14f));
-            if (seen != "own") continue;
+            if (seen != null)
+            {
+                var lift = new Vector3(((n % 3) - 1) * 0.05f, 0.035f, ((n % 3) - 1) * 0.05f);
+                var pts = f.Route.Select(k => HexPos(k[0], k[1]) + lift).ToList();
+                _routes.AddChild(Dashed(pts, FacColor(f.Fac), seen == "own" ? 0.95f : 0.5f, 0.22f, 0.14f));
+            }
+            if (f.Out > 0 || !Shown(f)) continue;
             var g = new Node3D { Name = "Freighter " + f.Name };
             g.AddChild(MapPieces.FlightStand(FacColor(f.Fac), 0.2f, 0.75f, false));
-            Node3D model = MapPieces.Freighter(f.Fac, FacColor(f.Fac));
-            model.Scale = Vector3.One * 1.5f;
+            Node3D model = ShipModel(f.Fac, _c.Data.FreighterOf(f.Fac).Id, 1, FreighterLen);
             var mh = new Node3D { Position = new Vector3(0, 0.06f + 0.26f, 0), Rotation = new Vector3(0, (float)f.Dir, 0) };
             mh.AddChild(model);
             g.AddChild(mh);
@@ -625,7 +683,7 @@ public sealed partial class CampaignMap : Node3D
         }
 
         // missions: a standee in its sector, its banner amber on offer, green once accepted, blue for a story mission
-        foreach (Offer m in _c.S.Missions)
+        foreach (Offer m in _c.S.Missions.Where(m => _c.Hex(m.C, m.R).Known))
         {
             MissionScript def = _c.ScriptOf(m);
             Color ink = def.Story ? new Color("#8fd0ff") : _c.S.Active.Contains(m.Id) ? new Color("#7dffa0") : new Color("#ffb547");
@@ -638,21 +696,50 @@ public sealed partial class CampaignMap : Node3D
         if (moves != null)
             foreach (FleetMove mv in moves)
                 if (_fleets.TryGetValue(mv.Name, out Piece? p) && was.TryGetValue(mv.Name, out Vector3 from))
-                    Fly(p, mv.Steps, from, Slot("ship", mv.Steps[^1].C, mv.Steps[^1].R));
+                    Fly(p, mv.Steps, from, Slot("ship", mv.Steps[^1].C, mv.Steps[^1].R), yaws.GetValueOrDefault(mv.Name, p.EndDir));
         foreach (var (k, p) in _fleets.Where(kv => kv.Key.StartsWith("freighter:")))
-            if (was.TryGetValue(k, out Vector3 from) && from.DistanceSquaredTo(p.Node.Position) > 1e-4f) { p.Pts = new() { from, p.Node.Position }; p.T = 0; p.Node.Position = from; }
+            if (was.TryGetValue(k, out Vector3 from) && from.DistanceSquaredTo(p.Node.Position) > 1e-4f) { p.Pts = new() { from, p.Node.Position }; p.T = 0; p.Yaw0 = yaws.GetValueOrDefault(k, p.EndDir); p.Node.Position = from; }
         if (ownSteps is { Count: > 1 } && was.TryGetValue("__own", out Vector3 of))
-            Fly(own, ownSteps, of, Slot("fleet", ownSteps[^1].C, ownSteps[^1].R));
+            Fly(own, ownSteps, of, Slot("fleet", ownSteps[^1].C, ownSteps[^1].R), yaws.GetValueOrDefault("__own", own.EndDir));
     }
 
-    private static void Fly(Piece p, List<(int C, int R)> steps, Vector3 from, Vector3 to)
+    private static void Fly(Piece p, List<(int C, int R)> steps, Vector3 from, Vector3 to, float yaw0)
     {
         var pts = new List<Vector3> { from };
         for (int i = 1; i < steps.Count - 1; i++) pts.Add(HexPos(steps[i].C, steps[i].R));
         pts.Add(to);
         p.Pts = pts;
         p.T = 0;
+        p.Yaw0 = yaw0;
         p.Node.Position = from;
+        if (p.Model != null) p.Model.Rotation = new Vector3(0, yaw0, 0);
+    }
+
+    // One phase of a flight: a turn on the spot from one heading to another, or a move from one point to the next.
+    private readonly record struct Phase(float S, float Yaw0, float Yaw1, Vector3 A, Vector3 B, bool Turn);
+
+    // A flight as its phases, in order: for each leg a turn to face it (when the heading changes) and then the move,
+    // and at the end a turn to the fleet's final heading (owner, 2026-11-07: "turn first, then move", "a move maybe move
+    // then turn", "then move again").
+    private static List<Phase> Phases(Piece p, List<Vector3> pts)
+    {
+        var list = new List<Phase>();
+        float yaw = p.Yaw0;
+        void TurnTo(float to, Vector3 at)
+        {
+            float d = Mathf.Abs(Mathf.AngleDifference(yaw, to));
+            if (d > 1e-3f) list.Add(new Phase(FlightTurnS * d / Mathf.Pi, yaw, to, at, at, true));
+            yaw = to;
+        }
+        for (int i = 0; i + 1 < pts.Count; i++)
+        {
+            Vector3 a = pts[i], b = pts[i + 1];
+            if (a.DistanceSquaredTo(b) <= 1e-6f) continue;
+            TurnTo(Mathf.Atan2(b.X - a.X, b.Z - a.Z), a);
+            list.Add(new Phase(1 / FlightSectorsS, yaw, yaw, a, b, false));
+        }
+        TurnTo(p.EndDir, pts[^1]);
+        return list;
     }
 
     // the flights: each piece along its points, turning to face each leg, lifted off its stand while it flies (the
@@ -662,24 +749,26 @@ public sealed partial class CampaignMap : Node3D
         foreach (Piece p in _fleets.Values)
         {
             if (p.Pts is not { } pts || !IsInstanceValid(p.Node)) continue;
-            int legs = pts.Count - 1;
-            p.T = Math.Min(legs, p.T + dt * FlightSectorsS);
-            int i = Math.Min(legs - 1, (int)p.T);
-            float k = p.T - i;
-            Vector3 a = pts[i], b = pts[i + 1];
-            float e = legs == 1 ? k * k * (3 - 2 * k) : k;
-            p.Node.Position = a.Lerp(b, e);
-            if (p.Model != null)
+            p.T += dt;
+            float t = p.T;
+            bool done = true;
+            foreach (Phase ph in Phases(p, pts))
             {
-                if (a.DistanceSquaredTo(b) > 1e-6f) p.Model.Rotation = new Vector3(0, Mathf.Atan2(b.X - a.X, b.Z - a.Z), 0);
-                // the ship slides along its route at its stand's height (owner, 2026-11-06: "when ships move dont hop them lol,
-                // it looks funny, just slide them around the map is fine")
-                p.Model.Position = new Vector3(0, p.Lift, 0);
+                if (t >= ph.S) { t -= ph.S; continue; }
+                // eased within each phase, so the fleet comes to rest between a turn and a move
+                float k = t / ph.S, e = k * k * (3 - 2 * k);
+                p.Node.Position = ph.A.Lerp(ph.B, e);
+                if (p.Model != null) p.Model.Rotation = new Vector3(0, Mathf.LerpAngle(ph.Yaw0, ph.Yaw1, e), 0);
+                done = false;
+                break;
             }
-            if (p.T >= legs)
+            // the ship slides along its route at its stand's height (owner, 2026-11-06: "when ships move dont hop them lol,
+            // it looks funny, just slide them around the map is fine")
+            if (p.Model != null) p.Model.Position = new Vector3(0, p.Lift, 0);
+            if (done)
             {
                 p.Node.Position = pts[^1];
-                if (p.Model != null) { p.Model.Rotation = new Vector3(0, p.EndDir, 0); p.Model.Position = new Vector3(0, p.Lift, 0); }
+                if (p.Model != null) p.Model.Rotation = new Vector3(0, p.EndDir, 0);
                 p.Pts = null;
             }
         }

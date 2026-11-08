@@ -46,16 +46,15 @@ public class ScenarioTests
     {
         // owner, 2026-11-04: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"; the Ssarith Hunt joined them once its ships
         // were approved for the game (owner, 2026-11-06: "looks good, implement in game")
+        // and the Kelvane Institute once its ships were (owner, 2026-11-07: "perfect, implment these ships in game").
         // The one exception is the battle console mockup's allied scenes (openspec/changes/fleet-skins), as the mockup has
-        // them: their foes are its Kethran and Vos stand-ins, and Four races adds the Kelvane Institute's Patience, a
-        // stand-in, the Institute having no designed ships. The ships you can command beside it are approved ones.
+        // them: their foes are its Kethran and Vos stand-ins. The ships you can command beside them are approved ones.
         foreach (Scenario s in TestData.Data.Scenarios)
             foreach (ShipStart o in s.Ships)
             {
                 bool allied = s.Name is "Allied fleet" or "Four races";
                 if (allied && o.Side == 1 && o.Faction is "kethran" or "vos") continue;
-                if (s.Name == "Four races" && o.Faction == "kelvane" && o.Class == "kelvane_rv") continue;
-                Assert.True(o.Faction is "concord" or "krai" or "ssarith", $"{s.Id}: {o.Id} is of the {o.Faction}");
+                Assert.True(o.Faction is "concord" or "krai" or "ssarith" or "kelvane", $"{s.Id}: {o.Id} is of the {o.Faction}");
                 // a station is drawn as the mockup's station (its stationModel: scenes/standins/station.tscn), not a ship's stand-in
                 ShipClass c = TestData.Data.Classes[o.Class];
                 Assert.True(c.Model != null || c.Shape == "station", $"{s.Id}: {o.Id} ({o.Class}) would be a stand-in");
@@ -67,9 +66,62 @@ public class ScenarioTests
     {
         Scenario[] hunt = TestData.Data.Scenarios.Where(s => s.Side == "ssarith").ToArray();
         foreach (string name in new[] { "Battle", "Duel", "Arming", "Allied fleet", "Four races" }) Assert.Contains(hunt, s => s.Name == name);
-        Assert.All(hunt, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith"), o => Assert.NotNull(TestData.Data.Classes[o.Class].Model)));
+        // and every general scene the Concord plays, bar its own line as the foe (owner, 2026-11-07: "Ensure spaceships for
+        // ssarith are also implemented")
+        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && s.Name is not ("The Hunt" or "Hunt wrecks")))
+            Assert.Contains(hunt, s => s.Name == c.Name);
+        // its ships are its own line's, its freighter (the Tally carrier, mockup 24) among them, but its depot in Relief, the
+        // mockups' station, as every side's is
+        string[] line = { "hunt_ff_lance", "hunt_ff_prow", "hunt_ff_harpoon", "hunt_ff_trident", "hunt_ca", "hunt_cv", "hunt_fr" };
+        Assert.All(TestData.Data.Scenarios, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith" && TestData.Data.Classes[o.Class].Shape != "station"), o => Assert.Contains(o.Class, line)));
+        Assert.All(hunt, s => Assert.All(s.Ships.Where(o => o.Faction == "ssarith" && TestData.Data.Classes[o.Class].Shape != "station"), o => Assert.NotNull(TestData.Data.Classes[o.Class].Model)));
         Assert.Equal("ssarith", TestData.Data.Factions["ssarith"].Skin);
         Assert.Equal("kelvane", TestData.Data.Factions["kelvane"].Skin);
+    }
+
+    [Fact]
+    public void The_Kelvane_Institute_is_played_as_itself_and_fought_in_its_approved_ships()
+    {
+        Scenario[] own = TestData.Data.Scenarios.Where(s => s.Side == "kelvane").ToArray();
+        foreach (string name in new[] { "Battle", "Duel", "Arming", "Four races" }) Assert.Contains(own, s => s.Name == name);
+        // and every general scene the Concord plays, bar the allied fleet (its three races are the Concord, Krai and Ssarith;
+        // the Institute joins them in Four races) (owner, 2026-11-07: "test all kelvan general mission scenarios")
+        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && s.Name is not ("Allied fleet" or "The Institute" or "Institute wrecks")))
+            Assert.Contains(own, s => s.Name == c.Name);
+        foreach (string side in new[] { "concord", "krai" })
+            foreach (string name in new[] { "The Institute", "Institute wrecks" })
+                Assert.Contains(TestData.Data.Scenarios, s => s.Side == side && s.Name == name && s.Ships.Any(o => o.Side == 1 && o.Faction == "kelvane"));
+        // every class of the line is in the game, each its own approved ship, and each is fought somewhere
+        string[] line = { "kelvane_ff", "kelvane_dd", "kelvane_rv", "kelvane_bc", "kelvane_cv" };
+        foreach (string c in line)
+        {
+            Assert.StartsWith("assets/ships/kelvane/", TestData.Data.Classes[c].Model);
+            Assert.Contains(TestData.Data.Scenarios, s => s.Ships.Any(o => o.Class == c && o.Faction == "kelvane"));
+        }
+        // its depot in Relief is the mockups' station, as every side's is, and its freighter is mockup 24's Twin ledger
+        string[] flown = line.Append("kelvane_fr").ToArray();
+        Assert.All(TestData.Data.Scenarios, s => Assert.All(s.Ships.Where(o => o.Faction == "kelvane" && TestData.Data.Classes[o.Class].Shape != "station"), o => Assert.Contains(o.Class, flown)));
+    }
+
+    [Fact]
+    public void Every_approved_faction_has_a_freighter_drawn_as_its_own_approved_ship_with_its_containers()
+    {
+        // mockup 24 (owner, 2026-11-07: "implement in game"): one freighter for each approved faction, longer than any warship
+        string root = Path.GetDirectoryName(TestData.DataDir)!;
+        using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "assets", "ships", "manifest.json")));
+        var freighters = new[] { ("fr", "freighter_concord"), ("krai_fr", "freighter_krai"), ("hunt_fr", "freighter_ssarith"), ("kelvane_fr", "freighter_kelvane") };
+        double warship = TestData.Data.Classes.Values.Where(c => c.Shape != "station" && !freighters.Any(f => f.Item1 == c.Id)).Max(c => c.LengthM);
+        foreach (var (cls, slug) in freighters)
+        {
+            ShipClass c = TestData.Data.Classes[cls];
+            Assert.Equal($"assets/ships/freighters/{slug}.glb", c.Model);
+            Assert.True(c.LengthM > warship, $"{cls} is {c.LengthM} m, no longer than the longest warship ({warship} m)");
+            JsonElement entry = manifest.RootElement.GetProperty("ships").EnumerateArray().Single(e => e.GetProperty("id").GetString() == slug);
+            JsonElement cargo = entry.GetProperty("cargo");
+            Assert.Equal("containers/container.glb", cargo.GetProperty("model").GetString());
+            Assert.True(cargo.GetProperty("items").GetArrayLength() > 0, $"{slug} carries no containers");
+        }
+        Assert.True(File.Exists(Path.Combine(root, "assets", "containers", "container.glb")));
     }
 
     [Fact]

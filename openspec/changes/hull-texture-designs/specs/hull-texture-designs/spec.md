@@ -2,7 +2,7 @@
 
 ### Requirement: Concord and Krai hulls wear a texture design from their faction's culture
 
-Each Concord and Krai ship SHALL wear one texture design picked by the owner from the culture-led designs of mockup 24,
+Each Concord and Krai ship SHALL wear one texture design picked by the owner from the culture-led designs of mockup 35,
 unwrapped on its own UVs with its main colour map painted onto them (never a repeating tile), its plates, seams,
 liveries and markings laid out by that design, and the design SHALL name the tradition of its faction it comes from.
 

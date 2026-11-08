@@ -1,8 +1,8 @@
 {
-  "_doc": "The Concord's hull texture designs (change hull-texture-designs, mockup 24), on the Kelvane Institute's method (change kelvane-ship-concepts): the Petrel frigate's detail layer (tools/blender/hull_detail.py) and paint (tools/blender/painted_bake.py --faction concord --ship petrel_c1), baked onto the Petrel's own hull from the game's glb (tools/mockups/glb_hull_obj.py writes tools/materials/raw/painted/ships/petrel.obj). Not in the game until the owner enthusiastically approves.",
+  "_doc": "The Concord's hull texture designs (change hull-texture-designs, mockup 35), on the Kelvane Institute's method (change kelvane-ship-concepts): the Petrel frigate's detail layer (tools/blender/hull_detail.py) and paint (tools/blender/painted_bake.py --faction concord --ship petrel_c1), baked onto the Petrel's own hull from the game's glb (tools/mockups/glb_hull_obj.py writes tools/materials/raw/painted/ships/petrel.obj). Not in the game until the owner enthusiastically approves.",
   "faction": "concord",
   "out": "assets/ships/concord/baked",
-  "manifest_doc": "The Concord's hull texture designs (mockup 24), baked: not used by the game.",
+  "manifest_doc": "The Concord's hull texture designs (mockup 35), baked: not used by the game.",
   "paint": {
     "armour": [
       "#ebe9e3",

@@ -4,6 +4,7 @@
 // headless tests load data through the same rules.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 
 namespace FleetCommand.Data;
@@ -149,6 +150,15 @@ public sealed class StrictJson
             i++;
         }
         return list.ToArray();
+    }
+
+    /// <summary>A required array of whole numbers (a sector's [column, row], a size range).</summary>
+    public int[] IntList(string key)
+    {
+        double[] v = NumList(key);
+        for (int i = 0; i < v.Length; i++)
+            if (v[i] != Math.Floor(v[i]) || Math.Abs(v[i]) > int.MaxValue) throw new DataError($"{Where}.{key}[{i}]: expected a whole number");
+        return v.Select(x => (int)x).ToArray();
     }
 
     /// <summary>A required array of rows, each an array of strings and whole numbers (compact tables such as the campaign

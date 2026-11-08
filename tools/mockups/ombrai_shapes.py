@@ -136,6 +136,13 @@ def pieces():
     cres = disc(48, 54, 38).difference(disc(48, 38, 33))
     crest = soft(unary_union([cres, disc(48, 42, 24)]), 3)
     add("crest", "hero", (96, 96), crest, [("eye", disc(48, 42, 15))], eyes=[(48, 42, 11, 7.5)], roll=2.0, dz=-8.0, pad=1.5, level=0.9)
+    # The column's backing (CLAUDE.md section 7, "No black behind a metallic skin's panels"; openspec/changes/
+    # ombrai-battle-console): one pillowed plate of the same plum metal, the height of the screen, the battle console's
+    # panels standing on it in their own plates. A pink eye jewel on the centre line wherever two panels part (the 6 px
+    # gaps at rows 65, 491, 773 and 939 of the battle console's column): the watchers between the instruments. No well;
+    # the band the expanded panel's backing tiles from (x 100-390) keeps only those jewels.
+    add("console.backing", "hero", (480, 1080), rbox(0.5, 0.5, 479.5, 1079.5, 24), [],
+        jewels=[(240, y, 2.4) for y in (65, 491, 773, 939)], roll=3.0, dz=-6.0)
     return P
 
 
@@ -149,7 +156,7 @@ def check_all(P):
     bad, lines, films = 0, [], {}
     for name, p in P.items():
         wells = [w for _k, w in p["wells"]]
-        gap = min(w.exterior.distance(p["plate"].exterior) for w in wells)
+        gap = min((w.exterior.distance(p["plate"].exterior) for w in wells), default=2 * INSET)  # a plate with no well
         inset = min(INSET, gap / 2)
         f = [behind_layer(w, p["plate"], grow=min(8.0, gap), inset=inset) for w in wells]
         films[name] = f

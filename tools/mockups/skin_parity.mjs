@@ -19,7 +19,9 @@ const SOURCE = 'docs/mockups/battle-console.html';
 const STEPS_AFTER_PRESS = 30; // one second at the page's 30 Hz step
 
 const proxy = process.env.HTTPS_PROXY ? { server: process.env.HTTPS_PROXY, bypass: 'localhost,127.0.0.1' } : undefined;
-const browser = await chromium.launch({ proxy, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// The 2D canvas stays on the CPU: on the software GPU every toDataURL of a painted piece reads back from swiftshader, and
+// a page of painted skins took over four minutes to load (2026-11-07); WebGL still runs on swiftshader.
+const browser = await chromium.launch({ proxy, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-accelerated-2d-canvas'] });
 
 // One page's record: { shot: [{ id, present, pressed, state }] }, the controls taken from `plan` (the Concord's own
 // list per shot) when given, else from what the page itself registered.

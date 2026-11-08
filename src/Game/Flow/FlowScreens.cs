@@ -175,6 +175,7 @@ public sealed partial class FactionScreen : FlowPanel
     internal static readonly Dictionary<string, string> Emblem = new()
     {
         ["concord"] = "res://assets/emblems/concord/b-e27-angle.png", ["krai"] = "res://assets/emblems/krai/kc-angle.png", ["ssarith"] = "res://assets/emblems/ssarith/sd-angle.png",
+        ["kelvane"] = "res://assets/emblems/kelvane/ka-angle.png",
     };
 
     protected override void DrawPanel()

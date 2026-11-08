@@ -196,6 +196,46 @@
     "pilots": 2
    }
   },
+  "fr": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 4,
+   "team": {
+    "engineers": 2,
+    "pilots": 1,
+    "medics": 1
+   }
+  },
+  "krai_fr": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 4,
+   "team": {
+    "engineers": 2,
+    "pilots": 1,
+    "medics": 1
+   }
+  },
+  "hunt_fr": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 4,
+   "team": {
+    "engineers": 2,
+    "pilots": 1,
+    "medics": 1
+   }
+  },
+  "kelvane_fr": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 4,
+   "team": {
+    "engineers": 2,
+    "pilots": 1,
+    "medics": 1
+   }
+  },
   "tr": {
    "pads": 6,
    "hold_t": 30,
@@ -217,6 +257,54 @@
    }
   },
   "kelvane_rv": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "kelvane_ff": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 10,
+   "team": {
+    "demo": 3,
+    "medics": 1,
+    "engineers": 1,
+    "hackers": 1,
+    "pilots": 1
+   }
+  },
+  "kelvane_dd": {
+   "pads": 3,
+   "hold_t": 12,
+   "marines": 10,
+   "team": {
+    "demo": 3,
+    "medics": 1,
+    "engineers": 1,
+    "hackers": 1,
+    "pilots": 1
+   }
+  },
+  "kelvane_bc": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "kelvane_cv": {
    "pads": 4,
    "hold_t": 20,
    "marines": 12,

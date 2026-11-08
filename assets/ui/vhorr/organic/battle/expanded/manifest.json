@@ -1,0 +1,57 @@
+{
+ "skin": "vhorr",
+ "kind": "organic",
+ "scale": 2,
+ "layout": "expanded",
+ "size": [
+  1920,
+  1080
+ ],
+ "method": "every slot sculpted at its exact pinned size by tools/blender/organic_components.py (no nine-slice); a top-level slot's image covers its rectangle grown by its bleed (mm) on every side",
+ "portrait": {
+  "rect": null
+ },
+ "hex": {
+  "pitch_mm": 2.0,
+  "wall": 0.2,
+  "wall_level": 0.45,
+  "dome": 0.1
+ },
+ "slots": {
+  "panel.expanded": {
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    34,
+    1268,
+    1040
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 16.0,
+   "live": [
+    26,
+    56,
+    1228,
+    998
+   ]
+  }
+ },
+ "pieces": {
+  "panel.expanded.idle": {
+   "file": "panel.expanded.idle.png",
+   "slot": "panel.expanded",
+   "state": "idle",
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    34,
+    1268,
+    1040
+   ]
+  }
+ }
+}

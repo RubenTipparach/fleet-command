@@ -192,6 +192,8 @@ public class ReactorTests
         {
             Assert.Equal("concord", TestData.Data.ScenarioById("concord_" + scene).Side);
             Assert.Equal("krai", TestData.Data.ScenarioById("krai_" + scene).Side);
+            Assert.Equal("kelvane", TestData.Data.ScenarioById("kelvane_" + scene).Side);
+            Assert.Equal("ssarith", TestData.Data.ScenarioById("ssarith_" + scene).Side);
         }
     }
 

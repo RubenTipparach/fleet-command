@@ -1,0 +1,75 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "escort",
+ "name": "Freighter escort",
+ "glyph": "E",
+ "kind": "encounter",
+ "type": "Convoy escort",
+ "reward_cr": 350,
+ "turns": 1,
+ "takes": [
+  "ship",
+  "freighter_fac"
+ ],
+ "where": "plain || !plain",
+ "objective": "See the {ship} safely through this sector.",
+ "brief": "The {name(freighter_fac)} freighter {ship} shares this sector with you, and raiders have her on their scopes. Stay with her until they are driven off.",
+ "battle": [
+  {
+   "name": "Freighter escort",
+   "groups": [
+    {
+     "id": "freighter",
+     "faction": "{freighter_fac}",
+     "count": 1,
+     "role": "neutral",
+     "tag": "rescue",
+     "hull": "freighter",
+     "label": "{ship}",
+     "ship_name": "{ship}"
+    },
+    {
+     "id": "raiders",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "safe",
+     "text": "Keep the {ship} alive and drive off the raiders",
+     "primary": true,
+     "done": "alive(freighter) == 1 && alive(raiders) == 0"
+    },
+    {
+     "id": "sound",
+     "text": "Bring her through with half her hull",
+     "done": "hull_min(freighter) > 0.5"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{freighter_fac}": 2
+   },
+   "log": "The {ship} went on her way under your guns."
+  },
+  {
+   "standing": {
+    "{freighter_fac}": -1
+   },
+   "log": "The {ship} was lost on your watch."
+  }
+ ]
+}

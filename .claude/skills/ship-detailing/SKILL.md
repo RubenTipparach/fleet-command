@@ -85,7 +85,7 @@ Bible (`docs/design/ship-bible.html`): chapters 7 (windows), 9 (hull lighting), 
 - **The Ssarith Hunt** (mockup 12, change `ssarith-ship-concepts`): grown skin; chevrons; layered armour with deep
   trenches of machinery; strapped domes, fans, shaped louvres, the eye lamp; olive and khaki plates, green liveries; the
   painted light. Its numbers are in the tables of the tools below and in `data/ships/ssarith/hull_detail.json`.
-- **The Concord and the Krai Warhost** (mockup 24, change `hull-texture-designs`): each written from its own culture in
+- **The Concord and the Krai Warhost** (mockup 35, change `hull-texture-designs`): each written from its own culture in
   that change's design, "Recipes from culture".
 
 ## The tools, step by step

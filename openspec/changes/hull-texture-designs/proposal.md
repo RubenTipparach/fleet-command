@@ -16,7 +16,7 @@ read as primitives up close: smooth octagons with seams, little to catch the lig
 
 ## What Changes
 
-- **Mockup 24**, `docs/mockups/hull-texture-designs.html`: the Concord's Petrel frigate and the Krai frigate, the very
+- **Mockup 35**, `docs/mockups/hull-texture-designs.html`: the Concord's Petrel frigate and the Krai frigate, the very
   models the game flies (inlined from `assets/ships/`), each wearing five texture designs drawn live over their own
   geometry, one at a time or all five side by side, in studio and night light.
   - Five Concord designs and five Krai designs, each built from a named tradition inside its faction's accepted culture

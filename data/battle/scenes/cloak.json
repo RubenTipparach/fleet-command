@@ -1,5 +1,5 @@
 {
- "_doc": "The battle console mockup's test scenes for cloaking, sensors, ECM and ECCM, and boarding defence (SCENES.cloak, nebula and repel), in the format of data/battle/scenarios.json, appended to its list in menu order, each from both sides with the approved ships: the Krai line stands in for the mockup's Kethran and Vos ships, as in the other scenes, and the Concord's cloak-fitted destroyer is the Krai's quarry. Positions in metres (the mockup's units times 100). Per ship, the cloak package's fields (src/Core/Data/DataLoader.Cloak.cs): cloaked, ai_cloak, ecm, eccm, power_e (boxes for some systems; the rest are the class's), marines, ai_board and board_first_s, shields_down, battery_frac. Per scenario: nebula (x_m, z_m, r_m, density) and repel (won once the boarders are spent).",
+ "_doc": "The battle console mockup's test scenes for cloaking, sensors, ECM and ECCM, and boarding defence (SCENES.cloak, nebula and repel), in the format of data/battle/scenarios.json, appended to its list in menu order, each from both sides with the approved ships: the Krai line stands in for the mockup's Kethran and Vos ships, as in the other scenes, and the Concord's cloak-fitted destroyer is the Krai's quarry. Positions in metres (the mockup's units times 100). Per ship, the cloak package's fields (src/Core/Data/DataLoader.Cloak.cs): cloaked, ai_cloak, ecm, eccm, power_e (boxes for some systems; the rest are the class's), marines, ai_board and board_first_s, shields_down, battery_frac. Per scenario: nebula (x_m, z_m, r_m, density) and repel (won once the boarders are spent). The Kelvane Institute plays each too (kelvane_<scene>, 2026-11-07, owner: \"test all kelvan general mission scenarios\"): the Concord's scene with the Institute's own ships in the Concord's places (the cruiser Patience, the destroyer Candour carrying troops, the frigate Parallax in distress, Lyceum Depot), each under a sky of its own. So does the Ssarith Hunt (ssarith_<scene>, 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its ships in the same places (the Hunt Cruiser, the Trident or Hooded Lance frigate for the destroyer and the troop carrier, the Forked Prow in distress, Pell Reach the depot), named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4).",
  "scenarios": [
   {
    "id": "concord_cloak",
@@ -29,6 +29,102 @@
       "eccm": 2, "power_e": { "weapons": 6, "sensors": 3 }, "battery_frac": 1 },
     { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 30000, "z_m": -90000, "heading_deg": 200, "speed_m_s": 1500,
       "stance": "attack", "range": "close", "cloaked": true, "ai_cloak": true }
+   ]
+  },
+  {
+   "id": "kelvane_cloak",
+   "sky": "institute_indigo_well",
+   "name": "Cloak",
+   "side": "kelvane",
+   "seed": 20261201,
+   "objective": "Find the cloaked Vekk with ECCM sweeps and destroy it",
+   "say": [
+    "Science",
+    "The Vekk cloaked as we arrived. ECCM widens our sweep: sweep to find it, then lock and fire. Cloak to lose it."
+   ],
+   "ships": [
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 600,
+     "eccm": 2,
+     "power_e": {
+      "weapons": 4,
+      "sensors": 3
+     },
+     "battery_frac": 1
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Blade Sora",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 30000,
+     "z_m": -90000,
+     "heading_deg": 200,
+     "speed_m_s": 1500,
+     "stance": "attack",
+     "range": "close",
+     "cloaked": true,
+     "ai_cloak": true
+    }
+   ]
+  },
+  {
+   "id": "ssarith_cloak",
+   "sky": "hunt_umbral_reed",
+   "name": "Cloak",
+   "side": "ssarith",
+   "seed": 20261401,
+   "objective": "Find the cloaked Vekk with ECCM sweeps and destroy it",
+   "say": [
+    "Science",
+    "The Vekk cloaked as we arrived. ECCM widens our sweep: sweep to find it, then lock and fire. Cloak to lose it."
+   ],
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 600,
+     "eccm": 2,
+     "power_e": {
+      "weapons": 4,
+      "sensors": 3
+     },
+     "battery_frac": 1
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Blade Sora",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 30000,
+     "z_m": -90000,
+     "heading_deg": 200,
+     "speed_m_s": 1500,
+     "stance": "attack",
+     "range": "close",
+     "cloaked": true,
+     "ai_cloak": true
+    }
    ]
   },
   {
@@ -64,6 +160,116 @@
    ]
   },
   {
+   "id": "kelvane_nebula",
+   "sky": "institute_celadon_mist",
+   "name": "Nebula",
+   "side": "kelvane",
+   "seed": 20261202,
+   "objective": "Find and destroy the raider hiding in the nebula",
+   "say": [
+    "Science",
+    "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 60 km."
+   ],
+   "nebula": {
+    "x_m": 0,
+    "z_m": -70000,
+    "r_m": 48000,
+    "density": 0.85
+   },
+   "ships": [
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 10000,
+     "heading_deg": 0,
+     "speed_m_s": 600,
+     "power_e": {
+      "sensors": 4,
+      "repair": 0,
+      "engines": 5
+     }
+    },
+    {
+     "id": "ruhn",
+     "name": "Ruhn",
+     "captain": "Fang Idra",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 12000,
+     "z_m": -78000,
+     "heading_deg": 90,
+     "speed_m_s": 500,
+     "stance": "hold",
+     "ecm": 3,
+     "power_e": {
+      "sensors": 4,
+      "engines": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "ssarith_nebula",
+   "sky": "hunt_silt_veil",
+   "name": "Nebula",
+   "side": "ssarith",
+   "seed": 20261402,
+   "objective": "Find and destroy the raider hiding in the nebula",
+   "say": [
+    "Science",
+    "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 60 km."
+   ],
+   "nebula": {
+    "x_m": 0,
+    "z_m": -70000,
+    "r_m": 48000,
+    "density": 0.85
+   },
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 10000,
+     "heading_deg": 0,
+     "speed_m_s": 600,
+     "power_e": {
+      "sensors": 4,
+      "repair": 0,
+      "engines": 5
+     }
+    },
+    {
+     "id": "ruhn",
+     "name": "Ruhn",
+     "captain": "Fang Idra",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 12000,
+     "z_m": -78000,
+     "heading_deg": 90,
+     "speed_m_s": 500,
+     "stance": "hold",
+     "ecm": 3,
+     "power_e": {
+      "sensors": 4,
+      "engines": 1
+     }
+    }
+   ]
+  },
+  {
    "id": "concord_repel",
    "sky": "cloak_bulkhead",
    "name": "Repel boarders",
@@ -93,6 +299,112 @@
       "shields_down": true, "marines": 9, "power_e": { "transport": 3 } },
     { "id": "meridian", "name": "Meridian", "captain": "Capt. Osei", "class": "dd", "faction": "concord", "side": 1, "x_m": 7000, "z_m": -6000, "heading_deg": 230, "speed_m_s": 0,
       "stance": "hold", "hold_fire": true, "marines": 15, "ai_board": true, "board_first_s": 6, "power_e": { "weapons": 0, "transport": 6 } }
+   ]
+  },
+  {
+   "id": "kelvane_repel",
+   "sky": "institute_garnet_lamp",
+   "name": "Repel boarders",
+   "side": "kelvane",
+   "seed": 20261203,
+   "repel": true,
+   "objective": "Hold the bridge until the Vekk's boarding parties are spent",
+   "say": [
+    "Security",
+    "The Vekk is alongside with our shields down: boarders inbound. Open Security on the ship panel and post the teams to ambush them."
+   ],
+   "ships": [
+    {
+     "id": "candour",
+     "name": "Candour",
+     "captain": "Institute captain",
+     "class": "kelvane_dd",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "shields_down": true,
+     "marines": 9,
+     "power_e": {
+      "transport": 3
+     }
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Blade Sora",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 7000,
+     "z_m": -6000,
+     "heading_deg": 230,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "marines": 15,
+     "ai_board": true,
+     "board_first_s": 6,
+     "power_e": {
+      "weapons": 0,
+      "transport": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "ssarith_repel",
+   "sky": "hunt_ember_gate",
+   "name": "Repel boarders",
+   "side": "ssarith",
+   "seed": 20261403,
+   "repel": true,
+   "objective": "Hold the bridge until the Vekk's boarding parties are spent",
+   "say": [
+    "Security",
+    "The Vekk is alongside with our shields down: boarders inbound. Open Security on the ship panel and post the teams to ambush them."
+   ],
+   "ships": [
+    {
+     "id": "hunt_trident",
+     "name": "Trident",
+     "captain": "Hunt captain",
+     "class": "hunt_ff_trident",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "shields_down": true,
+     "marines": 9,
+     "power_e": {
+      "transport": 3
+     }
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Blade Sora",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 7000,
+     "z_m": -6000,
+     "heading_deg": 230,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "marines": 15,
+     "ai_board": true,
+     "board_first_s": 6,
+     "power_e": {
+      "weapons": 0,
+      "transport": 6
+     }
+    }
    ]
   }
  ]

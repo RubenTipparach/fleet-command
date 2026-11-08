@@ -141,12 +141,41 @@ public sealed partial class Battle
 
     public IEnumerable<Ship> EnemiesOf(Ship s) => _ships.Where(o => o.Alive && !o.Struck && o.Side != s.Side);
 
-    /// <summary>The player's fleet disengages (a mission's Withdraw): the battle ends where it stands.</summary>
-    public void Withdraw()
+    /// <summary>Whether the captain has ordered a withdrawal: the warp drive arms, plots a course out and jumps as soon as
+    /// it is ready (Battle.Warp), and the battle ends as an escape.</summary>
+    public bool Withdrawing { get; private set; }
+
+    /// <summary>The menu's Withdraw (owner, 2026-11-07: "select withdraw from menu, then warp out"): refused on a story or
+    /// special mission; otherwise the warp drive is armed and plots a course, and the ship jumps out the moment it can.
+    /// Returns false when refused.</summary>
+    public bool Withdraw()
+    {
+        if (Over != null || Withdrawing || !Player.Alive) return false;
+        if (!Scenario.CanWithdraw)
+        {
+            Say("Helm", "We cannot withdraw: this mission must be seen through.");
+            Notify("Withdraw refused", "This mission must be seen through", "caution");
+            return false;
+        }
+        Withdrawing = true;
+        WarpState w = Player.Warp;
+        if (!w.Armed) { w.Armed = true; w.Want = Data.Systems.Warp.CoilE; }
+        if (!w.Plotting) PlotCourse();
+        // engineering routes the weapons' energy to the coils, as much as the drive wants beyond what is free (the
+        // tractor's way of finding power)
+        int free = Math.Max(0, (int)Math.Floor(Rules.Output(Player) - Rules.Used(Player)));
+        int take = Math.Clamp(w.Want - Player.Power["warp"] - free, 0, Player.Power["weapons"]);
+        Player.Power["weapons"] -= take;
+        Say("Helm", take > 0 ? "Withdrawing: weapons power to the warp coils, plotting a course out." : "Withdrawing: charging the warp drive and plotting a course out.");
+        return true;
+    }
+
+    /// <summary>Ends the battle as a completed withdrawal without flying the jump: for the mission preview and tests that
+    /// grade a withdrawal, never for the player (who warps out by Withdraw).</summary>
+    public void EndWithdrawn()
     {
         if (Over != null) return;
         Over = "withdrawn";
-        Say("Helm", "Disengaging. All ships, withdraw.");
     }
 
     /// <summary>The mission's objectives are met (a battle that ends on its objectives): it is won where it stands.</summary>

@@ -22,7 +22,9 @@
 - [x] 3.0b Version 6 (D10): machinery inside the openings, an instrument's array on wide lit faces and forward glass, window rows from data with rooms behind them, the pane drawing shared in `docs/mockups/lib/baked-ship.js` (the Hunt's rooms identical)
 - [x] 3.0c Version 7 (D11): ordered machinery, the carrier's pads and parked craft, diagonal corners, lighter seams, windows that look out, no flood dots, warm rooms for every ship (mockups and game)
 - [x] 3.0d Version 8 (D12): every plate corner on the diagonal (junction_cuts), the carrier's ceiling pads with shuttles overhead, the Small craft family (eight shuttles), survey I7
-- [ ] 3.0e The shuttles detailed and baked once the owner picks (I7)
+- [x] 3.0f Version 9 (D13): six variants of the Gallery bus (211-216) from one gallery hull function, blockout 9 unchanged; survey I8
+- [x] 3.0g Version 10 (D14): 215 the Gallery fighter, phaser prongs grown from its chin, detailed and baked at its own scale (per-ship defaults and paint), the carrier's craft
+- [ ] 3.0e The other shuttles detailed and baked once the owner picks (I7)
 - [ ] 3.1 Each class designed rooms first (plans in `data/ships/kelvane/`), its hull refitted round them, its tradition named in every choice
 - [ ] 3.2 Windows moved to where its rooms are (v6 places them from data); the carrier's bays into its launch well
 - [ ] 3.3 Battle damage and breaking apart on the shared ship modules (`lib/ship-fx.js`, `lib/ship-break.js`, each hull's signed distance field)
@@ -30,6 +32,7 @@
 - [ ] 3.5 The shared emblem library's Kelvane entry brought up to KID (faction-emblems), so the masks and crests draw from one copy
 - [ ] 3.6 Weapon mounts placed on each class
 - [ ] 3.7 The cruiser, battlecruiser and carrier baked at 3072 px, as the Hunt's large ships, if the page's size allows
+- [ ] 3.8 The plan view reworked (owner, 2026-11-07: "sillhouttes of instute ships are kinda bad btw, a bit phalic lol, maybe we need to adjust sillohute from teh top down"): seen from above the line reads as rods with a bulb or a ring at one end; the direction is survey I11. The mockup first, then the game's glbs and schematics re-exported
 
 ## 4. After approval for implementation (a separate request)
 

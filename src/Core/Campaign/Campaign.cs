@@ -57,10 +57,11 @@ public sealed class Campaign
                     double d = HexGrid.Dist(c, r, sc, sr) + R.Next() * md.SeedJitter;
                     if (d < bd) { bd = d; best = f; }
                 }
-                double t = R.Next();
-                s.Sectors.Add(new Sector { C = c, R = r, Owner = best, Terrain = t < md.NebulaBelow ? "nebula" : t < md.AsteroidsBelow ? "asteroids" : "open" });
+                // one draw a sector, kept from the first map's scattered terrain so the borders stay as approved
+                R.Next();
+                s.Sectors.Add(new Sector { C = c, R = r, Owner = best });
             }
-        foreach (var (c, r) in md.Stars) s.Hex(c, r).Terrain = "star";
+        c0.MakeSpace();
         foreach (Place p in md.Places)
         {
             Sector h = s.Hex(p.C, p.R);
@@ -89,6 +90,7 @@ public sealed class Campaign
         first.Supplies["marines"] = Math.Min(ru.StartMarines, c0.SupplyMax(first, "marines"));
         s.Fleet.Add(first);
         c0.MakeFreighters();
+        c0.Reveal();
         c0.RollOfficers();
         if (data.Missions.ContainsKey("shakedown")) c0.OfferMission("shakedown");
         for (int i = 0; i < ru.MissionsStart; i++) c0.OfferMission();
@@ -108,11 +110,107 @@ public sealed class Campaign
         if (s.Version != 1) throw new FormatException($"save version {s.Version} is not 1");
         if (s.Sectors.Count != s.Cols * s.Rows || s.Cols < 1) throw new FormatException("the save's map is the wrong size");
         if (!data.Factions.ContainsKey(s.Side)) throw new FormatException($"the save's side '{s.Side}' is no faction");
-        return new Campaign(data, s);
+        var c = new Campaign(data, s);
+        // a save from before the fog of war knows nothing yet: what is seen now is revealed
+        c.Reveal();
+        return c;
     }
 
     /// <summary>Writes the random generator's state back into the state (before saving).</summary>
     private void Sync() => S.Rng = R.State;
+
+    // ---- Space: star systems and the deep between them ------------------------------------------------------------------
+
+    /// <summary>Lays out space (owner, 2026-11-07: "space is kinda random right now. we should have stars, with planets
+    /// asteriods and nebula clustered around them", "rogue planets, dust clouds, and asteroids with no stars are a thing
+    /// too"): each system's star, its asteroid belt (a share of the ring belt_r sectors out) and its nebula grown beside it;
+    /// then dust clouds and asteroid fields in the deep, clear of every star. Ports are placed over it afterwards.</summary>
+    private void MakeSpace()
+    {
+        MapDef md = Data.Map;
+        var places = md.Places.Select(p => (p.C, p.R)).ToHashSet();
+        var stars = md.Stars.ToHashSet();
+        bool Free((int C, int R) k) => !places.Contains(k) && !stars.Contains(k) && Hex(k.C, k.R).Terrain == "open";
+        foreach (var (c, r) in stars) Hex(c, r).Terrain = "star";
+        foreach (StarSystem y in md.Systems)
+        {
+            if (y.BeltR > 0)
+                foreach (Sector h in S.Sectors.Where(h => HexGrid.Dist(h.C, h.R, y.C, y.R) == y.BeltR))
+                    if (R.Next() < y.BeltShare && Free((h.C, h.R))) h.Terrain = "asteroids";
+            if (y.Nebula > 0)
+            {
+                var start = S.Sectors.Where(h => HexGrid.Dist(h.C, h.R, y.C, y.R) is 2 or 3 && Free((h.C, h.R))).ToList();
+                if (start.Count > 0) Grow(start[R.Below(start.Count)], y.Nebula, "nebula", Free);
+            }
+        }
+        DeepSpace dp = md.Deep;
+        bool Deep((int C, int R) k) => Free(k) && stars.All(t => HexGrid.Dist(k.C, k.R, t.C, t.R) >= dp.ClearOfStars);
+        for (int i = 0; i < dp.DustClouds + dp.Fields; i++)
+        {
+            bool dust = i < dp.DustClouds;
+            var start = S.Sectors.Where(h => Deep((h.C, h.R))).ToList();
+            if (start.Count == 0) break;
+            int n = dust ? dp.DustMin + R.Below(dp.DustMax - dp.DustMin + 1) : dp.FieldMin + R.Below(dp.FieldMax - dp.FieldMin + 1);
+            Grow(start[R.Below(start.Count)], n, dust ? "nebula" : "asteroids", Deep);
+        }
+    }
+
+    // Grows a patch of terrain from a sector to n sectors, each new one a random free neighbour of the patch so far
+    // (neighbours in the grid's fixed order, so the same seed grows the same patch).
+    private void Grow(Sector from, int n, string terrain, Func<(int C, int R), bool> free)
+    {
+        var patch = new List<Sector> { from };
+        from.Terrain = terrain;
+        while (patch.Count < n)
+        {
+            var edge = patch.SelectMany(h => HexGrid.Neighbours(h.C, h.R, S.Cols, S.Rows)).Distinct().Where(free).ToList();
+            if (edge.Count == 0) break;
+            var (c, r) = edge[R.Below(edge.Count)];
+            Sector h = Hex(c, r);
+            h.Terrain = terrain;
+            patch.Add(h);
+        }
+    }
+
+    /// <summary>Whether a planet is a rogue: no star within three sectors.</summary>
+    public bool IsRogue(Sector h) => h.Planet != null && Data.Map.Stars.All(t => HexGrid.Dist(h.C, h.R, t.C, t.R) > 3);
+
+    // ---- The fog of war ----------------------------------------------------------------------------------------------------
+
+    /// <summary>The sectors seen now (the fog's visible state; owner, 2026-11-07: "fog of war has three states: unexplored,
+    /// revealed, and visible"): your empire's own sectors, those within your fleet's sight, and those within friendly
+    /// ships' sight (your faction's fleets and freighters, and your allies').</summary>
+    public HashSet<(int C, int R)> Visible()
+    {
+        Sight sg = Data.Map.Sight;
+        var eyes = new List<(int C, int R, int Range)> { (S.AtC, S.AtR, sg.Fleet) };
+        foreach (FactionFleet g in S.Groups.Where(g => Friendly(g.Fac))) eyes.Add((g.C, g.R, sg.Friendly));
+        foreach (Freighter f in S.Freighters.Where(f => Friendly(f.Fac) && f.Route.Count > 0))
+        {
+            int[] at = f.Route[Math.Clamp(f.I, 0, f.Route.Count - 1)];
+            eyes.Add((at[0], at[1], sg.Friendly));
+        }
+        var seen = new HashSet<(int, int)>();
+        foreach (Sector h in S.Sectors)
+            if (h.Owner == S.Side || eyes.Any(e => HexGrid.Dist(h.C, h.R, e.C, e.R) <= e.Range)) seen.Add((h.C, h.R));
+        return seen;
+    }
+
+    /// <summary>A faction whose ships share what they see with you: your own, or an ally (standing at AllyStanding or more).</summary>
+    public bool Friendly(string fac) => fac == S.Side || SideOf(fac) == "ally";
+
+    /// <summary>Whether a sector is seen now.</summary>
+    public bool IsVisible(int c, int r) => Visible().Contains((c, r));
+
+    /// <summary>Marks every sector seen now as revealed, with the empire that holds it ("Any revealed area updates the tile
+    /// color (empire controled)"). Called when a campaign starts or loads, after each sector the fleet flies, and after the
+    /// factions' turn.</summary>
+    public void Reveal()
+    {
+        foreach (var (c, r) in Visible()) See(Hex(c, r));
+    }
+
+    private static void See(Sector h) { h.Known = true; h.KnownOwner = h.Owner; }
 
     // ---- Map -------------------------------------------------------------------------------------------------------------
 
@@ -206,6 +304,8 @@ public sealed class Campaign
             S.AtC = k.C;
             S.AtR = k.R;
             steps.Add(k);
+            // the fleet sees as it goes: everything within its sight of each sector it passes is revealed
+            Reveal();
         }
         bool arrived = S.AtC == target.C && S.AtR == target.R;
         S.OrderC = arrived ? null : target.C;
@@ -223,8 +323,11 @@ public sealed class Campaign
     {
         S.Turn++;
         List<FleetMove> moves = FactionsMove();
+        Reveal();
         S.Mp = Ru.MovePoints;
-        S.Missions = S.Missions.Where(m => m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0).ToList();
+        // an encounter goes with the freighter it was met with, taken or not
+        foreach (Offer m in S.Missions.Where(m => ScriptOf(m).Encounter)) S.Active.Remove(m.Id);
+        S.Missions = S.Missions.Where(m => !ScriptOf(m).Encounter && (m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0)).ToList();
         int n = 1 + R.Below(2);
         for (int i = 0; i < n && S.Missions.Count < Ru.MissionsMax; i++) OfferMission();
         RollOfficers();
@@ -273,6 +376,7 @@ public sealed class Campaign
         }
         foreach (Freighter f in S.Freighters)
         {
+            if (f.Out > 0) { f.Out--; continue; }   // off her route while she is replaced
             if (f.I + f.Step < 0 || f.I + f.Step >= f.Route.Count) f.Step = -f.Step;
             int[] a = f.Route[f.I];
             f.I += f.Step;
@@ -351,29 +455,117 @@ public sealed class Campaign
     /// random contract. <paramref name="at"/> pins the sector and hands the mission data. Returns null when none fits.</summary>
     public Offer? OfferMission(string? id = null, (int C, int R)? at = null, IReadOnlyDictionary<string, object>? data = null)
     {
-        var ids = Data.Contracts.Select(m => m.Id).ToList();
+        var contracts = Data.Contracts.ToList();
+        double total = contracts.Sum(m => m.Weight);
+        // a contract picked by its weight (one draw, as before)
+        string Pick()
+        {
+            double x = R.Next() * total;
+            foreach (MissionScript m in contracts) { if (x < m.Weight) return m.Id; x -= m.Weight; }
+            return contracts[^1].Id;
+        }
         for (int tries = 0; tries < 20; tries++)
         {
-            string sid = id ?? ids[(int)Math.Floor(R.Next() * ids.Count)];
+            string sid = id ?? Pick();
             MissionScript def = Data.Missions[sid];
             var pool = (at is { } p ? new List<Sector> { Hex(p.C, p.R) } : Where(def))
                 .Where(h => !S.Missions.Any(m => m.C == h.C && m.R == h.R)).ToList();
             if (pool.Count == 0) { if (id != null) return null; continue; }
-            Sector h = pool[(int)Math.Floor(R.Next() * pool.Count)];
-            var m = new Offer
-            {
-                Id = ++S.Mid, Script = sid, C = h.C, R = h.R, Turns = def.Story ? null : def.Turns,
-                Strength = Ru.Strengths[(int)Math.Floor(R.Next() * Ru.Strengths.Count)],
-                Reward = def.Reward + (def.Story ? 0 : Math.Floor(R.Next() * Ru.RewardSteps) * Ru.RewardStep),
-            };
-            if (data != null) foreach (var (k, v) in data) m.Set(k, v);
-            if (def.FollowGroup) m.Group = GroupAt(h.C, h.R)?.Name;
-            var sc = new OfferScope(this, m);
-            foreach (SetupStep st in def.Setup)
-                m.Set(st.Set, st.Pick != null ? st.Pick[(int)Math.Floor(R.Next() * st.Pick.Count)] : st.Value!.Eval(sc));
-            S.Missions.Add(m);
-            return m;
+            return MakeOffer(def, pool[(int)Math.Floor(R.Next() * pool.Count)], data);
         }
+        return null;
+    }
+
+    // A mission offered in a sector, with the data it is handed: its terms rolled, its sector seen, its setup run.
+    private Offer MakeOffer(MissionScript def, Sector h, IReadOnlyDictionary<string, object>? data)
+    {
+        var m = new Offer
+        {
+            Id = ++S.Mid, Script = def.Id, C = h.C, R = h.R, Turns = def.Story ? null : def.Turns,
+            Strength = Ru.Strengths[(int)Math.Floor(R.Next() * Ru.Strengths.Count)],
+            Reward = def.Reward + (def.Story ? 0 : Math.Floor(R.Next() * Ru.RewardSteps) * Ru.RewardStep),
+        };
+        if (data != null) foreach (var (k, v) in data) m.Set(k, v);
+        // a mission's intel shows its sector on the map
+        See(h);
+        if (def.FollowGroup) m.Group = GroupAt(h.C, h.R)?.Name;
+        var sc = new OfferScope(this, m);
+        foreach (SetupStep st in def.Setup)
+            m.Set(st.Set, st.Pick != null ? st.Pick[(int)Math.Floor(R.Next() * st.Pick.Count)] : st.Value!.Eval(sc));
+        S.Missions.Add(m);
+        return m;
+    }
+
+    // ---- Freighters met in a sector -------------------------------------------------------------------------------------
+
+    /// <summary>The mission files of the two encounters (data/missions/escort.json and raid.json).</summary>
+    public const string EscortScript = "escort", RaidScript = "raid";
+
+    /// <summary>The freighters in a sector now; one off her route is in none.</summary>
+    public List<Freighter> FreightersAt(int c, int r) => S.Freighters.Where(f => f.Out == 0 && f.Here() == (c, r)).ToList();
+
+    /// <summary>What meeting a freighter offers: an escort for your own faction's or an ally's, a raid on anyone else's.</summary>
+    public string EncounterOf(Freighter f) => Friendly(f.Fac) ? EscortScript : RaidScript;
+
+    /// <summary>The encounter with a freighter in the fleet's sector (owner, 2026-11-07: "no mision flag needed. Just whenever
+    /// you are on the same tile as freighter, you get a mission option"): the one already offered this turn, or a new one,
+    /// handed her name (ship) and faction (freighter_fac). Null when she is not in the fleet's sector.</summary>
+    public Offer? Meet(Freighter f)
+    {
+        if (f.Out > 0 || f.Here() != (S.AtC, S.AtR)) return null;
+        Offer? had = S.Missions.FirstOrDefault(m => ScriptOf(m).Encounter && m.Value("ship") as string == f.Name && m.Value("freighter_fac") as string == f.Fac);
+        if (had != null) return had;
+        Offer met = MakeOffer(Data.Missions[EncounterOf(f)], At, new Dictionary<string, object> { ["ship"] = f.Name, ["freighter_fac"] = f.Fac });
+        Sync();
+        return met;
+    }
+
+    /// <summary>The freighter an encounter was met with, or null.</summary>
+    public Freighter? FreighterOf(Offer m) =>
+        S.Freighters.FirstOrDefault(f => f.Name == m.Value("ship") as string && f.Fac == m.Value("freighter_fac") as string);
+
+    /// <summary>What the cargo of every freighter taken pays when cashed out, credits.</summary>
+    public int HaulValue => S.Fleet.Sum(s => s.Haul);
+
+    /// <summary>Cashes out the cargo of the freighters taken (owner, 2026-11-07: "capturing enemy freighter: bring it to a
+    /// station to cash out"), at your own port or one that deals with you, never to the faction she was taken from: her
+    /// cargo pays its haul, and she is handed over with it. Returns why not, or null.</summary>
+    public string? CashOut()
+    {
+        var hauls = S.Fleet.Where(s => s.Haul > 0).ToList();
+        if (hauls.Count == 0) return "No cargo aboard.";
+        Sector at = At;
+        string buyer = IsPort(at) ? S.Side : IsMarket(at) ? at.Owner : "";
+        if (buyer == "") return "Cargo is cashed out at a port that deals with you.";
+        var sold = hauls.Where(s => s.Maker != buyer).ToList();
+        if (sold.Count == 0) return $"The {Data.Factions[buyer].Short} will not buy back their own cargo.";
+        foreach (CampShip s in sold)
+        {
+            S.Credits += s.Haul;
+            S.Fleet.Remove(s);
+            S.Log.Add($"Turn {S.Turn}: the {s.Name}'s cargo sold at {at.PortName} for {s.Haul} cr.");
+        }
+        return null;
+    }
+
+    // ---- Repair: ships do not mend on their own ---------------------------------------------------------------------------
+
+    /// <summary>The supply that is the repair kit (data/campaign/campaign.json supplies, "Repair kits").</summary>
+    public const string KitSupply = "parts";
+
+    /// <summary>The repair kits aboard the whole fleet.</summary>
+    public int Kits => S.Fleet.Sum(s => s.Supplies.GetValueOrDefault(KitSupply));
+
+    /// <summary>Patches a ship's hull in the field with one repair kit from the fleet's stores (its own first), anywhere,
+    /// between battles (owner, 2026-11-07: "ships dont auto heal, you have to repair them at stations", "or use you repair
+    /// kits"): rules.kit_repair_pct of the hull, never past whole. Returns why not, or null.</summary>
+    public string? FieldRepair(CampShip s)
+    {
+        if (s.HullPct >= 100) return $"The {s.Name} needs no repair.";
+        CampShip? from = s.Supplies.GetValueOrDefault(KitSupply) > 0 ? s : S.Fleet.FirstOrDefault(x => x.Supplies.GetValueOrDefault(KitSupply) > 0);
+        if (from == null) return "No repair kits aboard: buy them at a port (Supplies).";
+        from.Supplies[KitSupply]--;
+        s.HullPct = Math.Min(100, s.HullPct + Ru.KitRepairPct);
         return null;
     }
 
@@ -481,6 +673,7 @@ public sealed class Campaign
         string buyer = IsPort(at) ? S.Side : IsMarket(at) ? at.Owner : "";
         if (buyer == "") return "Ships are sold at a port that deals with you.";
         if (S.Fleet.Count <= 1) return "You cannot sell your last ship.";
+        if (s.Haul > 0) return $"The {s.Name} is a prize with her cargo: cash it out.";
         S.Credits += SaleQuote(s, buyer);
         S.Fleet.Remove(s);
         ChangeStanding(buyer, buyer == "vos" ? Ru.PirateSaleStanding : Ru.SaleStanding);

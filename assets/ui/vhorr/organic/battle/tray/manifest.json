@@ -1,0 +1,316 @@
+{
+ "skin": "vhorr",
+ "kind": "organic",
+ "scale": 2,
+ "layout": "tray",
+ "size": [
+  1920,
+  1080
+ ],
+ "method": "every slot sculpted at its exact pinned size by tools/blender/organic_components.py (no nine-slice); a top-level slot's image covers its rectangle grown by its bleed (mm) on every side",
+ "portrait": {
+  "rect": null
+ },
+ "hex": {
+  "pitch_mm": 2.0,
+  "wall": 0.2,
+  "wall_level": 0.45,
+  "dome": 0.1
+ },
+ "slots": {
+  "tray": {
+   "piece": "frame.panel",
+   "rect": [
+    2400,
+    40,
+    460,
+    212
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 16.0,
+   "live": null
+  },
+  "key": {
+   "piece": "button.idle",
+   "rect": [
+    2420,
+    60,
+    150,
+    48
+   ],
+   "states": [
+    "idle",
+    "hover",
+    "pressed"
+   ],
+   "rest": "idle",
+   "parent": "tray",
+   "bleed": 0.0,
+   "live": null
+  },
+  "key.square": {
+   "piece": "button.idle",
+   "rect": [
+    2590,
+    60,
+    48,
+    48
+   ],
+   "states": [
+    "idle",
+    "hover",
+    "pressed"
+   ],
+   "rest": "idle",
+   "parent": "tray",
+   "bleed": 0.0,
+   "live": null
+  },
+  "tab": {
+   "piece": "tab.idle",
+   "rect": [
+    2660,
+    64,
+    120,
+    40
+   ],
+   "states": [
+    "idle",
+    "active"
+   ],
+   "rest": "idle",
+   "parent": "tray",
+   "bleed": 0.0,
+   "live": null
+  },
+  "inset": {
+   "piece": "frame.inset",
+   "rect": [
+    2420,
+    132,
+    180,
+    100
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": "tray",
+   "bleed": 0.0,
+   "live": [
+    2432,
+    144,
+    156,
+    76
+   ]
+  },
+  "divider": {
+   "piece": "divider",
+   "rect": [
+    2620,
+    140,
+    160,
+    10
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": "tray",
+   "bleed": 0.0,
+   "live": null
+  },
+  "lamp.alert.yellow": {
+   "piece": "lamp.alert.yellow",
+   "rect": [
+    2800,
+    64,
+    40,
+    40
+   ],
+   "states": [
+    "green",
+    "yellow",
+    "red"
+   ],
+   "rest": "yellow",
+   "parent": "tray",
+   "bleed": 0.0,
+   "live": null
+  }
+ },
+ "pieces": {
+  "tray.idle": {
+   "file": "tray.idle.png",
+   "slot": "tray",
+   "state": "idle",
+   "piece": "frame.panel",
+   "rect": [
+    2400,
+    40,
+    460,
+    212
+   ]
+  },
+  "key.idle": {
+   "file": "key.idle.png",
+   "slot": "key",
+   "state": "idle",
+   "piece": "button.idle",
+   "rect": [
+    2420,
+    60,
+    150,
+    48
+   ]
+  },
+  "key.hover": {
+   "file": "key.hover.png",
+   "slot": "key",
+   "state": "hover",
+   "piece": "button.idle",
+   "rect": [
+    2420,
+    60,
+    150,
+    48
+   ]
+  },
+  "key.pressed": {
+   "file": "key.pressed.png",
+   "slot": "key",
+   "state": "pressed",
+   "piece": "button.idle",
+   "rect": [
+    2420,
+    60,
+    150,
+    48
+   ]
+  },
+  "key.square.idle": {
+   "file": "key.square.idle.png",
+   "slot": "key.square",
+   "state": "idle",
+   "piece": "button.idle",
+   "rect": [
+    2590,
+    60,
+    48,
+    48
+   ]
+  },
+  "key.square.hover": {
+   "file": "key.square.hover.png",
+   "slot": "key.square",
+   "state": "hover",
+   "piece": "button.idle",
+   "rect": [
+    2590,
+    60,
+    48,
+    48
+   ]
+  },
+  "key.square.pressed": {
+   "file": "key.square.pressed.png",
+   "slot": "key.square",
+   "state": "pressed",
+   "piece": "button.idle",
+   "rect": [
+    2590,
+    60,
+    48,
+    48
+   ]
+  },
+  "tab.idle": {
+   "file": "tab.idle.png",
+   "slot": "tab",
+   "state": "idle",
+   "piece": "tab.idle",
+   "rect": [
+    2660,
+    64,
+    120,
+    40
+   ]
+  },
+  "tab.active": {
+   "file": "tab.active.png",
+   "slot": "tab",
+   "state": "active",
+   "piece": "tab.idle",
+   "rect": [
+    2660,
+    64,
+    120,
+    40
+   ]
+  },
+  "inset.idle": {
+   "file": "inset.idle.png",
+   "slot": "inset",
+   "state": "idle",
+   "piece": "frame.inset",
+   "rect": [
+    2420,
+    132,
+    180,
+    100
+   ]
+  },
+  "divider.idle": {
+   "file": "divider.idle.png",
+   "slot": "divider",
+   "state": "idle",
+   "piece": "divider",
+   "rect": [
+    2620,
+    140,
+    160,
+    10
+   ]
+  },
+  "lamp.alert.yellow.green": {
+   "file": "lamp.alert.yellow.green.png",
+   "slot": "lamp.alert.yellow",
+   "state": "green",
+   "piece": "lamp.alert.yellow",
+   "rect": [
+    2800,
+    64,
+    40,
+    40
+   ]
+  },
+  "lamp.alert.yellow.yellow": {
+   "file": "lamp.alert.yellow.yellow.png",
+   "slot": "lamp.alert.yellow",
+   "state": "yellow",
+   "piece": "lamp.alert.yellow",
+   "rect": [
+    2800,
+    64,
+    40,
+    40
+   ]
+  },
+  "lamp.alert.yellow.red": {
+   "file": "lamp.alert.yellow.red.png",
+   "slot": "lamp.alert.yellow",
+   "state": "red",
+   "piece": "lamp.alert.yellow",
+   "rect": [
+    2800,
+    64,
+    40,
+    40
+   ]
+  }
+ }
+}

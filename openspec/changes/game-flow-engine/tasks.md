@@ -56,6 +56,19 @@
   Shakedown and Deliver the prize rewritten; the mission strip without its fill, objectives ticked live, Withdraw in the
   battle's menu; ships slide on the map (no hop), in the game and mockup 1 v18
 
+- [x] 1.14 (2026-11-07) The owner's notes on the Hunt campaign and the map:
+  - Move here with no moves left sets the course anyway, flown from the next End turn ("pressing the move button if move is
+    already exhasuted wont queue up move for the next turns"); Accept and Set course with no moves left queue it the same way.
+    The game had returned early; mockup 1 already queued it (`moveFleet` with an empty leg)
+  - fleets fly their moves as phases: turn on the spot to face the next sector, then slide there, then turn again ("turn
+    first, then move, not turn and move at the same time"), 0.5 s for half a turn (`CampaignMap.FlightTurnS`)
+  - the map's nebula puffs hashed with PCG on the integer lattice, their seed offset kept small: the `fract` hash had lost
+    its precision and drawn the clouds in blocks ("need to fix pixely clouds")
+  - the port draws a hull with no schematic as the systems display's stand-in silhouette (the Hunt hulls), so the fleet
+    cards' and shipyard's text never sits beside an empty space; the stores count no longer trimmed
+  - the menu card sized to its four keys
+- [ ] 1.15 Mockup 1: fleets turn, then move, as the game (`stepFlight` turns the model at once today)
+
 ## 2. Still different from mockup 1 v14 (each a line in `docs/design/mockup-sync.md`)
 
 - [x] 2.1 The faction screen's 3D scene, light and dust (2026-11-06: the walnut table, change `faction-select` 3.1)
@@ -73,4 +86,12 @@
 - [ ] 2.6 Options beyond the display mode and the volumes (2026-11-06): graphics quality and interface scale, which mockup 1 shows
 - [ ] 2.8 Mockup 1: the mission strip without its fill and with live ticks, Withdraw in the battle menu
 - [ ] 2.9 Mockup 1: the Skirmish screen by scenario type, then the faction to play it as, with a scroll bar
+- [ ] 2.10 The map as a printed paper chart on a walnut table in a carpeted, papered room (mockup 1 v21, change `paper-map`;
+  owner, 2026-11-07: "make the space background a crusty print on old piece of paper with hexagon grid drawn on it"): the
+  game keeps the glass board until the owner asks for the paper map in the game; with it, the drawn pieces of mockup 1 v26
+  (clouds, storms, suns, rocks, names, compass rose: `docs/mockups/lib/drawn.js`) and the planet shader of v27
+  (`docs/mockups/lib/planet-shader.js`, a port to a Godot canvas shader)
 - [ ] 2.10 Mockup 1: sync to the game's 2026-11-06 changes: the goals' close key and their list in Comms (a battle opens on Comms), the campaign map's Menu opening the pause menu, the debrief on black
+- [ ] 2.11 Mockup 1 v25: the sector panel's Hide key, with a Sector key among the map keys to bring it back and picking a
+  sector opening it again; on a phone in portrait the top bar in two rows (credits, turn, moves and Missions, then prestige
+  and the standing chips) (owner, 2026-11-07: "Panels on my phone stuck open, I can't see")

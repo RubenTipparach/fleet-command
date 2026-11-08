@@ -18,7 +18,8 @@
      "role": "enemy",
      "label": "Freighters",
      "tier": 1,
-     "range_km": 80
+     "range_km": 80,
+     "hull": "freighter"
     },
     {
      "id": "escorts",

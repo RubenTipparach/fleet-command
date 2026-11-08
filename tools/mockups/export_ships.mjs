@@ -45,7 +45,13 @@ const FACTIONS = [
   { faction: 'krai', page: 'docs/mockups/krai-ship-concepts.html', skip: [] },
   // mockup 12 (owner, 2026-11-06: "looks good, implement in game"): the Hunt's ships carry their own baked maps
   // (assets/ships/ssarith/<id>_*.png, painted_bake.py), so their glbs hold geometry, UVs and empties, and the manifest names the maps
-  { faction: 'ssarith', page: 'docs/mockups/ssarith-ship-concepts.html', skip: [] },
+  { faction: 'ssarith', page: 'docs/mockups/ssarith-ship-concepts.html', skip: [], baked: 'Ssarith' },
+  // mockup 23 (owner, 2026-11-07: "perfect, implment these ships in game"): the Kelvane Institute's line and its fighter, baked
+  // as the Hunt's are, on the same page code (docs/mockups/lib/baked-fleet.js)
+  { faction: 'kelvane', page: 'docs/mockups/kelvane-ship-concepts.html', skip: [], baked: 'Kelvane' },
+  // mockup 24 (owner, 2026-11-07: "implement in game"): the four freighters, baked on the same page code, each with its
+  // containers (window.MOCKUP_CARGO) written into its manifest entry as "cargo"
+  { faction: 'freighters', page: 'docs/mockups/freighter-concepts.html', skip: [], baked: 'Freighter' },
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -75,7 +81,7 @@ async function exportInPage(cfg) {
     lampMake = { colour: rgb(l.color), hex: l.color.getHexString(), cone_half_angle_deg: r6(l.angle * 180 / PI), penumbra: l.penumbra, decay: l.decay,
       distance_per_range: r6(l.distance / sp.range), intensity_per_strength: r6(l.intensity / sp.a), shadow_casters: hero.lamps.filter((q) => q.l.castShadow).length };
   }
-  if (cfg.faction !== 'ssarith') window.MOCKUP_SHOTS.lineup(); // the Concord page steps its fixed 0.2 s here; the Krai and Hunt pages step each frame, so wait for it
+  if (!cfg.baked) window.MOCKUP_SHOTS.lineup(); // the Concord page steps its fixed 0.2 s here; the Krai and Hunt pages step each frame, so wait for it
   const ships = shipsInScene().filter((s) => !cfg.skip.includes(s.id));
   if (!ships.length) fail('no ships found in ' + cfg.faction);
   // A healthy ship's lamps settle on their first step and hold (lib/ship-fx.js settle()), so any number of steps gives the same values.
@@ -86,21 +92,21 @@ async function exportInPage(cfg) {
   for (const s of ships) if (!(s.t > 0)) fail(`${s.id} never ran a step (t ${s.t}, ${seen} frames in ${Math.round(performance.now() - t0)} ms, visible ${s.root.visible}), so its lamps are not at their healthy values`);
 
   // 2. The faction's hull shader, read from a hull material.
-  const isHull = (m) => (cfg.faction === 'concord' ? progKey(m) === 'fleet-tern-hull' : cfg.faction === 'ssarith' ? /^(painted|pbr)-/.test(progKey(m)) : progKey(m).startsWith('krai-hull'));
+  const isHull = (m) => (cfg.faction === 'concord' ? progKey(m) === 'fleet-tern-hull' : cfg.baked ? /^(painted|pbr)-/.test(progKey(m)) : progKey(m).startsWith('krai-hull'));
   let hullSample = null; ships[0].root.traverse((o) => { if (!hullSample && o.isMesh && isHull(o.material)) hullSample = o.material; });
   const hullSh = compiled(hullSample), frag = hullSh.fragmentShader;
   let tileU = null, tileV = null, detA = null, detN = null;
-  if (cfg.faction !== 'ssarith') {   // the Hunt has no tile: each ship its own maps
+  if (!cfg.baked) {   // a baked faction has no tile: each ship its own maps
     [[tileU], [tileV]] = vecs(frag, /texture2D\(uDetA, vec2\(p\.z\/([\d.]+), p\.y\/([\d.]+)\)\)/, 'tri-planar detail tile');
     detA = hullSh.uniforms.uDetA && hullSh.uniforms.uDetA.value; detN = hullSh.uniforms.uDetN && hullSh.uniforms.uDetN.value;
     if (!detA || !detN) fail('the hull shader has no detail maps');
   }
   let paintK = null, hullShader = null;
-  if (cfg.faction === 'ssarith') {
+  if (cfg.baked) {
     const [gk] = vecs(frag, /pow\(texture2D\(uHullLight, vUv\)\.rgb, (vec3\([^)]*\))\)/, 'hull light map curve');
-    hullShader = { source: 'docs/mockups/ssarith-ship-concepts.html: hullLooks(), hullShader() (HULL_GLSL); maps by tools/blender/painted_bake.py --ship',
+    hullShader = { source: 'docs/mockups/lib/baked-fleet.js (on ' + cfg.page + '): hullLooks(), hullShader() (HULL_GLSL); maps by tools/blender/painted_bake.py --ship',
       did: [
-        'Each ship has its own unwrap and its own maps (assets/ships/ssarith/<id>_*.png, named in the ship\'s shader_params.maps), no tile: base colour (sRGB), ORM (occlusion, roughness, metalness in red, green, blue), a tangent-space normal map (OpenGL, +Y up), emission (sRGB: lamps, light strips), and a light map of the hull lights falling on the plating (linear).',
+        'Each ship has its own unwrap and its own maps (assets/ships/' + cfg.faction + '/<id>_*.png, named in the ship\'s shader_params.maps), no tile: base colour (sRGB), ORM (occlusion, roughness, metalness in red, green, blue), a tangent-space normal map (OpenGL, +Y up), emission (sRGB: lamps, light strips), and a light map of the hull lights falling on the plating (linear).',
         'PBR look: albedo = base; roughness and metalness from ORM green and blue (roughness 1, metalness 1 scaled by them); AO from ORM red; emission = the emission map + albedo * pow(light, light_gamma) * k, k the light\'s strength (0.3 in the page\'s studio light, 4.5 at night).',
         'The glb\'s UVs are the bake\'s, v flipped for glTF (v = 0 the image\'s top row), so the PNGs map as they stand.',
         'Battle damage as the other factions\' hulls (DAMAGE_GLSL, dmgBreak): the hull shader takes the scorch, holes and fracture cells; a broken piece\'s emission and light map die with it (uLight).',
@@ -159,7 +165,7 @@ async function exportInPage(cfg) {
     const key = JSON.stringify([m.type, pk, rgb(m.color), rgb(m.emissive), r6(m.emissiveIntensity), r6(m.metalness), r6(m.roughness), !!m.vertexColors, m.side, !!m.transparent, r6(m.opacity), !!m.flatShading, texIds,
       m.isMeshPhysicalMaterial ? [r6(m.clearcoat), r6(m.clearcoatRoughness)] : 0, hullU, hull && cfg.faction === 'krai' ? 'krai-hull' : 0]);
     if (matByKey.has(key)) return matByKey.get(key);
-    if (hull && cfg.faction === 'ssarith') {   // the Hunt hull: a plain stand-in; its look is its own maps, named in the ship's shader_params
+    if (hull && cfg.baked) {   // a baked hull: a plain stand-in; its look is its own maps, named in the ship's shader_params
       const o = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.36, 0.38, 0.28), metalness: 0.4, roughness: 0.6 }); o.name = uniq('hull');
       const rec = { name: o.name, hull_shader: false, baked_hull: true, keep_uv: true, livery: false, base_colour: rgb(o.color), metalness: 0.4, roughness: 0.6, emissive: [0, 0, 0], emissive_strength: 0,
         vertex_colours: false, double_sided: false, transparent: false, textures: [],
@@ -237,7 +243,7 @@ async function exportInPage(cfg) {
       const id = P.id; let m;
       if (cfg.faction === 'concord') { if (id === 'hull' || id === 'neck' || id === 'wing') return id; if (id === 'sec') return 'secondary'; if (id === 'crown') return 'command';
         if ((m = id.match(/^thigh(.+)$/))) return 'pylon_' + side(m[1]); if ((m = id.match(/^shin(.+)$/))) return 'nacelle_' + side(m[1]); if ((m = id.match(/^pod(.)$/))) return 'pod_' + side(m[1]); }
-      else if (cfg.faction === 'ssarith') { if (id === 'hull') return id; }
+      else if (cfg.baked) { if (id === 'hull') return id; }
       else { if (id === 'hull' || id === 'blade' || id === 'crest') return id; if ((m = id.match(/^nac([PS])(\d+)$/))) return 'nacelle_' + side(m[1]) + (+m[2] ? '_' + (+m[2] + 1) : ''); }
       fail('a piece with no name rule: ' + id);
     };
@@ -254,6 +260,7 @@ async function exportInPage(cfg) {
       if (!o.isMesh || !vis(o)) return;
       const m = o.material;
       if (o === ship.shield || m.blending === THREE.AdditiveBlending) { skipped.additive_glow = (skipped.additive_glow || 0) + 1; return; } // plumes, halos: effects
+      if (o.userData.parked) { skipped.parked_craft = (skipped.parked_craft || 0) + 1; return; } // a carrier's parked craft: their pads go out as empties
       if (o.userData.panes) { skipped.panes = (skipped.panes || 0) + 1; return; } // the Hunt's window and bay quads: their places go out as empties
       const P = pieceOf(o); if (!P) fail('a mesh outside every piece in ' + ship.id);
       const mi = materialFor(m, roleOf, ship), part = partName(P), zone = zoneName(o.userData.sys || P.sys), zone0 = zoneName(P.sys);
@@ -313,7 +320,7 @@ async function exportInPage(cfg) {
     for (const nv of ship.navs) { if (/flood/.test(nv.kind)) continue; const p = shipPos(nv.s), col = nv.s.material.color;   // the Hunt's floods are baked, below
       empty(navName(nv.kind, col, p, nv.P), p, nv.P || hullP, { kind: 'nav_' + nv.kind, colour: rgb(col), hex: col.getHexString(), behaviour: nv.kind === 'strobe' ? 'double flash every 1.4 s' : nv.kind === 'beacon' ? 'pulse, 0.25 + 0.75 max(0, sin 2.6 t)^3' : 'steady',
         // the Hunt's lamps are the page's glow sprites, drawn in the game too (change ssarith-ships-engine 2.4): their width, metres
-        ...(cfg.faction === 'ssarith' && nv.s.userData.big ? { glow_m: r6(nv.s.userData.big) } : {}) }); }
+        ...(cfg.baked && nv.s.userData.big ? { glow_m: r6(nv.s.userData.big) } : {}) }); }
     if (cfg.faction === 'concord') {
       const C = ship.C, kinds = [];
       for (const t of C.turrets) kinds.push({ kind: C.pdc ? 'point_defence' : 'turret', facing: t[2] === 'bottom' ? 'ventral' : 'dorsal' });
@@ -332,7 +339,7 @@ async function exportInPage(cfg) {
       let b = 0; root.traverse((o) => { if (o.isMesh && vis(o) && o.material.emissiveMap && roleOf.get(o.material) === 'hangar') { o.geometry.computeBoundingBox(); const p = o.geometry.boundingBox.getCenter(V3()).applyMatrix4(toShip(o));
         const nrm = V3().fromBufferAttribute(o.geometry.attributes.normal, 0).transformDirection(toShip(o)); empty('bay_' + b++, p, pieceOf(o), { kind: 'hangar_door', facing: v3(turn(nrm)) }); } });
       (ship.spots || []).forEach((s, i) => empty('light_flood_' + i, s.p, hullP, { kind: 'flood', colour: lampMake.colour, hex: lampMake.hex, direction: v3(turn(s.d)), range_m: r6(s.range), strength: r6(s.a) }, aim(s.d)));
-    } else if (cfg.faction === 'ssarith') {
+    } else if (cfg.baked) {
       const sh = ship.maps.sh, lb = new THREE.Box3().setFromBufferAttribute(ship.maps.lowGeo.attributes.position);
       empty('engine_0', V3(0, (lb.min.y + lb.max.y) / 2, lb.min.z), hullP, { kind: 'drive', at: 'the drive recess in the stern' });
       empty('reactor', ship.corePos, hullP, {});
@@ -341,6 +348,9 @@ async function exportInPage(cfg) {
       (sh.panes || []).forEach((P2, i) => { const n = V3(...P2.n), v = V3(...P2.v), u = V3(...P2.u);
         empty((P2.kind === 'bay' ? 'bay_' : 'window_') + i, V3(...P2.c), hullP, { kind: P2.kind === 'bay' ? 'launch_bay' : 'window', room: P2.kind, lit: P2.lit, w_m: P2.w_m, h_m: P2.h_m, frame_m: P2.frame_m,
           normal: v3(turn(n)), up: v3(turn(v)), across: v3(turn(u)) }); });   // across: a mirrored pane's own, not up x normal
+      (sh.pads || []).forEach((P2, i) => empty('pad_' + i, V3(...P2.c), hullP, { kind: 'landing_pad', radius_m: r6(P2.r_m || 0), normal: v3(turn(V3(...P2.n))), along: v3(turn(V3(...P2.u))),
+        ...(ship.parked ? { craft: cfg.faction + '/' + ship.parked.craft + '.glb', stand_m: r6(ship.parked.stand_m) } : {}),
+        note: 'the craft parks with its mockup origin stand_m up the pad\'s normal (so one on a ceiling hangs upside down), nosed along along' }));
     } else {
       ship.muzzles.forEach((p, i) => { let room = null, dz = Infinity; for (const r of ship.rooms) if (/^Spinal|^Bow guns/.test(r.name) && p.z >= r.b.z1 && p.z - r.b.z1 < dz) { dz = p.z - r.b.z1; room = r.name; }
         empty('mount_gun_' + i, p, hullP, { kind: 'gun_muzzle', arc: 'fore', room }); });
@@ -375,14 +385,22 @@ async function exportInPage(cfg) {
     for (const P of pieces) if (!bodyPieces.has(P) && partNodes.has(partName(P)))
       breakup.pieces.push({ node: partName(P), system: P.sys, center: v3(P.center || shipPos(P.pivot)), cuts: (P.cuts || []).map((k) => ({ n: v3(k.n), d: r6(k.d), c: v3(k.c), r: r6(k.r) })) });
     out.updateMatrixWorld(true);
-    const shaderParams = cfg.faction === 'ssarith' ? { maps: Object.fromEntries(['base', 'orm', 'normal', 'emit', 'light', 'albedo'].map((k) => [k, 'ssarith/' + ship.id + '_' + k + '.png'])),
+    const shaderParams = cfg.baked ? { maps: Object.fromEntries(['base', 'orm', 'normal', 'emit', 'light', 'albedo'].map((k) => [k, cfg.faction + '/' + ship.id + '_' + k + '.png'])),
         light_gamma: r6(ship.maps.sh.light_gamma || 1.6), light_ref: r6(ship.maps.sh.light_ref || 0.9), bake_px: ship.maps.sh.tex_px }
       : cfg.faction === 'krai' ? { uLiv: ship.dmgU.uLiv.value.toArray().map(r6), uLiv2: ship.dmgU.uLiv2.value.toArray().map(r6) }
       : { pools: (ship.spots || []).map((s) => ({ p: v3(s.p), d: v3(s.d), range_m: r6(s.range), strength: r6(s.a) })), note: 'pools in mockup ship space, as uPools / uPoolD / uPoolA (the same lamps as the light_flood_* empties)' };
-    const info = cfg.faction === 'ssarith' ? { label: 'Ssarith ' + ship.cls.toLowerCase() + ': ' + ship.name, cls: ship.cls, name: ship.name }
+    const info = cfg.baked ? { label: cfg.baked + ' ' + ship.cls.toLowerCase() + ': ' + ship.name, cls: ship.cls, name: ship.name }
       : cfg.faction === 'concord' ? { label: ship.C.label, cls: ship.C.cls, name: ship.C.name, registry: ship.C.reg, livery: ship.liv }
       : { label: 'Krai ' + ship.D.label.toLowerCase(), role: ship.D.role, plan: 'data/ships/krai/' + ship.id + '_plan.json' };
-    return { out, man: { faction: cfg.faction, id: ship.id, ...info, file: cfg.faction + '/' + ship.id + '.glb', length_m: r6(size.z), beam_m: r6(size.x), height_m: r6(size.y), triangles: tris, draw_calls: meshNames.length,
+    // A freighter's containers (mockup 24, window.MOCKUP_CARGO): the one container (assets/containers/container.glb) placed in
+    // the glb frame, its turn conjugated by the half turn (q = R q_m R^-1, R about Y), its scale and colour; the game draws them
+    // as one MultiMesh under the ship (src/Game/View/Cargo.cs). Not in the ship's glb: one container mesh serves every freighter.
+    const cargo = window.MOCKUP_CARGO ? window.MOCKUP_CARGO(ship.id) : [];
+    const qR = new THREE.Quaternion(0, 1, 0, 0), qRi = qR.clone().invert();
+    const cargoOut = cargo.map((k) => { const p = turn(V3(...k.p)).sub(c), q = qR.clone().multiply(new THREE.Quaternion(...k.q)).multiply(qRi);
+      return { p: v3(p), q: [r6(q.x), r6(q.y), r6(q.z), r6(q.w)], s: r6(k.s), rgb: k.rgb.map(r6) }; });
+    return { out, man: { faction: cfg.faction, id: ship.id, ...info, ...(cargoOut.length ? { cargo: { model: 'containers/container.glb', count: cargoOut.length, items: cargoOut,
+        note: 'p in the glb frame (metres), q a quaternion xyzw, s a uniform scale on the container\'s own glb (6 x 6 x 12 m, long along z), rgb a linear tint' } } : {}), file: cfg.faction + '/' + ship.id + '.glb', length_m: r6(size.z), beam_m: r6(size.x), height_m: r6(size.y), triangles: tris, draw_calls: meshNames.length,
       origin_offset_m: v3(c), nodes: { pieces: [...partNodes.keys()], meshes: meshNames, empties }, materials: [...new Set(drawn)], shader_params: shaderParams, break: breakup,
       checks: { flipped_triangles: flipped, flipped_on_single_sided: flippedSingle, skipped_meshes: skipped } } };
   }
@@ -508,7 +526,7 @@ for (const F of FACTIONS.filter((f) => !ONLY || ONLY.includes(f.faction))) {
   sources[F.faction] = src;
   const { page, errors } = await openPage(F.page, !!F.antonio);
   await page.addScriptTag({ path: path.join(VENDOR, 'GLTFExporter.r147.js') });
-  const res = await page.evaluate(exportInPage, { faction: F.faction, skip: F.skip, maxTex: MAX_TEX }).catch((e) => { throw new Error(e.message + (errors.length ? '\npage errors:\n' + [...new Set(errors)].join('\n') : '')); });
+  const res = await page.evaluate(exportInPage, { faction: F.faction, page: F.page, baked: F.baked || null, skip: F.skip, maxTex: MAX_TEX }).catch((e) => { throw new Error(e.message + (errors.length ? '\npage errors:\n' + [...new Set(errors)].join('\n') : '')); });
   if (errors.length) throw new Error(F.page + ': ' + errors.join('\n'));
   await page.close();
   if (pageSha(F.page) !== src.sha256) throw new Error(F.page + ' changed during the export: run it again');
@@ -537,11 +555,11 @@ for (const F of FACTIONS.filter((f) => !ONLY || ONLY.includes(f.faction))) {
   }
 }
 const said = (f) => (sources[f] ? `page v${sources[f].version ?? '?'}, sha256 ${sources[f].sha256.slice(0, 12)}` : 'not in this run');
-manifest._doc = `Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord ${said('concord')}; mockup 7, docs/mockups/krai-ship-concepts.html, Krai ${said('krai')}; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt ${said('ssarith')}): each ship built intact by its page\'s own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file\'s sha256 and published version each ship came from: an export is stale when the page\'s sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb\'s frame unless a key says mockup space. materials: every exported material by faction/name, with what the page\'s shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.`;
+manifest._doc = `Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord ${said('concord')}; mockup 7, docs/mockups/krai-ship-concepts.html, Krai ${said('krai')}; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt ${said('ssarith')}; mockup 23, docs/mockups/kelvane-ship-concepts.html, Kelvane Institute ${said('kelvane')}; mockup 24, docs/mockups/freighter-concepts.html, the freighters ${said('freighters')}): each ship built intact by its page\'s own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file\'s sha256 and published version each ship came from: an export is stale when the page\'s sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb\'s frame unless a key says mockup space. materials: every exported material by faction/name, with what the page\'s shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.`;
 manifest.conventions = { units: 'metres', up: '+Y', bow: '-Z', port: '-X', origin: 'the centre of the ship\'s bounding box (all three axes)',
   mockup_space: 'the pages build in +X port, +Y up, +Z bow; p_mockup = (-(x + o.x), y + o.y, -(z + o.z)) for a glb point (x, y, z), o = the ship\'s origin_offset_m; the hull shaders\' tri-planar detail and livery are in mockup space',
   nodes: 'root: the ship id; under it one node per piece of the mockup at the piece\'s pivot (hull, secondary, neck, command, wing, pod_<side>, pylon_<side>, nacelle_<side>, blade, crest); under each piece its meshes, merged by zone and material, named <piece>[_<zone>]_<material>, and its empties',
-  empties: 'mount_turret_<i>, mount_torpedo_<i>, mount_gun_<i>, engine_<i>, deflector, reactor, bridge, bay_<i>, light_nav_port / starboard / aft, light_strobe_<side>, light_beacon_dorsal / ventral, light_flood_<i>; facts in glTF extras (colour linear RGB with its hex, kind, radius_m, range_m, direction in the glb frame). A mount\'s +Y is the way it faces out of the hull; a flood\'s -Z is the way it shines (as a Godot SpotLight3D).',
+  empties: 'mount_turret_<i>, mount_torpedo_<i>, mount_gun_<i>, engine_<i>, deflector, reactor, bridge, bay_<i>, window_<i>, pad_<i> (a carrier\'s landing pads), light_nav_port / starboard / aft, light_strobe_<side>, light_beacon_dorsal / ventral, light_flood_<i>; facts in glTF extras (colour linear RGB with its hex, kind, radius_m, range_m, direction in the glb frame). A mount\'s +Y is the way it faces out of the hull; a flood\'s -Z is the way it shines (as a Godot SpotLight3D).',
   not_exported: 'live lights, additive glows (thruster plumes, the Krai nacelle panels\' halos), particles, wires, damage, shields and broken pieces; the windows of the Concord line (drawn by the hull shader, see hull_shader)' };
 write('assets/ships/manifest.json', Buffer.from(JSON.stringify(manifest, null, 1) + '\n'));
 

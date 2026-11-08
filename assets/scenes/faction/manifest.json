@@ -2,31 +2,31 @@
  "_doc": "The faction screen, exported from mockup 1 (docs/mockups/game-flow.html, buildFactionScene) by tools/mockups/export_faction.mjs. Metres, +Y up, the camera looking toward -Z. Drawn by src/Game/Flow/FactionStage.cs.",
  "source": {
   "page": "docs/mockups/game-flow.html",
-  "sha256": "3903ca70ee3c407610dbb19de488a33a20779e84b1c9d088c10011fc734c1042"
+  "sha256": "22247f9e52832d1fde580d5c9ba43a9e49d545bfa8516dd00812f0e55f4d5407"
  },
  "table": {
   "top": 0.78,
-  "pitch": 3.3,
+  "pitch": 2.5,
   "float": 1.66,
   "bob": 0.035,
   "lift": 0.07,
   "woodM": 3,
-  "fitW": 4.3
+  "fitW": 5
  },
  "slots": [
   {
    "faction": "concord",
-   "x": -3.3,
+   "x": -3.75,
    "badge_scale": 0.0115,
    "badge_tilt_rad": -0.12,
    "lamp": {
     "position": [
-     -3.3,
+     -3.75,
      6.4,
      1.7
     ],
     "target": [
-     -3.3,
+     -3.75,
      1.13,
      0
     ]
@@ -34,17 +34,17 @@
   },
   {
    "faction": "krai",
-   "x": 0,
+   "x": -1.25,
    "badge_scale": 0.0115,
    "badge_tilt_rad": -0.12,
    "lamp": {
     "position": [
-     0,
+     -1.25,
      6.4,
      1.7
     ],
     "target": [
-     0,
+     -1.25,
      1.13,
      0
     ]
@@ -52,17 +52,35 @@
   },
   {
    "faction": "ssarith",
-   "x": 3.3,
+   "x": 1.25,
    "badge_scale": 0.0115,
    "badge_tilt_rad": -0.12,
    "lamp": {
     "position": [
-     3.3,
+     1.25,
      6.4,
      1.7
     ],
     "target": [
-     3.3,
+     1.25,
+     1.13,
+     0
+    ]
+   }
+  },
+  {
+   "faction": "kelvane",
+   "x": 3.75,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     3.75,
+     6.4,
+     1.7
+    ],
+    "target": [
+     3.75,
      1.13,
      0
     ]
@@ -624,12 +642,69 @@
    "normal_scale": 1,
    "uv_scale": 0.02,
    "env": 0.105
+  },
+  "kelvane_0": {
+   "graph": "emblem_platinum",
+   "tint": [
+    0.901961,
+    0.847059,
+    0.721569
+   ],
+   "metalness": 1,
+   "roughness": 1,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": [
+    0,
+    0,
+    0
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 0.02,
+   "env": 0.35
+  },
+  "kelvane_1": {
+   "graph": null,
+   "tint": [
+    0.14996,
+    0.003677,
+    0.007499
+   ],
+   "metalness": 0,
+   "roughness": 0.9,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 1,
+   "sheen_colour": [
+    1,
+    0.114435,
+    0.144128
+   ],
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.0875
   }
  },
  "materials": {
   "table_wood": "the table_wood maps (assets/textures/materials/table_wood/), clearcoat 0.35 at roughness 0.28",
   "table_under": "the same wood times (0.55, 0.5, 0.46)",
   "holo_field": "the Concord badge's field: src/Game/Flow/holo_field.gdshader, a port of emblem-builds.js concord() holo",
+  "painted": "<faction>_painted_<n>: a badge material on a map the page paints (the Institute orbital), its maps inside the glb, drawn as imported",
   "badge": "each other badge material is named in badge_materials: on a graph, its maps (assets/textures/materials/<graph>/: albedo tinted by tint, normal, ORM) at uv_scale per glb uv unit, metalness and roughness 1 times the ORM; otherwise its own colour, metalness and roughness"
  }
 }

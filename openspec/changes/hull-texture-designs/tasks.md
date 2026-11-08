@@ -3,7 +3,7 @@
 ## 1. The pitch (2026-11-06)
 
 - [x] 1.1 The designs written up: five for the Concord, five for the Krai, each from a named tradition (design.md)
-- [x] 1.2 Mockup 24: the Petrel and the Krai frigate in each design, one at a time and all five side by side, studio and night
+- [x] 1.2 Mockup 35: the Petrel and the Krai frigate in each design, one at a time and all five side by side, studio and night
 - [x] 1.3 Shots looked at, the page published, the tracker's repo copy and the records updated
 
 - [x] 1.4 Version 3 (owner: "they don't bring the same level as the ssarith ships. We need visual story telling no
@@ -15,11 +15,11 @@
       baked and shown first
 - [x] 1.5a Version 6 set aside for the Kelvane Institute's method (owner, 2026-11-07: "exampline how the ionstitute does its
       hull, and replicate taht", "lets try a new dirtection"): main merged, its bake tools taken whole, C1 rebuilt in the
-      Institute's data format at 2048 px, mockup 24 v5
-- [x] 1.5b K1 on the Institute's method (mockup 24 v6)
+      Institute's data format at 2048 px, mockup 35 v5
+- [x] 1.5b K1 on the Institute's method (mockup 35 v6)
 - [x] 1.5c Every class of both lines on its line's first design (owner, 2026-11-07: "start developing for the rest of the
       fleet. Both krai and concord"): the Swift, Albatross, Condor and Pelican on C1, the Krai corvette, cruiser and
-      dreadnought on K1, each from its own model (mockup 24 v13-v15)
+      dreadnought on K1, each from its own model (mockup 35 v13-v15)
 - [ ] 1.5d Room plans for the Swift, Albatross, Condor and Pelican, so their windows come from their rooms as the Petrel's
 - [ ] 1.5e The large ships (the Condor, Pelican, Krai cruiser and dreadnought) at 4096 px, as the page's size allows
 - [ ] 1.6 C2-C5 and K2-K5 on the Institute's method, once the owner has seen C1 and K1

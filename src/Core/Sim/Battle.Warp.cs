@@ -90,6 +90,12 @@ public sealed partial class Battle
             // slowed by damaged sensors, stopped only when they are knocked out
             if (w.Plotting) w.Plot = Math.Min(1, w.Plot + dt / W.PlotS * Math.Clamp(s.Sys["sensors"], 0, 1));
         }
+        // a withdrawal under way: re-plot after a failed jump, and jump the moment the drive is ready
+        if (Withdrawing && Over == null && Player.Alive && Player.Warp.Out <= 0)
+        {
+            if (!Player.Warp.Plotting) PlotCourse();
+            if (WarpReady(Player)) Jump(Player);
+        }
     }
 
     // The jump: refused with the reason the Warp page shows; otherwise one roll against the risk. A failure is a mishap

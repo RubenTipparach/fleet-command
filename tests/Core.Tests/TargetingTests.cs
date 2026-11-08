@@ -171,7 +171,7 @@ public class TargetingTests
     [Fact]
     public void The_Disable_scene_is_won_by_disabling_its_ship_and_lost_by_destroying_it()
     {
-        foreach (string id in new[] { "concord_disable", "krai_disable" })
+        foreach (string id in new[] { "concord_disable", "krai_disable", "kelvane_disable", "ssarith_disable" })
         {
             DisableObjective o = TestData.Data.Systems.Tactical.Objectives.Single(x => x.Scenario == id);
             var won = new Battle(TestData.Data, TestData.Data.ScenarioById(id));

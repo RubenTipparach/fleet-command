@@ -16,7 +16,7 @@ Each design is written in the Institute's data format, `data/ships/<faction>/hul
 | The ship's story | Its own domes, fans, vents, bays, windows and bands, from its room plan | the ship's entry |
 | Bake | 2048 px, 32 samples, `painted_bake.py --faction <faction> --ship <slug>`; `mesh` names the hull, `out` the folder | |
 
-The Concord's C1 (mockup 24 v5) is the first. Its paint: off-white plates in seven tones, a pale steel-blue accent, light
+The Concord's C1 (mockup 35 v5) is the first. Its paint: off-white plates in seven tones, a pale steel-blue accent, light
 grey seams, teal bands, the Concord emblem, red and teal marks.
 
 ## Version 6: a clean hull, large panels and sub panels, a kit of details

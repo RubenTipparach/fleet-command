@@ -34,9 +34,12 @@ public static class MissionRun
         var labels = new Dictionary<string, (string, string?, GroupRole)>();
         string side = c.S.Side;
 
-        for (int i = 0; i < c.S.Fleet.Count; i++)
+        // a freighter taken with her cargo sails with the fleet but stays out of its battles (unless she is all it has)
+        var fighting = c.S.Fleet.Where(x => x.Haul == 0).ToList();
+        if (fighting.Count == 0) fighting = c.S.Fleet.ToList();
+        for (int i = 0; i < fighting.Count; i++)
         {
-            CampShip s = c.S.Fleet[i];
+            CampShip s = fighting[i];
             string id = $"own{s.Id}";
             double x = i == 0 ? 0 : (i % 2 == 1 ? -1 : 1) * FleetSpacingM * ((i + 1) / 2), z = i == 0 ? 0 : 5000;
             ships.Add(new ShipStart(id, s.Name, i == 0 ? c.S.Captain : "Captain", c.Data.Hulls[s.Hull].BattleClass, side, 0, x, z, 0, 1200,
@@ -68,7 +71,7 @@ public static class MissionRun
             for (int i = 0; i < count; i++)
             {
                 int tier = grp.Tier != null ? (int)Math.Round(grp.Tier.Num(sc)) : grp.Tag == "flagship" ? 3 : 1 + i % 2;
-                Hull hull = hullIds.Count > 0 ? c.Data.HullOfTier(fac, tier) : c.Data.HullOfTier("vos", 1);
+                Hull hull = grp.Hull == "freighter" ? c.Data.FreighterOf(fac) : hullIds.Count > 0 ? c.Data.HullOfTier(fac, tier) : c.Data.HullOfTier("vos", 1);
                 string id = $"{grp.Id}{i + 1}";
                 var names = c.Data.Factions[fac].Names;
                 string name = grp.Tag is "flagship" or "prize" or "rescue" or "decoy" && i == 0 && grp.ShipName != null ? grp.ShipName.Eval(sc)
@@ -89,10 +92,11 @@ public static class MissionRun
                     z = -Math.Cos(rad) * rangeM + Math.Sin(rad) * lat;
                     heading = grp.Role == GroupRole.Neutral ? 180 : Geometry.Wrap(Math.Atan2(-x, z)) * 180 / Math.PI;
                 }
-                bool neutral = grp.Role == GroupRole.Neutral, drone = grp.Tag == "drone";
+                // a freighter keeps her course, slow, whichever side she is on: she never closes to fight
+                bool neutral = grp.Role == GroupRole.Neutral, drone = grp.Tag == "drone", freighter = grp.Hull == "freighter";
                 // a drone (a shakedown's target) stands where it is put, never fires, and is a light hulk with no shields
-                ships.Add(new ShipStart(id, name, label, hull.BattleClass, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading, drone ? 0 : neutral ? 600 : 1400,
-                    grp.Role == GroupRole.Ally ? Stance.Escort : neutral || drone ? Stance.Hold : Stance.Attack, HoldFire: neutral || drone,
+                ships.Add(new ShipStart(id, name, label, hull.BattleClass, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading, drone ? 0 : neutral || freighter ? 600 : 1400,
+                    grp.Role == GroupRole.Ally && !freighter ? Stance.Escort : neutral || drone || freighter ? Stance.Hold : Stance.Attack, HoldFire: neutral || drone,
                     HullFrac: drone ? DroneHullFrac : 1, ShieldsFrac: drone ? 0 : 1, Prize: grp.Tag == "prize" && i == 0));
                 list.Add(id);
                 groups[grp.Role == GroupRole.Enemy ? "enemies" : "allies"].Add(id);
@@ -110,8 +114,17 @@ public static class MissionRun
             return new MarkerDef(k.Id, k.Label.Eval(sc), Math.Sin(rad) * r, -Math.Cos(rad) * r, k.RadiusM, k.After);
         }).ToList();
         var scen = new Scenario($"mission_{def.Id}_{m.Id}", b.Name?.Eval(sc) ?? def.Name, side, seed, obj, "Comms",
-            intel != "" ? $"Contacts ahead. {obj}" : obj, ships, SkyFor(c.Hex(m.C, m.R)), Markers: markers.Count > 0 ? markers : null);
+            intel != "" ? $"Contacts ahead. {obj}" : obj, ships, SkyFor(c.Hex(m.C, m.R)), Markers: markers.Count > 0 ? markers : null)
+            { CanWithdraw = def.CanWithdraw };
         return new MissionPlan(m, b, scen, groups, fleetIds, labels);
+    }
+
+    // the freighter of a battle (its first freighter-hull group's first ship) as the battle ended, or null
+    private static ShipEnd? FreighterEnd(MissionPlan? plan, Battle? battle)
+    {
+        if (plan == null || battle == null || plan.Battle.Groups.FirstOrDefault(g => g.Hull == "freighter") is not { } grp) return null;
+        if (!plan.Groups.TryGetValue(grp.Id, out var ids) || ids.Count == 0 || battle.ShipById(ids[0]) is not { } s) return null;
+        return new ShipEnd(s.Id, s.Alive, s.Struck || s.Captured, s.Hull / s.Class.HullHp);
     }
 
     /// <summary>The nebula sky a sector's battle is fought under (data/space/skies/).</summary>
@@ -135,7 +148,7 @@ public static class MissionRun
     /// that ends on its objectives: GameFlow wins it once every primary is met).</summary>
     public static Dictionary<string, bool> MetNow(Campaign c, MissionPlan plan, Battle battle)
     {
-        var ends = plan.Groups.ToDictionary(g => g.Key, g => g.Value.Select(id => battle.ShipById(id)!).Select(s => new ShipEnd(s.Id, s.Alive, s.Struck, s.Hull / s.Class.HullHp)).ToList());
+        var ends = plan.Groups.ToDictionary(g => g.Key, g => g.Value.Select(id => battle.ShipById(id)!).Select(s => new ShipEnd(s.Id, s.Alive, s.Struck || s.Captured, s.Hull / s.Class.HullHp)).ToList());
         var sc = new EndScope(c, plan.Mission, ends, "end") { Reached = battle.Reached };
         return plan.Battle.Objectives.ToDictionary(o => o.Id, o => o.Done.Bool(sc));
     }
@@ -150,7 +163,7 @@ public static class MissionRun
         var ends = new Dictionary<string, List<ShipEnd>>();
         if (plan != null && battle != null)
             foreach (var (gid, ids) in plan.Groups)
-                ends[gid] = ids.Select(id => battle.ShipById(id)!).Select(s => new ShipEnd(s.Id, s.Alive, s.Struck, s.Hull / s.Class.HullHp)).ToList();
+                ends[gid] = ids.Select(id => battle.ShipById(id)!).Select(s => new ShipEnd(s.Id, s.Alive, s.Struck || s.Captured, s.Hull / s.Class.HullHp)).ToList();
         var sc = new EndScope(c, m, ends, how) { HadBattle = plan != null, Reached = battle?.Reached ?? (IReadOnlyCollection<string>)Array.Empty<string>() };
         var objs = plan?.Battle.Objectives ?? (IReadOnlyList<MissionObjective>)Array.Empty<MissionObjective>();
         var met = new Dictionary<string, bool>();
@@ -189,6 +202,28 @@ public static class MissionRun
                 c.S.Fleet.Add(prize);
                 d.Ships.Add((prize.Name, "taken as a prize"));
             }
+            // a freighter taken with her cargo joins the fleet, to be cashed out at a port; with no room in the fleet her
+            // cargo is moved across and paid at half
+            if (r.Haul?.Eval(sc) is { Length: > 0 } hf)
+            {
+                int cr = (int)Math.Round(r.HaulCr!.Num(sc));
+                string name = m.Value("ship") as string ?? c.Data.FreighterOf(hf).Name;
+                if (c.S.Fleet.Count < ru.FleetMax)
+                {
+                    CampShip haul = c.NewShip(c.Data.FreighterOf(hf).Id, name);
+                    haul.Maker = hf;
+                    haul.Haul = cr;
+                    haul.HullPct = Math.Round(Math.Max(1, FreighterEnd(plan, battle)?.HullFrac * 100 ?? 50));
+                    c.S.Fleet.Add(haul);
+                    d.Ships.Add((name, $"taken with her cargo, {cr} cr when cashed out at a port"));
+                }
+                else
+                {
+                    c.S.Credits += cr / 2;
+                    d.Credits += cr / 2;
+                    d.Ships.Add((name, $"no room in the fleet: her cargo moved across, {cr / 2} cr"));
+                }
+            }
             foreach (NextMission n in r.Next)
             {
                 (int, int)? at = n.At switch { "home" => (c.S.HomeC, c.S.HomeR), "fleet" => (c.S.AtC, c.S.AtR), "here" => (m.C, m.R), _ => null };
@@ -204,6 +239,8 @@ public static class MissionRun
         }
         c.S.Missions.Remove(m);
         c.S.Active.Remove(m.Id);
+        // the freighter an encounter was met with, destroyed or taken, is off her route while she is replaced
+        if (def.Encounter && FreighterEnd(plan, battle) is { } fe && (!fe.Alive || fe.Taken) && c.FreighterOf(m) is { } metF) metF.Out = ru.FreighterRefitTurns;
         if (d.Log != null) c.S.Log.Add($"Turn {c.S.Turn}: {d.Log}");
 
         // the fleet as it came out: damage carried, losses struck off; a fleet lost entirely is given a new smallest hull
