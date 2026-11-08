@@ -174,7 +174,8 @@ const GLSL = {
 float bHit(vec3 ro, vec3 rd, vec3 b0, vec3 b1, inout vec3 nOut, float tBest){
   vec3 t0 = (b0 - ro)/rd, t1 = (b1 - ro)/rd, tn3 = min(t0, t1), tf3 = max(t0, t1);
   float tn = max(max(tn3.x, tn3.y), tn3.z), tf = min(min(tf3.x, tf3.y), tf3.z);
-  if (tn > tf || tn < 0.0 || tn >= tBest) return tBest;
+  if (tn > tf || tn < 0.0 || tn >= tBest - 1e-3) return tBest;   // a tie goes to the box met first, always: two boxes
+  //   sharing a face (a blanket on a bed) otherwise trade pixels (owner, 2026-11-07: "the rooms have zfihting in them")
   nOut = tn == tn3.x ? vec3(-sign(rd.x), 0.0, 0.0) : tn == tn3.y ? vec3(0.0, -sign(rd.y), 0.0) : vec3(0.0, 0.0, -sign(rd.z));
   return tn; }\n`,
 };
