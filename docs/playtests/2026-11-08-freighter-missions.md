@@ -46,4 +46,9 @@ sector with a fregher that your ship is on". Change `freighter-missions` (task 2
 
 ## The take
 
-The Concord run, recorded: see the Drive link in the PR and below once uploaded.
+The Concord run in a 1920 x 1080 window, recorded with OBS from `PLAYTEST_START` to `PLAYTEST_END`: 8 min 50 s, H.264 at
+1920 x 1136 (the window and its title bar), 60 fps, 409 MB, at the take's own size:
+https://drive.google.com/file/d/1dwZNCLaAdKBGyQUBr_mAXrvNTdjzX5Rj/view (`fleet-command-2026-11-08-freighter-missions-concord.mp4`).
+Its stills are in `docs/screenshots/game/freighters-concord/` (the map, her Raid key, the briefing, the battle, the debrief,
+Cash out at Meridian, the escort). The contact sheet showed the console and the view in every frame, the Long Acre with her
+containers, and the weapons panel turned to Single as she weakened.
