@@ -8507,7 +8507,7 @@ const root = document.getElementById('root');
 const ui = document.createElement('canvas'); ui.id = 'ui';
 const g = ui.getContext('2d');
 let DPR = 1;
-function sizeUI() { DPR = Math.min(devicePixelRatio, 2); ui.width = Math.round(innerWidth * DPR); ui.height = Math.round(innerHeight * DPR); css(ui, `width:${innerWidth}px;height:${innerHeight}px;`); }
+function sizeUI() { DPR = Math.min(devicePixelRatio, 2); ui.width = Math.round(innerWidth * DPR); ui.height = Math.round(innerHeight * DPR); g.imageSmoothingQuality = 'high'; css(ui, `width:${innerWidth}px;height:${innerHeight}px;`); }
 
 // A kit piece composed whole at its device-pixel rectangle, its corners at their margins (keys, tabs, cells and fills
 // shrink their margins with their height, as the CSS kit did), every slice on whole pixels; cached by piece and size.
@@ -8522,6 +8522,9 @@ function nineCanvas(piece, W2, H2, sc, h) {
   const sx = [0, ml * sk, src.width - mr * sk, src.width], sy = [0, mt * sk, src.height - mb * sk, src.height];
   const dx = [0, d[3], W2 - d[1], W2], dy = [0, d[0], H2 - d[2], H2];
   c = document.createElement('canvas'); c.width = W2; c.height = H2; const x = c.getContext('2d');
+  // high-quality smoothing: a piece shrunk several times over (a small window) keeps its thin slanted strokes smooth
+  // (owner, 2026-11-08: "conclave buttons, some are suffering from non- AA button renders")
+  x.imageSmoothingQuality = 'high';
   for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
     const sw = sx[j + 1] - sx[j], sh = sy[i + 1] - sy[i], dw = dx[j + 1] - dx[j], dh = dy[i + 1] - dy[i];
     if (sw > 0 && sh > 0 && dw > 0 && dh > 0) x.drawImage(src, sx[j], sy[i], sw, sh, dx[j], dy[i], dw, dh);
@@ -9714,7 +9717,7 @@ function stTransport(b, big) {
     const mode = trTab, roles = QUEUE_ROLES[mode];
     if (mode === 'hit') {
       // the target's subsystems as keys, coloured by their status; the picked one ringed in Sky
-      const n = SUBSYS.length, bs = Math.min(big ? 56 : 34, (b.w - (n - 1) * 6) / n);
+      const n = SUBSYS.length, bs = Math.min(big ? 56 : 34, (b.w - (n - 1) * 6 - (big ? 0 : 80)) / n); // docked, room kept for the weapon pick
       SUBSYS.forEach(([key, name], i) => {
         const bx = b.x + i * (bs + 6), st = t ? subsysStatus(t, key) : 'Off';
         if (raidSys === key) { g.fillStyle = CC.sky; RR(g, bx - 3, y - 3, bs + 6, bs + 6, bs * 0.28 + 3); g.fill(); }
@@ -9725,7 +9728,7 @@ function stTransport(b, big) {
       // list opening over the queue; each weapon by its id, name, health and status, or weapons control itself. Docked,
       // the pill sits in the room left of the subsystem row, so picking weapons never pushes the panel's content past
       // its bottom (owner, 2026-11-08: "weapn controls can push stuff off screen"); expanded, it has its own row.
-      const keysW = n * bs + (n - 1) * 6, room = b.w - keysW - 8, inline = !big && room >= 72;
+      const keysW = n * bs + (n - 1) * 6, room = b.w - keysW - 8, inline = !big;
       if (!inline) y += bs + gap;
       if (raidSys === 'weapons') {
         const m = t && raidMount !== null ? t.mounts[raidMount] : null, ph = inline ? bs : big ? 40 : 30, px = inline ? b.x + keysW + 8 : b.x, pw = inline ? room : b.w;
