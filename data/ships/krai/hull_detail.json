@@ -1,0 +1,581 @@
+{
+  "_doc": "The Krai's hull texture designs (change hull-texture-designs, mockup 35), on the Kelvane Institute's method: the Krai frigate's detail layer and paint (tools/blender/painted_bake.py --faction krai --ship krai_k1), baked onto the frigate's own hull from the game's glb (tools/mockups/glb_hull_obj.py). Not in the game until the owner enthusiastically approves.",
+  "faction": "krai",
+  "out": "assets/ships/krai/baked",
+  "manifest_doc": "The Krai's hull texture designs (mockup 35), baked: not used by the game.",
+  "paint": {
+    "armour": [
+      "#56637a",
+      "#5e6b82",
+      "#4f5a6e",
+      "#68768d",
+      "#5a6578",
+      "#636d7f",
+      "#535d70"
+    ],
+    "accent": "#8f2b2b",
+    "sub": [
+      "#56607a",
+      "#5c6680",
+      "#525c72",
+      "#606a84"
+    ],
+    "under": "#8a93a0",
+    "greeble": [
+      "#3a3f48",
+      "#6a707a"
+    ],
+    "dome": "#14171c",
+    "dome_glow": 0.0,
+    "slat": "#4a505a",
+    "vent": "#16181c",
+    "glass": "#14171c",
+    "livery": "#8f2b2b",
+    "ink": "#d9d6ce",
+    "light_edge": "#e2d6b8",
+    "strip": "whole",
+    "strip_m": 0.7,
+    "pbr": {
+      "armour": [
+        0.42,
+        0.55
+      ],
+      "sub": [
+        0.5,
+        0.6
+      ],
+      "under": [
+        0.7,
+        0.6
+      ],
+      "greeble": [
+        0.55,
+        0.7
+      ],
+      "dome": [
+        0.08,
+        0.0
+      ],
+      "glass": [
+        0.06,
+        0.0
+      ],
+      "slat": [
+        0.5,
+        0.7
+      ],
+      "vent": [
+        0.9,
+        0.3
+      ],
+      "strip": [
+        0.4,
+        0.0
+      ],
+      "lamp": [
+        0.3,
+        0.0
+      ],
+      "machine": [
+        0.45,
+        0.6
+      ]
+    },
+    "livery_pbr": [
+      0.45,
+      0.1
+    ],
+    "strip_k": 0.5,
+    "strip_inner": 0.12,
+    "strip_rim_px": 7,
+    "strip_cell_m": 1.6,
+    "strip_cell_gap": 0.14,
+    "strip_cell_on": 0.7,
+    "strip_cell_k": 0.55,
+    "greeble_ao_floor": 0.6,
+    "glass_cells_k": 0.45,
+    "glass_cell_m": 0.8,
+    "glass_cells_rgb": [
+      1.0,
+      0.6,
+      0.35
+    ],
+    "ink_k": 0.2,
+    "machine": [
+      "#5c636d",
+      "#868c95"
+    ],
+    "machine_kinds": [
+      "greeble",
+      "machine",
+      "slat",
+      "sub",
+      "under",
+      "vent"
+    ],
+    "machine_light": 0.7,
+    "plate_marks": {
+      "groove_inset_m": 0.3,
+      "groove_w_m": 0.08,
+      "groove_k": 0.62,
+      "red": "#8f2b2b",
+      "ink": "#d9d6ce",
+      "dots": [
+        "#8f2b2b",
+        "#d9d6ce",
+        "#c9c3b4"
+      ],
+      "triangle_share": 0.45,
+      "frame_share": 0.4,
+      "dots_share": 0.3,
+      "groove": false
+    },
+    "strip_rim_k": 0.0,
+    "ao_floor": 0.5,
+    "area_mask": true,
+    "accent_share": 0.025,
+    "_accent_share": "Fewer crimson plates than the Institute's one in sixteen: the Krai's long nacelle plates made a crimson patch of one"
+  },
+  "defaults": {
+    "cuts": "rows",
+    "facing_min": 0.38,
+    "seam_y_m": 0.0,
+    "strip_rgb": [
+      1.0,
+      0.55,
+      0.3
+    ],
+    "armour_t_m": 0.45,
+    "sub_t_m": 0.12,
+    "lift_m": 0.08,
+    "gap_m": [
+      0.2,
+      0.32
+    ],
+    "trench_m": [
+      0.32,
+      0.32
+    ],
+    "trench_share": 0.0,
+    "top_station_m": [
+      5.0,
+      9.0
+    ],
+    "spine_half_m": [
+      1.6,
+      3.4
+    ],
+    "flank_station_m": [
+      5.0,
+      9.0
+    ],
+    "flank_rake": [
+      -0.04,
+      0.04
+    ],
+    "greebles_per_m2": 0.0,
+    "overlay_min_m2": 1000000.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+      "window": 0.1,
+      "bay": 0.35
+    },
+    "auto_floods": {
+      "step_m": 32,
+      "from_stern_m": 8,
+      "top_x_frac": 0
+    },
+    "flood": {
+      "standoff_m": 4.0,
+      "cone_deg": 110,
+      "tilt_deg": 22,
+      "power_w": 4800
+    },
+    "inner_machinery": false,
+    "corner_m": 0.6,
+    "cage_m": 2.0,
+    "hatch_share": 0.4,
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false,
+    "rows_y_m": [
+      -4.5,
+      0.5,
+      5.5
+    ],
+    "strips_x_m": [
+      2.5,
+      6.0,
+      10.0
+    ],
+    "plate_ends": true,
+    "sun_angle_deg": 120
+  },
+  "ships": {
+    "krai_k1": {
+      "mesh": "krai_frigate",
+      "seed": 201,
+      "_tradition": "K1 Tempered blade, on the Kelvane Institute's method (owner, 2026-11-07: \"exampline how the ionstitute does its hull, and replicate taht\"): the smiths; plates square to the hull with their corners cut (mockup 7's kit), the Warhost's steels, crimson and bone; no orange (owner: \"ew the orange sucks\")",
+      "louvres": [
+        {
+          "face": "bottom",
+          "at": [
+            0,
+            -48.0
+          ],
+          "shape": "slot",
+          "len_m": 8.0,
+          "span_m": 1.6,
+          "rake_m": -1.6,
+          "pitch_m": 0.36,
+          "slant_deg": 38
+        },
+        {
+          "face": "bottom",
+          "at": [
+            3.4,
+            -42.0
+          ],
+          "shape": "slot",
+          "len_m": 5.0,
+          "span_m": 1.0,
+          "rake_m": -1.2,
+          "pitch_m": 0.34,
+          "slant_deg": 38
+        },
+        {
+          "face": "port",
+          "at": [
+            -47.0,
+            -3.6
+          ],
+          "shape": "slot",
+          "len_m": 6.0,
+          "span_m": 0.9,
+          "rake_m": -1.2,
+          "pitch_m": 0.32,
+          "slant_deg": 36
+        },
+        {
+          "face": "top",
+          "at": [
+            3.0,
+            -18.0
+          ],
+          "shape": "chevron",
+          "len_m": 3.0,
+          "span_m": 3.6,
+          "w_m": 0.8,
+          "pitch_m": 0.3,
+          "slant_deg": 34
+        }
+      ],
+      "bays": [
+        {
+          "face": "port",
+          "at": [
+            -26.0,
+            -0.4
+          ],
+          "w_m": 8.0,
+          "h_m": 3.0
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            10
+          ],
+          "size_m": 0.45,
+          "colour": "red"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            4.0,
+            5.6
+          ]
+        },
+        {
+          "band_z_m": [
+            -40.0,
+            -38.4
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -14
+        ],
+        "size_m": 7.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 15
+        }
+      },
+      "windows": [
+        {
+          "plan": "data/ships/krai/frigate_plan.json",
+          "dz_m": 25.93,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers_p": "quarters",
+            "officers_s": "quarters",
+            "barracks_p": "quarters",
+            "barracks_s": "quarters",
+            "mess": "mess",
+            "medbay": "workshop"
+          }
+        }
+      ],
+      "_windows": "From the frigate's room plan (owner, 2026-11-07, of the model's own window strips: \"these windows are not properly implemented\"): one row wherever crew live or work against the hull"
+    },
+    "krai_corvette_k1": {
+      "mesh": "krai_corvette",
+      "seed": 221,
+      "_tradition": "K1 Tempered blade on the corvette: the frigate's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            7.6
+          ],
+          "size_m": 0.45,
+          "colour": "red"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            4.27,
+            5.87
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          -4.9
+        ],
+        "size_m": 5.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 9.5
+        }
+      },
+      "windows": [
+        {
+          "plan": "data/ships/krai/corvette_plan.json",
+          "dz_m": 7.48,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers": "quarters",
+            "barracks": "quarters",
+            "mess": "mess",
+            "barracks_2": "quarters",
+            "medbay": "workshop"
+          },
+          "_dz": "The plan's frame to the hull's: its front room's edge plus its nose, less the hull's bow (the frigate's 25.93 m by the same rule)"
+        }
+      ],
+      "_liveries": "One band, forward: the corvette's nacelles run its whole aft hull, and a band aft lay along them as a crimson patch"
+    },
+    "krai_cruiser_k1": {
+      "mesh": "krai_cruiser",
+      "seed": 231,
+      "_tradition": "K1 Tempered blade on the cruiser: the frigate's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            44.8
+          ],
+          "size_m": 0.45,
+          "colour": "red"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            37.37,
+            38.97
+          ]
+        },
+        {
+          "band_z_m": [
+            -22.73,
+            -21.13
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          11.5
+        ],
+        "size_m": 9.3
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 63.6
+        }
+      },
+      "windows": [
+        {
+          "plan": "data/ships/krai/cruiser_plan.json",
+          "dz_m": -9.56,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers": "quarters",
+            "officers_2": "quarters",
+            "officers_3": "quarters",
+            "officers_4": "quarters",
+            "officers_5": "quarters",
+            "officers_6": "quarters",
+            "barracks": "quarters",
+            "mess": "mess",
+            "barracks_2": "quarters",
+            "mess_2": "mess",
+            "barracks_3": "quarters",
+            "mess_3": "mess",
+            "barracks_4": "quarters",
+            "medbay": "workshop",
+            "barracks_5": "quarters",
+            "medbay_2": "workshop",
+            "barracks_6": "quarters",
+            "medbay_3": "workshop",
+            "barracks_7": "quarters",
+            "training_hall": "quarters",
+            "barracks_8": "quarters",
+            "training_hall_2": "quarters",
+            "barracks_9": "quarters",
+            "training_hall_3": "quarters",
+            "barracks_10": "quarters",
+            "barracks_11": "quarters",
+            "barracks_12": "quarters"
+          },
+          "_dz": "The plan's frame to the hull's: its front room's edge plus its nose, less the hull's bow (the frigate's 25.93 m by the same rule)"
+        }
+      ]
+    },
+    "krai_dreadnought_k1": {
+      "mesh": "krai_dreadnought",
+      "seed": 241,
+      "_tradition": "K1 Tempered blade on the dreadnought: the frigate's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            72.2
+          ],
+          "size_m": 0.45,
+          "colour": "red"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            60.19,
+            61.79
+          ]
+        },
+        {
+          "band_z_m": [
+            -40.46,
+            -38.86
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          16.3
+        ],
+        "size_m": 10.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 108.9
+        }
+      },
+      "windows": [
+        {
+          "plan": "data/ships/krai/dreadnought_plan.json",
+          "dz_m": -12.9,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers": "quarters",
+            "wardroom": "quarters",
+            "officers_2": "quarters",
+            "wardroom_2": "quarters",
+            "officers_3": "quarters",
+            "wardroom_3": "quarters",
+            "officers_4": "quarters",
+            "wardroom_4": "quarters",
+            "officers_5": "quarters",
+            "wardroom_5": "quarters",
+            "officers_6": "quarters",
+            "wardroom_6": "quarters",
+            "officers_7": "quarters",
+            "wardroom_7": "quarters",
+            "officers_8": "quarters",
+            "officers_9": "quarters",
+            "officers_10": "quarters",
+            "officers_11": "quarters",
+            "officers_12": "quarters",
+            "officers_13": "quarters",
+            "officers_14": "quarters",
+            "barracks": "quarters",
+            "mess": "mess",
+            "barracks_2": "quarters",
+            "mess_2": "mess",
+            "barracks_3": "quarters",
+            "mess_3": "mess",
+            "barracks_4": "quarters",
+            "mess_4": "mess",
+            "barracks_5": "quarters",
+            "mess_5": "mess",
+            "barracks_6": "quarters",
+            "medbay": "workshop",
+            "barracks_7": "quarters",
+            "medbay_2": "workshop",
+            "barracks_8": "quarters",
+            "medbay_3": "workshop",
+            "barracks_9": "quarters",
+            "medbay_4": "workshop",
+            "barracks_10": "quarters",
+            "medbay_5": "workshop",
+            "barracks_11": "quarters",
+            "training_hall": "quarters",
+            "barracks_12": "quarters",
+            "training_hall_2": "quarters",
+            "barracks_13": "quarters",
+            "training_hall_3": "quarters",
+            "barracks_14": "quarters",
+            "training_hall_4": "quarters",
+            "barracks_15": "quarters",
+            "barracks_16": "quarters",
+            "barracks_17": "quarters",
+            "barracks_18": "quarters"
+          },
+          "_dz": "The plan's frame to the hull's: its front room's edge plus its nose, less the hull's bow (the frigate's 25.93 m by the same rule)"
+        }
+      ]
+    }
+  },
+  "maps_dir": "docs/mockups/hull-texture-designs-maps/krai"
+}
