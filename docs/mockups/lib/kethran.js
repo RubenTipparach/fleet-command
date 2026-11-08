@@ -260,7 +260,9 @@ function rr(G, X, Y, W, H, r) { G.beginPath(); if (!(W > 0 && H > 0)) { G.rect(X
 function knob(G, cx, cy, r) { G.beginPath(); for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; G.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); } G.closePath(); }
 
 const api = {
-  id: 'kethran', name: 'Kethran Hegemony', KC, CC, kit, hero, heroSize, cells, barCells: null, live, icon, ICON_NAMES, emblem, ink, keyInk, font, fonts, load, hexA, rr, knob,
+  id: 'kethran', name: 'Kethran Hegemony', KC, CC, kit, hero, heroSize, cells, barCells: null, live, icon, ICON_NAMES, emblem, ink, keyInk,
+  // the icon on a lit status key: dark, since the "on" ink is the lit key's own colour
+  statusInk: CC.ink, font, fonts, load, hexA, rr, knob,
   family: '"Saira Condensed", sans-serif',
   // The content inside a panel: clear of the bolted bezel, 4 px into the recessed glass (frame.panel's well, 22 px in).
   pad: [28, 26, 26, 26],

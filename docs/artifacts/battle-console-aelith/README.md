@@ -9,3 +9,4 @@
 ## Publishes
 - Link: https://claude.ai/artifact/4tCTboCgm9dkeE52WcE711
 - Version 1 (2026-11-08): the battle console of mockup 2 played in the Aelith Conclave skin of mockup 4; parity 70 shots, 4,087 presses of 396 controls, every press matched the Concord's. Version id `1794107881-0a09`.
+- Version 2 (2026-11-08): smooth slanted edges on its cells when the page is shown small (owner: "non- AA button renders"); docked, Hit and run's weapon pick sits beside the subsystem keys so the panel never overflows (owner: "weapn controls can push stuff off screen"); kit pieces shrunk with high-quality smoothing. Version id `1794116437-e4b7`.

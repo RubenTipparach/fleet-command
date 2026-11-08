@@ -2,87 +2,263 @@
  "_doc": "The faction screen, exported from mockup 1 (docs/mockups/game-flow.html, buildFactionScene) by tools/mockups/export_faction.mjs. Metres, +Y up, the camera looking toward -Z. Drawn by src/Game/Flow/FactionStage.cs.",
  "source": {
   "page": "docs/mockups/game-flow.html",
-  "sha256": "a4782fdd0a75ddfc7186a9eea3af8bc6df12b6f88019d376869fb9e4f0ebdb21"
+  "sha256": "36e43263f3ab3fc9a5efc4401c7bfcf870c3af9b5e7c11fd58ed71fff04e143c"
  },
  "table": {
   "top": 0.78,
   "pitch": 2.5,
+  "rowPitch": 2.9,
   "float": 1.66,
   "bob": 0.035,
   "lift": 0.07,
   "woodM": 3,
-  "fitW": 5
+  "fitW": 7.4
  },
  "slots": [
   {
    "faction": "concord",
    "x": -3.75,
+   "z": 2.9,
    "badge_scale": 0.0115,
    "badge_tilt_rad": -0.12,
    "lamp": {
     "position": [
      -3.75,
      6.4,
-     1.7
+     4.6
     ],
     "target": [
      -3.75,
      1.13,
-     0
+     2.9
     ]
    }
   },
   {
    "faction": "krai",
    "x": -1.25,
+   "z": 2.9,
    "badge_scale": 0.0115,
    "badge_tilt_rad": -0.12,
    "lamp": {
     "position": [
      -1.25,
      6.4,
-     1.7
+     4.6
     ],
     "target": [
      -1.25,
      1.13,
-     0
+     2.9
     ]
    }
   },
   {
    "faction": "ssarith",
    "x": 1.25,
+   "z": 2.9,
    "badge_scale": 0.0115,
    "badge_tilt_rad": -0.12,
    "lamp": {
     "position": [
      1.25,
      6.4,
-     1.7
+     4.6
     ],
     "target": [
      1.25,
      1.13,
-     0
+     2.9
     ]
    }
   },
   {
    "faction": "kelvane",
    "x": 3.75,
+   "z": 2.9,
    "badge_scale": 0.0115,
    "badge_tilt_rad": -0.12,
    "lamp": {
     "position": [
      3.75,
      6.4,
-     1.7
+     4.6
     ],
     "target": [
      3.75,
      1.13,
+     2.9
+    ]
+   }
+  },
+  {
+   "faction": "axiom",
+   "x": -5,
+   "z": 0,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     -5,
+     6.4,
+     1.7
+    ],
+    "target": [
+     -5,
+     1.13,
      0
+    ]
+   }
+  },
+  {
+   "faction": "exponent",
+   "x": -2.5,
+   "z": 0,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     -2.5,
+     6.4,
+     1.7
+    ],
+    "target": [
+     -2.5,
+     1.13,
+     0
+    ]
+   }
+  },
+  {
+   "faction": "redtithe",
+   "x": 0,
+   "z": 0,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     0,
+     6.4,
+     1.7
+    ],
+    "target": [
+     0,
+     1.13,
+     0
+    ]
+   }
+  },
+  {
+   "faction": "vos",
+   "x": 2.5,
+   "z": 0,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     2.5,
+     6.4,
+     1.7
+    ],
+    "target": [
+     2.5,
+     1.13,
+     0
+    ]
+   }
+  },
+  {
+   "faction": "kethran",
+   "x": 5,
+   "z": 0,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     5,
+     6.4,
+     1.7
+    ],
+    "target": [
+     5,
+     1.13,
+     0
+    ]
+   }
+  },
+  {
+   "faction": "tarsine",
+   "x": -3.75,
+   "z": -2.9,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     -3.75,
+     6.4,
+     -1.2
+    ],
+    "target": [
+     -3.75,
+     1.13,
+     -2.9
+    ]
+   }
+  },
+  {
+   "faction": "aelith",
+   "x": -1.25,
+   "z": -2.9,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     -1.25,
+     6.4,
+     -1.2
+    ],
+    "target": [
+     -1.25,
+     1.13,
+     -2.9
+    ]
+   }
+  },
+  {
+   "faction": "ombrai",
+   "x": 1.25,
+   "z": -2.9,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     1.25,
+     6.4,
+     -1.2
+    ],
+    "target": [
+     1.25,
+     1.13,
+     -2.9
+    ]
+   }
+  },
+  {
+   "faction": "vhorr",
+   "x": 3.75,
+   "z": -2.9,
+   "badge_scale": 0.0115,
+   "badge_tilt_rad": -0.12,
+   "lamp": {
+    "position": [
+     3.75,
+     6.4,
+     -1.2
+    ],
+    "target": [
+     3.75,
+     1.13,
+     -2.9
     ]
    }
   }
@@ -135,13 +311,13 @@
  "camera": {
   "position": [
    0,
-   3.5,
-   7.3
+   8.6,
+   11.6
   ],
   "target": [
    0,
-   1.22,
-   0.1
+   1,
+   0.7
   ],
   "fov_deg": 36,
   "fit": "on a screen narrower than 16:9 the camera backs off along its line to the target until table.fitW either side of the middle fits across (fitFacCam)"
@@ -698,6 +874,222 @@
    "normal_scale": 1,
    "uv_scale": 1,
    "env": 0.0875
+  },
+  "axiom_0": {
+   "graph": null,
+   "tint": [
+    0.419608,
+    0.317647,
+    0.196078
+   ],
+   "metalness": 1,
+   "roughness": 0.38,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "exponent_0": {
+   "graph": null,
+   "tint": [
+    0.419608,
+    0.317647,
+    0.196078
+   ],
+   "metalness": 1,
+   "roughness": 0.38,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "redtithe_0": {
+   "graph": null,
+   "tint": [
+    0.419608,
+    0.317647,
+    0.196078
+   ],
+   "metalness": 1,
+   "roughness": 0.38,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "vos_0": {
+   "graph": null,
+   "tint": [
+    0.419608,
+    0.317647,
+    0.196078
+   ],
+   "metalness": 1,
+   "roughness": 0.38,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "kethran_0": {
+   "graph": null,
+   "tint": [
+    0.419608,
+    0.317647,
+    0.196078
+   ],
+   "metalness": 1,
+   "roughness": 0.38,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "tarsine_0": {
+   "graph": null,
+   "tint": [
+    0.419608,
+    0.317647,
+    0.196078
+   ],
+   "metalness": 1,
+   "roughness": 0.38,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "aelith_0": {
+   "graph": null,
+   "tint": [
+    0.419608,
+    0.317647,
+    0.196078
+   ],
+   "metalness": 1,
+   "roughness": 0.38,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "ombrai_0": {
+   "graph": null,
+   "tint": [
+    0.419608,
+    0.317647,
+    0.196078
+   ],
+   "metalness": 1,
+   "roughness": 0.38,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
+  },
+  "vhorr_0": {
+   "graph": null,
+   "tint": [
+    0.419608,
+    0.317647,
+    0.196078
+   ],
+   "metalness": 1,
+   "roughness": 0.38,
+   "emissive": [
+    0,
+    0,
+    0
+   ],
+   "emissive_strength": 1,
+   "clearcoat": 0,
+   "clearcoat_roughness": 0,
+   "sheen": 0,
+   "sheen_colour": null,
+   "iridescence": 0,
+   "normal_scale": 1,
+   "uv_scale": 1,
+   "env": 0.35
   }
  },
  "materials": {

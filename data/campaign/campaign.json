@@ -183,6 +183,142 @@
     "Patience",
     "Hollow Bell"
    ]
+  },
+  "axiom": {
+   "name": "The Axiom",
+   "short": "Axiom",
+   "color": "#6a5cf0",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "Fixed Point",
+    "Invariant",
+    "Limit",
+    "Root",
+    "Bound",
+    "Fold"
+   ]
+  },
+  "exponent": {
+   "name": "The Exponent",
+   "short": "Exponent",
+   "color": "#8be6dc",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "Accretion",
+    "Holdfast",
+    "Tidewrack",
+    "Unit Forty",
+    "Ballast",
+    "Undertow Yard"
+   ]
+  },
+  "redtithe": {
+   "name": "Red Tithe",
+   "short": "Tithe",
+   "color": "#c4141c",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "Red Ledger",
+    "Bonetally",
+    "Seizure",
+    "Last Rites",
+    "Nail and Rope",
+    "Debt Collector"
+   ]
+  },
+  "kethran": {
+   "name": "Kethran Hegemony",
+   "short": "Kethran",
+   "color": "#e86a3a",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "Iron Oath",
+    "Ascendant",
+    "Forgeborn",
+    "Hammerfall",
+    "Ninth Rank",
+    "Thane's Due"
+   ]
+  },
+  "tarsine": {
+   "name": "Tarsine Remnant",
+   "short": "Tarsine",
+   "color": "#b0602e",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "First Light",
+    "Unbent",
+    "Elder Lamp",
+    "Long Watch",
+    "Remembrance",
+    "Old Throne"
+   ]
+  },
+  "aelith": {
+   "name": "Aelith Conclave",
+   "short": "Aelith",
+   "color": "#6ff3ff",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "Quiet Answer",
+    "Long Thought",
+    "Measure",
+    "Clear Sight",
+    "Seventh Silence",
+    "Patient Star"
+   ]
+  },
+  "ombrai": {
+   "name": "Ombrai",
+   "short": "Ombrai",
+   "color": "#ff4fb0",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "Lidless",
+    "Hush",
+    "Half Light",
+    "Pale Witness",
+    "Unseen",
+    "Undertow"
+   ]
+  },
+  "vhorr": {
+   "name": "Vhorr Brood",
+   "short": "Vhorr",
+   "color": "#a6e34a",
+   "rival": "",
+   "playable": false,
+   "prefix": "",
+   "home": "",
+   "names": [
+    "Bloom",
+    "Hunger Root",
+    "Swell",
+    "Gravid",
+    "Spore Tide",
+    "Deep Brood"
+   ]
   }
  },
  "terrain": {
@@ -482,6 +618,294 @@
    "battle_class": "kelvane_fr",
    "schematic": "",
    "for_sale": false
+  },
+  "axiom_ff": {
+   "side": "axiom",
+   "tier": 1,
+   "name": "Lemma",
+   "cls": "Frigate",
+   "battle_class": "axiom_ff",
+   "schematic": "axiom/axiom_ff"
+  },
+  "axiom_dd": {
+   "side": "axiom",
+   "tier": 2,
+   "name": "Corollary",
+   "cls": "Destroyer",
+   "battle_class": "axiom_dd",
+   "schematic": "axiom/axiom_dd"
+  },
+  "axiom_ca": {
+   "side": "axiom",
+   "tier": 3,
+   "name": "Theorem",
+   "cls": "Cruiser",
+   "battle_class": "axiom_ca",
+   "schematic": "axiom/axiom_ca"
+  },
+  "axiom_bb": {
+   "side": "axiom",
+   "tier": 4,
+   "name": "Proof",
+   "cls": "Battleship",
+   "battle_class": "axiom_bb",
+   "schematic": "axiom/axiom_bb"
+  },
+  "exponent_ff": {
+   "side": "exponent",
+   "tier": 1,
+   "name": "Tender",
+   "cls": "Frigate",
+   "battle_class": "exponent_ff",
+   "schematic": "exponent/exponent_ff"
+  },
+  "exponent_dd": {
+   "side": "exponent",
+   "tier": 2,
+   "name": "Salvor",
+   "cls": "Destroyer",
+   "battle_class": "exponent_dd",
+   "schematic": "exponent/exponent_dd"
+  },
+  "exponent_ca": {
+   "side": "exponent",
+   "tier": 3,
+   "name": "Hulk",
+   "cls": "Cruiser",
+   "battle_class": "exponent_ca",
+   "schematic": "exponent/exponent_ca"
+  },
+  "exponent_cv": {
+   "side": "exponent",
+   "tier": 4,
+   "name": "Reef",
+   "cls": "Carrier",
+   "battle_class": "exponent_cv",
+   "schematic": "exponent/exponent_cv"
+  },
+  "redtithe_ff": {
+   "side": "redtithe",
+   "tier": 1,
+   "name": "Cutter",
+   "cls": "Frigate",
+   "battle_class": "redtithe_ff",
+   "schematic": "redtithe/redtithe_ff"
+  },
+  "redtithe_dd": {
+   "side": "redtithe",
+   "tier": 2,
+   "name": "Reaver",
+   "cls": "Destroyer",
+   "battle_class": "redtithe_dd",
+   "schematic": "redtithe/redtithe_dd"
+  },
+  "redtithe_ca": {
+   "side": "redtithe",
+   "tier": 3,
+   "name": "Bloodship",
+   "cls": "Cruiser",
+   "battle_class": "redtithe_ca",
+   "schematic": "redtithe/redtithe_ca"
+  },
+  "redtithe_fl": {
+   "side": "redtithe",
+   "tier": 4,
+   "name": "Tithe Hall",
+   "cls": "Flagship",
+   "battle_class": "redtithe_fl",
+   "schematic": "redtithe/redtithe_fl"
+  },
+  "vos_ff": {
+   "side": "vos",
+   "tier": 1,
+   "name": "Skiff",
+   "cls": "Frigate",
+   "battle_class": "vos_ff",
+   "schematic": "vos/vos_ff"
+  },
+  "vos_dd": {
+   "side": "vos",
+   "tier": 2,
+   "name": "Corsair",
+   "cls": "Destroyer",
+   "battle_class": "vos_dd",
+   "schematic": "vos/vos_dd"
+  },
+  "vos_ca": {
+   "side": "vos",
+   "tier": 3,
+   "name": "Privateer",
+   "cls": "Cruiser",
+   "battle_class": "vos_ca",
+   "schematic": "vos/vos_ca"
+  },
+  "vos_cap": {
+   "side": "vos",
+   "tier": 4,
+   "name": "Galleon",
+   "cls": "Capital",
+   "battle_class": "vos_cap",
+   "schematic": "vos/vos_cap"
+  },
+  "kethran_ff": {
+   "side": "kethran",
+   "tier": 1,
+   "name": "Lancer",
+   "cls": "Frigate",
+   "battle_class": "kethran_ff",
+   "schematic": "kethran/kethran_ff"
+  },
+  "kethran_dd": {
+   "side": "kethran",
+   "tier": 2,
+   "name": "Warden",
+   "cls": "Destroyer",
+   "battle_class": "kethran_dd",
+   "schematic": "kethran/kethran_dd"
+  },
+  "kethran_ca": {
+   "side": "kethran",
+   "tier": 3,
+   "name": "Bastion",
+   "cls": "Cruiser",
+   "battle_class": "kethran_ca",
+   "schematic": "kethran/kethran_ca"
+  },
+  "kethran_dn": {
+   "side": "kethran",
+   "tier": 4,
+   "name": "Throne",
+   "cls": "Dreadnought",
+   "battle_class": "kethran_dn",
+   "schematic": "kethran/kethran_dn"
+  },
+  "tarsine_ff": {
+   "side": "tarsine",
+   "tier": 1,
+   "name": "Votary",
+   "cls": "Frigate",
+   "battle_class": "tarsine_ff",
+   "schematic": "tarsine/tarsine_ff"
+  },
+  "tarsine_dd": {
+   "side": "tarsine",
+   "tier": 2,
+   "name": "Custodian",
+   "cls": "Destroyer",
+   "battle_class": "tarsine_dd",
+   "schematic": "tarsine/tarsine_dd"
+  },
+  "tarsine_ca": {
+   "side": "tarsine",
+   "tier": 3,
+   "name": "Monument",
+   "cls": "Cruiser",
+   "battle_class": "tarsine_ca",
+   "schematic": "tarsine/tarsine_ca"
+  },
+  "tarsine_dn": {
+   "side": "tarsine",
+   "tier": 4,
+   "name": "Dominion",
+   "cls": "Dreadnought",
+   "battle_class": "tarsine_dn",
+   "schematic": "tarsine/tarsine_dn"
+  },
+  "aelith_ff": {
+   "side": "aelith",
+   "tier": 1,
+   "name": "Seeker",
+   "cls": "Frigate",
+   "battle_class": "aelith_ff",
+   "schematic": "aelith/aelith_ff"
+  },
+  "aelith_dd": {
+   "side": "aelith",
+   "tier": 2,
+   "name": "Envoy",
+   "cls": "Destroyer",
+   "battle_class": "aelith_dd",
+   "schematic": "aelith/aelith_dd"
+  },
+  "aelith_ca": {
+   "side": "aelith",
+   "tier": 3,
+   "name": "Archive",
+   "cls": "Cruiser",
+   "battle_class": "aelith_ca",
+   "schematic": "aelith/aelith_ca"
+  },
+  "aelith_cap": {
+   "side": "aelith",
+   "tier": 4,
+   "name": "Sanctum",
+   "cls": "Capital",
+   "battle_class": "aelith_cap",
+   "schematic": "aelith/aelith_cap"
+  },
+  "ombrai_ff": {
+   "side": "ombrai",
+   "tier": 1,
+   "name": "Veil",
+   "cls": "Frigate",
+   "battle_class": "ombrai_ff",
+   "schematic": "ombrai/ombrai_ff"
+  },
+  "ombrai_dd": {
+   "side": "ombrai",
+   "tier": 2,
+   "name": "Shade",
+   "cls": "Destroyer",
+   "battle_class": "ombrai_dd",
+   "schematic": "ombrai/ombrai_dd"
+  },
+  "ombrai_ca": {
+   "side": "ombrai",
+   "tier": 3,
+   "name": "Vigil",
+   "cls": "Cruiser",
+   "battle_class": "ombrai_ca",
+   "schematic": "ombrai/ombrai_ca"
+  },
+  "ombrai_cap": {
+   "side": "ombrai",
+   "tier": 4,
+   "name": "Eclipse",
+   "cls": "Capital",
+   "battle_class": "ombrai_cap",
+   "schematic": "ombrai/ombrai_cap"
+  },
+  "vhorr_ff": {
+   "side": "vhorr",
+   "tier": 1,
+   "name": "Drone",
+   "cls": "Frigate",
+   "battle_class": "vhorr_ff",
+   "schematic": "vhorr/vhorr_ff"
+  },
+  "vhorr_dd": {
+   "side": "vhorr",
+   "tier": 2,
+   "name": "Ravager",
+   "cls": "Destroyer",
+   "battle_class": "vhorr_dd",
+   "schematic": "vhorr/vhorr_dd"
+  },
+  "vhorr_ca": {
+   "side": "vhorr",
+   "tier": 3,
+   "name": "Broodship",
+   "cls": "Cruiser",
+   "battle_class": "vhorr_ca",
+   "schematic": "vhorr/vhorr_ca"
+  },
+  "vhorr_cv": {
+   "side": "vhorr",
+   "tier": 4,
+   "name": "Hive",
+   "cls": "Carrier",
+   "battle_class": "vhorr_cv",
+   "schematic": "vhorr/vhorr_cv"
   }
  },
  "systems": {

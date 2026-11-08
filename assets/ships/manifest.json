@@ -1,5 +1,5 @@
 {
- "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v24, sha256 594bb2708517; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 c911be74453a; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt page v29, sha256 1cc96bf7794a; mockup 23, docs/mockups/kelvane-ship-concepts.html, Kelvane Institute page v11, sha256 2d4a622346f2; mockup 24, docs/mockups/freighter-concepts.html, the freighters page v16, sha256 df412a92a41f): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
+ "_doc": "Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord page v24, sha256 594bb2708517; mockup 7, docs/mockups/krai-ship-concepts.html, Krai page v21, sha256 c911be74453a; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt page v29, sha256 1cc96bf7794a; mockup 23, docs/mockups/kelvane-ship-concepts.html, Kelvane Institute page v11, sha256 2d4a622346f2; mockup 24, docs/mockups/freighter-concepts.html, the freighters page v16, sha256 df412a92a41f; mockup 36, docs/mockups/placeholder-fleets.html, the placeholder lines of nine factions page v?, sha256 b0789679303e): each ship built intact by its page's own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file's sha256 and published version each ship came from: an export is stale when the page's sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb's frame unless a key says mockup space. materials: every exported material by faction/name, with what the page's shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.",
  "conventions": {
   "units": "metres",
   "up": "+Y",
@@ -193,6 +193,123 @@
     "constants": {
      "light_gamma": 1.6
     }
+   }
+  },
+  "axiom": {
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/placeholder-hulls.js (mockup 36)",
+    "did": [
+     "A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile"
+    ]
+   }
+  },
+  "exponent": {
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/placeholder-hulls.js (mockup 36)",
+    "did": [
+     "A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile"
+    ]
+   }
+  },
+  "redtithe": {
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/placeholder-hulls.js (mockup 36)",
+    "did": [
+     "A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile"
+    ]
+   }
+  },
+  "vos": {
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/placeholder-hulls.js (mockup 36)",
+    "did": [
+     "A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile"
+    ]
+   }
+  },
+  "kethran": {
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/placeholder-hulls.js (mockup 36)",
+    "did": [
+     "A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile"
+    ]
+   }
+  },
+  "tarsine": {
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/placeholder-hulls.js (mockup 36)",
+    "did": [
+     "A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile"
+    ]
+   }
+  },
+  "aelith": {
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/placeholder-hulls.js (mockup 36)",
+    "did": [
+     "A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile"
+    ]
+   }
+  },
+  "ombrai": {
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/placeholder-hulls.js (mockup 36)",
+    "did": [
+     "A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile"
+    ]
+   }
+  },
+  "vhorr": {
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   },
+   "hull_shader": {
+    "source": "docs/mockups/lib/placeholder-hulls.js (mockup 36)",
+    "did": [
+     "A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile"
+    ]
    }
   }
  },
@@ -2439,6 +2556,465 @@
    "transparent": false,
    "textures": [],
    "stand_in": "a plain khaki; the hull's look is its own baked maps (shader_params.maps), drawn by src/Game/View/baked_hull.gdshader"
+  },
+  "axiom/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.909804,
+    0.92549,
+    0.964706
+   ],
+   "metalness": 0.35,
+   "roughness": 0.55
+  },
+  "axiom/trim": {
+   "name": "trim",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.294118,
+    0.247059,
+    0.847059
+   ],
+   "metalness": 0.4,
+   "roughness": 0.5
+  },
+  "axiom/dark": {
+   "name": "dark",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.184314,
+    0.14902,
+    0.588235
+   ],
+   "metalness": 0.3,
+   "roughness": 0.7
+  },
+  "axiom/glow": {
+   "name": "glow",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.247059,
+    0.878431,
+    0.901961
+   ],
+   "unlit": true
+  },
+  "exponent/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.364706,
+    0.407843,
+    0.427451
+   ],
+   "metalness": 0.35,
+   "roughness": 0.55
+  },
+  "exponent/trim": {
+   "name": "trim",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.54902,
+    0.270588,
+    0.133333
+   ],
+   "metalness": 0.4,
+   "roughness": 0.5
+  },
+  "exponent/dark": {
+   "name": "dark",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.14902,
+    0.180392,
+    0.192157
+   ],
+   "metalness": 0.3,
+   "roughness": 0.7
+  },
+  "exponent/glow": {
+   "name": "glow",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.545098,
+    0.901961,
+    0.862745
+   ],
+   "unlit": true
+  },
+  "exponent/accent": {
+   "name": "accent",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.823529,
+    0.478431,
+    0.415686
+   ],
+   "metalness": 0.5,
+   "roughness": 0.45
+  },
+  "redtithe/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.180392,
+    0.196078,
+    0.211765
+   ],
+   "metalness": 0.35,
+   "roughness": 0.55
+  },
+  "redtithe/trim": {
+   "name": "trim",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.352941,
+    0.101961,
+    0.070588
+   ],
+   "metalness": 0.4,
+   "roughness": 0.5
+  },
+  "redtithe/accent": {
+   "name": "accent",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.784314,
+    0.588235,
+    0.227451
+   ],
+   "metalness": 0.5,
+   "roughness": 0.45
+  },
+  "redtithe/dark": {
+   "name": "dark",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.078431,
+    0.086275,
+    0.094118
+   ],
+   "metalness": 0.3,
+   "roughness": 0.7
+  },
+  "redtithe/glow": {
+   "name": "glow",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.941176,
+    0.811765,
+    0.478431
+   ],
+   "unlit": true
+  },
+  "vos/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.658824,
+    0.282353,
+    0.164706
+   ],
+   "metalness": 0.35,
+   "roughness": 0.55
+  },
+  "vos/trim": {
+   "name": "trim",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.839216,
+    0.627451,
+    0.262745
+   ],
+   "metalness": 0.4,
+   "roughness": 0.5
+  },
+  "vos/dark": {
+   "name": "dark",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.164706,
+    0.078431,
+    0.062745
+   ],
+   "metalness": 0.3,
+   "roughness": 0.7
+  },
+  "vos/glow": {
+   "name": "glow",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.247059,
+    0.717647,
+    0.639216
+   ],
+   "unlit": true
+  },
+  "kethran/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.290196,
+    0.309804,
+    0.333333
+   ],
+   "metalness": 0.35,
+   "roughness": 0.55
+  },
+  "kethran/dark": {
+   "name": "dark",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.168627,
+    0.184314,
+    0.2
+   ],
+   "metalness": 0.3,
+   "roughness": 0.7
+  },
+  "kethran/glow": {
+   "name": "glow",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    1,
+    0.709804,
+    0.278431
+   ],
+   "unlit": true
+  },
+  "kethran/accent": {
+   "name": "accent",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.85098,
+    0.282353,
+    0.231373
+   ],
+   "metalness": 0.5,
+   "roughness": 0.45
+  },
+  "tarsine/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.415686,
+    0.368627,
+    0.313725
+   ],
+   "metalness": 0.35,
+   "roughness": 0.55
+  },
+  "tarsine/accent": {
+   "name": "accent",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.658824,
+    0.541176,
+    0.27451
+   ],
+   "metalness": 0.5,
+   "roughness": 0.45
+  },
+  "tarsine/dark": {
+   "name": "dark",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.109804,
+    0.094118,
+    0.078431
+   ],
+   "metalness": 0.3,
+   "roughness": 0.7
+  },
+  "tarsine/glow": {
+   "name": "glow",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.839216,
+    0.780392,
+    0.415686
+   ],
+   "unlit": true
+  },
+  "tarsine/trim": {
+   "name": "trim",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.478431,
+    0.231373,
+    0.109804
+   ],
+   "metalness": 0.4,
+   "roughness": 0.5
+  },
+  "aelith/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.909804,
+    0.894118,
+    0.854902
+   ],
+   "metalness": 0.35,
+   "roughness": 0.55
+  },
+  "aelith/trim": {
+   "name": "trim",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.788235,
+    0.65098,
+    0.27451
+   ],
+   "metalness": 0.4,
+   "roughness": 0.5
+  },
+  "aelith/dark": {
+   "name": "dark",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.058824,
+    0.227451,
+    0.270588
+   ],
+   "metalness": 0.3,
+   "roughness": 0.7
+  },
+  "aelith/glow": {
+   "name": "glow",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.435294,
+    0.952941,
+    1
+   ],
+   "unlit": true
+  },
+  "ombrai/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.231373,
+    0.164706,
+    0.360784
+   ],
+   "metalness": 0.35,
+   "roughness": 0.55
+  },
+  "ombrai/trim": {
+   "name": "trim",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.231373,
+    0.090196,
+    0.388235
+   ],
+   "metalness": 0.4,
+   "roughness": 0.5
+  },
+  "ombrai/dark": {
+   "name": "dark",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.070588,
+    0.031373,
+    0.133333
+   ],
+   "metalness": 0.3,
+   "roughness": 0.7
+  },
+  "ombrai/glow": {
+   "name": "glow",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    1,
+    0.309804,
+    0.690196
+   ],
+   "unlit": true
+  },
+  "vhorr/hull": {
+   "name": "hull",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.352941,
+    0.203922,
+    0.141176
+   ],
+   "metalness": 0.35,
+   "roughness": 0.55
+  },
+  "vhorr/trim": {
+   "name": "trim",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.168627,
+    0.113725,
+    0.164706
+   ],
+   "metalness": 0.4,
+   "roughness": 0.5
+  },
+  "vhorr/dark": {
+   "name": "dark",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.180392,
+    0.094118,
+    0.078431
+   ],
+   "metalness": 0.3,
+   "roughness": 0.7
+  },
+  "vhorr/glow": {
+   "name": "glow",
+   "hull_shader": false,
+   "placeholder": true,
+   "base_colour": [
+    0.65098,
+    0.890196,
+    0.290196
+   ],
+   "unlit": true
   }
  },
  "ships": [
@@ -59235,6 +59811,3901 @@
     "page": "docs/mockups/freighter-concepts.html",
     "version": 16,
     "sha256": "df412a92a41f34f84a3a389795d1807392640b40b6e7a7e071a788bcb8993351"
+   }
+  },
+  {
+   "faction": "axiom",
+   "id": "axiom_ff",
+   "label": "The Axiom frigate: Lemma",
+   "cls": "Frigate",
+   "name": "Lemma",
+   "placeholder": true,
+   "file": "axiom/axiom_ff.glb",
+   "length_m": 58.348,
+   "beam_m": 46.859608,
+   "height_m": 11.6,
+   "triangles": 648,
+   "draw_calls": 8,
+   "origin_offset_m": [
+    0,
+    0,
+    0.174
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "axiom/hull",
+    "axiom/trim",
+    "axiom/dark",
+    "axiom/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.174
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       12.082713,
+       0,
+       -7.155073
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -12.082713,
+       0,
+       -7.155073
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "axiom",
+   "id": "axiom_dd",
+   "label": "The Axiom destroyer: Corollary",
+   "cls": "Destroyer",
+   "name": "Corollary",
+   "placeholder": true,
+   "file": "axiom/axiom_dd.glb",
+   "length_m": 86.515999,
+   "beam_m": 69.481491,
+   "height_m": 17.200001,
+   "triangles": 880,
+   "draw_calls": 10,
+   "origin_offset_m": [
+    0,
+    0,
+    0.257999
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_0_1",
+     "limb_0_1_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_0_1_mesh",
+     "limb_0_1_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "axiom/hull",
+    "axiom/trim",
+    "axiom/dark",
+    "axiom/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.257999
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       17.915748,
+       0,
+       -10.609245
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -17.915748,
+       0,
+       -10.609245
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_1",
+      "system": "limb",
+      "center": [
+       12.944496,
+       0,
+       -17.659114
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_1_port",
+      "system": "limb",
+      "center": [
+       -12.944496,
+       0,
+       -17.659114
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "axiom",
+   "id": "axiom_ca",
+   "label": "The Axiom cruiser: Theorem",
+   "cls": "Cruiser",
+   "name": "Theorem",
+   "placeholder": true,
+   "file": "axiom/axiom_ca.glb",
+   "length_m": 128.767998,
+   "beam_m": 103.414307,
+   "height_m": 25.6,
+   "triangles": 1112,
+   "draw_calls": 12,
+   "origin_offset_m": [
+    0,
+    0,
+    0.383999
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_0_1",
+     "limb_0_1_port",
+     "limb_0_2",
+     "limb_0_2_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_0_1_mesh",
+     "limb_0_1_port_mesh",
+     "limb_0_2_mesh",
+     "limb_0_2_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "axiom/hull",
+    "axiom/trim",
+    "axiom/dark",
+    "axiom/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.383999
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       26.665297,
+       0,
+       -15.790504
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -26.665297,
+       0,
+       -15.790504
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_1",
+      "system": "limb",
+      "center": [
+       19.266225,
+       0,
+       -26.283332
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_1_port",
+      "system": "limb",
+      "center": [
+       -19.266225,
+       0,
+       -26.283332
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_2",
+      "system": "limb",
+      "center": [
+       14.6936,
+       0,
+       -38.146459
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_2_port",
+      "system": "limb",
+      "center": [
+       -14.6936,
+       0,
+       -38.146459
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "axiom",
+   "id": "axiom_bb",
+   "label": "The Axiom battleship: Proof",
+   "cls": "Battleship",
+   "name": "Proof",
+   "placeholder": true,
+   "file": "axiom/axiom_bb.glb",
+   "length_m": 191.139999,
+   "beam_m": 153.505615,
+   "height_m": 38,
+   "triangles": 1344,
+   "draw_calls": 14,
+   "origin_offset_m": [
+    0,
+    0,
+    0.57
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_0_1",
+     "limb_0_1_port",
+     "limb_0_2",
+     "limb_0_2_port",
+     "limb_0_3",
+     "limb_0_3_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_0_1_mesh",
+     "limb_0_1_port_mesh",
+     "limb_0_2_mesh",
+     "limb_0_2_port_mesh",
+     "limb_0_3_mesh",
+     "limb_0_3_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "axiom/hull",
+    "axiom/trim",
+    "axiom/dark",
+    "axiom/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.57
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       39.581302,
+       0,
+       -23.43903
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -39.581302,
+       0,
+       -23.43903
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_1",
+      "system": "limb",
+      "center": [
+       28.598305,
+       0,
+       -39.01432
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_1_port",
+      "system": "limb",
+      "center": [
+       -28.598305,
+       0,
+       -39.01432
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_2",
+      "system": "limb",
+      "center": [
+       21.810813,
+       0,
+       -56.623652
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_2_port",
+      "system": "limb",
+      "center": [
+       -21.810813,
+       0,
+       -56.623652
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_3",
+      "system": "limb",
+      "center": [
+       17.616142,
+       0,
+       -75.490017
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_3_port",
+      "system": "limb",
+      "center": [
+       -17.616142,
+       0,
+       -75.490017
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "exponent",
+   "id": "exponent_ff",
+   "label": "The Exponent frigate: Tender",
+   "cls": "Frigate",
+   "name": "Tender",
+   "placeholder": true,
+   "file": "exponent/exponent_ff.glb",
+   "length_m": 64.383999,
+   "beam_m": 23.210352,
+   "height_m": 16.857672,
+   "triangles": 1680,
+   "draw_calls": 4,
+   "origin_offset_m": [
+    0,
+    0,
+    0.191999
+   ],
+   "nodes": {
+    "pieces": [
+     "hull"
+    ],
+    "meshes": [
+     "hull_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "exponent/hull",
+    "exponent/trim",
+    "exponent/dark",
+    "exponent/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.191999
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "exponent",
+   "id": "exponent_dd",
+   "label": "The Exponent destroyer: Salvor",
+   "cls": "Destroyer",
+   "name": "Salvor",
+   "placeholder": true,
+   "file": "exponent/exponent_dd.glb",
+   "length_m": 109.086384,
+   "beam_m": 34.815529,
+   "height_m": 25.286509,
+   "triangles": 2376,
+   "draw_calls": 6,
+   "origin_offset_m": [
+    0,
+    0,
+    -5.967192
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "exponent/hull",
+    "exponent/trim",
+    "exponent/dark",
+    "exponent/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.288
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       9.719047,
+       -2.634958,
+       46.593801
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -9.719047,
+       -2.634958,
+       46.593801
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "exponent",
+   "id": "exponent_ca",
+   "label": "The Exponent cruiser: Hulk",
+   "cls": "Cruiser",
+   "name": "Hulk",
+   "placeholder": true,
+   "file": "exponent/exponent_ca.glb",
+   "length_m": 150.900002,
+   "beam_m": 90.287758,
+   "height_m": 58.660379,
+   "triangles": 2898,
+   "draw_calls": 10,
+   "origin_offset_m": [
+    0,
+    8.055484,
+    0.450001
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "exponent/hull",
+    "exponent/trim",
+    "exponent/dark",
+    "exponent/glow",
+    "exponent/accent"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.450001
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       27.913337,
+       1.785,
+       -13.080197
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -27.913337,
+       1.785,
+       -13.080197
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       0,
+       21.378484,
+       -6.420242
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "exponent",
+   "id": "exponent_cv",
+   "label": "The Exponent carrier: Reef",
+   "cls": "Carrier",
+   "name": "Reef",
+   "placeholder": true,
+   "file": "exponent/exponent_cv.glb",
+   "length_m": 231.379997,
+   "beam_m": 158.976074,
+   "height_m": 98.948433,
+   "triangles": 3710,
+   "draw_calls": 17,
+   "origin_offset_m": [
+    0,
+    14.522915,
+    0.689999
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port",
+     "limb_2"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh",
+     "limb_2_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "exponent/hull",
+    "exponent/trim",
+    "exponent/dark",
+    "exponent/glow",
+    "exponent/accent"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.689999
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       48.857194,
+       2.9325,
+       -20.306015
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -48.857194,
+       2.9325,
+       -20.306015
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       40.862747,
+       -16.165164,
+       8.919394
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -40.862747,
+       -16.165164,
+       8.919394
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2",
+      "system": "limb",
+      "center": [
+       0,
+       36.541279,
+       -10.623064
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "redtithe",
+   "id": "redtithe_ff",
+   "label": "Red Tithe frigate: Cutter",
+   "cls": "Frigate",
+   "name": "Cutter",
+   "placeholder": true,
+   "file": "redtithe/redtithe_ff.glb",
+   "length_m": 61.900003,
+   "beam_m": 18.47016,
+   "height_m": 13.297432,
+   "triangles": 1576,
+   "draw_calls": 7,
+   "origin_offset_m": [
+    0,
+    -0.169526,
+    -3.626002
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "redtithe/hull",
+    "redtithe/trim",
+    "redtithe/accent",
+    "redtithe/dark",
+    "redtithe/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       -0.016858,
+       -0.162
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       0,
+       -3.440308,
+       25.150277
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "redtithe",
+   "id": "redtithe_dd",
+   "label": "Red Tithe destroyer: Reaver",
+   "cls": "Destroyer",
+   "name": "Reaver",
+   "placeholder": true,
+   "file": "redtithe/redtithe_dd.glb",
+   "length_m": 93.9963,
+   "beam_m": 35.340519,
+   "height_m": 20.192397,
+   "triangles": 2272,
+   "draw_calls": 11,
+   "origin_offset_m": [
+    0,
+    -0.257429,
+    -5.506149
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_1",
+     "limb_1_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "redtithe/hull",
+    "redtithe/trim",
+    "redtithe/accent",
+    "redtithe/dark",
+    "redtithe/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       -0.025599,
+       -0.246
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       0,
+       -5.224171,
+       38.191159
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       12.13036,
+       0,
+       23.4754
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -12.13036,
+       0,
+       23.4754
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "redtithe",
+   "id": "redtithe_ca",
+   "label": "Red Tithe cruiser: Bloodship",
+   "cls": "Cruiser",
+   "name": "Bloodship",
+   "placeholder": true,
+   "file": "redtithe/redtithe_ca.glb",
+   "length_m": 142.146145,
+   "beam_m": 56.572823,
+   "height_m": 32.945633,
+   "triangles": 2968,
+   "draw_calls": 15,
+   "origin_offset_m": [
+    0,
+    -0.354832,
+    -8.329073
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_1",
+     "limb_1_port",
+     "limb_2",
+     "limb_2_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh",
+     "limb_2_mesh",
+     "limb_2_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "redtithe/hull",
+    "redtithe/trim",
+    "redtithe/accent",
+    "redtithe/dark",
+    "redtithe/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       -0.041937,
+       -0.372
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       0,
+       -8.588148,
+       57.676094
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       19.449953,
+       3.224,
+       38.530087
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -19.449953,
+       3.224,
+       38.530087
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2",
+      "system": "limb",
+      "center": [
+       19.449953,
+       -5.642,
+       29.230087
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2_port",
+      "system": "limb",
+      "center": [
+       -19.449953,
+       -5.642,
+       29.230087
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "redtithe",
+   "id": "redtithe_fl",
+   "label": "Red Tithe flagship: Tithe Hall",
+   "cls": "Flagship",
+   "name": "Tithe Hall",
+   "placeholder": true,
+   "file": "redtithe/redtithe_fl.glb",
+   "length_m": 201.75914,
+   "beam_m": 84.738083,
+   "height_m": 65.725264,
+   "triangles": 3374,
+   "draw_calls": 18,
+   "origin_offset_m": [
+    0,
+    8.541093,
+    -11.82357
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_1",
+     "limb_1_port",
+     "limb_2",
+     "limb_2_port",
+     "limb_3"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh",
+     "limb_2_mesh",
+     "limb_2_port_mesh",
+     "limb_3_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "redtithe/hull",
+    "redtithe/trim",
+    "redtithe/accent",
+    "redtithe/dark",
+    "redtithe/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       -0.059524,
+       -0.528
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       0,
+       -12.104165,
+       81.815222
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       29.180508,
+       4.576,
+       56.349279
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -29.180508,
+       4.576,
+       56.349279
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2",
+      "system": "limb",
+      "center": [
+       29.180508,
+       -8.008,
+       43.149279
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2_port",
+      "system": "limb",
+      "center": [
+       -29.180508,
+       -8.008,
+       43.149279
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_3",
+      "system": "limb",
+      "center": [
+       0,
+       24.287532,
+       -25.688005
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_ff",
+   "label": "Vos Syndicate frigate: Skiff",
+   "cls": "Frigate",
+   "name": "Skiff",
+   "placeholder": true,
+   "file": "vos/vos_ff.glb",
+   "length_m": 50.299999,
+   "beam_m": 20.152,
+   "height_m": 13.0988,
+   "triangles": 1680,
+   "draw_calls": 4,
+   "origin_offset_m": [
+    0,
+    0,
+    0.15
+   ],
+   "nodes": {
+    "pieces": [
+     "hull"
+    ],
+    "meshes": [
+     "hull_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "vos/hull",
+    "vos/trim",
+    "vos/dark",
+    "vos/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.15
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_dd",
+   "label": "Vos Syndicate destroyer: Corsair",
+   "cls": "Destroyer",
+   "name": "Corsair",
+   "placeholder": true,
+   "file": "vos/vos_dd.glb",
+   "length_m": 90.243526,
+   "beam_m": 31.43712,
+   "height_m": 20.434128,
+   "triangles": 2260,
+   "draw_calls": 6,
+   "origin_offset_m": [
+    0,
+    0,
+    -5.653765
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "vos/hull",
+    "vos/trim",
+    "vos/dark",
+    "vos/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.233999
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       6.029987,
+       0,
+       38.713109
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -6.029987,
+       0,
+       38.713109
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_ca",
+   "label": "Vos Syndicate cruiser: Privateer",
+   "cls": "Cruiser",
+   "name": "Privateer",
+   "placeholder": true,
+   "file": "vos/vos_ca.glb",
+   "length_m": 136.534111,
+   "beam_m": 88.969864,
+   "height_m": 33.291103,
+   "triangles": 3072,
+   "draw_calls": 10,
+   "origin_offset_m": [
+    0,
+    0,
+    -8.559055
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "vos/hull",
+    "vos/trim",
+    "vos/dark",
+    "vos/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.354
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       9.583802,
+       0,
+       58.522923
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -9.583802,
+       0,
+       58.522923
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       28.845585,
+       -1.239,
+       -2.794163
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -28.845585,
+       -1.239,
+       -2.794163
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_cap",
+   "label": "Vos Syndicate capital: Galleon",
+   "cls": "Capital",
+   "name": "Galleon",
+   "placeholder": true,
+   "file": "vos/vos_cap.glb",
+   "length_m": 194.405212,
+   "beam_m": 132.696396,
+   "height_m": 66.103846,
+   "triangles": 3478,
+   "draw_calls": 12,
+   "origin_offset_m": [
+    0,
+    7.660403,
+    -12.194603
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port",
+     "limb_2"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh",
+     "limb_2_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "vos/hull",
+    "vos/trim",
+    "vos/dark",
+    "vos/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.504002
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       14.302867,
+       0,
+       83.256823
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -14.302867,
+       0,
+       83.256823
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       43.063883,
+       -1.89,
+       -4.076336
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -43.063883,
+       -1.89,
+       -4.076336
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2",
+      "system": "limb",
+      "center": [
+       0,
+       23.085403,
+       -20.901176
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "kethran",
+   "id": "kethran_ff",
+   "label": "Kethran Hegemony frigate: Lancer",
+   "cls": "Frigate",
+   "name": "Lancer",
+   "placeholder": true,
+   "file": "kethran/kethran_ff.glb",
+   "length_m": 60.360001,
+   "beam_m": 32.776981,
+   "height_m": 13.2,
+   "triangles": 648,
+   "draw_calls": 5,
+   "origin_offset_m": [
+    0,
+    0,
+    0.18
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "kethran/hull",
+    "kethran/dark",
+    "kethran/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.18
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       9.360377,
+       -0.678261,
+       -10.673765
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -9.360377,
+       -0.678261,
+       -10.673765
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "kethran",
+   "id": "kethran_dd",
+   "label": "Kethran Hegemony destroyer: Warden",
+   "cls": "Destroyer",
+   "name": "Warden",
+   "placeholder": true,
+   "file": "kethran/kethran_dd.glb",
+   "length_m": 92.551998,
+   "beam_m": 54.399361,
+   "height_m": 24.702878,
+   "triangles": 764,
+   "draw_calls": 10,
+   "origin_offset_m": [
+    0,
+    2.231439,
+    0.275999
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "kethran/hull",
+    "kethran/dark",
+    "kethran/glow",
+    "kethran/accent"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.275999
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       15.834159,
+       -1.039717,
+       -15.76663
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -15.834159,
+       -1.039717,
+       -15.76663
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       0,
+       6.763627,
+       -7.996799
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "kethran",
+   "id": "kethran_ca",
+   "label": "Kethran Hegemony cruiser: Bastion",
+   "cls": "Cruiser",
+   "name": "Bastion",
+   "placeholder": true,
+   "file": "kethran/kethran_ca.glb",
+   "length_m": 140.839996,
+   "beam_m": 95.697861,
+   "height_m": 42.702559,
+   "triangles": 764,
+   "draw_calls": 9,
+   "origin_offset_m": [
+    0,
+    4.55128,
+    0.419998
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "kethran/hull",
+    "kethran/dark",
+    "kethran/glow",
+    "kethran/accent"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.419998
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       28.27935,
+       -1.748186,
+       -22.998155
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -28.27935,
+       -1.748186,
+       -22.998155
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       0,
+       13.7817,
+       -13.9504
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "kethran",
+   "id": "kethran_dn",
+   "label": "Kethran Hegemony dreadnought: Throne",
+   "cls": "Dreadnought",
+   "name": "Throne",
+   "placeholder": true,
+   "file": "kethran/kethran_dn.glb",
+   "length_m": 211.260002,
+   "beam_m": 165.861588,
+   "height_m": 72.505661,
+   "triangles": 764,
+   "draw_calls": 10,
+   "origin_offset_m": [
+    0,
+    10.002831,
+    0.630001
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "kethran/hull",
+    "kethran/dark",
+    "kethran/glow",
+    "kethran/accent"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.630001
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       49.432745,
+       -2.731007,
+       -33.281513
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -49.432745,
+       -2.731007,
+       -33.281513
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       0,
+       26.632354,
+       -22.434508
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "tarsine",
+   "id": "tarsine_ff",
+   "label": "Tarsine Remnant frigate: Votary",
+   "cls": "Frigate",
+   "name": "Votary",
+   "placeholder": true,
+   "file": "tarsine/tarsine_ff.glb",
+   "length_m": 72.431999,
+   "beam_m": 24.751499,
+   "height_m": 26.671237,
+   "triangles": 1576,
+   "draw_calls": 5,
+   "origin_offset_m": [
+    0,
+    2.455766,
+    0.216
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "tarsine/hull",
+    "tarsine/accent",
+    "tarsine/dark",
+    "tarsine/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.216
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       0,
+       8.954349,
+       -4.496678
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "tarsine",
+   "id": "tarsine_dd",
+   "label": "Tarsine Remnant destroyer: Custodian",
+   "cls": "Destroyer",
+   "name": "Custodian",
+   "placeholder": true,
+   "file": "tarsine/tarsine_dd.glb",
+   "length_m": 110.66,
+   "beam_m": 37.814789,
+   "height_m": 48.251453,
+   "triangles": 1808,
+   "draw_calls": 6,
+   "origin_offset_m": [
+    0,
+    0,
+    0.33
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_1"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_1_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "tarsine/hull",
+    "tarsine/accent",
+    "tarsine/dark",
+    "tarsine/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.33
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       0,
+       13.680255,
+       -6.869925
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       0,
+       -13.680255,
+       -6.869925
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "tarsine",
+   "id": "tarsine_ca",
+   "label": "Tarsine Remnant cruiser: Monument",
+   "cls": "Cruiser",
+   "name": "Monument",
+   "placeholder": true,
+   "file": "tarsine/tarsine_ca.glb",
+   "length_m": 171.019997,
+   "beam_m": 58.441036,
+   "height_m": 74.570427,
+   "triangles": 1808,
+   "draw_calls": 7,
+   "origin_offset_m": [
+    0,
+    0,
+    0.509998
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_1"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_1_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "tarsine/hull",
+    "tarsine/accent",
+    "tarsine/dark",
+    "tarsine/glow",
+    "tarsine/trim"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.509998
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       0,
+       21.142212,
+       -10.617155
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       0,
+       -21.142212,
+       -10.617155
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "tarsine",
+   "id": "tarsine_dn",
+   "label": "Tarsine Remnant dreadnought: Dominion",
+   "cls": "Dreadnought",
+   "name": "Dominion",
+   "placeholder": true,
+   "file": "tarsine/tarsine_dn.glb",
+   "length_m": 271.619995,
+   "beam_m": 92.818123,
+   "height_m": 118.435387,
+   "triangles": 1808,
+   "draw_calls": 7,
+   "origin_offset_m": [
+    0,
+    0,
+    0.809998
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_1"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_1_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "tarsine/hull",
+    "tarsine/accent",
+    "tarsine/dark",
+    "tarsine/glow",
+    "tarsine/trim"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.809998
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       0,
+       33.578808,
+       -16.862543
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       0,
+       -33.578808,
+       -16.862543
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "aelith",
+   "id": "aelith_ff",
+   "label": "Aelith Conclave frigate: Seeker",
+   "cls": "Frigate",
+   "name": "Seeker",
+   "placeholder": true,
+   "file": "aelith/aelith_ff.glb",
+   "length_m": 56.336,
+   "beam_m": 26.056524,
+   "height_m": 12.116496,
+   "triangles": 3048,
+   "draw_calls": 6,
+   "origin_offset_m": [
+    0,
+    0,
+    0.168
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "aelith/hull",
+    "aelith/trim",
+    "aelith/dark",
+    "aelith/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.168
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       8.608737,
+       0,
+       -0.195597
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -8.608737,
+       0,
+       -0.195597
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "aelith",
+   "id": "aelith_dd",
+   "label": "Aelith Conclave destroyer: Envoy",
+   "cls": "Destroyer",
+   "name": "Envoy",
+   "placeholder": true,
+   "file": "aelith/aelith_dd.glb",
+   "length_m": 84.504002,
+   "beam_m": 40.479591,
+   "height_m": 18.174744,
+   "triangles": 3048,
+   "draw_calls": 6,
+   "origin_offset_m": [
+    0,
+    0,
+    0.252001
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "aelith/hull",
+    "aelith/trim",
+    "aelith/dark",
+    "aelith/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.252001
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       13.271728,
+       1.512,
+       -0.301263
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -13.271728,
+       1.512,
+       -0.301263
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "aelith",
+   "id": "aelith_ca",
+   "label": "Aelith Conclave cruiser: Archive",
+   "cls": "Cruiser",
+   "name": "Archive",
+   "placeholder": true,
+   "file": "aelith/aelith_ca.glb",
+   "length_m": 130.779999,
+   "beam_m": 71.280907,
+   "height_m": 28.127581,
+   "triangles": 3744,
+   "draw_calls": 8,
+   "origin_offset_m": [
+    0,
+    0,
+    0.389999
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "aelith/hull",
+    "aelith/trim",
+    "aelith/dark",
+    "aelith/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.389999
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       20.539579,
+       3.9,
+       -0.46624
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -20.539579,
+       3.9,
+       -0.46624
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       22.755382,
+       -3.9,
+       -0.504148
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -22.755382,
+       -3.9,
+       -0.504148
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "aelith",
+   "id": "aelith_cap",
+   "label": "Aelith Conclave capital: Sanctum",
+   "cls": "Capital",
+   "name": "Sanctum",
+   "placeholder": true,
+   "file": "aelith/aelith_cap.glb",
+   "length_m": 197.176003,
+   "beam_m": 112.586861,
+   "height_m": 45.941715,
+   "triangles": 4440,
+   "draw_calls": 10,
+   "origin_offset_m": [
+    0,
+    0,
+    0.588001
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port",
+     "limb_2",
+     "limb_2_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh",
+     "limb_2_mesh",
+     "limb_2_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "aelith/hull",
+    "aelith/trim",
+    "aelith/dark",
+    "aelith/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.588001
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       31.586158,
+       8.918,
+       -0.731474
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -31.586158,
+       8.918,
+       -0.731474
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       35.964568,
+       0,
+       -0.806477
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -35.964568,
+       0,
+       -0.806477
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2",
+      "system": "limb",
+      "center": [
+       31.586158,
+       -8.918,
+       -0.731474
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2_port",
+      "system": "limb",
+      "center": [
+       -31.586158,
+       -8.918,
+       -0.731474
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "ombrai",
+   "id": "ombrai_ff",
+   "label": "Ombrai frigate: Veil",
+   "cls": "Frigate",
+   "name": "Veil",
+   "placeholder": true,
+   "file": "ombrai/ombrai_ff.glb",
+   "length_m": 54.323999,
+   "beam_m": 40.939056,
+   "height_m": 8.907975,
+   "triangles": 2712,
+   "draw_calls": 8,
+   "origin_offset_m": [
+    0,
+    0,
+    0.162
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "ombrai/hull",
+    "ombrai/trim",
+    "ombrai/dark",
+    "ombrai/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.162
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       12.79117,
+       0,
+       -0.628765
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -12.79117,
+       0,
+       -0.628765
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "ombrai",
+   "id": "ombrai_dd",
+   "label": "Ombrai destroyer: Shade",
+   "cls": "Destroyer",
+   "name": "Shade",
+   "placeholder": true,
+   "file": "ombrai/ombrai_dd.glb",
+   "length_m": 82.492001,
+   "beam_m": 68.99012,
+   "height_m": 13.526925,
+   "triangles": 2712,
+   "draw_calls": 8,
+   "origin_offset_m": [
+    0,
+    0,
+    0.246
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "ombrai/hull",
+    "ombrai/trim",
+    "ombrai/dark",
+    "ombrai/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.246
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       21.464721,
+       0,
+       -1.247773
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -21.464721,
+       0,
+       -1.247773
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "ombrai",
+   "id": "ombrai_ca",
+   "label": "Ombrai cruiser: Vigil",
+   "cls": "Cruiser",
+   "name": "Vigil",
+   "placeholder": true,
+   "file": "ombrai/ombrai_ca.glb",
+   "length_m": 126.756001,
+   "beam_m": 110.162682,
+   "height_m": 20.785275,
+   "triangles": 3408,
+   "draw_calls": 12,
+   "origin_offset_m": [
+    0,
+    0,
+    0.378
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "ombrai/hull",
+    "ombrai/trim",
+    "ombrai/dark",
+    "ombrai/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.378
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       34.353467,
+       0.945,
+       -2.108343
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -34.353467,
+       0.945,
+       -2.108343
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       29.411988,
+       -1.89,
+       -1.317394
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -29.411988,
+       -1.89,
+       -1.317394
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "ombrai",
+   "id": "ombrai_cap",
+   "label": "Ombrai capital: Eclipse",
+   "cls": "Capital",
+   "name": "Eclipse",
+   "placeholder": true,
+   "file": "ombrai/ombrai_cap.glb",
+   "length_m": 187.115997,
+   "beam_m": 176.934097,
+   "height_m": 30.683025,
+   "triangles": 3408,
+   "draw_calls": 12,
+   "origin_offset_m": [
+    0,
+    0,
+    0.557999
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "ombrai/hull",
+    "ombrai/trim",
+    "ombrai/dark",
+    "ombrai/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.557999
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       55.140535,
+       1.395,
+       -3.61587
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -55.140535,
+       1.395,
+       -3.61587
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       47.747365,
+       -2.79,
+       -2.716921
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -47.747365,
+       -2.79,
+       -2.716921
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "vhorr",
+   "id": "vhorr_ff",
+   "label": "Vhorr Brood frigate: Drone",
+   "cls": "Frigate",
+   "name": "Drone",
+   "placeholder": true,
+   "file": "vhorr/vhorr_ff.glb",
+   "length_m": 57.246754,
+   "beam_m": 23.044737,
+   "height_m": 17.711161,
+   "triangles": 2596,
+   "draw_calls": 8,
+   "origin_offset_m": [
+    0,
+    0,
+    2.623377
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "vhorr/hull",
+    "vhorr/trim",
+    "vhorr/dark",
+    "vhorr/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.156
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       4.722961,
+       0,
+       -20.706491
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -4.722961,
+       0,
+       -20.706491
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "vhorr",
+   "id": "vhorr_dd",
+   "label": "Vhorr Brood destroyer: Ravager",
+   "cls": "Destroyer",
+   "name": "Ravager",
+   "placeholder": true,
+   "file": "vhorr/vhorr_dd.glb",
+   "length_m": 94.04401,
+   "beam_m": 35.453442,
+   "height_m": 27.24794,
+   "triangles": 3176,
+   "draw_calls": 12,
+   "origin_offset_m": [
+    0,
+    0,
+    7.022005
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "vhorr/hull",
+    "vhorr/trim",
+    "vhorr/dark",
+    "vhorr/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.24
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       7.262745,
+       1.678109,
+       -31.840919
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -7.262745,
+       1.678109,
+       -31.840919
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       5.673536,
+       -2.769543,
+       -34.850441
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -5.673536,
+       -2.769543,
+       -34.850441
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "vhorr",
+   "id": "vhorr_ca",
+   "label": "Vhorr Brood cruiser: Broodship",
+   "cls": "Cruiser",
+   "name": "Broodship",
+   "placeholder": true,
+   "file": "vhorr/vhorr_ca.glb",
+   "length_m": 162.553246,
+   "beam_m": 60.23056,
+   "height_m": 44.277901,
+   "triangles": 3756,
+   "draw_calls": 16,
+   "origin_offset_m": [
+    0,
+    0,
+    16.276623
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port",
+     "limb_2",
+     "limb_2_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh",
+     "limb_2_mesh",
+     "limb_2_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "vhorr/hull",
+    "vhorr/trim",
+    "vhorr/dark",
+    "vhorr/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.389999
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       12.339086,
+       3.549601,
+       -51.712894
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -12.339086,
+       3.549601,
+       -51.712894
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       10.990084,
+       -4.453372,
+       -56.585464
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -10.990084,
+       -4.453372,
+       -56.585464
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2",
+      "system": "limb",
+      "center": [
+       5.588769,
+       10.103861,
+       -61.438763
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2_port",
+      "system": "limb",
+      "center": [
+       -5.588769,
+       10.103861,
+       -61.438763
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
+   }
+  },
+  {
+   "faction": "vhorr",
+   "id": "vhorr_cv",
+   "label": "Vhorr Brood carrier: Hive",
+   "cls": "Carrier",
+   "name": "Hive",
+   "placeholder": true,
+   "file": "vhorr/vhorr_cv.glb",
+   "length_m": 291.598907,
+   "beam_m": 110.792,
+   "height_m": 79.339592,
+   "triangles": 4336,
+   "draw_calls": 20,
+   "origin_offset_m": [
+    0,
+    0,
+    35.799454
+   ],
+   "nodes": {
+    "pieces": [
+     "hull",
+     "limb_0",
+     "limb_0_port",
+     "limb_1",
+     "limb_1_port",
+     "limb_2",
+     "limb_2_port",
+     "limb_3",
+     "limb_3_port"
+    ],
+    "meshes": [
+     "hull_mesh",
+     "limb_0_mesh",
+     "limb_0_port_mesh",
+     "limb_1_mesh",
+     "limb_1_port_mesh",
+     "limb_2_mesh",
+     "limb_2_port_mesh",
+     "limb_3_mesh",
+     "limb_3_port_mesh"
+    ],
+    "empties": [
+     "engine_0"
+    ]
+   },
+   "materials": [
+    "vhorr/hull",
+    "vhorr/trim",
+    "vhorr/dark",
+    "vhorr/glow"
+   ],
+   "shader_params": {},
+   "break": {
+    "space": "mockup ship space (+X port, +Y up, +Z bow, metres)",
+    "core": [
+     0,
+     0,
+     0
+    ],
+    "bodies": [],
+    "pieces": [
+     {
+      "node": "hull",
+      "system": "hull",
+      "center": [
+       0,
+       0,
+       -0.66
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0",
+      "system": "limb",
+      "center": [
+       22.704643,
+       6.320931,
+       -87.430523
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_0_port",
+      "system": "limb",
+      "center": [
+       -22.704643,
+       6.320931,
+       -87.430523
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1",
+      "system": "limb",
+      "center": [
+       20.222197,
+       -7.929678,
+       -95.675865
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_1_port",
+      "system": "limb",
+      "center": [
+       -20.222197,
+       -7.929678,
+       -95.675865
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2",
+      "system": "limb",
+      "center": [
+       10.280553,
+       18.055165,
+       -103.891518
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_2_port",
+      "system": "limb",
+      "center": [
+       -10.280553,
+       18.055165,
+       -103.891518
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_3",
+      "system": "limb",
+      "center": [
+       12.755904,
+       -21.441519,
+       -112.031338
+      ],
+      "cuts": []
+     },
+     {
+      "node": "limb_3_port",
+      "system": "limb",
+      "center": [
+       -12.755904,
+       -21.441519,
+       -112.031338
+      ],
+      "cuts": []
+     }
+    ]
+   },
+   "checks": {
+    "flipped_triangles": 0,
+    "flipped_on_single_sided": 0,
+    "skipped_meshes": {}
+   },
+   "source": {
+    "page": "docs/mockups/placeholder-fleets.html",
+    "version": null,
+    "sha256": "b0789679303e872175cf19c7be3c2bac02561f33f6fdceb624e478196d6d11d3"
    }
   }
  ]

@@ -449,7 +449,9 @@ const consoleHero = Object.assign({}, hero, {
 });
 
 const api = {
-  id: 'axiom', name: 'The Axiom', AX, PHI, CC, kit, cells, barCells, live, icon, ICON_NAMES, ink, keyInk, font, fonts, hexA, lum, rr, knob,
+  id: 'axiom', name: 'The Axiom', AX, PHI, CC, kit, cells, barCells, live, icon, ICON_NAMES, ink, keyInk,
+  // the icon on a lit status key: dark, since the "on" ink is the lit key's own colour
+  statusInk: AX.void, font, fonts, hexA, lum, rr, knob,
   // The skins page's kit (mockup 4): its nine-slice pieces and hero pieces as they were; the battle console's hero pieces.
   nine, heroSheet: hero, hero: consoleHero,
   load: () => Promise.resolve(), family: '"Space Mono", monospace',

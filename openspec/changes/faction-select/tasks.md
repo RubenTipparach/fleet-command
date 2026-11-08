@@ -28,4 +28,6 @@
   `tools/mockups/export_faction.mjs`, drawn by `FactionStage` with the lamps, beams, dust, bob and turn; still `docs/screenshots/game/flow/factions.png`
 - [ ] 3.4 The Concord pearl's thin-film colour shift in Godot (a small shader in place of the clearcoat stand-in)
 - [ ] 3.2 The campaign's panels drawn from the UI kit by faction, as the battle console's are
+- [x] 3.5 Every faction at the table in a grid (four, five, four), the nine placeholder emblems as coins (mockup 36), a
+  phone's grid of keys; page, export (`export_faction.mjs` writes each seat's x and z) and `FactionScreen` (owner, 2026-11-08)
 - [ ] 3.3 Playtest at desktop and phone size

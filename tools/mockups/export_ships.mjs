@@ -52,6 +52,9 @@ const FACTIONS = [
   // mockup 24 (owner, 2026-11-07: "implement in game"): the four freighters, baked on the same page code, each with its
   // containers (window.MOCKUP_CARGO) written into its manifest entry as "cargo"
   { faction: 'freighters', page: 'docs/mockups/freighter-concepts.html', skip: [], baked: 'Freighter' },
+  // mockup 36 (owner, 2026-11-08: "cool start implementation"): the placeholder lines of the nine factions with no designed
+  // ships, each built by docs/mockups/lib/placeholder-hulls.js from data/ships/placeholders.json (exportPlaceholdersInPage)
+  ...['axiom', 'exponent', 'redtithe', 'vos', 'kethran', 'tarsine', 'aelith', 'ombrai', 'vhorr'].map((faction) => ({ faction, page: 'docs/mockups/placeholder-fleets.html', skip: [], placeholder: true })),
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -446,6 +449,49 @@ async function exportInPage(cfg) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
+// Runs inside the placeholder fleets page (mockup 36): builds each class of one faction with the page's own generator
+// (window.PlaceholderHulls on window.PLACEHOLDER_DATA), turns it into the game's frame, and exports it. The body and every
+// limb are pieces at their own centres, so the game blows each off whole (break.pieces; no fracture cells). Its materials
+// are plain PBR (hull, trim, accent, dark) and one unlit glow, drawn as the glb has them: no hull shader.
+async function exportPlaceholdersInPage(cfg) {
+  const THREE = window.THREE, D = window.PLACEHOLDER_DATA, F = D && D.factions[cfg.faction];
+  if (!F) throw new Error('export_ships: no placeholder faction ' + cfg.faction);
+  const r6 = (v) => Math.round(v * 1e6) / 1e6, v3 = (v) => [r6(v.x), r6(v.y), r6(v.z)], rgb = (c) => [r6(c.r), r6(c.g), r6(c.b)];
+  const R = new THREE.Matrix4().set(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1);
+  const exporter = new THREE.GLTFExporter();
+  const b64 = (buf) => { const u = new Uint8Array(buf); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+  const mats = {}, ships = [];
+  for (const C of F.classes) {
+    const src = window.PlaceholderHulls.build(THREE, F, C);
+    const box = new THREE.Box3();
+    const parts = src.children.map((m) => { const g = m.geometry.clone(); const mb = new THREE.Box3().setFromBufferAttribute(g.attributes.position);
+      const centreM = mb.getCenter(new THREE.Vector3()); g.applyMatrix4(R); g.computeBoundingBox(); box.union(g.boundingBox); return { m, g, centreM }; });
+    const c = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
+    const out = new THREE.Group(); out.name = C.id; let tris = 0, prims = 0; const meshes = [], pieces = [];
+    for (const { m, g, centreM } of parts) {
+      g.translate(-c.x, -c.y, -c.z); g.computeBoundingBox(); const pc = g.boundingBox.getCenter(new THREE.Vector3()); g.translate(-pc.x, -pc.y, -pc.z);
+      const node = new THREE.Group(); node.name = m.name; node.position.copy(pc); out.add(node);
+      const mesh = new THREE.Mesh(g, m.material); mesh.name = m.name + '_mesh'; node.add(mesh); meshes.push(mesh.name);
+      tris += g.index.count / 3; prims += g.groups.length;
+      for (const gr of g.groups) { const mt = m.material[gr.materialIndex]; mats[mt.name] = { name: mt.name, hull_shader: false, placeholder: true, base_colour: rgb(mt.color),
+        ...(mt.isMeshBasicMaterial ? { unlit: true } : { metalness: mt.metalness, roughness: mt.roughness }) }; }
+      pieces.push({ node: m.name, system: m.name === 'hull' ? 'hull' : 'limb', center: v3(centreM), cuts: [] });
+    }
+    // the drive: an engine empty at the stern recess, facing aft
+    const eng = new THREE.Object3D(); eng.name = 'engine_0'; eng.position.set(-c.x, -c.y, C.length_m / 2 - c.z); eng.userData = { kind: 'engine', radius_m: r6(C.length_m * C.height_ratio * 0.3) }; out.add(eng);
+    out.updateMatrixWorld(true);
+    const glb = await new Promise((res, rej) => exporter.parse(out, res, rej, { binary: true, trs: true, onlyVisible: false, maxTextureSize: cfg.maxTex }));
+    ships.push({ glb: b64(glb), man: { faction: cfg.faction, id: C.id, label: F.name + ' ' + C.role.toLowerCase() + ': ' + C.name, cls: C.role, name: C.name, placeholder: true,
+      file: cfg.faction + '/' + C.id + '.glb', length_m: r6(size.z), beam_m: r6(size.x), height_m: r6(size.y), triangles: tris, draw_calls: prims,
+      origin_offset_m: v3(c), nodes: { pieces: pieces.map((p) => p.node), meshes, empties: ['engine_0'] }, materials: [...new Set(Object.keys(mats))], shader_params: {},
+      break: { space: 'mockup ship space (+X port, +Y up, +Z bow, metres)', core: [0, 0, 0], bodies: [], pieces },
+      checks: { flipped_triangles: 0, flipped_on_single_sided: 0, skipped_meshes: {} } } });
+  }
+  return { ships, materials: mats, detail: null, lamp_make: null,
+    hull_shader: { source: 'docs/mockups/lib/placeholder-hulls.js (mockup 36)', did: ['A placeholder: plain PBR colours by role (hull, trim, accent, dark) and an unlit glow, drawn as the glb has them; no hull shader, no detail tile'] } };
+}
+
+// ---------------------------------------------------------------------------------------------------------------
 // Runs in a blank page: loads each glb back with GLTFLoader and renders it three-quarter from above, port bow toward the
 // viewer, all on one sheet with labels and lengths.
 async function contactInPage(list) {
@@ -526,7 +572,7 @@ for (const F of FACTIONS.filter((f) => !ONLY || ONLY.includes(f.faction))) {
   sources[F.faction] = src;
   const { page, errors } = await openPage(F.page, !!F.antonio);
   await page.addScriptTag({ path: path.join(VENDOR, 'GLTFExporter.r147.js') });
-  const res = await page.evaluate(exportInPage, { faction: F.faction, page: F.page, baked: F.baked || null, skip: F.skip, maxTex: MAX_TEX }).catch((e) => { throw new Error(e.message + (errors.length ? '\npage errors:\n' + [...new Set(errors)].join('\n') : '')); });
+  const res = await page.evaluate(F.placeholder ? exportPlaceholdersInPage : exportInPage, { faction: F.faction, page: F.page, baked: F.baked || null, skip: F.skip, maxTex: MAX_TEX }).catch((e) => { throw new Error(e.message + (errors.length ? '\npage errors:\n' + [...new Set(errors)].join('\n') : '')); });
   if (errors.length) throw new Error(F.page + ': ' + errors.join('\n'));
   await page.close();
   if (pageSha(F.page) !== src.sha256) throw new Error(F.page + ' changed during the export: run it again');
@@ -555,7 +601,7 @@ for (const F of FACTIONS.filter((f) => !ONLY || ONLY.includes(f.faction))) {
   }
 }
 const said = (f) => (sources[f] ? `page v${sources[f].version ?? '?'}, sha256 ${sources[f].sha256.slice(0, 12)}` : 'not in this run');
-manifest._doc = `Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord ${said('concord')}; mockup 7, docs/mockups/krai-ship-concepts.html, Krai ${said('krai')}; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt ${said('ssarith')}; mockup 23, docs/mockups/kelvane-ship-concepts.html, Kelvane Institute ${said('kelvane')}; mockup 24, docs/mockups/freighter-concepts.html, the freighters ${said('freighters')}): each ship built intact by its page\'s own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file\'s sha256 and published version each ship came from: an export is stale when the page\'s sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb\'s frame unless a key says mockup space. materials: every exported material by faction/name, with what the page\'s shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.`;
+manifest._doc = `Written by tools/mockups/export_ships.mjs from the approved ship mockups (mockup 6, docs/mockups/concord-hull-concepts.html, Concord ${said('concord')}; mockup 7, docs/mockups/krai-ship-concepts.html, Krai ${said('krai')}; mockup 12, docs/mockups/ssarith-ship-concepts.html, Ssarith Hunt ${said('ssarith')}; mockup 23, docs/mockups/kelvane-ship-concepts.html, Kelvane Institute ${said('kelvane')}; mockup 24, docs/mockups/freighter-concepts.html, the freighters ${said('freighters')}; mockup 36, docs/mockups/placeholder-fleets.html, the placeholder lines of nine factions ${said('axiom')}): each ship built intact by its page\'s own builder and copied out, so this is exactly the approved geometry. Do not edit; re-run the exporter, the only step needed when a mockup changes. ships[].source and factions[].source give the page file\'s sha256 and published version each ship came from: an export is stale when the page\'s sha256 differs. Colours are linear RGB, as glTF. Positions are metres in each glb\'s frame unless a key says mockup space. materials: every exported material by faction/name, with what the page\'s shader did where the glb carries a PBR stand-in. ships[].shader_params: the per-ship values the hull shader read.`;
 manifest.conventions = { units: 'metres', up: '+Y', bow: '-Z', port: '-X', origin: 'the centre of the ship\'s bounding box (all three axes)',
   mockup_space: 'the pages build in +X port, +Y up, +Z bow; p_mockup = (-(x + o.x), y + o.y, -(z + o.z)) for a glb point (x, y, z), o = the ship\'s origin_offset_m; the hull shaders\' tri-planar detail and livery are in mockup space',
   nodes: 'root: the ship id; under it one node per piece of the mockup at the piece\'s pivot (hull, secondary, neck, command, wing, pod_<side>, pylon_<side>, nacelle_<side>, blade, crest); under each piece its meshes, merged by zone and material, named <piece>[_<zone>]_<material>, and its empties',

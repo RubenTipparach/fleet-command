@@ -135,6 +135,12 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Damage range (game ahead) | The ship mockups' Damage tab (mockups 6 and 7: fire with a click, scenarios, repair); not on the battle console's scene list | Damage range, from both sides: every approved class on the range, weapon keys, click the plating to fire, programs (Battle scars, Lance rake, Bolt burns, Torpedo holes, Missile salvo, Break a part, Core breach), Shields, Slow motion, Repair all (owner, 2026-11-05) | `battle-scenarios` 3.6, 3.7 |
 | The ships in the view | A stand-in Concord block against Kethran and Vos ships (v74, mockup 8 v14) | The approved ships, the Krai against the Concord only (owner: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"); here the mockups are behind the game (sheets 2026-11-04: `docs/screenshots/compare/`) | the mockups' next version |
 
+- **Hit and run's weapon pick, docked, in step (2026-11-08).** Picking Weapons added a full-width row that pushed the pads
+  and control bar past the docked panel (owner: "weapn controls can push stuff off screen", "I went full screen and it still
+  an issue"). In both the mockup and the game the docked pick is now a short pill beside the subsystem keys (which shrink to
+  leave it 80 px), its full name in the tip; expanded keeps its own row. Game: `StationPanel.Transport.cs`; mockup:
+  `stTransport`. Layout and parity tests pass in the game's four skins.
+
 ### Mockup 8 only (the Krai skin)
 
 Parity between the two skins is checked by the engine (`-- --parity-test`, in `scripts/run-tests.sh`): the same controls
@@ -208,3 +214,10 @@ each mockup difference has its task:
 | Drawn chart pieces | Mockup 1 v27: on the paper chart the nebulae, storms, suns and rocks are hand-drawn, cross-hatched billboards (`docs/mockups/lib/drawn.js`) and the planets are drawn live by the planet shader (`docs/mockups/lib/planet-shader.js`), the names hand-lettered, a compass rose and rhumb lines printed | The same drawings from the exported bank, stood on the game's own sectors by the page's rules ported to C# (`ChartRoom.BuildDrawn`), the planets by `planet.gdshader` on hexagon flight stands, the names in IM Fell English SC | matched 2026-11-08 (`game-flow-engine` 2.10); the game's sectors differ from the page's random map, so the pieces stand where the page would stand them on the game's map |
 | Sector panel on a phone | Mockup 1 v25: a Hide key puts the sector panel away (a Sector key and picking a sector bring it back); in portrait the top bar is two rows | The panel stays open and the top bar wraps as it likes | open: `game-flow-engine` 2.11 |
 | Patrols (game ahead) | Mockup 1 offers contracts evenly | By weight (Patrol 4, the nebula, belt and orbital patrols 2) | `campaign-space` 2.1 |
+| Faction screen grid (matched 2026-11-08) | Mockup 1 v30: every faction at the table in a grid (four playable in front, five, four), the nine placeholder emblems as coins, a phone's grid of keys (`.fgrid`) | The same seats from `export_faction.mjs` (x and z), `FactionScreen.KeyGrid` on a phone (under 1100 by 560 px) with the emblem pictures (`Emblem`: the badges' renders and the placeholder SVGs) where the page renders each badge | none |
+
+### Mockup 36 (placeholder fleets)
+
+| What | Mockup | Game | Task |
+|---|---|---|---|
+| Hull scars | The page draws no damage | Fireballs where shots land (on the plain surfaces), pieces blown off whole and the breakup; no scorch or hole marks (no hull shader on a placeholder) | `placeholder-fleets` 2.5 |
