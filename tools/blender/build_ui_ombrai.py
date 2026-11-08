@@ -51,12 +51,13 @@ PRESS_MM = 3.0                                              # how far a pressed 
 DISPLAY = ("void", "eyefilm", "keyfilm", "line", "moon_green", "moon_yellow", "moon_red", "lid", "iris", "pupil", "shade")
 
 
-def plum(name):
+def plum(name, rough=0.3):
     """Anodised plum metal: dark violet, a fine satin grain, a clear coat with a thin-film sheen that turns rose and
-    teal as the rolled edges catch the light (the faint iridescence the Ombrai's glass had)."""
+    teal as the rolled edges catch the light (the faint iridescence the Ombrai's glass had). rough: the column's backing
+    is rougher (0.5), so a plate the height of the screen does not mirror the softbox as one bright patch."""
     k = NodeKit(name)
     g = k.tex("ShaderNodeTexWave", 900.0, **{"Distortion": 1.5, "Detail": 2.0})
-    k.set(Base_Color=PAL["plum"], Metallic=0.85, Roughness=0.3, Coat_Weight=0.6, Coat_Roughness=0.08,
+    k.set(Base_Color=PAL["plum"], Metallic=0.85, Roughness=rough, Coat_Weight=0.6 if rough < 0.4 else 0.25, Coat_Roughness=0.08,
           Thin_Film_Thickness=420.0, Thin_Film_IOR=1.5)
     k.bump(g.outputs["Fac"], 0.03)
     return k.mat
@@ -119,7 +120,8 @@ def mats(K, s, name):
     hot = name.endswith(".pressed")
     warn = name.endswith(".warn")
     eye_col = PAL["crimson"] if warn else PAL["pink"]
-    K.m.update(plate=K.mat("plum", lambda: plum("plum")), bezel=K.mat("lilac", lambda: metal("lilac", PAL["lilac"], 0.26)),
+    plate = K.mat("plum_back", lambda: plum("plum_back", 0.5)) if name == "console.backing" else K.mat("plum", lambda: plum("plum"))
+    K.m.update(plate=plate, bezel=K.mat("lilac", lambda: metal("lilac", PAL["lilac"], 0.26)),
                groove=K.mat("wall", lambda: printed("wall", PAL["wall"])),
                void=K.mat("void", lambda: film_mat("void", col=PAL["void"], shadow=PAL["void_lo"], es=0.35, ao_mm=ao)),
                eyefilm=K.mat("eyefilm", lambda: film_mat("eyefilm", col="#2a0f3e", shadow=PAL["void_lo"], es=0.25 + 0.9 * lv, ao_mm=ao)),
@@ -202,7 +204,7 @@ PIECES["bar.fill"] = ("nine", (64, 10), (0, 6, 0, 6), "x", fill(PAL["pink"], 2.5
 PIECES["bar.fill.red"] = ("nine", (64, 10), (0, 6, 0, 6), "x", fill(PAL["crimson"], 2.5))
 ORDER = ["frame.panel", "frame.inset", "bar.track", "bar.fill", "bar.fill.red", "bar.cell.off", "bar.cell.on", "bar.cell.warn",
          "button.idle", "button.hover", "button.pressed", "tab.idle", "tab.active", "strip.top", "strip.bottom", "divider",
-         "nameplate", "helm.pad", "ssd.bezel", "dial", "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest"]
+         "nameplate", "helm.pad", "ssd.bezel", "dial", "lamp.alert.green", "lamp.alert.yellow", "lamp.alert.red", "crest", "console.backing"]
 PIECES = {k: PIECES[k] for k in ORDER + [k for k in PIECES if k not in ORDER]}
 
 # A soft cool room light from the upper left for the plum metal; link_layers adds the softbox, the ceiling and the main
