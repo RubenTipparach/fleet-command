@@ -33,6 +33,18 @@ SKINS = {
         "title": "Kelvane Battle Console",
         "what": "Mockup 20: the battle console in the Kelvane Institute skin (OpenSpec change kelvane-battle-console)",
     },
+    "vos": {
+        "title": "Vos Battle Console",
+        "what": "Mockup 28: the battle console in the Vos Syndicate skin (OpenSpec change vos-battle-console)",
+    },
+    "kethran": {
+        "title": "Kethran Battle Console",
+        "what": "Mockup 29: the battle console in the Kethran Hegemony skin (OpenSpec change kethran-battle-console)",
+    },
+    "tarsine": {
+        "title": "Tarsine Battle Console",
+        "what": "Mockup 30: the battle console in the Tarsine Remnant skin (OpenSpec change tarsine-battle-console)",
+    },
 }
 # Every skin's library, kit and type are inlined in the source page itself (openspec/changes/fleet-skins: the console
 # follows the ship you command, so one page carries every skin); a faction's page differs only in its meta, title and

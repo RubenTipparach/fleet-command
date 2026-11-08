@@ -400,51 +400,29 @@ return api;
 })();
 </script>
 <!-- /INLINE -->
-<script>
-(function () {
+<!-- INLINE docs/mockups/lib/vos.js -->
+<script data-src="docs/mockups/lib/vos.js">
+// Fleet Command mockups: the Vos Syndicate skin (openspec/changes/console-skins/design.md, "Vos Syndicate: hand-drawn";
+// openspec/changes/vos-battle-console), shared by the console skins page (docs/mockups/console-skins.html, whose Vos entry
+// and whose FCK drawing helpers come from here) and the battle console, where it is the skin of the Vos ship you command
+// (docs/mockups/battle-console-vos.html, written from battle-console.html by tools/mockups/skin_page.py). One
+// implementation of the Syndicate's look (CLAUDE.md section 6.1): the hand-drawn helpers (ink, wash, hatch, dry, spiral),
+// the kit's painters, the icons, the live readouts, and the pieces only the battle console draws (square tag keys, wide
+// claw tags, allocation cells, the title ticket and the patched sailcloth behind the column).
+// It exposes the same fields as docs/mockups/lib/concord.js and lib/kelvane.js, so the battle console swaps one for
+// another and changes no rule and no layout. Needs docs/mockups/lib/kitdraw.js inlined first. Our own design: no other
+// game's names, shapes, glyphs or art.
+//
+// Where it comes from (design.md; owner, 2026-10-30: "I really like espeically the mirak ui design, its so playful and
+// pirate like", "design a hand drawn aesthetic of the mirak ui"): a crew's own console, inked and painted by hand over
+// salvage. Free clans of raiders, luck, loot and loyalty to the crew (the provisional account, survey U7); the look comes
+// from that tradition of salvage and crew marks, never from what the Vos look like (CLAUDE.md section 1).
+// Every stroke comes from a seeded generator (FCDraw.rng, Mulberry32), so a piece is drawn the same way every time.
+window.FCVos = (function () {
 'use strict';
-// ---------------------------------------------------------------------------------------------------------------
-// The kit (openspec/changes/console-skins/design.md). Sizes are at the 1920 x 1080 reference; images are made at 2x.
-// ---------------------------------------------------------------------------------------------------------------
-const NINE = ['frame.panel', 'frame.inset', 'bar.track', 'bar.fill', 'bar.fill.red', 'button.idle', 'button.hover', 'button.pressed',
-  'tab.idle', 'tab.active', 'strip.top', 'strip.bottom', 'divider'];
-const HERO = { 'nameplate': [460, 56], 'helm.pad': [300, 300], 'ssd.bezel': [460, 300], 'dial': [120, 120],
-  'lamp.alert.green': [64, 64], 'lamp.alert.yellow': [64, 64], 'lamp.alert.red': [64, 64], 'crest': [96, 96] };
-const ICONS = ['helm', 'fire', 'shields', 'tractor', 'transport', 'science', 'comms', 'repair', 'map', 'settings'];
-// Symbol bars (owner, 2026-10-31: "have different repeated symbols for them. Please use that instead of the same boring
-// progress bar"): a skin may supply all three cells, and its bars become a row of its own symbol in the track's groove,
-// unlit (off) or lit (on, or warn on a warning bar), lit from the left by whole cells. A skin with none keeps the fill.
-const CELLS = ['bar.cell.off', 'bar.cell.on', 'bar.cell.warn'];
-const KIT_ROWS = [
-  ['frame.panel', '9-slice', 'any, min 96 x 96', 'every console panel, port panels, sheets'],
-  ['frame.inset', '9-slice', 'any, min 48 x 48', 'readout wells, lists'],
-  ['bar.track', '9-slice', 'any width x 16', 'hull, capacitor, speed, power'],
-  ['bar.fill', '9-slice, 2 states', 'any width x 10', 'the bars\' fills, normal and warning'],
-  ['button', '9-slice, 3 states', 'any width x 48', 'every key: idle, hover, pressed'],
-  ['tab', '9-slice, 2 states', 'any width x 40', 'tab rows, arming states'],
-  ['strip.top', '9-slice', 'full width x 72', 'the top strip'],
-  ['strip.bottom', '9-slice', 'full width x 72', 'the bottom strip'],
-  ['divider', '9-slice', 'any x 10', 'between stacked parts of a panel'],
-  ['nameplate', 'hero', '460 x 56', 'the captain\'s plate'],
-  ['helm.pad', 'hero', '300 x 300', 'the helm\'s eight directions and stop'],
-  ['ssd.bezel', 'hero', '460 x 300', 'the ship systems display'],
-  ['dial', 'hero', '120 x 120', 'radar and gauges'],
-  ['lamp.alert', 'hero, 3 states', '64 x 64', 'condition green, yellow, red'],
-  ['crest', 'hero', '96 x 96', 'the faction\'s mark'],
-  ['icon.*', 'hero, 10', '48 x 48', ICONS.join(', ')],
-];
-
-// Shared drawing helpers: docs/mockups/lib/kitdraw.js (inlined above).
-const { rng, hash, paint, png, P, rr } = window.FCDraw;
-
-
-// Concord: docs/mockups/lib/concord.js (inlined above), one copy shared with the battle console.
-const { CC, sweep: ccSweep, arcSeg: ccArcSeg, kit: concordKit, hero: concordHero, icon: ccIcon } = window.FCConcord;
-
-// ===============================================================================================================
-// VOS SYNDICATE: hand-drawn. Ink that wobbles, a stained wash, hatching on the shadow side, a dry-brush highlight.
-// Every stroke comes from a seeded generator, so a piece is drawn the same way every time.
-// ===============================================================================================================
+const { rng, hash, paint, P } = window.FCDraw;
+// The palette and what it stands for (design.md): tattoo ink, salvage rust, loot brass, old-coin verdigris, stolen bone
+// charts, a warning in blood.
 const VC = { ink: '#2a1410', rust: '#a8482a', brass: '#d6a043', brassHi: '#efc56a', verd: '#3fb7a3', bone: '#efe0bd', blood: '#d23a4a', wine: '#24110d', caution: '#e8b33a' };
 function noise1(R) { const p = [0, 1, 2, 3].map(() => [R() * 6.283, 0.6 + R() * 1.4]); return (t) => p.reduce((s, [ph, f], i) => s + Math.sin(t * f * (i + 1) + ph) / (i + 1), 0) / 1.6; }
 // Resample a polyline and push each point sideways by smooth noise: the line of a hand.
@@ -600,49 +578,590 @@ function vosLamp(x, w, R, col) {
   x.save(); x.globalAlpha = 0.35; x.fillStyle = col; x.shadowColor = col; x.shadowBlur = 14; trace(x, g, true); x.fill(); x.restore();
   ink(x, g, true, 2.4); for (const dx of [-8, 0, 8]) ink(x, wob([[c + dx, c - 14], [c + dx * 1.2, c + 26]], false, 0.5, R), false, 1.4);
 }
-// Vos icons: brush-drawn spirals, claws, eyes and teeth, a little crooked (tattoos and trophies).
-function vosIcon(name) {
-  return paint(48, 48, (x, w, h) => {
-    const R = rng(hash('vos.icon.' + name)); const L = (pts, wd = 3.2, col = VC.brassHi) => ink(x, wob(pts, false, 0.7, R, 2), false, wd, col);
-    ({
-      helm: () => { spiral(x, 24, 24, 9, 1.6, R, 2.6, VC.brassHi); for (let i = 0; i < 6; i++) { const a = i * P / 3; L([[24 + Math.cos(a) * 11, 24 + Math.sin(a) * 11], [24 + Math.cos(a) * 21, 24 + Math.sin(a) * 21]], 3); } },
-      fire: () => { for (let i = 0; i < 3; i++) L([[8 + i * 10, 6], [16 + i * 10, 24], [12 + i * 10, 42]], 4, VC.blood); },
-      shields: () => { spiral(x, 24, 26, 18, 2.2, R, 3, VC.verd); },
-      tractor: () => { L([[24, 4], [24, 28]], 3.4); L([[24, 28], ...arcPts(18, 30, 8, 10, 0, P, 8), [8, 22], [13, 20]], 3.4); },
-      transport: () => { for (let i = 0; i < 9; i++) { const a = i * 0.9, r = 4 + i * 2.2; x.fillStyle = VC.verd; x.beginPath(); x.arc(24 + Math.cos(a) * r, 24 + Math.sin(a) * r, 2 + R(), 0, 2 * P); x.fill(); } },
-      science: () => { L([...arcPts(24, 34, 20, 18, -P * 0.85, -P * 0.15, 10)], 3); L([...arcPts(24, 14, 20, 18, P * 0.15, P * 0.85, 10)], 3); x.fillStyle = VC.verd; x.beginPath(); x.arc(24, 24, 6, 0, 2 * P); x.fill(); x.fillStyle = VC.ink; x.beginPath(); x.arc(25, 24, 2.4, 0, 2 * P); x.fill(); },
-      comms: () => { spiral(x, 18, 30, 12, 1.7, R, 3, VC.brassHi); L([[24, 22], [40, 8]], 3.4); L([[30, 26], [44, 22]], 3); },
-      repair: () => { L([[8, 40], [36, 12]], 3.6); for (let i = 0; i < 4; i++) L([[14 + i * 7, 34 - i * 7], [20 + i * 7, 40 - i * 7]], 2, VC.bone); L([[36, 12], [42, 6]], 2.4, VC.bone); },
-      map: () => { L([[10, 10], [38, 38]], 4.2, VC.blood); L([[38, 10], [10, 38]], 4.2, VC.blood); },
-      settings: () => { const o = []; for (let i = 0; i <= 16; i++) { const a = i * 2 * P / 16, r = i % 2 ? 13 : 19; o.push([24 + Math.cos(a) * r, 24 + Math.sin(a) * r]); } L(o, 3); spiral(x, 24, 24, 6, 1.4, R, 2.2, VC.brassHi); },
-    })[name]();
-  });
+function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+// Relative luminance of a #rrggbb colour (WCAG), for picking the ink that reads on a fill.
+function lum(hex) {
+  if (typeof hex !== 'string' || hex[0] !== '#' || hex.length < 7) return 0;
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 }
 
-// ===============================================================================================================
-// KETHRAN HEGEMONY: modelled hard surface, rendered in Blender (inlined). Icons are forward wedges and chevrons, drawn
-// here as amber glyphs glowing behind the keys' lenses.
-// ===============================================================================================================
-const KC = { gun: '#2b2f33', iron: '#4a4f55', steel: '#8a9096', oxide: '#9e2a1e', red: '#d9483b', ember: '#ffb547', bone: '#d8cfbf' };
-const kethranData = kitData('assets/ui/kethran/manifest.json');
-function ktIcon(name) {
+// ---- The battle console's colour roles -------------------------------------------------------------------------
+// The same role names as the Concord's (lib/concord.js), so the page's rules pick a role, never a colour. Inked over the
+// stained washes and over the battle: pale verdigris for a reading (Sky), the deeper verdigris of old coin for whole and
+// engaged (Accord: the spoils kept), brass gold for damaged (Caution), blood only for down and alarms (Alert), a faded
+// tan for a label (Lilac), bone for prose and the rust of salvage for a key at rest (Signal). The shields' ramp is the
+// skins page's: verdigris, gold, blood.
+const CC = {
+  deep: '#4a2418', signal: '#6a3422', sky: '#7fdcc8', accord: '#3fb79a', lilac: '#cfae8c', caution: VC.caution, alert: '#e23a48', text: VC.bone,
+  ink: VC.ink, inkDis: '#6a4a3a', night: '#1e0e0b', ghost: '#7a5040', void: '#120806', slate: '#4a2a20', mute: '#3a2620', ver: '#a88a70',
+  char: '#3a0b09', plate: '#1c0d0a', bg: '#140a08', title: VC.brassHi,
+};
+// The ink that reads on a fill: tattoo ink on a washed colour, bone on the dark washes.
+const inkOn = (fill) => (lum(fill) > 0.18 ? VC.ink : VC.bone);
+// Ink on the kit's tags and tickets: ink on the brass tag at rest and on hover, bone on the rust tag pressed; ink on the
+// bone ticket and the verdigris one alike.
+const keyInk = { idle: VC.ink, hover: VC.ink, pressed: VC.bone, tabOn: VC.ink, tabOff: VC.ink };
+// Type: "Permanent Marker" for headings, as the skins page's keys and titles, and "Patrick Hand" for everything else (the
+// skin's pair). The page asks for Antonio sizes. Patrick Hand at the same size runs 1.09 times as wide (measured on the
+// console's own labels, 2026-11-07); rule T (the keys' and tabs' fit) shrinks what still runs long. Weight 700 at 22 px and
+// up is a heading: Permanent Marker, 1.48 times as wide, at 0.72 of the size.
+function font(spec) {
+  const m = /^(\d+) ([\d.]+)px Antonio$/.exec(spec); if (!m) return spec;
+  const w = +m[1], s = +m[2];
+  if (w >= 700 && s >= 22) return `400 ${Math.round(s * 0.72 * 10) / 10}px "Permanent Marker"`;
+  return `400 ${Math.round(s * 1.0 * 10) / 10}px "Patrick Hand"`;
+}
+const fonts = ['400 20px "Permanent Marker"', '400 20px "Patrick Hand"'];
+
+// ---- Icons: one subject list for every skin (docs/design/icon-guide.html) ---------------------------------------
+// Each a picture of the job in a crew's brush: crooked ink strokes that taper and double, filled where the thing is solid,
+// single strokes for what it gives off; a spiral where a crew would sign it (the wheel's hub, the cog's bore). One ink;
+// on a 48 x 48 grid with 4 px clear, read at 20 px and 48 px. The same seed draws a subject in every colour, so an icon
+// only changes its ink between states.
+function icon(name, col = CC.sky) {
   return paint(48, 48, (x) => {
-    const F = (pts) => { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts.slice(1)) x.lineTo(p[0], p[1]); x.closePath(); x.fill(); };
-    x.shadowColor = KC.ember; x.shadowBlur = 6; const g = x.createLinearGradient(0, 4, 0, 44); g.addColorStop(0, '#ffe2a6'); g.addColorStop(1, '#e88a1a'); x.fillStyle = g;
+    const R = rng(hash('vos.icon.' + name));
+    const L = (pts, wd = 3.2) => ink(x, wob(pts, false, 0.7, R, 2), false, wd, col);
+    const C = (cx, cy, r, wd = 3, a0 = 0, a1 = 2 * P) => ink(x, wob(arcPts(cx, cy, r, r, a0, a1, 18), a1 - a0 >= 2 * P - 1e-6, 0.5, R, 2), a1 - a0 >= 2 * P - 1e-6, wd, col);
+    const F = (pts) => { const p = wob(pts, true, 0.6, R, 2); trace(x, p, true); x.fillStyle = col; x.fill(); ink(x, p, true, 1.4, col); };
+    const D = (cx, cy, r) => F(arcPts(cx, cy, r, r, 0, 2 * P, 10).slice(0, -1));
     ({
-      helm: () => { F([[24, 4], [42, 26], [32, 26], [24, 17], [16, 26], [6, 26]]); F([[24, 22], [42, 44], [32, 44], [24, 35], [16, 44], [6, 44]]); },
-      fire: () => { F([[24, 4], [30, 26], [24, 44], [18, 26]]); F([[4, 14], [20, 24], [6, 30]]); F([[44, 14], [28, 24], [42, 30]]); },
-      shields: () => { F([[6, 8], [42, 8], [38, 30], [24, 44], [10, 30]]); x.fillStyle = '#1a0d05'; x.shadowBlur = 0; F([[14, 14], [34, 14], [31, 28], [24, 35], [17, 28]]); },
-      tractor: () => { F([[4, 8], [20, 24], [4, 40], [10, 24]]); F([[44, 8], [28, 24], [44, 40], [38, 24]]); x.fillRect(20, 22, 8, 4); },
-      transport: () => { for (let i = 0; i < 3; i++) F([[8, 6 + i * 13], [24, 16 + i * 13], [40, 6 + i * 13], [40, 11 + i * 13], [24, 21 + i * 13], [8, 11 + i * 13]]); },
-      science: () => { F([[24, 4], [44, 40], [4, 40]]); x.fillStyle = '#1a0d05'; x.shadowBlur = 0; F([[24, 16], [34, 34], [14, 34]]); x.fillStyle = g; F([[24, 24], [28, 31], [20, 31]]); },
-      comms: () => { F([[4, 20], [14, 20], [14, 28], [4, 28]]); F([[18, 14], [26, 10], [26, 38], [18, 34]]); F([[30, 6], [44, 2], [44, 46], [30, 42]]); },
-      repair: () => { F([[6, 6], [26, 6], [30, 14], [22, 20], [42, 40], [36, 46], [16, 26], [10, 30], [4, 20]]); },
-      map: () => { for (let r = 0; r < 3; r++) for (let c = 0; c <= r; c++) F([[24 - r * 7 + c * 14, 6 + r * 13], [31 - r * 7 + c * 14, 18 + r * 13], [17 - r * 7 + c * 14, 18 + r * 13]]); },
-      settings: () => { const o = []; for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; o.push([24 + Math.cos(a) * 20, 24 + Math.sin(a) * 20]); } F(o); x.fillStyle = '#1a0d05'; x.shadowBlur = 0; x.fillRect(19, 19, 10, 10); },
+      // a ship's wheel: a crooked rim, eight spokes out past it to handles, a spiral hub
+      helm: () => { C(24, 24, 12, 3); for (let i = 0; i < 8; i++) { const a = -P / 2 + i * P / 4; L([[24 + Math.cos(a) * 4, 24 + Math.sin(a) * 4], [24 + Math.cos(a) * 19, 24 + Math.sin(a) * 19]], 2.6); D(24 + Math.cos(a) * 20, 24 + Math.sin(a) * 20, 2.6); }
+        spiral(x, 24, 24, 5, 1.4, R, 1.8, col); },
+      // power: a crooked bolt, solid
+      power: () => { F([[29, 4], [13, 27], [23, 26], [17, 44], [36, 18], [25, 20]]); },
+      // tactical: a deck gun, its barrel up to the right over a wheeled carriage
+      tactical: () => { L([[14, 31], [40, 11]], 5.5); F([[7, 30], [27, 30], [30, 38], [5, 38]]); C(11, 40, 4, 2.4); C(25, 40, 4, 2.4); },
+      // point defence: a shield with a cross of shot on it
+      pd: () => { L([[24, 5], [39, 10], [37, 27], [24, 43], [11, 27], [9, 10], [24, 5]], 3); L([[24, 15], [24, 31]], 2.4); L([[16, 22], [32, 22]], 2.4); },
+      // science: an open eye, its iris a spiral (a crew studies by looking hard)
+      science: () => { L(arcPts(24, 34, 20, 18, -P * 0.86, -P * 0.14, 12), 3); L(arcPts(24, 14, 20, 18, P * 0.14, P * 0.86, 12), 3); D(24, 24, 6.5); x.fillStyle = VC.ink; x.globalAlpha = lum(col) > 0.18 ? 0.8 : 0.4; x.beginPath(); x.arc(24, 24, 2.4, 0, 2 * P); x.fill(); x.globalAlpha = 1; },
+      // comms: a speaking horn, two calls going out
+      comms: () => { F([[6, 20], [14, 20], [28, 10], [28, 38], [14, 28], [6, 28]]); C(28, 24, 9, 2.6, -0.8, 0.8); C(28, 24, 16, 2.6, -0.7, 0.7); },
+      // repair: a spanner, its jaw open to the upper right
+      repair: () => { L([[9, 40], [27, 22]], 5.5); D(31, 17, 8.5); x.save(); x.globalCompositeOperation = 'destination-out'; x.fillRect(31, 12, 12, 7); x.restore(); },
+      // transport: a figure, its lower half scattering into dabs as it beams
+      transport: () => { D(24, 9, 4.6); F([[16, 29], [18, 17], [30, 17], [32, 29]]); for (const [px, py] of [[17, 34], [24, 35], [31, 34], [20, 40], [28, 40], [24, 44]]) D(px, py, 1.7); },
+      // fleet: three hulls in formation, the lead ahead
+      fleet: () => { const sh = (cx, cy, k) => F([[cx, cy - 10 * k], [cx + 6 * k, cy + 2 * k], [cx + 4 * k, cy + 9 * k], [cx - 4 * k, cy + 9 * k], [cx - 6 * k, cy + 2 * k]]); sh(24, 13, 1); sh(11, 33, 0.85); sh(37, 33, 0.85); },
+      // the ship from above: a spiked salvage hull, its prow forward
+      ship: () => { F([[24, 4], [30, 16], [38, 12], [33, 26], [40, 38], [29, 34], [24, 44], [19, 34], [8, 38], [15, 26], [10, 12], [18, 16]]); },
+      // shields: a hull inside six crooked arcs
+      shields: () => { for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; C(24, 24, 19, 3.2, a - 0.42, a + 0.42); } D(24, 24, 5.5); },
+      // sensors: a scope, its sweep and two marks
+      sensors: () => { C(24, 24, 18, 2.8); L([[24, 24], [36, 11]], 2.6); D(31, 31, 2.8); D(14, 17, 2.8); },
+      // tractor: a grapnel line from an emitter, hooked round a hull
+      tractor: () => { F([[3, 19], [12, 19], [12, 29], [3, 29]]); L([[12, 24], [30, 24]], 2.4); L([[30, 24], ...arcPts(36, 24, 8, 9, P, 2.2 * P, 8)], 3); L([[30, 24], ...arcPts(36, 24, 8, 9, P, -0.2 * P, 8)], 3); },
+      // craft: a little skiff with swept wings
+      craft: () => { F([[24, 4], [29, 21], [44, 31], [29, 32], [24, 44], [19, 32], [4, 31], [19, 21]]); },
+      // weapons: a shot from a muzzle, ending in a burst
+      weapons: () => { D(9, 39, 4.6); L([[12, 36], [29, 19]], 3.2); for (let i = 0; i < 6; i++) { const a = i * P / 3; L([[34 + Math.cos(a) * 4, 14 + Math.sin(a) * 4], [34 + Math.cos(a) * 10, 14 + Math.sin(a) * 10]], 2.2); } },
+      // warp: a chevron trailing speed strokes
+      warp: () => { L([[22, 10], [38, 24], [22, 38]], 4.6); L([[5, 16], [17, 16]], 2.6); L([[3, 24], [20, 24]], 2.6); L([[5, 32], [17, 32]], 2.6); },
+      // engines: a nozzle and its exhaust curling away
+      engines: () => { F([[14, 5], [34, 5], [38, 20], [10, 20]]); spiral(x, 19, 33, 6, 1.3, R, 2.2, col); spiral(x, 31, 35, 5, 1.2, R, 2.2, col); },
+      // reactor: a solid core in two crossed orbits
+      reactor: () => { D(24, 24, 5.5); for (const r of [P / 4, -P / 4]) { const o = arcPts(0, 0, 19, 8, 0, 2 * P, 24).map(([a, b]) => [24 + a * Math.cos(r) - b * Math.sin(r), 24 + a * Math.sin(r) + b * Math.cos(r)]); ink(x, wob(o, true, 0.4, R, 2), true, 2.4, col); } },
+      // map: a dotted course to an X (the chart they stole)
+      map: () => { for (const [px, py] of [[8, 41], [11, 34], [13, 27], [18, 21], [24, 18]]) D(px, py, 2.2); L([[29, 6], [41, 18]], 3.6); L([[41, 6], [29, 18]], 3.6); },
+      pause: () => { L([[17, 10], [17, 38]], 6.5); L([[31, 10], [31, 38]], 6.5); },
+      menu: () => { for (const y of [13, 24, 35]) L([[9, y], [39, y]], 4.2); },
+      // fire: four claw brackets closing on a solid mark
+      fire: () => { for (const [a, b, c] of [[[8, 18], [8, 8], [18, 8]], [[30, 8], [40, 8], [40, 18]], [[40, 30], [40, 40], [30, 40]], [[18, 40], [8, 40], [8, 30]]]) L([a, b, c], 3.4); D(24, 24, 5); },
+      // cargo: a loot chest, its lid arched, a coin on it
+      cargo: () => { L([[7, 22], [41, 22], [41, 41], [7, 41], [7, 22]], 3); L(arcPts(24, 22, 17, 10, P, 2 * P, 10), 3); D(24, 30, 3.4); },
+      // settings: a crooked cog round a spiral bore
+      settings: () => { const o = []; for (let i = 0; i <= 16; i++) { const a = i * 2 * P / 16, r = i % 2 ? 13 : 19; o.push([24 + Math.cos(a) * r, 24 + Math.sin(a) * r]); } L(o, 3); spiral(x, 24, 24, 6, 1.4, R, 2.2, col); },
     })[name]();
   });
 }
+const ICON_NAMES = ['helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'warp', 'engines', 'reactor', 'map', 'pause', 'menu', 'fire', 'cargo', 'settings'];
+
+// ---- Live readouts (the console skins page and the battle console) ---------------------------------------------
+const live = {
+  arrow: (x, a) => { const R = rng(hash('helm' + a)); ink(x, wob([[-12, 2], [10, -1]], false, 0.8, R), false, 3, VC.ink); ink(x, wob([[2, -8], [11, -1], [3, 7]], false, 0.6, R), false, 3, VC.ink); },
+  ssd: (x, cx, cy, sh, col) => {
+    const R = rng(7);
+    for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; ink(x, wob(arcPts(cx, cy, 96, 92, a - P / 6 + 0.12, a + P / 6 - 0.12, 10), false, 0.9, R), false, 6, col(sh[i])); }
+    const hull = wob([[cx, cy - 70], [cx + 16, cy - 40], [cx + 40, cy - 56], [cx + 26, cy - 10], [cx + 46, cy + 30], [cx + 14, cy + 22], [cx, cy + 62], [cx - 14, cy + 22], [cx - 46, cy + 30], [cx - 26, cy - 10], [cx - 40, cy - 56], [cx - 16, cy - 40]], true, 1, R);
+    ink(x, hull, true, 2.4); for (const [mx, my] of [[cx, cy - 46], [cx - 30, cy + 18], [cx + 30, cy + 18]]) spiral(x, mx, my, 6, 1.5, R, 1.6, VC.blood);
+  },
+  dial: (x, c, cts) => {
+    const [dx, dy] = cts[0], L = Math.hypot(dx, dy), ix = c + dx / L * 12, iy = c + dy / L * 7, R = rng(3);
+    const iris = wob(arcPts(ix, iy, 16, 16, 0, 2 * P, 20), true, 0.8, R); wash(x, iris, VC.verd, R); ink(x, iris, true, 2); spiral(x, ix, iy, 9, 1.7, R, 1.4); x.fillStyle = VC.ink; x.beginPath(); x.arc(ix + 1, iy, 4, 0, 2 * P); x.fill();
+  },
+  // The target's brackets: four claw strokes in bone, the same strokes every frame (one seed)
+  bracket: (x, bx, by, bw, bh) => { const Rr = rng(11); for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) ink(x, wob([[px + sx * 44, py + sy * 2], [px, py], [px + sx * 3, py + sy * 44]], false, 1.4, Rr), false, 3.4, VC.bone); },
+  // STOP lettered in the wheel's hub (the skins page's helm)
+  helmCentre: (x, c) => { x.save(); x.fillStyle = VC.ink; x.font = '400 17px "Permanent Marker"'; x.textAlign = 'center'; x.fillText('Stop', c, c + 6); x.restore(); },
+};
+
+// ---- The battle console's own pieces ------------------------------------------------------------------------------
+// The console draws its square keys, wide keys, allocation cells and title tickets from kit pieces (rendered in the
+// modelled skins); the Syndicate's are drawn here by the same hand as the rest of its kit. A key is a square tag with an
+// eyelet in its upper left corner; its state is the wash inside the ink, the same strokes in every state (one seed per
+// piece), so lighting a key changes only its colour: dark wine at rest, pale verdigris on hover, old-coin verdigris engaged
+// and whole, gold damaged, blood down, near black off.
+const STATE = { idle: '#3a1a12', hover: CC.sky, on: CC.accord, ok: CC.accord, warn: CC.caution, alert: CC.alert, off: '#1e0d09' };
+function squareTag(X, Y, W, H) { return [[X + 9, Y + 2], [X + W - 4, Y + 3], [X + W - 2, Y + H - 6], [X + W - 7, Y + H - 2], [X + 3, Y + H - 3], [X + 2, Y + 10]]; }
+function keyPaint(state) {
+  return (x, w, h) => {
+    const R = rng(hash('vos.key')), pts = wob(squareTag(1, 1, w - 2, h - 2), true, 0.7, R, 2), dark = state === 'idle' || state === 'off';
+    wash(x, pts, STATE[state], R, dark ? 'rgba(0,0,0,0.25)' : 'rgba(42,20,16,0.18)', dark ? 'rgba(255,200,160,0.05)' : 'rgba(255,248,220,0.2)');
+    hatch(x, pts, R, 0.62, 3.4, dark ? 'rgba(0,0,0,0.45)' : 'rgba(42,20,16,0.4)'); if (!dark) dry(x, pts, R);
+    ink(x, pts, true, 2, state === 'off' ? '#5a3a2a' : dark ? VC.brass : VC.ink);
+    x.fillStyle = VC.wine; x.beginPath(); x.arc(8, 8, 2.4, 0, 2 * P); x.fill();
+  };
+}
+// The wide key: the claw tag of the kit's buttons in the key's light.
+function keywPaint(state) { return (x, w, h) => { const R = rng(hash('vos.keyw')), pts = wob(clawTag(1, 1, w - 2, h - 2), true, 1.0, R); const dark = state === 'idle' || state === 'off';
+  wash(x, pts, STATE[state], R, dark ? 'rgba(0,0,0,0.25)' : 'rgba(42,20,16,0.18)', dark ? 'rgba(255,200,160,0.05)' : 'rgba(255,248,220,0.2)'); hatch(x, pts, R, 0.45); if (!dark) dry(x, pts, R);
+  ink(x, pts, true, 2.2, state === 'off' ? '#5a3a2a' : dark ? VC.brass : VC.ink); x.fillStyle = VC.wine; x.beginPath(); x.arc(12, h / 2, 4, 0, 2 * P); x.fill(); }; }
+// An allocation cell: a daub of paint inside an inked box, one per energy point; an empty one inked in faded brass so it
+// shows on the dark wash.
+function cellPaint(col, locked) {
+  return (x, w, h) => { const R = rng(hash('vos.cell')), pts = wob(rrPts(2, 2, w - 4, h - 4, 5), true, 0.6, R, 2);
+    if (locked) { hatch(x, pts, R, 0, 3, 'rgba(207,174,140,0.45)'); ink(x, pts, true, 1.6, '#7a5040'); return; }
+    wash(x, pts, col, R, 'rgba(0,0,0,0.22)', 'rgba(255,240,210,0.16)'); ink(x, pts, true, 1.8, lum(col) < 0.1 ? '#9a7450' : VC.ink); };
+}
+// The title ticket: a dark wine ticket torn at both ends, inked in brass, its title in brass over it.
+function ticket(x, w, h) {
+  const R = rng(hash('vos.ticket')), top = [], bot = [];
+  for (let i = 0; i <= 10; i++) { top.push([10 + i * (w - 20) / 10, 1.5 + R() * 1.2]); bot.push([w - 10 - i * (w - 20) / 10, h - 1.5 - R() * 1.2]); }
+  const pts = wob([...top, [w - 2, h * 0.3], [w - 8, h * 0.5], [w - 2, h * 0.72], ...bot, [2, h * 0.72], [8, h * 0.5], [2, h * 0.3]], true, 0.5, R, 3);
+  wash(x, pts, '#2a120c', R, 'rgba(0,0,0,0.3)', 'rgba(255,200,160,0.05)'); ink(x, pts, true, 1.6, VC.brass);
+}
+// The ground behind the column: patched sailcloth, stained dark, its patches stitched on in ink, a crew's spiral painted
+// faint in one corner (CLAUDE.md section 7: the column has a painted ground of its own, never the black of a flat skin).
+function sailcloth(x, w, h) {
+  const R = rng(hash('vos.backing'));
+  const all = [[0, 0], [w, 0], [w, h], [0, h]]; wash(x, all, '#1c0c08', R, 'rgba(0,0,0,0.35)', 'rgba(255,190,150,0.05)');
+  // patches laid in a loose grid, each its own rough quad and wash, stitched round
+  for (let j = 0; j < 7; j++) for (let i = 0; i < 2; i++) {
+    if (R() < 0.35) continue;
+    const pw = 150 + R() * 110, ph = 110 + R() * 90, px = i * 240 + R() * 60 - 20, py = j * 160 + R() * 50 - 20;
+    const q = wob([[px, py + R() * 8], [px + pw, py + R() * 8], [px + pw - R() * 8, py + ph], [px + R() * 8, py + ph]], true, 1.6, R, 4);
+    wash(x, q, ['#2c140c', '#24100c', '#301810', '#1e0e0a'][Math.floor(R() * 4)], R, 'rgba(0,0,0,0.3)', 'rgba(255,190,150,0.05)');
+    x.save(); x.setLineDash([5, 4]); trace(x, q, true); x.strokeStyle = 'rgba(214,160,67,0.35)'; x.lineWidth = 1.2; x.stroke(); x.restore();
+  }
+  hatch(x, all, R, 0.8, 6, 'rgba(0,0,0,0.35)');
+  x.save(); x.globalAlpha = 0.18; spiral(x, w - 70, h - 90, 46, 3, R, 4, VC.brass); x.restore();
+}
+
+// ---- The kit ------------------------------------------------------------------------------------------------------
+// Every piece drawn from its own seed ('vos.<piece>'), with the skins page's painters for the pieces both pages draw.
+const kit = {}, hero = {}, heroSize = {}, cells = {};
+const seeded = (id, draw) => (x, w, h) => draw(x, w, h, rng(hash('vos.' + id)));
+for (const [id, k] of Object.entries(vosKit)) kit[id] = { size: k.size, m: k.m, inset: k.inset || [3, 3], draw: seeded(id, k.draw) };
+for (const [id, d] of Object.entries(vosHero)) hero[id] = seeded(id, d);
+for (const s of Object.keys(STATE)) { hero['key.' + s] = keyPaint(s); heroSize['key.' + s] = [48, 48]; kit['keyw.' + s] = { size: [144, 48], m: [0, 40, 0, 26], draw: keywPaint(s) }; }
+hero['console.backing'] = sailcloth; heroSize['console.backing'] = [480, 1080];
+Object.assign(cells, {
+  'cell.idle': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint('#3a1a12') }, 'cell.lit': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(CC.sky) },
+  'cell.warn': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(CC.alert) }, 'cell.accord': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(CC.accord) },
+  'cell.locked': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(null, true) },
+  'bar.fill.accord': { size: [64, 10], m: [0, 10, 0, 6], draw: seeded('bar.fill.accord', (x, w, h, R) => vosStroke(x, w, h, R, CC.accord)) },
+  'plate.title': { size: [140, 24], m: [0, 18, 0, 18], draw: ticket },
+});
+// The crew's mark wherever the console draws one (a portrait, the holder of a ship): the crest, r its radius.
+function emblem(G, cx, cy, r) { G.save(); G.translate(cx - r, cy - r); G.scale(2 * r / 96, 2 * r / 96); hero.crest(G, 96, 96); G.restore(); }
+// Drawn keys and knobs (the slider handles, the expand key): a lopsided rounded box, its corners cut unevenly by hand, and
+// a knob a little out of round. Fixed per size, so nothing wobbles from frame to frame.
+function rr(G, X, Y, W, H, r) { G.beginPath(); if (!(W > 0 && H > 0)) { G.rect(X, Y, W, H); return; } const q = Math.min(Array.isArray(r) ? Math.max(...r) : (+r || 0), W / 2, H / 2); G.roundRect(X, Y, W, H, [q * 1.0, q * 0.55, q * 1.0, q * 0.7]); }
+function knob(G, cx, cy, r) { G.beginPath(); G.ellipse(cx, cy, r * 1.04, r * 0.94, -0.3, 0, 2 * P); }
+
+const api = {
+  id: 'vos', name: 'Vos Syndicate', VC, CC, kit, hero, heroSize, cells, barCells: null, live, icon, ICON_NAMES, emblem, ink: inkOn, keyInk, font, fonts, load: () => Promise.resolve(), hexA, rr, knob,
+  family: '"Patrick Hand", cursive',
+  // The content inside a panel: inside the frame's wine field (its inked edge 21 px in), with the corner spirals clear.
+  pad: [30, 26, 26, 26],
+  // The name plate's live field: the bone scroll between its curled ends (60-400), clear of the Fleet key at 370.
+  plate: { x: 60, y: 36, max: 300, font: '400 17px "Permanent Marker"', col: VC.ink },
+  // The battle's helm ring under the ship, in verdigris.
+  ring: ['rgba(63,183,163,0)', 'rgba(63,183,163,0.14)', 'rgba(140,230,210,0.9)'],
+  // Names for the player's side where the page shows it as the Syndicate: ships named as a crew names its luck and its
+  // debts, captains called Mother and Father by their crews (the scenario's own Vos raider is Mother Skeel). Placeholders
+  // until the owner sets the Syndicate's culture (CLAUDE.md section 1; openspec/changes/vos-battle-console, open question V1).
+  player: { faction: 'Vos Syndicate', call: 'Captain', trim: 0xe3a33a, hull: 0xb39a6e,
+    ships: { resolute: ['Grinning Debt', 'Mother Ysa'], tallis: ['Lucky Rake', 'Bosun Tibb'], meridian: ['Second Helping', 'Father Crane'] },
+    ranks: ['Deckhand', 'Bosun', 'Mate', 'Quartermaster'],
+    officers: { o1: 'Mags Orrow', o2: 'Tibb Calloran', o3: 'Nell Sparrowgate', o4: 'Dace Hollin', o5: 'Brannoc Wey', o6: 'Lise Merrow', o7: 'Oskar Tallow',
+      o8: 'Pim Rattray', o9: 'Hesk Dunmore', o10: 'Ivo Scarrow', o11: 'Rena Gallick', o12: 'Wyn Boddle', o13: 'Corra Fenwick' } },
+  link: VC.brassHi,
+  // Labels centred on the tags, clear of the eyelet on the left and the claw on the right (the kit's 9-slice caps).
+  keyCenter: true,
+  // A hover name on the brass tag lit, in ink.
+  tip: ['button.hover', 'hover'],
+  // Icon tabs (the station and ship rails) on the square tag key, the icon inside the ink.
+  iconKeys: true,
+  // Panel tab icons at rest in bone, apart from the functional icons' verdigris; glyphs on a dark tag in brass.
+  tabIcon: VC.bone, glyphOnDark: VC.brassHi, mark: { hover: VC.brassHi, ready: CC.accord, count: VC.bone },
+  // The strips (strip.top and strip.bottom, 72 px planks) at their full height; their content, laid out for 56 px, moved
+  // down into the plank's open band.
+  stripTop: { h: 72, dy: 8 }, stripBottom: { h: 72, dy: 8 },
+  // the skins page's painters and helpers (docs/mockups/console-skins.html takes these, one copy)
+  painters: { kit: vosKit, hero: vosHero }, draw: { vos, noise1, wob, arcPts, rrPts, trace, ink, wash, hatch, dry, spiral, body, clawTag },
+};
+window.FCSkins = window.FCSkins || {}; window.FCSkins.vos = api;
+return api;
+})();
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/lib/kethran.js -->
+<script data-src="docs/mockups/lib/kethran.js">
+// Fleet Command mockups: the Kethran Hegemony skin (openspec/changes/console-skins/design.md, "Kethran Hegemony: modelled
+// in Blender"; openspec/changes/kethran-battle-console), shared by the console skins page (docs/mockups/console-skins.html,
+// whose Kethran entry takes its icons and live readouts from here) and the battle console, where it is the skin of the
+// Kethran ship you command (docs/mockups/battle-console-kethran.html, written from battle-console.html by
+// tools/mockups/skin_page.py). One implementation of the Hegemony's look (CLAUDE.md section 6.1): its palette, its icons,
+// its live readouts and, for the battle console, its kit loaded from the Blender render (assets/ui/kethran/manifest.json,
+// tools/blender/build_ui_kethran.py) with the few pieces only the console draws composed here from that render: the square
+// key is the helm pad's own rendered keycap in its socket, the wide key the rendered button, each lit by state; the
+// allocation cells, the title placard and the gunmetal backing plate behind the column are drawn in the kit's language.
+// It exposes the same fields as docs/mockups/lib/concord.js and lib/kelvane.js, so the battle console swaps one for another
+// and changes no rule and no layout. Needs docs/mockups/lib/kitdraw.js inlined first. Our own design: no other game's
+// names, shapes, glyphs or art.
+//
+// Where it comes from (design.md; owner, 2026-10-30: "build the other design language using 3d models in blender like
+// starcraft", "buttons should be more plain"): an empire of rank and conquest, whose machines are proud of their mass
+// (the provisional account, survey U7). Armoured gunmetal plates bolted in layers, plain trapezoid wedge keycaps, ember
+// lenses, red rank stripes. Nothing here comes from what the Kethran look like (CLAUDE.md section 1).
+window.FCKethran = (function () {
+'use strict';
+const { rng, hash, paint, P } = window.FCDraw;
+// The palette and what it stands for (design.md): iron, the empire's material and patience (gunmetal); mass and rank
+// (iron); old wars (oxide); blood and command (signal red); the foundry's fire (ember); trophies of the defeated (bone).
+const KC = { gun: '#2b2f33', iron: '#4a4f55', steel: '#8a9096', oxide: '#9e2a1e', red: '#d9483b', ember: '#ffb547', bone: '#d8cfbf', glass: '#121417' };
+function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+function poly(x, pts) { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts.slice(1)) x.lineTo(p[0], p[1]); x.closePath(); }
+// Relative luminance of a #rrggbb colour (WCAG), for picking the ink that reads on a fill.
+function lum(hex) {
+  if (typeof hex !== 'string' || hex[0] !== '#' || hex.length < 7) return 0;
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
+
+// ---- The battle console's colour roles -------------------------------------------------------------------------
+// The same role names as the Concord's (lib/concord.js), so the page's rules pick a role, never a colour. Readouts burn
+// ember on the dark glass and over the battle (Sky), the foundry's deeper fire marks whole and engaged (Accord), a hot
+// orange damaged (Caution), signal red down and alarms (Alert); labels in the worn tan of stencilled paint (Lilac), prose
+// and titles in bone; a key at rest is plain steel (Signal). The shields' ramp is the skins page's: ember, orange, red.
+const CC = {
+  deep: '#24272b', signal: '#4a4f55', sky: '#ffc46a', accord: '#ffa83a', lilac: '#a99a86', caution: '#ff7a2a', alert: '#ff3b2e', text: KC.bone,
+  ink: '#1a0d05', inkDis: '#5a5048', night: '#15171a', ghost: '#5a5f66', void: '#0d0e10', slate: '#33373c', mute: '#26282b', ver: '#8a8478',
+  char: '#3a0b09', plate: '#15171a', bg: '#0b0c0d', title: KC.bone,
+};
+// The ink that reads on a fill: dark on the lit colours, bone stencil on steel and glass.
+const ink = (fill) => (lum(fill) > 0.2 ? CC.ink : KC.bone);
+// Ink on the rendered keycaps and tabs: bone stencil on the plain steel cap at rest and on hover, ember on the pressed cap
+// sunk into its socket; ember on the chosen tab beside its lit lamp, worn tan on a tab at rest.
+const keyInk = { idle: KC.bone, hover: KC.bone, pressed: KC.ember, tabOn: KC.ember, tabOff: '#a99a86' };
+// Type: "Saira Stencil One" for headings, as the skins page's keys and titles, and "Saira Condensed" for the name plate and
+// everything else (the skin's pair). The page asks for Antonio sizes. Saira Condensed runs 1.04 times as wide at the same
+// size (measured on the console's own labels, 2026-11-07), so it is set at the size asked; weight 700 at 22 px and up is
+// a heading: Saira Stencil One, 1.43 times as wide, at 0.78 of the size; rule T (the keys' and tabs' fit) shrinks what
+// still runs long.
+function font(spec) {
+  const m = /^(\d+) ([\d.]+)px Antonio$/.exec(spec); if (!m) return spec;
+  const w = +m[1], s = +m[2];
+  if (w >= 700 && s >= 22) return `400 ${Math.round(s * 0.78 * 10) / 10}px "Saira Stencil One"`;
+  return `${w >= 700 ? 700 : 600} ${s}px "Saira Condensed"`;
+}
+const fonts = ['400 20px "Saira Stencil One"', '600 20px "Saira Condensed"', '700 20px "Saira Condensed"'];
+
+// ---- Icons: one subject list for every skin (docs/design/icon-guide.html) ---------------------------------------
+// Each a picture of the job in the Hegemony's hand: solid wedges, chevrons and blades, every corner cut, nothing round
+// (from the prow: design.md). Solid for the thing, thinner bars for what it gives off; one ink, lit ember behind a lens
+// when bright; on a 48 x 48 grid with 4 px clear, read at 20 px and 48 px.
+function icon(name, col = CC.sky) {
+  return paint(48, 48, (x) => {
+    const bright = lum(col) > 0.2;
+    x.fillStyle = col; x.strokeStyle = col; x.lineJoin = 'miter'; x.lineCap = 'butt'; x.lineWidth = 3;
+    if (bright) { x.shadowColor = hexA(col, 0.7); x.shadowBlur = 4; }
+    const F = (pts) => { poly(x, pts); x.fill(); };
+    const S = (pts, closed = false, lw = 3) => { x.lineWidth = lw; x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (const p of pts.slice(1)) x.lineTo(p[0], p[1]); if (closed) x.closePath(); x.stroke(); };
+    const ngon = (cx, cy, r, n, a0 = -P / 2) => Array.from({ length: n }, (_, i) => [cx + Math.cos(a0 + i * 2 * P / n) * r, cy + Math.sin(a0 + i * 2 * P / n) * r]);
+    const cut = (fn) => { const sb = x.shadowBlur; x.shadowBlur = 0; x.globalCompositeOperation = 'destination-out'; fn(); x.globalCompositeOperation = 'source-over'; x.shadowBlur = sb; };
+    ({
+      // the helm: an eight-sided wheel of plate, a wedge needle on the heading
+      helm: () => { S(ngon(24, 24, 18, 8, -P / 2 + P / 8), true, 3.6); F([[24, 6], [30, 26], [24, 22], [18, 26]]); F(ngon(24, 28, 4, 4)); },
+      // power: a bolt cut from plate in a hexagon
+      power: () => { S(ngon(24, 24, 20, 6), true, 2.8); F([[28, 6], [15, 26], [23, 26], [19, 42], [33, 20], [25, 20]]); },
+      // tactical: a turret on a stepped base, its barrel out to the upper right
+      tactical: () => { F([[5, 44], [43, 44], [39, 37], [9, 37]]); F([[11, 36], [37, 36], [33, 26], [15, 26]]); F([[24, 30], [40, 10], [44, 13], [28, 33]]); },
+      // point defence: a chamfered shield with a ranging cross
+      pd: () => { S([[8, 6], [40, 6], [40, 26], [24, 43], [8, 26]], true, 3); F([[22, 13], [26, 13], [26, 31], [22, 31]]); F([[15, 20], [33, 20], [33, 24], [15, 24]]); },
+      // science: a scanning wedge over a cut lens
+      science: () => { F([[24, 4], [44, 40], [4, 40]]); cut(() => F([[24, 16], [34, 34], [14, 34]])); F([[24, 24], [28, 31], [20, 31]]); },
+      // comms: an emitter mast, three bars going out
+      comms: () => { F([[4, 20], [14, 20], [14, 28], [4, 28]]); F([[18, 14], [26, 10], [26, 38], [18, 34]]); F([[30, 6], [44, 2], [44, 46], [30, 42]]); },
+      // repair: a spanner cut from plate, its jaw open up and left
+      repair: () => { F([[6, 6], [26, 6], [30, 14], [22, 20], [42, 40], [36, 46], [16, 26], [10, 30], [4, 20]]); },
+      // transport: a figure in three bars, the lower dissolving
+      transport: () => { F(ngon(24, 9, 5, 6)); F([[16, 29], [19, 17], [29, 17], [32, 29]]); for (const [y, w] of [[33, 9], [38, 6.5], [43, 4]]) F([[24 - w, y], [24 + w, y], [24 + w - 1.5, y + 2.6], [24 - w + 1.5, y + 2.6]]); },
+      // fleet: three wedges in formation, the lead ahead
+      fleet: () => { const sh = (cx, cy, k) => F([[cx, cy - 10 * k], [cx + 7 * k, cy + 8 * k], [cx, cy + 4 * k], [cx - 7 * k, cy + 8 * k]]); sh(24, 13, 1); sh(11, 33, 0.9); sh(37, 33, 0.9); },
+      // the ship from above: an armoured wedge with a forward prow and swept blades
+      ship: () => { F([[24, 3], [31, 20], [42, 38], [30, 34], [24, 45], [18, 34], [6, 38], [17, 20]]); },
+      // shields: six plates round a hull
+      shields: () => { for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3, c = Math.cos(a), s = Math.sin(a), q = Math.cos(a + 0.42), r = Math.sin(a + 0.42), u = Math.cos(a - 0.42), v = Math.sin(a - 0.42);
+        F([[24 + u * 16, 24 + v * 16], [24 + q * 16, 24 + r * 16], [24 + q * 21, 24 + r * 21], [24 + c * 22, 24 + s * 22], [24 + u * 21, 24 + v * 21]]); } F([[24, 16], [29, 28], [24, 32], [19, 28]]); },
+      // sensors: an octagonal scope, a sweep and two contacts
+      sensors: () => { S(ngon(24, 24, 19, 8, -P / 2 + P / 8), true, 2.8); S([[24, 24], [37, 11]], false, 2.8); F(ngon(31, 31, 3.4, 4)); F(ngon(14, 17, 3.4, 4)); },
+      // tractor: two jaws closing on a held block
+      tractor: () => { F([[4, 8], [20, 24], [4, 40], [10, 24]]); F([[44, 8], [28, 24], [44, 40], [38, 24]]); F([[20, 21], [28, 21], [28, 27], [20, 27]]); },
+      // craft: a small swept blade
+      craft: () => { F([[24, 4], [29, 22], [44, 32], [28, 31], [24, 44], [20, 31], [4, 32], [19, 22]]); },
+      // weapons: a blade of fire from an emitter to a strike
+      weapons: () => { F([[5, 37], [12, 37], [12, 44], [5, 44]]); F([[11, 34], [31, 14], [34, 17], [14, 37]]); F([[36, 4], [38, 11], [44, 12], [39, 16], [41, 23], [35, 18], [29, 22], [31, 15], [26, 11], [33, 10]]); },
+      // warp: a chevron trailing speed bars
+      warp: () => { F([[20, 8], [28, 8], [42, 24], [28, 40], [20, 40], [34, 24]]); for (const [y, w] of [[15, 12], [23, 16], [31, 12]]) F([[4, y], [4 + w, y], [4 + w, y + 3], [4, y + 3]]); },
+      // engines: a cut nozzle, the exhaust in wedges
+      engines: () => { F([[12, 4], [36, 4], [40, 20], [8, 20]]); F([[14, 25], [34, 25], [30, 30], [18, 30]]); F([[18, 34], [30, 34], [27, 39], [21, 39]]); F([[21, 42], [27, 42], [24, 46]]); },
+      // reactor: a core of plate in two crossed rings
+      reactor: () => { F(ngon(24, 24, 6.5, 6)); x.lineWidth = 2.6; for (const r of [P / 4, -P / 4]) { x.beginPath(); x.ellipse(24, 24, 19, 8, r, 0, 2 * P); x.stroke(); } },
+      // map: a course of wedges to a mark
+      map: () => { for (const [px, py] of [[8, 41], [12, 33], [14, 25], [20, 19]]) F(ngon(px, py, 3, 4)); F([[28, 5], [32, 5], [35, 9], [38, 5], [42, 5], [37, 12], [42, 19], [38, 19], [35, 15], [32, 19], [28, 19], [33, 12]]); },
+      pause: () => { F([[13, 9], [21, 9], [21, 39], [13, 39]]); F([[27, 9], [35, 9], [35, 39], [27, 39]]); },
+      menu: () => { for (const y of [10, 21, 32]) F([[8, y], [40, y], [37, y + 6], [11, y + 6]]); },
+      // fire: four cut brackets closing on a solid wedge
+      fire: () => { for (const [a, b, c] of [[[7, 18], [7, 7], [18, 7]], [[30, 7], [41, 7], [41, 18]], [[41, 30], [41, 41], [30, 41]], [[18, 41], [7, 41], [7, 30]]]) S([a, b, c], false, 3.6); F(ngon(24, 24, 6, 4)); },
+      cargo: () => { for (const [cx, cy] of [[15, 15], [33, 15], [15, 33], [33, 33]]) S([[cx - 7, cy - 5], [cx - 5, cy - 7], [cx + 7, cy - 7], [cx + 7, cy + 5], [cx + 5, cy + 7], [cx - 7, cy + 7]], true, 2.8); },
+      // settings: an eight-toothed cog of plate with a square bore
+      settings: () => { const o = []; for (let i = 0; i < 16; i++) { const a = P / 16 + i * P / 8, r = i % 2 ? 14 : 20; o.push([24 + Math.cos(a) * r, 24 + Math.sin(a) * r]); } F(o); cut(() => F([[19, 19], [29, 19], [29, 29], [19, 29]])); },
+    })[name]();
+  });
+}
+const ICON_NAMES = ['helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'warp', 'engines', 'reactor', 'map', 'pause', 'menu', 'fire', 'cargo', 'settings'];
+
+// ---- Live readouts (the console skins page and the battle console) ---------------------------------------------
+const live = {
+  arrow: (x) => { x.fillStyle = KC.bone; x.shadowColor = '#000'; x.shadowBlur = 3; x.beginPath(); x.moveTo(11, 0); x.lineTo(-6, -10); x.lineTo(-2, 0); x.lineTo(-6, 10); x.closePath(); x.fill(); x.shadowBlur = 0; },
+  ssd: (x, cx, cy, sh, col) => {
+    x.save(); x.shadowColor = KC.ember; x.shadowBlur = 6;
+    for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.fillStyle = col(sh[i]); x.save(); x.translate(cx, cy); x.rotate(a); x.beginPath(); x.moveTo(96, -40); x.lineTo(110, -46); x.lineTo(110, 46); x.lineTo(96, 40); x.closePath(); x.fill(); x.restore(); }
+    x.strokeStyle = KC.ember; x.lineWidth = 2.5; x.beginPath(); x.moveTo(cx, cy - 74); x.lineTo(cx + 42, cy + 40); x.lineTo(cx + 18, cy + 30); x.lineTo(cx, cy + 66); x.lineTo(cx - 18, cy + 30); x.lineTo(cx - 42, cy + 40); x.closePath(); x.stroke();
+    x.beginPath(); x.moveTo(cx, cy - 40); x.lineTo(cx, cy + 40); x.moveTo(cx - 20, cy); x.lineTo(cx + 20, cy); x.stroke();
+    x.fillStyle = KC.red; for (const [mx, my] of [[cx, cy - 60], [cx - 30, cy + 26], [cx + 30, cy + 26]]) { x.beginPath(); x.moveTo(mx, my - 7); x.lineTo(mx + 6, my + 5); x.lineTo(mx - 6, my + 5); x.closePath(); x.fill(); }
+    x.restore();
+  },
+  dial: (x, c, cts) => {
+    x.save(); x.strokeStyle = KC.ember; x.lineWidth = 3; x.shadowColor = KC.ember; x.shadowBlur = 6; x.beginPath(); x.moveTo(c, c); x.lineTo(c + 24, c - 14); x.stroke();
+    for (const [dx, dy] of cts) { const px = c + dx * 24, py = c + dy * 24; x.fillStyle = KC.red; x.beginPath(); x.moveTo(px, py - 5); x.lineTo(px + 5, py + 4); x.lineTo(px - 5, py + 4); x.fill(); }
+    x.restore();
+  },
+  // The target's brackets: ember corner plates, stepped like the frame's own corners.
+  bracket: (x, bx, by, bw, bh) => { x.save(); x.fillStyle = KC.ember; x.shadowColor = KC.ember; x.shadowBlur = 10; for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) { x.beginPath(); x.moveTo(px, py); x.lineTo(px + sx * 46, py); x.lineTo(px + sx * 30, py + sy * 10); x.lineTo(px + sx * 10, py + sy * 10); x.lineTo(px + sx * 10, py + sy * 30); x.lineTo(px, py + sy * 46); x.closePath(); x.fill(); } x.restore(); },
+};
+
+// ---- The kit ------------------------------------------------------------------------------------------------------
+// Every piece of the skins page's kit is rendered in Blender (tools/blender/build_ui_kethran.py) and comes from the inlined
+// manifest; load() decodes them once. The battle console also draws square and wide keys, allocation cells, title
+// placards and a ground behind its column, which the render does not have, so they are composed here from the render
+// itself and drawn in its language:
+//  - key.*: the helm pad's top-left keycap in its black socket (helm.pad.png, 144 x 144 image px from (52, 84)), its plain
+//    steel cap lit by state through the cap's own shading: steel at rest, lighter steel on hover, ember engaged and whole,
+//    hot orange damaged, signal red down, dark steel off;
+//  - keyw.*: the rendered wedge key (button.idle, .hover, .pressed) and the idle key's cap lit the same way;
+//  - cell.*: a small wedge lens in a gunmetal bezel; plate.title: a gunmetal placard with a red rank stripe;
+//  - console.backing: a gunmetal plate, bolted, with seams, a conduit down each side and red and black hazard notches
+//    (CLAUDE.md section 7: no black behind a metallic skin's panels).
+const MANIFEST = 'assets/ui/kethran/manifest.json';
+const IMG = {}, kit = {}, hero = {}, heroSize = {}, cells = {};
+// the keycap's face, in the 144 x 144 crop (image px), and in the 160 x 56 wedge key (reference px)
+const CAP = [[15, 17], [129, 17], [110, 123], [35, 123]], WCAP = [[11, 8], [149, 8], [140, 48], [19, 48]];
+const LIGHT = { on: CC.accord, ok: CC.accord, warn: CC.caution, alert: CC.alert };
+// Light a cap: its face filled with the lamp colour, the render's own shading laid back over it (soft light), a glow from
+// the cap's top edge; hover lightens the steel; off darkens it.
+function lightCap(x, face, state, drawSrc) {
+  x.save(); poly(x, face); x.clip();
+  if (LIGHT[state]) {
+    x.fillStyle = LIGHT[state]; x.fill();
+    x.globalCompositeOperation = 'soft-light'; x.globalAlpha = 0.9; drawSrc(); x.globalAlpha = 1;
+    x.globalCompositeOperation = 'screen'; const ys = face.map((p) => p[1]), y0 = Math.min(...ys), y1 = Math.max(...ys), gr = x.createLinearGradient(0, y0, 0, y1);
+    gr.addColorStop(0, 'rgba(255,240,200,0.45)'); gr.addColorStop(0.35, 'rgba(255,200,120,0.08)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = gr; x.fill();
+  } else if (state === 'hover') { x.globalCompositeOperation = 'screen'; x.fillStyle = 'rgba(80,86,94,0.75)'; x.fill(); }
+  else if (state === 'off') { x.globalCompositeOperation = 'multiply'; x.fillStyle = '#5a5a5a'; x.fill(); }
+  x.restore();
+}
+function keyPaint(state) {
+  return (x, w, h) => {
+    const k = w / 144, src = () => x.drawImage(IMG['helm.pad'], 52, 84, 144, 144, 0, 0, w, h);
+    src(); lightCap(x, CAP.map(([a, b]) => [a * k, b * h / 144]), state, src);
+  };
+}
+function keywPaint(state) {
+  const piece = state === 'hover' ? 'button.hover' : state === 'off' ? 'button.pressed' : 'button.idle';
+  return (x, w, h) => { const src = () => x.drawImage(IMG[piece], 0, 0, w, h); src(); lightCap(x, WCAP.map(([a, b]) => [a * w / 160, b * h / 56]), state, src); };
+}
+// A cut-cornered gunmetal box (the bezel of a lens, a placard), lit from the top left.
+function plate(x, X, Y, W, H, c, top = '#4e535a', bot = '#2a2d31') {
+  const pts = [[X + c, Y], [X + W - c, Y], [X + W, Y + c], [X + W, Y + H - c], [X + W - c, Y + H], [X + c, Y + H], [X, Y + H - c], [X, Y + c]];
+  const g = x.createLinearGradient(0, Y, 0, Y + H); g.addColorStop(0, top); g.addColorStop(1, bot); poly(x, pts); x.fillStyle = g; x.fill();
+  x.strokeStyle = 'rgba(0,0,0,0.85)'; x.lineWidth = 1.2; x.stroke();
+  x.beginPath(); x.moveTo(X + 1, Y + H - c); x.lineTo(X + 1, Y + c); x.lineTo(X + c, Y + 1); x.lineTo(X + W - c, Y + 1); x.strokeStyle = 'rgba(200,210,220,0.35)'; x.lineWidth = 1; x.stroke();
+  return pts;
+}
+function cellPaint(col, locked) {
+  return (x, w, h) => {
+    plate(x, 0.5, 0.5, w - 1, h - 1, 5);
+    const lens = [[6, 5], [w - 6, 5], [w - 9, h - 5], [9, h - 5]];
+    poly(x, lens); x.fillStyle = locked ? '#0c0d0f' : col ? col : KC.glass; x.fill();
+    if (col && !locked) { x.save(); poly(x, lens); x.clip(); const g = x.createLinearGradient(0, 5, 0, h - 5); g.addColorStop(0, 'rgba(255,245,220,0.5)'); g.addColorStop(0.4, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,0.25)'); x.fillStyle = g; x.fillRect(0, 0, w, h); x.restore(); }
+    if (locked) { x.save(); poly(x, lens); x.clip(); x.strokeStyle = 'rgba(217,72,59,0.3)'; x.lineWidth = 2; for (let i = -h; i < w; i += 6) { x.beginPath(); x.moveTo(i, h); x.lineTo(i + h, 0); x.stroke(); } x.restore(); }
+    poly(x, lens); x.strokeStyle = 'rgba(0,0,0,0.9)'; x.lineWidth = 1.2; x.stroke();
+  };
+}
+// The title placard: a gunmetal plate with chamfered ends, a red rank stripe and a lit ember pip at its left end.
+function placard(x, w, h) {
+  plate(x, 0.5, 0.5, w - 1, h - 1, 6, '#3a3e44', '#1c1f22');
+  x.fillStyle = KC.red; poly(x, [[6, 3], [14, 3], [10, h - 3], [2, h - 3]]); x.fill();
+  x.fillStyle = KC.ember; x.shadowColor = KC.ember; x.shadowBlur = 4; x.fillRect(w - 10, h / 2 - 2, 4, 4); x.shadowBlur = 0;
+}
+// The ground behind the column: one gunmetal plate, its sheets bolted on in a stepped layout with seams, a conduit down each
+// side, hazard notches top and bottom, the grain from a seeded generator.
+function backing(x, w, h) {
+  const R = rng(hash('kethran.backing'));
+  const g = x.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#30343a'); g.addColorStop(1, '#1d2023'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  for (let i = 0; i < w * h / 40; i++) { x.fillStyle = R() < 0.5 ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.05)'; x.fillRect(R() * w, R() * h, 1.2, 1.2); }
+  // stepped sheets
+  let y = 0; while (y < h) { const sh = 140 + Math.floor(R() * 120); const inset = 18 + Math.floor(R() * 3) * 6;
+    plate(x, 10 + (R() < 0.5 ? 0 : 4), y + 6, w - 20 - inset, Math.min(sh, h - y) - 12, 14, '#373b41', '#24272b');
+    for (const [bx, by] of [[22, y + 18], [w - inset - 22, y + 18], [22, y + Math.min(sh, h - y) - 18], [w - inset - 22, y + Math.min(sh, h - y) - 18]]) {
+      x.fillStyle = '#121416'; x.beginPath(); x.arc(bx, by, 4.2, 0, 2 * P); x.fill(); x.fillStyle = '#6a7078'; x.beginPath(); x.arc(bx - 0.6, by - 0.6, 2.6, 0, 2 * P); x.fill(); }
+    y += sh; }
+  // conduits down the edges
+  for (const cx of [4, w - 12]) { const gg = x.createLinearGradient(cx, 0, cx + 8, 0); gg.addColorStop(0, '#15171a'); gg.addColorStop(0.5, '#4a4f55'); gg.addColorStop(1, '#15171a'); x.fillStyle = gg; x.fillRect(cx, 0, 8, h);
+    for (let yy = 30; yy < h; yy += 120) { x.fillStyle = '#2b2f33'; x.fillRect(cx - 2, yy, 12, 10); x.fillStyle = KC.oxide; x.fillRect(cx - 2, yy + 3, 12, 3); } }
+  // hazard notches, red and black (design.md)
+  for (const yy of [0, h - 14]) { x.save(); x.beginPath(); x.rect(40, yy, w - 80, 14); x.clip(); x.fillStyle = '#0d0e10'; x.fillRect(40, yy, w - 80, 14);
+    x.fillStyle = KC.oxide; for (let i = 30; i < w; i += 22) { poly(x, [[i, yy], [i + 10, yy], [i - 4, yy + 14], [i - 14, yy + 14]]); x.fill(); } x.restore(); }
+}
+let loading = null;
+function load() {
+  if (loading) return loading;
+  const n = document.querySelector(`script[data-src="${MANIFEST}"]`);
+  if (!n) return (loading = Promise.reject(new Error(`the Kethran kit (${MANIFEST}) is not inlined in this page`)));
+  const d = JSON.parse(n.textContent);
+  loading = Promise.all(Object.entries(d.pieces).map(([id, p]) => new Promise((ok, bad) => { const im = new Image(); im.onload = () => { IMG[id] = im; ok(); }; im.onerror = () => bad(new Error(`Kethran piece ${id} failed to decode`)); im.src = p.data; }))).then(() => {
+    for (const [id, p] of Object.entries(d.pieces)) {
+      const draw = (x, w, h) => x.drawImage(IMG[id], 0, 0, w, h);
+      if (p.kind === 'nine') kit[id] = { size: p.size, m: p.margins, inset: p.inset || [3, 3], draw };
+      else if (p.kind === 'hero') { hero[id] = draw; heroSize[id] = p.size; }
+    }
+    for (const s of ['idle', 'hover', 'on', 'ok', 'warn', 'alert', 'off']) {
+      hero['key.' + s] = keyPaint(s); heroSize['key.' + s] = [48, 48];
+      kit['keyw.' + s] = { size: [144, 48], m: [0, 24, 0, 24], draw: keywPaint(s) };
+    }
+    hero['console.backing'] = backing; heroSize['console.backing'] = [480, 1080];
+    // the bars keep the rendered ember fill (design.md: the Hegemony keeps the plain bar); whole is the same fire
+    kit['bar.fill.accord'] = kit['bar.fill'];
+    Object.assign(cells, { 'cell.idle': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(null) }, 'cell.lit': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(CC.sky) },
+      'cell.warn': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(CC.alert) }, 'cell.accord': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(CC.accord) },
+      'cell.locked': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(null, true) },
+      'plate.title': { size: [140, 24], m: [0, 18, 0, 18], draw: placard } });
+  });
+  return loading;
+}
+// The Hegemony's crest wherever the console draws one (a portrait, the holder of a ship): the rendered crest, r its radius.
+function emblem(G, cx, cy, r) { if (IMG.crest) G.drawImage(IMG.crest, cx - r, cy - r, 2 * r, 2 * r); }
+// Drawn keys and knobs (the slider handles, the expand key, the tug bar): every corner cut at 45 degrees, never round.
+function rr(G, X, Y, W, H, r) { G.beginPath(); if (!(W > 0 && H > 0)) { G.rect(X, Y, W, H); return; } const c = Math.min(Array.isArray(r) ? Math.max(...r) : (+r || 0), W / 2, H / 2) * 0.7;
+  G.moveTo(X + c, Y); G.lineTo(X + W - c, Y); G.lineTo(X + W, Y + c); G.lineTo(X + W, Y + H - c); G.lineTo(X + W - c, Y + H); G.lineTo(X + c, Y + H); G.lineTo(X, Y + H - c); G.lineTo(X, Y + c); G.closePath(); }
+function knob(G, cx, cy, r) { G.beginPath(); for (let i = 0; i < 8; i++) { const a = P / 8 + i * P / 4; G.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); } G.closePath(); }
+
+const api = {
+  id: 'kethran', name: 'Kethran Hegemony', KC, CC, kit, hero, heroSize, cells, barCells: null, live, icon, ICON_NAMES, emblem, ink, keyInk, font, fonts, load, hexA, rr, knob,
+  family: '"Saira Condensed", sans-serif',
+  // The content inside a panel: clear of the bolted bezel, 4 px into the recessed glass (frame.panel's well, 22 px in).
+  pad: [28, 26, 26, 26],
+  // The name plate's live field: the dark window between the chevron block and the bolt box (84-421 x 10-46), clear of the
+  // Fleet key at 370.
+  plate: { x: 100, y: 36, max: 262, font: '700 18px "Saira Condensed"', col: KC.bone },
+  // The battle's helm ring under the ship, in ember.
+  ring: ['rgba(255,181,71,0)', 'rgba(255,181,71,0.14)', 'rgba(255,210,140,0.9)'],
+  // Names for the player's side where the page shows it as the Hegemony: ships named as verdicts and deeds, captains by
+  // their rank (the scenario's own Kethran are Warlords and Blades). Placeholders until the owner sets the Hegemony's
+  // culture (CLAUDE.md section 1; openspec/changes/kethran-battle-console, open question H1).
+  player: { faction: 'Kethran Hegemony', call: 'Warlord', trim: 0xd9483b, hull: 0x8c6a64,
+    ships: { resolute: ['Iron Verdict', 'Warlord Haddan'], tallis: ['Sentence', 'Commander Ruhl'], meridian: ['Unbowed', 'Warlord Kessa'] },
+    ranks: ['Blade', 'Spear', 'Commander', 'Warlord'],
+    officers: { o1: 'Garan Dov', o2: 'Ruhl Askeran', o3: 'Mesk Tavor', o4: 'Ira Kosk', o5: 'Dendar Vul', o6: 'Saska Oren', o7: 'Torvek Han',
+      o8: 'Brenna Kol', o9: 'Hask Ardun', o10: 'Velka Drom', o11: 'Orsk Malen', o12: 'Tamar Gesh', o13: 'Kaddo Ren' } },
+  link: KC.ember,
+  // Labels centred on the wedge keycap's plain face (between its slanted sides, 22 px in from each end at 56 px) and on
+  // a tab clear of its lamp at the left (18 px) and its cut corner at the right (10 px).
+  keyCenter: true, keyField: [22, 22], tabField: [18, 10],
+  // A hover name on the pressed key, in ember (the console's default).
+  // Icon tabs (the station and ship rails) on the square keycap, the icon on its face.
+  iconKeys: true,
+  // Panel tab icons at rest in bone, apart from the functional icons' ember; glyphs on a steel cap in bone.
+  tabIcon: KC.bone, glyphOnDark: KC.bone, mark: { hover: '#ffd89a', ready: CC.accord, count: KC.bone },
+  // The strips (strip.top and strip.bottom, 72 px rendered) at their full height; the content, laid out for 56 px, moved
+  // down into the channel between the conduit rail and the lip (rows 17-59 of the top, 16-58 of the bottom).
+  stripTop: { h: 72, dy: 10 }, stripBottom: { h: 72, dy: 9 },
+  // A panel title's baseline 2 px higher, centred on the placard.
+  titleDy: 2,
+};
+window.FCSkins = window.FCSkins || {}; window.FCSkins.kethran = api;
+return api;
+})();
+</script>
+<!-- /INLINE -->
+<script>
+(function () {
+'use strict';
+// ---------------------------------------------------------------------------------------------------------------
+// The kit (openspec/changes/console-skins/design.md). Sizes are at the 1920 x 1080 reference; images are made at 2x.
+// ---------------------------------------------------------------------------------------------------------------
+const NINE = ['frame.panel', 'frame.inset', 'bar.track', 'bar.fill', 'bar.fill.red', 'button.idle', 'button.hover', 'button.pressed',
+  'tab.idle', 'tab.active', 'strip.top', 'strip.bottom', 'divider'];
+const HERO = { 'nameplate': [460, 56], 'helm.pad': [300, 300], 'ssd.bezel': [460, 300], 'dial': [120, 120],
+  'lamp.alert.green': [64, 64], 'lamp.alert.yellow': [64, 64], 'lamp.alert.red': [64, 64], 'crest': [96, 96] };
+const ICONS = ['helm', 'fire', 'shields', 'tractor', 'transport', 'science', 'comms', 'repair', 'map', 'settings'];
+// Symbol bars (owner, 2026-10-31: "have different repeated symbols for them. Please use that instead of the same boring
+// progress bar"): a skin may supply all three cells, and its bars become a row of its own symbol in the track's groove,
+// unlit (off) or lit (on, or warn on a warning bar), lit from the left by whole cells. A skin with none keeps the fill.
+const CELLS = ['bar.cell.off', 'bar.cell.on', 'bar.cell.warn'];
+const KIT_ROWS = [
+  ['frame.panel', '9-slice', 'any, min 96 x 96', 'every console panel, port panels, sheets'],
+  ['frame.inset', '9-slice', 'any, min 48 x 48', 'readout wells, lists'],
+  ['bar.track', '9-slice', 'any width x 16', 'hull, capacitor, speed, power'],
+  ['bar.fill', '9-slice, 2 states', 'any width x 10', 'the bars\' fills, normal and warning'],
+  ['button', '9-slice, 3 states', 'any width x 48', 'every key: idle, hover, pressed'],
+  ['tab', '9-slice, 2 states', 'any width x 40', 'tab rows, arming states'],
+  ['strip.top', '9-slice', 'full width x 72', 'the top strip'],
+  ['strip.bottom', '9-slice', 'full width x 72', 'the bottom strip'],
+  ['divider', '9-slice', 'any x 10', 'between stacked parts of a panel'],
+  ['nameplate', 'hero', '460 x 56', 'the captain\'s plate'],
+  ['helm.pad', 'hero', '300 x 300', 'the helm\'s eight directions and stop'],
+  ['ssd.bezel', 'hero', '460 x 300', 'the ship systems display'],
+  ['dial', 'hero', '120 x 120', 'radar and gauges'],
+  ['lamp.alert', 'hero, 3 states', '64 x 64', 'condition green, yellow, red'],
+  ['crest', 'hero', '96 x 96', 'the faction\'s mark'],
+  ['icon.*', 'hero, 10', '48 x 48', ICONS.join(', ')],
+];
+
+// Shared drawing helpers: docs/mockups/lib/kitdraw.js (inlined above).
+const { rng, hash, paint, png, P, rr } = window.FCDraw;
+
+
+// Concord: docs/mockups/lib/concord.js (inlined above), one copy shared with the battle console.
+const { CC, sweep: ccSweep, arcSeg: ccArcSeg, kit: concordKit, hero: concordHero, icon: ccIcon } = window.FCConcord;
+
+
+// ===============================================================================================================
+// VOS SYNDICATE: hand-drawn (docs/mockups/lib/vos.js, inlined above, one copy shared with the battle console): ink that
+// wobbles, a stained wash, hatching on the shadow side, a dry-brush highlight, every stroke from a seeded generator. Its
+// helpers are the page's FCK helpers too.
+// KETHRAN HEGEMONY: modelled hard surface, rendered in Blender (inlined); its icons and live readouts are
+// docs/mockups/lib/kethran.js (inlined above), one copy shared with the battle console.
+// ===============================================================================================================
+const { vos, noise1, wob, arcPts, rrPts, trace, ink, wash, hatch, dry, spiral, body } = window.FCVos.draw;
+const VC = window.FCVos.VC, KC = window.FCKethran.KC;
+const kethranData = kitData('assets/ui/kethran/manifest.json');
 
 // ---------------------------------------------------------------------------------------------------------------
 // The skins. Each supplies every kit piece as an image with its own margins, and its type, ink and motion.
@@ -704,22 +1223,8 @@ const SKINS = {
     plateText: { left: 106, top: 8, width: 318, height: 40, font: '400 19px/1 "Saira Stencil One", sans-serif', color: KC.bone, sub: 'KHS VORRAK · WARLORD TESK' },
     helmKeys: [[62, 76], [150, 76], [238, 76], [238, 157], [238, 238], [150, 238], [62, 238], [62, 157]], shield: [KC.ember, '#ff8a3a', KC.red],
     fonts: ['400 20px "Saira Stencil One"', '700 20px "Saira Condensed"'], view: { title: '400 26px "Saira Stencil One"', body: '700 24px "Saira Condensed"', upper: true },
-    build: () => kethranData ? fromManifest(kethranData, ktIcon) : null,
-    live: {
-      arrow: (x) => { x.fillStyle = KC.bone; x.shadowColor = '#000'; x.shadowBlur = 3; x.beginPath(); x.moveTo(11, 0); x.lineTo(-6, -10); x.lineTo(-2, 0); x.lineTo(-6, 10); x.closePath(); x.fill(); },
-      ssd: (x, cx, cy, sh, col) => {
-        x.shadowColor = KC.ember; x.shadowBlur = 6;
-        for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.fillStyle = col(sh[i]); x.save(); x.translate(cx, cy); x.rotate(a); x.beginPath(); x.moveTo(96, -40); x.lineTo(110, -46); x.lineTo(110, 46); x.lineTo(96, 40); x.closePath(); x.fill(); x.restore(); }
-        x.strokeStyle = KC.ember; x.lineWidth = 2.5; x.beginPath(); x.moveTo(cx, cy - 74); x.lineTo(cx + 42, cy + 40); x.lineTo(cx + 18, cy + 30); x.lineTo(cx, cy + 66); x.lineTo(cx - 18, cy + 30); x.lineTo(cx - 42, cy + 40); x.closePath(); x.stroke();
-        x.beginPath(); x.moveTo(cx, cy - 40); x.lineTo(cx, cy + 40); x.moveTo(cx - 20, cy); x.lineTo(cx + 20, cy); x.stroke();
-        x.fillStyle = KC.red; for (const [mx, my] of [[cx, cy - 60], [cx - 30, cy + 26], [cx + 30, cy + 26]]) { x.beginPath(); x.moveTo(mx, my - 7); x.lineTo(mx + 6, my + 5); x.lineTo(mx - 6, my + 5); x.closePath(); x.fill(); }
-      },
-      dial: (x, c, cts) => {
-        x.strokeStyle = KC.ember; x.lineWidth = 3; x.shadowColor = KC.ember; x.shadowBlur = 6; x.beginPath(); x.moveTo(c, c); x.lineTo(c + 24, c - 14); x.stroke();
-        for (const [dx, dy] of cts) { const px = c + dx * 24, py = c + dy * 24; x.fillStyle = KC.red; x.beginPath(); x.moveTo(px, py - 5); x.lineTo(px + 5, py + 4); x.lineTo(px - 5, py + 4); x.fill(); }
-      },
-      bracket: (x, bx, by, bw, bh) => { x.fillStyle = KC.ember; x.shadowColor = KC.ember; x.shadowBlur = 10; for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) { x.beginPath(); x.moveTo(px, py); x.lineTo(px + sx * 46, py); x.lineTo(px + sx * 30, py + sy * 10); x.lineTo(px + sx * 10, py + sy * 10); x.lineTo(px + sx * 10, py + sy * 30); x.lineTo(px, py + sy * 46); x.closePath(); x.fill(); } },
-    },
+    build: () => kethranData ? fromManifest(kethranData, (n) => window.FCKethran.icon(n)) : null,
+    live: window.FCKethran.live,
     world: ['An empire of rank and conquest: order is strength, the strong lead.', 'Heavy, armoured, thick-clawed: big keys with a long, firm travel.', 'Fusion, foundries, armour plate: machines proud of their mass.', 'Armoured wedges and blades, stepped plates, forward prows.'],
     shapes: 'Wedges, chevrons, trapezoids, stepped plates, heavy chamfers. Never round.', light: 'Harsh key light from the top left, rim light, deep occlusion, emissive lenses.', motion: 'A mechanical press: the cap sinks into its socket to a hard stop; the frame never moves.',
     type: '"Saira Stencil One" for keys and titles, "Saira Condensed" for numbers.',
@@ -740,21 +1245,8 @@ const SKINS = {
     plateText: { left: 60, top: 8, width: 340, height: 40, font: '400 22px/1 "Permanent Marker", cursive', color: VC.ink, sub: 'Grinning Debt · Cap\'n Ardent' },
     helmKeys: 'ring', helmR: 128, shield: [VC.verd, VC.caution, VC.blood], fonts: ['400 20px "Permanent Marker"', '400 20px "Patrick Hand"'],
     view: { title: '400 30px "Permanent Marker"', body: '400 26px "Patrick Hand"', upper: false },
-    build: () => fromPainters(vosKit, vosHero, vosIcon, true),
-    live: {
-      arrow: (x, a) => { const R = rng(hash('helm' + a)); ink(x, wob([[-12, 2], [10, -1]], false, 0.8, R), false, 3, VC.ink); ink(x, wob([[2, -8], [11, -1], [3, 7]], false, 0.6, R), false, 3, VC.ink); },
-      ssd: (x, cx, cy, sh, col) => {
-        const R = rng(7);
-        for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; ink(x, wob(arcPts(cx, cy, 96, 92, a - P / 6 + 0.12, a + P / 6 - 0.12, 10), false, 0.9, R), false, 6, col(sh[i])); }
-        const hull = wob([[cx, cy - 70], [cx + 16, cy - 40], [cx + 40, cy - 56], [cx + 26, cy - 10], [cx + 46, cy + 30], [cx + 14, cy + 22], [cx, cy + 62], [cx - 14, cy + 22], [cx - 46, cy + 30], [cx - 26, cy - 10], [cx - 40, cy - 56], [cx - 16, cy - 40]], true, 1, R);
-        ink(x, hull, true, 2.4); for (const [mx, my] of [[cx, cy - 46], [cx - 30, cy + 18], [cx + 30, cy + 18]]) spiral(x, mx, my, 6, 1.5, R, 1.6, VC.blood);
-      },
-      dial: (x, c, cts) => {
-        const [dx, dy] = cts[0], L = Math.hypot(dx, dy), ix = c + dx / L * 12, iy = c + dy / L * 7, R = rng(3);
-        const iris = wob(arcPts(ix, iy, 16, 16, 0, 2 * P, 20), true, 0.8, R); wash(x, iris, VC.verd, R); ink(x, iris, true, 2); spiral(x, ix, iy, 9, 1.7, R, 1.4); x.fillStyle = VC.ink; x.beginPath(); x.arc(ix + 1, iy, 4, 0, 2 * P); x.fill();
-      },
-      bracket: (x, bx, by, bw, bh) => { const Rr = rng(11); for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) ink(x, wob([[px + sx * 44, py + sy * 2], [px, py], [px + sx * 3, py + sy * 44]], false, 1.4, Rr), false, 3.4, VC.bone); },
-    },
+    build: () => fromPainters(window.FCVos.painters.kit, window.FCVos.painters.hero, (n) => window.FCVos.icon(n), true),
+    live: window.FCVos.live,
     world: ['Free clans of raiders: luck, loot, loyalty to the crew, nothing else.', 'Lanky, long-fingered, many-jointed, tattooed: quick flicks.', 'Salvage, patched and grown over: nothing matches, everything works.', 'Scavenged hulls under spikes, mandible prows, swirling paint.'],
     shapes: 'Claw tags, torn tickets, scrolls, a ship\'s wheel, spirals and knots.', light: 'Drawn: hatching on the shadow side, dry-brush highlights, ink bleed.', motion: 'A struck tag stays put; its ink darkens and its letters dip.',
     type: '"Permanent Marker" for keys and titles over "Patrick Hand".',
@@ -1600,25 +2092,43 @@ F.register('aelith', {
 })();
 </script>
 <!-- /INLINE -->
-<!-- INLINE docs/mockups/skins/tarsine.js -->
-<script data-src="docs/mockups/skins/tarsine.js">
-// The Tarsine Remnant skin (mockup 4, OpenSpec change console-skins): a powerful ancient race that stopped changing
-// long ago (owner, 2026-10-30: "a powerful ancient race. rusty, with back lit buttons clogged with dirt. their ships
-// havent been upgraded in ages, rough around the edges"). Since 2026-10-31 it is rendered in Blender on the analog panel
-// bible (owner: "I love the Remnant ui, i htink it could use some polish from our guide, but please dont remove the
-// grimey industrial feel"): monumental corroded iron with worn rolled edges, rust, verdigris, pitting and soot in every
-// crevice, great rivets with rust running down from them, worn gold bezels and brackets, arched-tablet keys and lintel
-// tabs whose grimy glass carries the same caked dirt in every state (only the backlight changes), cracked gauge glass,
-// lit by old lamps under the lips that do not all still burn (tools/mockups/tarsine_shapes.py,
-// tools/blender/build_ui_tarsine.py, assets/ui/tarsine/). This module loads that kit and draws the live readouts, the
-// carved glyph icons and the view's brackets. Registers itself with the page's skin registry (docs/mockups/skins).
-(function () {
+<!-- INLINE docs/mockups/lib/tarsine.js -->
+<script data-src="docs/mockups/lib/tarsine.js">
+// Fleet Command mockups: the Tarsine Remnant skin (openspec/changes/console-skins/design.md, "The Remnant on the bible, grime
+// kept"; openspec/changes/tarsine-battle-console), shared by the console skins page (docs/mockups/skins/tarsine.js
+// registers it there) and the battle console, where it is the skin of the Remnant ship you command
+// (docs/mockups/battle-console-tarsine.html, written from battle-console.html by tools/mockups/skin_page.py). One
+// implementation of the Remnant's look (CLAUDE.md section 6.1): its materials (corroded iron, rust streaks, rivets), its
+// palette, its carved glyph icons, its live readouts and, for the battle console, its kit loaded from the Blender render
+// (assets/ui/tarsine/manifest.json, tools/blender/build_ui_tarsine.py from tools/mockups/tarsine_shapes.py) with the few
+// pieces only the console draws composed here from that render: the square key is the helm pad's own arched tablet, the
+// wide key the rendered tablet key, each with the same caked dirt in every state and only the backlight changing (the
+// Remnant's rule, design.md version 17); the allocation cells, the title lintel and the iron plate behind the column are
+// drawn in the kit's materials.
+// It exposes the same fields as docs/mockups/lib/concord.js and lib/kelvane.js, so the battle console swaps one for another
+// and changes no rule and no layout. Needs docs/mockups/lib/kitdraw.js inlined first. Our own design: no other game's
+// names, shapes, glyphs or art.
+//
+// Where it comes from (design.md; owner, 2026-10-30: "a powerful ancient race. rusty, with back lit buttons clogged with
+// dirt. their ships havent been upgraded in ages, rough around the edges"; 2026-10-31: "please dont remove the grimey
+// industrial feel, I love that story telling so much"): a fallen empire that remembers being first and will not change,
+// its machines older than their crews, patched and never replaced (the provisional account, survey U7). Nothing here comes
+// from what the Tarsine look like (CLAUDE.md section 1).
+window.FCTarsine = (function () {
 'use strict';
-const F = window.FCK, P = F.P;
+const { rng, hash, paint, P } = window.FCDraw;
+// The palette and what it stands for (design.md): ages of use (soot), decline they will not admit (rust), time
+// (verdigris), old majesty (old gold), the fire still burning (backlight), anger slow to wake (ember).
 const TA = { soot: '#1c1814', iron: '#3a332c', ironHi: '#6a5e50', rust: '#7a3b1c', rustHi: '#b0602e', verd: '#4f6b5a', gold: '#a88a46', goldHi: '#d8bc6e',
   light: '#d6c76a', ember: '#d2482a', bone: '#e8dcc0', dim: '#a8987a', glass: '#0e0c0a' };
 function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
-const RNG = (k) => F.rng(F.hash('tarsine.' + k));
+const RNG = (k) => rng(hash('tarsine.' + k));
+// Relative luminance of a #rrggbb colour (WCAG), for picking the ink that reads on a fill.
+function lum(hex) {
+  if (typeof hex !== 'string' || hex[0] !== '#' || hex.length < 7) return 0;
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+}
 
 // ---- materials ---------------------------------------------------------------------------------------------------
 // Corroded iron: dark plate, rust blooms, pitting, grime pooled toward the bottom, a worn bright edge broken by rust.
@@ -1648,32 +2158,278 @@ function rivet(x, px, py, r, R) {
   const g = x.createRadialGradient(px - r * 0.4, py - r * 0.4, 0.5, px, py, r); g.addColorStop(0, '#9a8a74'); g.addColorStop(0.5, '#5a4a3a'); g.addColorStop(1, '#1c1510');
   x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 2 * P); x.fill(); x.strokeStyle = '#0c0907'; x.lineWidth = 0.8; x.stroke();
 }
-// ---- icons: worn carved glyphs ------------------------------------------------------------------------------------
-function icon(name) {
-  return F.paint(48, 48, (x) => {
-    const R = RNG('icon.' + name);
-    const S = (pts) => {
-      for (const [col, dx, dy, lw] of [['rgba(0,0,0,0.7)', 0, 0, 4.4], [hexA(TA.goldHi, 0.85), 0, 0, 2.6], ['rgba(255,240,200,0.35)', -0.6, -0.6, 1]]) {
-        x.strokeStyle = col; x.lineWidth = lw; x.lineCap = 'square'; x.beginPath(); x.moveTo(pts[0][0] + dx, pts[0][1] + dy); for (const p of pts.slice(1)) x.lineTo(p[0] + dx, p[1] + dy); x.stroke();
-      }
-    };
+
+// ---- The battle console's colour roles -------------------------------------------------------------------------
+// The same role names as the Concord's (lib/concord.js), so the page's rules pick a role, never a colour. Readouts glow
+// pale through the old glass (Sky); the backlight, the fire still burning, is whole and engaged (Accord); a tired amber
+// is damaged (Caution) and ember down and alarms (Alert), the skins page's shield ramp; labels are worn gilt (Lilac),
+// prose bone, titles old gold; a key at rest is dark bronze (Signal).
+const CC = {
+  deep: '#2a241e', signal: '#5a4a36', sky: '#efe2a0', accord: TA.light, lilac: TA.dim, caution: '#d08a3a', alert: '#e8553a', text: TA.bone,
+  ink: '#1e160c', inkDis: '#5a4e40', night: '#16120e', ghost: '#6a5e50', void: '#0e0b08', slate: '#3a332c', mute: '#2a241e', ver: '#8a7c62',
+  char: '#3a0b09', plate: '#14100c', bg: '#110e0b', title: TA.goldHi,
+};
+// The ink that reads on a fill: dark on the lit glass, bone on iron and dark glass.
+const ink = (fill) => (lum(fill) > 0.2 ? CC.ink : TA.bone);
+// Ink on the rendered tablet keys and lintel tabs: dark carved letters on the lit tablets in every state (their glass is
+// lit through the dirt at rest too); dark on the lit lintel, worn gilt on a dark one.
+const keyInk = { idle: CC.ink, hover: CC.ink, pressed: CC.ink, tabOn: CC.ink, tabOff: TA.dim };
+// Type: "Cinzel" carved capitals for headings and the name plate, as the skins page's keys and titles, and "Alegreya Sans
+// SC" for everything else (the skin's pair). The page asks for Antonio sizes. Alegreya Sans SC runs 1.2 times as wide at
+// the same size (measured on the console's own labels, 2026-11-07), so it is set at 0.86 of it; weight 700 at 22 px and up
+// is a heading: Cinzel, 1.55 times as wide, at 0.7; rule T (the keys' and tabs' fit) shrinks what still runs long.
+function font(spec) {
+  const m = /^(\d+) ([\d.]+)px Antonio$/.exec(spec); if (!m) return spec;
+  const w = +m[1], s = +m[2];
+  if (w >= 700 && s >= 22) return `700 ${Math.round(s * 0.7 * 10) / 10}px Cinzel`;
+  return `${w >= 700 ? 700 : 500} ${Math.round(s * 0.86 * 10) / 10}px "Alegreya Sans SC"`;
+}
+const fonts = ['700 20px "Cinzel"', '700 20px "Alegreya Sans SC"', '500 20px "Alegreya Sans SC"'];
+
+// ---- Icons: one subject list for every skin (docs/design/icon-guide.html) ---------------------------------------
+// Each a picture of the job as a glyph carved into old metal and worn: straight cut strokes with square ends, a dark cut
+// under each stroke and a glint along its upper edge, a few places worn away by time. One ink; on a 48 x 48 grid with 4 px
+// clear, read at 20 px and 48 px. On a lit tablet (a dark ink) the cut is a faint glint instead of a shadow.
+function icon(name, col = TA.goldHi) {
+  return paint(48, 48, (x) => {
+    const R = RNG('icon.' + name), dark = lum(col) < 0.2;
+    const layers = dark ? [['rgba(255,240,200,0.35)', 0.7, 0.7, 4.4], [col, 0, 0, 2.8]] : [['rgba(0,0,0,0.7)', 0, 0, 4.6], [col, 0, 0, 2.8], ['rgba(255,240,200,0.35)', -0.6, -0.6, 1]];
+    const S = (pts, lw = 1) => { for (const [c, dx, dy, w] of layers) { x.strokeStyle = c; x.lineWidth = w * lw; x.lineCap = 'square'; x.lineJoin = 'miter'; x.beginPath(); x.moveTo(pts[0][0] + dx, pts[0][1] + dy); for (const p of pts.slice(1)) x.lineTo(p[0] + dx, p[1] + dy); x.stroke(); } };
+    const F = (pts) => { for (const [c, dx, dy, w] of layers.slice(0, 2)) { x.fillStyle = c; x.strokeStyle = c; x.lineWidth = w - 2.8 + 0.5; x.beginPath(); x.moveTo(pts[0][0] + dx, pts[0][1] + dy); for (const p of pts.slice(1)) x.lineTo(p[0] + dx, p[1] + dy); x.closePath(); x.fill(); if (w > 3) x.stroke(); } };
+    const ring = (cx, cy, r, n = 16) => Array.from({ length: n + 1 }, (_, i) => [cx + Math.cos(i * 2 * P / n) * r, cy + Math.sin(i * 2 * P / n) * r]);
+    const arc = (cx, cy, rx, ry, a0, a1, n = 10) => Array.from({ length: n + 1 }, (_, i) => { const a = a0 + (a1 - a0) * i / n; return [cx + Math.cos(a) * rx, cy + Math.sin(a) * ry]; });
     ({
-      helm: () => { S([[24, 42], [24, 6]]); S([[12, 18], [24, 6], [36, 18]]); S([[16, 30], [32, 30]]); },
-      fire: () => { S([[8, 40], [24, 8], [40, 40]]); S([[24, 8], [24, 40]]); },
-      shields: () => { S([[8, 8], [40, 8], [40, 26], [24, 42], [8, 26], [8, 8]]); S([[24, 8], [24, 42]]); },
-      tractor: () => { S([[8, 8], [8, 40]]); S([[40, 8], [40, 40]]); S([[8, 24], [40, 24]]); S([[16, 16], [24, 24], [16, 32]]); },
-      transport: () => { S([[24, 6], [24, 42]]); S([[10, 14], [24, 24], [38, 14]]); S([[10, 34], [24, 24], [38, 34]]); },
-      science: () => { S([[24, 6], [40, 24], [24, 42], [8, 24], [24, 6]]); S([[24, 18], [24, 30]]); },
-      comms: () => { S([[10, 42], [10, 6]]); S([[10, 10], [30, 18], [10, 26]]); S([[30, 30], [40, 26]]); S([[30, 38], [42, 38]]); },
-      repair: () => { S([[8, 40], [36, 12]]); S([[30, 6], [42, 18]]); S([[14, 30], [20, 36]]); },
-      map: () => { S([[6, 12], [18, 8], [30, 12], [42, 8]]); S([[6, 12], [6, 40], [18, 36], [30, 40], [42, 36], [42, 8]]); S([[18, 8], [18, 36]]); S([[30, 12], [30, 40]]); },
-      settings: () => { S([[24, 6], [24, 42]]); S([[6, 24], [42, 24]]); S([[12, 12], [36, 36]]); S([[36, 12], [12, 36]]); },
+      // the helm: a carved heading dial, its pointer on the course
+      helm: () => { S(ring(24, 24, 17)); S([[24, 24], [24, 9]], 1.3); S([[18, 15], [24, 8], [30, 15]]); S([[24, 37], [24, 41]]); S([[7, 24], [11, 24]]); S([[37, 24], [41, 24]]); },
+      // power: a bolt cut in a square frame
+      power: () => { S([[8, 8], [40, 8], [40, 40], [8, 40], [8, 8]]); S([[27, 12], [18, 25], [30, 25], [21, 37]], 1.2); },
+      // tactical: a battery: a stepped base, a housing, its barrel up to the right
+      tactical: () => { S([[6, 41], [42, 41]]); S([[11, 34], [35, 34], [31, 26], [15, 26], [11, 34]]); S([[26, 28], [40, 12]], 1.4); },
+      // point defence: a shield with a ranging cross
+      pd: () => { S([[8, 7], [40, 7], [40, 25], [24, 41], [8, 25], [8, 7]]); S([[24, 13], [24, 31]]); S([[16, 21], [32, 21]]); },
+      // science: a lens over a trace, the reading under study
+      science: () => { S(ring(20, 20, 12)); S([[29, 29], [41, 41]], 1.6); S([[11, 22], [15, 16], [20, 24], [25, 16], [29, 20]], 0.8); },
+      // comms: a mast, two calls going out
+      comms: () => { S([[12, 42], [12, 8]]); S([[6, 42], [18, 42]]); S([[12, 10], [26, 16], [12, 22]]); S(arc(20, 24, 12, 12, -0.7, 0.7, 6)); S(arc(20, 24, 19, 19, -0.6, 0.6, 6)); },
+      // repair: a spanner, its jaw open to the upper right
+      repair: () => { S([[9, 39], [27, 21]], 1.6); S([[24, 14], [28, 10], [36, 10], [38, 12], [33, 17], [35, 19], [40, 14], [40, 20], [34, 26], [28, 26], [24, 22], [24, 14]], 0.9); },
+      // transport: a figure, its lower half breaking into cut lines as it beams
+      transport: () => { S(ring(24, 10, 4.5, 8)); S([[16, 30], [18, 19], [30, 19], [32, 30]]); for (const [y, w] of [[34, 9], [38, 6.5], [42, 4]]) S([[24 - w, y], [24 + w, y]]); },
+      // fleet: three hulls in formation, the lead ahead
+      fleet: () => { const sh = (cx, cy, k) => S([[cx, cy - 10 * k], [cx + 6 * k, cy + 8 * k], [cx - 6 * k, cy + 8 * k], [cx, cy - 10 * k]]); sh(24, 13, 1); sh(11, 33, 0.85); sh(37, 33, 0.85); },
+      // the ship from above: a long dreadnought, stepped and scarred
+      ship: () => { S([[20, 4], [28, 4], [31, 14], [31, 22], [38, 26], [38, 36], [31, 39], [29, 44], [19, 44], [17, 39], [10, 36], [10, 26], [17, 22], [17, 14], [20, 4]]); S([[19, 22], [29, 22]]); S([[19, 32], [29, 32]]); },
+      // shields: six cut arcs round a hull
+      shields: () => { for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; S(arc(24, 24, 18, 18, a - 0.42, a + 0.42, 4)); } S([[24, 17], [28, 28], [20, 28], [24, 17]]); },
+      // sensors: a scope, its sweep and two contacts
+      sensors: () => { S(ring(24, 24, 18)); S([[24, 24], [36, 12]]); S([[30, 30], [32, 32]], 1.6); S([[14, 16], [16, 18]], 1.6); },
+      // tractor: an emitter, the beam widening to the hull it holds
+      tractor: () => { S([[4, 18], [12, 18], [12, 30], [4, 30], [4, 18]]); S([[12, 21], [30, 13]]); S([[12, 27], [30, 35]]); S([[32, 14], [44, 14], [44, 34], [32, 34], [32, 14]]); },
+      // craft: a small swept craft
+      craft: () => { S([[24, 5], [29, 21], [43, 30], [29, 32], [24, 43], [19, 32], [5, 30], [19, 21], [24, 5]]); },
+      // weapons: a beam from an emitter, ending in a strike
+      weapons: () => { S([[6, 36], [12, 36], [12, 42], [6, 42], [6, 36]]); S([[12, 36], [30, 18]], 1.2); for (let i = 0; i < 6; i++) { const a = i * P / 3; S([[35 + Math.cos(a) * 4, 13 + Math.sin(a) * 4], [35 + Math.cos(a) * 9, 13 + Math.sin(a) * 9]], 0.8); } },
+      // warp: a chevron trailing speed lines
+      warp: () => { S([[22, 10], [37, 24], [22, 38]], 1.5); S([[5, 16], [16, 16]]); S([[3, 24], [20, 24]]); S([[5, 32], [16, 32]]); },
+      // engines: a nozzle and the exhaust out of it
+      engines: () => { S([[14, 5], [34, 5], [38, 20], [10, 20], [14, 5]]); S([[16, 27], [32, 27]]); S([[19, 34], [29, 34]]); S([[22, 41], [26, 41]]); },
+      // reactor: a core in two crossed orbits
+      reactor: () => { S(ring(24, 24, 5, 8)); for (const r of [P / 4, -P / 4]) S(arc(0, 0, 19, 8, 0, 2 * P, 20).map(([a, b]) => [24 + a * Math.cos(r) - b * Math.sin(r), 24 + a * Math.sin(r) + b * Math.cos(r)]), 0.8); },
+      // map: a cut course to a mark
+      map: () => { for (const [a, b] of [[[7, 41], [10, 35]], [[12, 30], [14, 25]], [[17, 21], [22, 18]]]) S([a, b]); S([[29, 6], [41, 18]], 1.2); S([[41, 6], [29, 18]], 1.2); },
+      pause: () => { S([[17, 10], [17, 38]], 2); S([[31, 10], [31, 38]], 2); },
+      menu: () => { for (const y of [13, 24, 35]) S([[9, y], [39, y]], 1.4); },
+      // fire: four brackets closing on a cut mark
+      fire: () => { for (const [a, b, c] of [[[8, 17], [8, 8], [17, 8]], [[31, 8], [40, 8], [40, 17]], [[40, 31], [40, 40], [31, 40]], [[17, 40], [8, 40], [8, 31]]]) S([a, b, c], 1.1); S([[21, 21], [27, 21], [27, 27], [21, 27], [21, 21]], 1.2); },
+      cargo: () => { for (const [cx, cy] of [[15, 15], [33, 15], [15, 33], [33, 33]]) S([[cx - 7, cy - 7], [cx + 7, cy - 7], [cx + 7, cy + 7], [cx - 7, cy + 7], [cx - 7, cy - 7]], 0.9); },
+      // settings: a cog cut with eight teeth round a bore
+      settings: () => { const o = []; for (let i = 0; i <= 16; i++) { const a = i * 2 * P / 16, r = i % 2 ? 13 : 19; o.push([24 + Math.cos(a) * r, 24 + Math.sin(a) * r]); } S(o, 0.9); S(ring(24, 24, 5, 8)); },
     })[name]();
     // time wore parts of it away
-    x.globalCompositeOperation = 'destination-out'; for (let i = 0; i < 5; i++) { x.fillStyle = `rgba(0,0,0,${0.4 + R() * 0.5})`; x.beginPath(); x.arc(R() * 48, R() * 48, 2 + R() * 4, 0, 2 * P); x.fill(); }
+    x.globalCompositeOperation = 'destination-out'; for (let i = 0; i < 4; i++) { x.fillStyle = `rgba(0,0,0,${0.3 + R() * 0.4})`; x.beginPath(); x.arc(R() * 48, R() * 48, 1.5 + R() * 3, 0, 2 * P); x.fill(); }
     x.globalCompositeOperation = 'source-over';
   });
 }
+const ICON_NAMES = ['helm', 'power', 'tactical', 'pd', 'science', 'comms', 'repair', 'transport', 'fleet', 'ship', 'shields', 'sensors', 'tractor', 'craft', 'weapons', 'warp', 'engines', 'reactor', 'map', 'pause', 'menu', 'fire', 'cargo', 'settings'];
+
+// ---- Live readouts (the console skins page and the battle console) ---------------------------------------------
+const live = {
+  // A carved arrow, dark in the lit tablet.
+  arrow: (x) => { x.fillStyle = '#1e160c'; x.beginPath(); x.moveTo(12, 0); x.lineTo(0, -10); x.lineTo(0, -4); x.lineTo(-11, -4); x.lineTo(-11, 4); x.lineTo(0, 4); x.lineTo(0, 10); x.closePath(); x.fill(); },
+  helmCentre: (x, c) => { x.fillStyle = '#1e160c'; x.font = '700 18px Cinzel'; x.textAlign = 'center'; x.fillText('HALT', c, c + 6); },
+  // A long scarred dreadnought in worn gold lines; shields as dim broken arcs.
+  ssd: (x, cx, cy, sh, col) => {
+    x.save();
+    for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.strokeStyle = col(sh[i]); x.lineWidth = 6; x.setLineDash([10, 4, 3, 4]); x.beginPath(); x.arc(cx, cy, 100, a - P / 6 + 0.08, a + P / 6 - 0.08); x.stroke(); }
+    x.setLineDash([]); x.strokeStyle = TA.goldHi; x.lineWidth = 2.2;
+    x.beginPath(); x.moveTo(cx - 12, cy - 78); x.lineTo(cx + 12, cy - 78); x.lineTo(cx + 22, cy - 50); x.lineTo(cx + 22, cy - 10); x.lineTo(cx + 40, cy); x.lineTo(cx + 40, cy + 40); x.lineTo(cx + 22, cy + 50); x.lineTo(cx + 18, cy + 76); x.lineTo(cx - 18, cy + 76); x.lineTo(cx - 22, cy + 50); x.lineTo(cx - 40, cy + 40); x.lineTo(cx - 40, cy); x.lineTo(cx - 22, cy - 10); x.lineTo(cx - 22, cy - 50); x.closePath(); x.stroke();
+    for (const y of [-40, -10, 22, 50]) { x.beginPath(); x.moveTo(cx - 20, cy + y); x.lineTo(cx + 20, cy + y); x.stroke(); }
+    x.strokeStyle = 'rgba(210,72,42,0.7)'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(cx + 26, cy + 4); x.lineTo(cx + 10, cy + 18); x.lineTo(cx + 16, cy + 30); x.stroke();
+    x.fillStyle = TA.ember; for (const [mx, my] of [[cx, cy - 64], [cx - 32, cy + 20], [cx + 32, cy + 20], [cx, cy + 64]]) { x.fillRect(mx - 4, my - 4, 8, 8); }
+    x.restore();
+  },
+  // An old needle behind cracked glass, contacts as ember specks.
+  dial: (x, c, cts) => {
+    x.strokeStyle = TA.ember; x.lineWidth = 2.4; x.beginPath(); x.moveTo(c, c); x.lineTo(c + Math.cos(-0.9) * 34, c + Math.sin(-0.9) * 34); x.stroke();
+    x.fillStyle = '#2a221a'; x.beginPath(); x.arc(c, c, 5, 0, 2 * P); x.fill();
+    for (const [dx, dy] of cts) { x.fillStyle = hexA(TA.ember, 0.85); x.fillRect(c + dx * 30 - 3, c + dy * 30 - 3, 6, 6); }
+  },
+  // Heavy iron corner brackets with a rivet each (the same rust every frame: one seed).
+  bracket: (x, bx, by, bw, bh) => {
+    const R = RNG('bracket');
+    for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
+      x.save(); x.translate(px, py); x.scale(sx, sy);
+      iron(x, () => { x.beginPath(); x.moveTo(0, 0); x.lineTo(46, 0); x.lineTo(46, 10); x.lineTo(10, 10); x.lineTo(10, 46); x.lineTo(0, 46); x.closePath(); }, [0, 0, 46, 46], R, { top: '#6a5a48' });
+      rivet(x, 5, 5, 3, R); x.restore();
+    }
+  },
+};
+
+// ---- The kit ------------------------------------------------------------------------------------------------------
+// Every piece of the skins page's kit is rendered in Blender and comes from the inlined manifest; load() decodes them once.
+// The battle console's own pieces are composed here from that render and drawn in its materials:
+//  - key.*: the helm pad's top-left tablet in its iron (helm.pad.png, 148 x 148 image px from (54, 50)); its caked glass
+//    keeps the same dirt in every state and only the backlight behind it changes: dim at rest, half lit on hover, full
+//    gold engaged and whole, a tired amber damaged, ember down, all but dark off;
+//  - keyw.*: the rendered tablet key (button.idle) lit the same way; bar.cell.ok: the lit window's light in the same gold;
+//  - cell.*: a little arched window in corroded iron, lit gold for power out and a verdigris-tinged light for power in
+//    use; plate.title: a lintel of iron with a worn gold inlay;
+//  - console.backing: one plate of corroded iron, riveted, rust running from its rivets (CLAUDE.md section 7: no black
+//    behind a metallic skin's panels).
+const MANIFEST = 'assets/ui/tarsine/manifest.json';
+const IMG = {}, kit = {}, hero = {}, heroSize = {}, cells = {}, barCells = {};
+// the glass of the tablet (crop px) and of the tablet key (button.idle, reference px of 140 x 52): x0, y0, x1, y1, top and
+// bottom corner radii
+const GLASS = [15, 15, 133, 138, 16, 8], WGLASS = [15, 11, 125, 40, 8, 3];
+// the light behind the dirt, multiplied over the lit glass: the render's own lit glass is 'on'
+const BACK = { idle: '#5a4c36', hover: '#b8a67a', on: null, ok: null, warn: '#ffa860', alert: '#ff6a4a', off: '#2e281e' };
+function glass(x, g, kx, ky) { const [a, b, c, d, rt, rb] = g; x.beginPath(); x.roundRect(a * kx, b * ky, (c - a) * kx, (d - b) * ky, [rt * kx, rt * kx, rb * kx, rb * kx]); }
+function backlit(x, g, kx, ky, state) { if (!BACK[state]) return; x.save(); glass(x, g, kx, ky); x.clip(); x.globalCompositeOperation = 'multiply'; x.fillStyle = BACK[state]; x.fillRect(0, 0, 1000, 1000); x.restore(); }
+function keyPaint(state) { return (x, w, h) => { x.drawImage(IMG['helm.pad'], 54, 50, 148, 148, 0, 0, w, h); backlit(x, GLASS, w / 148, h / 148, state); }; }
+function keywPaint(state) { return (x, w, h) => { x.drawImage(IMG['button.idle'], 0, 0, w, h); backlit(x, WGLASS, w / 140, h / 52, state); }; }
+function cellPaint(back, locked) {
+  return (x, w, h) => {
+    const R = RNG('cell');
+    iron(x, () => { x.beginPath(); x.roundRect(0.5, 0.5, w - 1, h - 1, 3); }, [0, 0, w, h], R, { rustEvery: 300 });
+    x.beginPath(); x.roundRect(6, 5, w - 12, h - 9, [7, 7, 2, 2]);
+    if (locked) { x.fillStyle = '#0a0806'; x.fill(); x.strokeStyle = hexA(TA.gold, 0.5); x.lineWidth = 1; x.stroke(); return; }
+    const g = x.createLinearGradient(0, 5, 0, h - 4); g.addColorStop(0, back === TA.glass ? '#2a2218' : '#f4e6b0'); g.addColorStop(0.45, back); g.addColorStop(1, back === TA.glass ? '#0c0a08' : '#5a4a2a');
+    x.fillStyle = g; x.fill();
+    // the same fine caked dust over the glass in every state (specks only: the cell's middle stretches)
+    x.save(); x.clip(); const D = RNG('cell.dust'); for (let i = 0; i < 40; i++) { x.fillStyle = `rgba(40,28,14,${0.2 + D() * 0.3})`; x.fillRect(6 + D() * (w - 12), 5 + D() * (h - 9), 0.6, 0.6); } x.restore();
+    x.strokeStyle = TA.gold; x.lineWidth = 1; x.stroke();
+  };
+}
+// The title lintel: a bar of corroded iron with a worn gold inlay along its foot and a rivet at each end.
+function lintel(x, w, h) {
+  const R = RNG('lintel');
+  iron(x, () => { x.beginPath(); x.moveTo(5, 0.5); x.lineTo(w - 5, 0.5); x.lineTo(w - 0.5, 5); x.lineTo(w - 0.5, h - 0.5); x.lineTo(0.5, h - 0.5); x.lineTo(0.5, 5); x.closePath(); }, [0, 0, w, h], R, { top: '#3a322a', bottom: '#1a1612', rustEvery: 500 });
+  x.fillStyle = hexA(TA.gold, 0.8); x.fillRect(4, h - 3.5, w - 8, 1.5);
+  rivet(x, 6, h / 2 - 1, 2.4, R); rivet(x, w - 6, h / 2 - 1, 2.4, R);
+}
+// The ground behind the column: one plate of corroded iron, riveted round its edge and along two seams, rust running down
+// from every rivet, soot pooled at its foot, a worn gold rule down each side.
+function backing(x, w, h) {
+  const R = RNG('backing');
+  iron(x, () => { x.beginPath(); x.rect(0, 0, w, h); }, [0, 0, w, h], R, { top: '#3a3029', bottom: '#1c1713', rustEvery: 1400 });
+  for (const yy of [356, 712]) { x.fillStyle = 'rgba(8,6,4,0.75)'; x.fillRect(0, yy, w, 2); x.fillStyle = 'rgba(200,170,130,0.18)'; x.fillRect(0, yy + 2, w, 1); }
+  for (const xx of [9, w - 11]) { x.fillStyle = hexA(TA.gold, 0.55); x.fillRect(xx, 20, 2, h - 40); }
+  for (const yy of [16, 340, 372, 696, 728, h - 18]) for (let xx = 24; xx < w - 10; xx += 64) rivet(x, xx + (R() - 0.5) * 2, yy, 3.4, R);
+}
+let loading = null;
+function load() {
+  if (loading) return loading;
+  const n = document.querySelector(`script[data-src="${MANIFEST}"]`);
+  if (!n) return (loading = Promise.reject(new Error(`the Tarsine kit (${MANIFEST}) is not inlined in this page`)));
+  const d = JSON.parse(n.textContent);
+  loading = Promise.all(Object.entries(d.pieces).map(([id, p]) => new Promise((ok, bad) => { const im = new Image(); im.onload = () => { IMG[id] = im; ok(); }; im.onerror = () => bad(new Error(`Tarsine piece ${id} failed to decode`)); im.src = p.data; }))).then(() => {
+    for (const [id, p] of Object.entries(d.pieces)) {
+      const draw = (x, w, h) => x.drawImage(IMG[id], 0, 0, w, h);
+      if (p.kind === 'nine') kit[id] = { size: p.size, m: p.margins, inset: p.inset || [3, 3], draw };
+      else if (p.kind === 'hero') { hero[id] = draw; heroSize[id] = p.size; }
+      else if (p.kind === 'cell') barCells[id] = { size: p.size, gap: p.gap ?? 2, draw };
+    }
+    // the ok symbol: the lit window as it is (whole is the backlight itself), so the whole bar reads as the fire burning
+    if (barCells['bar.cell.on']) barCells['bar.cell.ok'] = barCells['bar.cell.on'];
+    for (const s of Object.keys(BACK)) { hero['key.' + s] = keyPaint(s); heroSize['key.' + s] = [48, 48]; kit['keyw.' + s] = { size: [144, 48], m: [0, 30, 0, 30], draw: keywPaint(s) }; }
+    hero['console.backing'] = backing; heroSize['console.backing'] = [480, 1080];
+    // the name plate with its lamps turned low: the same render and the same caked dirt, the window's light dimmed so the
+    // captain's name reads in pale carved letters (the skins page sets pale letters outlined dark on the lit window; the
+    // console draws its text plain)
+    hero.nameplate = (x, w, h) => { x.drawImage(IMG.nameplate, 0, 0, w, h); x.save(); x.beginPath(); x.roundRect(36 * w / 460, 10 * h / 56, 390 * w / 460, 36 * h / 56, 4); x.clip();
+      x.globalCompositeOperation = 'multiply'; x.fillStyle = '#4a3c28'; x.fillRect(0, 0, w, h); x.restore(); };
+    kit['bar.fill.accord'] = kit['bar.fill'];
+    Object.assign(cells, { 'cell.idle': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(TA.glass) }, 'cell.lit': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(TA.light) },
+      'cell.warn': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(CC.alert) }, 'cell.accord': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint('#a9b98a') },
+      'cell.locked': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(null, true) },
+      'plate.title': { size: [140, 24], m: [0, 18, 0, 18], draw: lintel } });
+  });
+  return loading;
+}
+// The Remnant's crest wherever the console draws one (a portrait, the holder of a ship): the rendered crest, r its radius.
+function emblem(G, cx, cy, r) { if (IMG.crest) G.drawImage(IMG.crest, cx - r, cy - r, 2 * r, 2 * r); }
+// Drawn keys and knobs (the slider handles, the expand key, the tug bar): the arched tablet, round above and square at its
+// foot; a knob is a domed rivet head.
+function rr(G, X, Y, W, H, r) { G.beginPath(); if (!(W > 0 && H > 0)) { G.rect(X, Y, W, H); return; } const q = Math.min(Array.isArray(r) ? Math.max(...r) : (+r || 0), W / 2, H / 2); G.roundRect(X, Y, W, H, [q, q, q * 0.2, q * 0.2]); }
+function knob(G, cx, cy, r) { G.beginPath(); G.arc(cx, cy, r, 0, 2 * P); }
+
+const api = {
+  id: 'tarsine', name: 'Tarsine Remnant', TA, CC, kit, hero, heroSize, cells, barCells, live, icon, ICON_NAMES, emblem, ink, keyInk, font, fonts, load, hexA, rr, knob,
+  iron, streak, rivet, RNG,
+  family: '"Alegreya Sans SC", sans-serif',
+  // The content inside a panel: inside the well's worn gold rim, clear of the stepped capitals at its corners.
+  pad: [30, 26, 26, 26],
+  // The name plate's live field: the window (36-426 x 10-46), its lamps turned low, 10 px clear of its left end, pale carved
+  // letters, clear of the Fleet key at 370.
+  plate: { x: 46, y: 35, max: 314, font: '700 18px Cinzel', col: TA.bone },
+  // The battle's helm ring under the ship, in the backlight's gold.
+  ring: ['rgba(214,199,106,0)', 'rgba(214,199,106,0.13)', 'rgba(232,220,150,0.85)'],
+  // Names for the player's side where the page shows it as the Remnant: ships named for what the empire remembers,
+  // captains by age (the skins page's ANKHAR, ELDEST VOR). Placeholders until the owner sets the Remnant's culture
+  // (CLAUDE.md section 1; openspec/changes/tarsine-battle-console, open question T1).
+  player: { faction: 'Tarsine Remnant', call: 'Eldest', trim: 0xd6c76a, hull: 0x6a5e50,
+    ships: { resolute: ['Ankhar', 'Eldest Vor'], tallis: ['Oathkeeper', 'Elder Sabeth'], meridian: ['Long Memory', 'Eldest Corvane'] },
+    ranks: ['Younger', 'Keeper', 'Elder', 'Eldest'],
+    officers: { o1: 'Ithemar Sol', o2: 'Sabeth Orn', o3: 'Callon Vey', o4: 'Aurest Mal', o5: 'Teodras Ilm', o6: 'Ysmene Kar', o7: 'Oradel Fenn',
+      o8: 'Haskar Ume', o9: 'Merova Tal', o10: 'Ondric Sael', o11: 'Velisane Ro', o12: 'Bastre Hollan', o13: 'Quorin Ade' } },
+  link: TA.goldHi,
+  // Labels centred on the tablet key's glass (15-125 of 140 at 52 px) and in a lintel tab's slot of glass.
+  keyCenter: true, keyField: [17, 17], tabField: [10, 10],
+  // A hover name on the half-lit tablet, in dark carved letters.
+  tip: ['button.hover', 'hover'],
+  // Icon tabs (the station and ship rails) on the square tablet, the icon in its glass.
+  iconKeys: true,
+  // Panel tab icons at rest in bone on the dim glass, apart from the functional icons' gold; glyphs on dim glass in the
+  // backlight's gold.
+  tabIcon: TA.bone, glyphOnDark: TA.light, mark: { hover: '#fff0b0', ready: TA.light, count: TA.bone },
+  // The strips (strip.top and strip.bottom, 72 px beams) at their full height; the content, laid out for 56 px, moved down
+  // into the beam's channel of grimy glass (rows 13-59).
+  stripTop: { h: 72, dy: 8 }, stripBottom: { h: 72, dy: 8 },
+  titleDy: 2,
+};
+window.FCSkins = window.FCSkins || {}; window.FCSkins.tarsine = api;
+return api;
+})();
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/skins/tarsine.js -->
+<script data-src="docs/mockups/skins/tarsine.js">
+// The Tarsine Remnant skin (mockup 4, OpenSpec change console-skins): a powerful ancient race that stopped changing
+// long ago (owner, 2026-10-30: "a powerful ancient race. rusty, with back lit buttons clogged with dirt. their ships
+// havent been upgraded in ages, rough around the edges"). Since 2026-10-31 it is rendered in Blender on the analog panel
+// bible (owner: "I love the Remnant ui, i htink it could use some polish from our guide, but please dont remove the
+// grimey industrial feel"): monumental corroded iron with worn rolled edges, rust, verdigris, pitting and soot in every
+// crevice, great rivets with rust running down from them, worn gold bezels and brackets, arched-tablet keys and lintel
+// tabs whose grimy glass carries the same caked dirt in every state (only the backlight changes), cracked gauge glass,
+// lit by old lamps under the lips that do not all still burn (tools/mockups/tarsine_shapes.py,
+// tools/blender/build_ui_tarsine.py, assets/ui/tarsine/). This module registers that kit; the live readouts, the carved
+// glyph icons and the view's brackets are the library's. Registers itself with the page's skin registry (docs/mockups/skins).
+(function () {
+'use strict';
+// The Remnant's materials, icons and live readouts have one implementation, docs/mockups/lib/tarsine.js (window.FCTarsine,
+// inlined before this module), shared with the battle console; this module keeps the skins page's own tokens and
+// registers the skin with this page's registry.
+const F = window.FCK, H = window.FCTarsine, TA = H.TA;
 
 // ---- the skin --------------------------------------------------------------------------------------------------
 F.register('tarsine', {
@@ -1693,36 +2449,8 @@ F.register('tarsine', {
     shadow: '0 0 2px #0c0703, 0 0 2px #0c0703, 0 1px 0 #0c0703', sub: 'ANKHAR · ELDEST VOR' },
   helmKeys: [[150, 63], [236, 63], [236, 149], [236, 235], [150, 235], [64, 235], [64, 149], [64, 63]], shield: [TA.light, '#c9873a', TA.ember],
   fonts: ['700 20px "Cinzel"', '700 20px "Alegreya Sans SC"'], view: { title: '700 26px "Cinzel"', body: '700 24px "Alegreya Sans SC"', upper: true },
-  build: () => { const d = F.kitData('assets/ui/tarsine/manifest.json'); return d ? F.fromManifest(d, icon) : null; },
-  live: {
-    // A carved arrow, dark in the lit tablet.
-    arrow: (x) => { x.fillStyle = '#1e160c'; x.beginPath(); x.moveTo(12, 0); x.lineTo(0, -10); x.lineTo(0, -4); x.lineTo(-11, -4); x.lineTo(-11, 4); x.lineTo(0, 4); x.lineTo(0, 10); x.closePath(); x.fill(); },
-    helmCentre: (x, c) => { x.fillStyle = '#1e160c'; x.font = '700 18px Cinzel'; x.textAlign = 'center'; x.fillText('HALT', c, c + 6); },
-    // A long scarred dreadnought in worn gold lines; shields as dim broken arcs.
-    ssd: (x, cx, cy, sh, col) => {
-      for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.strokeStyle = col(sh[i]); x.lineWidth = 6; x.setLineDash([10, 4, 3, 4]); x.beginPath(); x.arc(cx, cy, 100, a - P / 6 + 0.08, a + P / 6 - 0.08); x.stroke(); }
-      x.setLineDash([]); x.strokeStyle = TA.goldHi; x.lineWidth = 2.2;
-      x.beginPath(); x.moveTo(cx - 12, cy - 78); x.lineTo(cx + 12, cy - 78); x.lineTo(cx + 22, cy - 50); x.lineTo(cx + 22, cy - 10); x.lineTo(cx + 40, cy); x.lineTo(cx + 40, cy + 40); x.lineTo(cx + 22, cy + 50); x.lineTo(cx + 18, cy + 76); x.lineTo(cx - 18, cy + 76); x.lineTo(cx - 22, cy + 50); x.lineTo(cx - 40, cy + 40); x.lineTo(cx - 40, cy); x.lineTo(cx - 22, cy - 10); x.lineTo(cx - 22, cy - 50); x.closePath(); x.stroke();
-      for (const y of [-40, -10, 22, 50]) { x.beginPath(); x.moveTo(cx - 20, cy + y); x.lineTo(cx + 20, cy + y); x.stroke(); }
-      x.strokeStyle = 'rgba(210,72,42,0.7)'; x.lineWidth = 1.2; x.beginPath(); x.moveTo(cx + 26, cy + 4); x.lineTo(cx + 10, cy + 18); x.lineTo(cx + 16, cy + 30); x.stroke();
-      x.fillStyle = TA.ember; for (const [mx, my] of [[cx, cy - 64], [cx - 32, cy + 20], [cx + 32, cy + 20], [cx, cy + 64]]) { x.fillRect(mx - 4, my - 4, 8, 8); }
-    },
-    // An old needle behind cracked glass, contacts as ember specks.
-    dial: (x, c, cts) => {
-      x.strokeStyle = TA.ember; x.lineWidth = 2.4; x.beginPath(); x.moveTo(c, c); x.lineTo(c + Math.cos(-0.9) * 34, c + Math.sin(-0.9) * 34); x.stroke();
-      x.fillStyle = '#2a221a'; x.beginPath(); x.arc(c, c, 5, 0, 2 * P); x.fill();
-      for (const [dx, dy] of cts) { x.fillStyle = hexA(TA.ember, 0.85); x.fillRect(c + dx * 30 - 3, c + dy * 30 - 3, 6, 6); }
-    },
-    // Heavy iron corner brackets with a rivet each.
-    bracket: (x, bx, by, bw, bh) => {
-      const R = RNG('bracket');
-      for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
-        x.save(); x.translate(px, py); x.scale(sx, sy);
-        iron(x, () => { x.beginPath(); x.moveTo(0, 0); x.lineTo(46, 0); x.lineTo(46, 10); x.lineTo(10, 10); x.lineTo(10, 46); x.lineTo(0, 46); x.closePath(); }, [0, 0, 46, 46], R, { top: '#6a5a48' });
-        rivet(x, 5, 5, 3, R); x.restore();
-      }
-    },
-  },
+  build: () => { const d = F.kitData('assets/ui/tarsine/manifest.json'); return d ? F.fromManifest(d, (n) => H.icon(n)) : null; },
+  live: H.live,
   world: ['A fallen empire that remembers being first, and will not change.', 'Huge, slow and long-lived: the crews outlast their worlds.', 'Machines older than their crews, patched and never replaced.', 'Massive, scarred, rusted dreadnoughts.'],
   shapes: 'Arched tablets, stepped frames with capitals, lintels, heavy brackets: monuments.', light: 'Old lamps under the lips, not all still burning; backlight through caked dirt; worn rolled edges on rusted iron.',
   motion: 'Almost none: a key gives a millimetre and the light behind it steadies.', type: '"Cinzel" carved capitals over "Alegreya Sans SC".',
