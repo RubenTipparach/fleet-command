@@ -142,6 +142,11 @@ The palette's roles, the keys, the tabs' glass, the icons and the type are uncha
 | Parity, Tarsine page against the Concord's (`skin_parity.mjs`) | 70 shots, 4,087 presses of 396 controls, every press matched |
 | Console fit on mockup 4 (`console_fit.mjs`, tarsine) | clear |
 | DOM fit on the page (`dom_fit.mjs`), every shot at desktop, phone and portrait | PASS |
+| Version 2 (2026-11-08): fit rules on every shaped piece (`tarsine_shapes.py`), the new ones included | 0 failures (`console.column` 26 of 26, `console.backing` 24 of 24, `frame.panel` 7 of 7, `plate.title` 4 of 4, each `cell.*` 3 of 3) |
+| Version 2: rule B on the renders (`tarsine_shapes.py --verify`) | 27 of 27 pieces PASS, 0 lit px outside any plate |
+| Version 2: parity | 70 shots, 4,087 presses of 396 controls, every press matched |
+| Version 2: console fit on mockup 4 (tarsine) and DOM fit on the page (210 shots and sizes) | clear; PASS |
+| Version 2: render time, 48 samples on 4 CPU cores | 50 min for the kit (`frame.panel` 23 min, `console.column` 9 min, `console.backing` 10 min) |
 
 ## Open questions
 
