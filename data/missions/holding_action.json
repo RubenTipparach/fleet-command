@@ -1,0 +1,80 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "holding_action",
+ "name": "Holding action",
+ "glyph": "L",
+ "type": "Holding action",
+ "reward_cr": 900,
+ "weight": 0.4,
+ "where": "plain && own && dist_home >= 2",
+ "objective": "Hold the listening post until relieved: four minutes.",
+ "brief": "A listening post here has picked something up and needs four more minutes to finish. {enemy_name} ships are coming to stop it. Hold the post until the time is up.",
+ "battle": [
+  {
+   "intel": "Attacks in waves",
+   "time_limit_s": 240,
+   "groups": [
+    {
+     "id": "post",
+     "faction": "{side}",
+     "count": 1,
+     "role": "ally",
+     "label": "Listening post",
+     "hull": "outpost"
+    },
+    {
+     "id": "wave1",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Raiders",
+     "range_km": 90
+    },
+    {
+     "id": "wave2",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Second wave",
+     "range_km": 90,
+     "bearing_deg": -70,
+     "arrive_s": 80
+    },
+    {
+     "id": "wave3",
+     "faction": "{enemy}",
+     "count": 2,
+     "role": "enemy",
+     "label": "Heavy wave",
+     "range_km": 100,
+     "bearing_deg": 70,
+     "arrive_s": 160,
+     "tier": 2
+    }
+   ],
+   "objectives": [
+    {
+     "id": "hold",
+     "text": "Hold the post until relieved",
+     "primary": true,
+     "done": "time_up && alive(post) > 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 4
+   },
+   "log": "The listening post held; its data is home."
+  }
+ ]
+}

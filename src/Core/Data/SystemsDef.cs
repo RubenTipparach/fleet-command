@@ -18,6 +18,7 @@ public sealed partial class SystemsDef
         d.LoadCloak(json("battle/systems/cloak.json"));
         d.LoadCloakPlans(json);
         d.LoadTactical(json("battle/systems/tactical.json"));
+        d.LoadField(json("battle/systems/field.json"));
         return d;
     }
 
@@ -32,4 +33,5 @@ public sealed partial class SystemsDef
     /// <summary>The cloak package's deck plans, read from the files its numbers name (data/ships/).</summary>
     partial void LoadCloakPlans(Func<string, StrictJson> json);
     partial void LoadTactical(StrictJson o);
+    partial void LoadField(StrictJson o);
 }

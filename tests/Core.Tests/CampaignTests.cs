@@ -61,7 +61,7 @@ public sealed class CampaignTests
         Assert.Contains("here.field", Assert.Throws<DataError>(() => Expr.Parse(text, "here.field")).Message);
 
     [Fact]
-    public void Every_mission_file_loads() => Assert.Equal(20, Camp.Missions.Count);
+    public void Every_mission_file_loads() => Assert.Equal(44, Camp.Missions.Count);
 
     [Fact]
     public void A_mission_naming_something_the_campaign_lacks_is_refused()
@@ -233,12 +233,13 @@ public sealed class CampaignTests
                 var data = def.Id == "prize_home"
                     ? new Dictionary<string, object> { ["fac"] = "krai", ["tier"] = 2.0, ["hull"] = "krai_ff", ["cls"] = "frigate", ["prize_name"] = "Vekk", ["taken_grade"] = "outstanding" }
                     : def.Encounter ? new Dictionary<string, object> { ["ship"] = "Larkspur", ["freighter_fac"] = def.Id == "escort" ? side : "vos" }
+                    : def.Event ? new Dictionary<string, object> { ["hunters"] = "Vos hunters", ["hunter_fac"] = "vos", ["hunter_size"] = 2.0 }
                     : null;
                 Offer? m = null;
                 for (int t = 0; t < 6 && m == null; t++) { m = c.OfferMission(def.Id, data: data); if (m == null) c.EndTurn(); }
                 // the Hunt, playable once its console was built, has no rival yet (data/campaign/campaign.json), so the one
                 // mission that needs a hostile planet is not offered to it
-                if (m == null && side == "ssarith" && def.Id == "planet") continue;
+                if (m == null && side == "ssarith" && def.Where.Text.Contains("hostile")) continue;
                 Assert.True(m != null, $"{def.Id} ({side}) is offered nowhere");
                 Assert.False(string.IsNullOrWhiteSpace(c.Brief(m!)), def.Id);
                 Assert.DoesNotContain("{", c.Brief(m!));
@@ -375,6 +376,24 @@ public sealed class CampaignTests
     }
 
     [Fact]
+    public void Cashing_out_freighters_that_were_all_the_fleet_had_commissions_a_new_ship_at_home()
+    {
+        // found in the Krai playtest (2026-11-08): the warship lost taking her, the sale left no fleet and the map crashed
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        CampShip prize = c.NewShip("freighter_krai", "Ember Reach");
+        prize.Maker = "krai";
+        prize.Haul = 900;
+        c.S.Fleet.Clear();
+        c.S.Fleet.Add(prize);
+        Sector port = c.S.Sectors.First(h => c.IsPort(h) && (h.C, h.R) != (c.S.HomeC, c.S.HomeR));
+        (c.S.AtC, c.S.AtR) = (port.C, port.R);
+        Assert.Null(c.CashOut());
+        CampShip fresh = Assert.Single(c.S.Fleet);
+        Assert.Equal(0, fresh.Haul);
+        Assert.Equal((c.S.HomeC, c.S.HomeR), (c.S.AtC, c.S.AtR));
+    }
+
+    [Fact]
     public void A_boarded_and_captured_ship_counts_as_taken()
     {
         Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
@@ -466,8 +485,8 @@ public sealed class CampaignTests
             if (m.Script == "belt_patrol") Assert.Equal("asteroids", h.Terrain);
             if (m.Script == "orbital_patrol") Assert.NotNull(h.Planet);
         }
-        // the four patrols weigh 10 of the contracts' 21: close to half of what is offered
-        Assert.InRange(p / (double)n, 0.35, 0.65);
+        // the four patrols weigh 10 of the contracts' 30.2 (the mission-systems contracts weigh 0.4 each): a third of what is offered
+        Assert.InRange(p / (double)n, 0.22, 0.45);
     }
 
     [Fact]
@@ -563,6 +582,7 @@ public sealed class MissionPreviewTests
                 var data = f.EndsWith("prize_home.json")
                     ? new Dictionary<string, object> { ["fac"] = "krai", ["tier"] = 2.0, ["hull"] = "krai_ff", ["cls"] = "frigate", ["prize_name"] = "Vekk", ["taken_grade"] = "victory" }
                     : f.EndsWith("escort.json") || f.EndsWith("raid.json") ? new Dictionary<string, object> { ["ship"] = "Larkspur", ["freighter_fac"] = "krai" }
+                    : f.EndsWith("pursuit.json") ? new Dictionary<string, object> { ["hunters"] = "Krai hunters", ["hunter_fac"] = "krai", ["hunter_size"] = 2.0 }
                     : null;
                 PreviewResult r = MissionPreview.Run(TestData.Read, CampaignTests.MissionFiles, f, TestData.Read(f), "concord", 7, data, end);
                 Assert.True(r.Ok, $"{f} {end}: {r.Error}");

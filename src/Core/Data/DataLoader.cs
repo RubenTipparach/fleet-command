@@ -21,6 +21,7 @@ public static partial class DataLoader
         "battle/missiles.json", "battle/special_weapons.json", "battle/range.json",
         "battle/scenes/comms.json", "battle/scenes/tractor.json", "battle/scenes/reactor.json", "battle/scenes/cloak.json", "battle/scenes/tactical.json",
         "battle/systems/comms.json", "battle/systems/tractor.json", "battle/systems/reactor.json", "battle/systems/cloak.json", "battle/systems/tactical.json",
+        "battle/systems/field.json",
     };
 
     /// <summary>Loads everything; <paramref name="read"/> returns a file's text given its path relative to data/.</summary>
@@ -121,7 +122,7 @@ public static partial class DataLoader
         return d;
     }
 
-    private static readonly string[] Shapes = { "saucer", "wedge", "claw", "station" };
+    private static readonly string[] Shapes = { "saucer", "wedge", "claw", "station", "yard", "rock_base", "outpost", "battery", "monster", "pod" };
 
     /// <summary>The special weapons (data/battle/special_weapons.json). The chorus, the quell and the forge are added to
     /// weapons as mounts (kinds chorus, quell, slug), so classes can carry them; every number is validated.</summary>

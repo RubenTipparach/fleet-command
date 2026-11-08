@@ -43,4 +43,5 @@
       `game-flow.html` is a sync task, `openspec/changes/freighter-missions` 3.1)
 - [x] 3.3 Convoy defense, Convoy ambush and Distress field the faction's own freighters (`hull: "freighter"`)
 - [ ] 3.3b A playtest of each from both sides
-- [ ] 3.4 The Kelvane freighter in the campaign once the Institute joins it (it has no ports or routes yet)
+- [x] 3.4 The Kelvane freighter in the campaign: the Twin ledger (`freighter_kelvane`, battle class `kelvane_fr`) as the
+      Institute's `freighter`, on its Lyceum to Lyceum Depot route

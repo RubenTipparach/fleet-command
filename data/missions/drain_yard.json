@@ -1,0 +1,70 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "drain_yard",
+ "name": "Drain the yard",
+ "glyph": "+",
+ "type": "Drain the yard",
+ "reward_cr": 1200,
+ "weight": 0.4,
+ "where": "port && hostile",
+ "objective": "Stay beside the captured yard while its energy is drawn off: three minutes.",
+ "brief": "Marines hold the {sector_owner_name} yard here for now. Bring your ship beside it and stay while its stores of energy are drawn off; the {sector_owner_name} will come to take it back.",
+ "battle": [
+  {
+   "intel": "A counter-attack",
+   "time_limit_s": 180,
+   "markers": [
+    {
+     "id": "yard",
+     "label": "Captured yard",
+     "bearing_deg": 0,
+     "range_km": 30,
+     "radius_m": 12000
+    }
+   ],
+   "groups": [
+    {
+     "id": "yard",
+     "faction": "{side}",
+     "count": 1,
+     "role": "ally",
+     "label": "Captured yard",
+     "hull": "yard"
+    },
+    {
+     "id": "back",
+     "faction": "{sector_owner}",
+     "count": "strength + 1",
+     "role": "enemy",
+     "label": "Counter-attack",
+     "range_km": 110,
+     "arrive_s": 40
+    }
+   ],
+   "objectives": [
+    {
+     "id": "drain",
+     "text": "Reach the yard and hold it until drained",
+     "primary": true,
+     "done": "reached('yard') && time_up && alive(yard) > 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{sector_owner}": -6,
+    "{side}": 5
+   },
+   "log": "The yard is drained."
+  }
+ ]
+}

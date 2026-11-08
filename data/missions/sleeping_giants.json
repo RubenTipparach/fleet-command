@@ -1,0 +1,78 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "sleeping_giants",
+ "name": "Sleeping giants",
+ "glyph": "G",
+ "type": "Sleeping giants",
+ "reward_cr": 1500,
+ "weight": 0.4,
+ "where": "plain && hostile && dist_home >= 3",
+ "objective": "Destroy the dormant capital ships before they wake, or withdraw.",
+ "brief": "Capital ships of the {sector_owner_name} lie dormant here behind a screen of escorts. They are waking one by one. Destroy them before they are all awake; withdraw if the odds turn.",
+ "battle": [
+  {
+   "intel": "Escorts, and something big",
+   "groups": [
+    {
+     "id": "escorts",
+     "faction": "{sector_owner}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Escort",
+     "range_km": 60
+    },
+    {
+     "id": "giant1",
+     "faction": "{sector_owner}",
+     "count": 1,
+     "role": "enemy",
+     "label": "Dormant capital ship",
+     "range_km": 110,
+     "bearing_deg": -20,
+     "tier": 3,
+     "wake_s": 80
+    },
+    {
+     "id": "giant2",
+     "faction": "{sector_owner}",
+     "count": 1,
+     "role": "enemy",
+     "label": "Dormant capital ship",
+     "range_km": 115,
+     "bearing_deg": 20,
+     "tier": 3,
+     "wake_s": 150
+    }
+   ],
+   "objectives": [
+    {
+     "id": "giants",
+     "text": "Destroy the capital ships",
+     "primary": true,
+     "done": "alive(giant1) + alive(giant2) == 0"
+    },
+    {
+     "id": "escorts",
+     "text": "Destroy the escorts",
+     "done": "alive(escorts) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{sector_owner}": -10,
+    "{side}": 6
+   },
+   "log": "The giants never fully woke."
+  }
+ ]
+}

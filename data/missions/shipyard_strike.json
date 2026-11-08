@@ -1,0 +1,76 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "shipyard_strike",
+ "name": "Shipyard strike",
+ "glyph": "J",
+ "type": "Shipyard strike",
+ "reward_cr": 1600,
+ "weight": 0.4,
+ "where": "port && hostile && dist_home >= 3",
+ "objective": "Destroy the shipyard at {sector_station} before the ships in dock get under way.",
+ "brief": "The {sector_owner_name} yard here is fitting out new hulls. Strike before they are crewed: the ships in dock are cold now and will power up as the alarm goes round. Destroy the yard; every ship caught in dock is a bonus.",
+ "battle": [
+  {
+   "intel": "A yard, ships in dock, a guard",
+   "groups": [
+    {
+     "id": "yard",
+     "faction": "{sector_owner}",
+     "count": 1,
+     "role": "enemy",
+     "label": "Shipyard",
+     "hull": "yard",
+     "range_km": 80,
+     "tag": "flagship",
+     "ship_name": "{sector_owner_name} yards"
+    },
+    {
+     "id": "docked",
+     "faction": "{sector_owner}",
+     "count": 2,
+     "role": "enemy",
+     "label": "In dock",
+     "range_km": 85,
+     "wake_s": 100
+    },
+    {
+     "id": "guard",
+     "faction": "{sector_owner}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Yard guard",
+     "range_km": 50
+    }
+   ],
+   "objectives": [
+    {
+     "id": "yard",
+     "text": "Destroy the yard",
+     "primary": true,
+     "done": "alive(yard) == 0"
+    },
+    {
+     "id": "docked",
+     "text": "Catch the ships in dock",
+     "done": "alive(docked) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{sector_owner}": -12,
+    "{side}": 6
+   },
+   "log": "The yard is wrecked."
+  }
+ ]
+}

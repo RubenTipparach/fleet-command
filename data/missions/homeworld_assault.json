@@ -1,0 +1,98 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "homeworld_assault",
+ "name": "Homeworld assault",
+ "glyph": "W",
+ "type": "Homeworld assault",
+ "reward_cr": 4000,
+ "weight": 0.4,
+ "where": "port && hostile && owner == rival && dist_home >= 6",
+ "objective": "Break the defences of {sector_owner_name} space at {sector_station}.",
+ "brief": "Late in the war: strike the heart of {sector_owner_name} space. A station, the batteries over the world and the home fleet stand in the way. Break the station and the home fleet; the batteries can be left for the occupation.",
+ "needs": [
+  {
+   "if": "fleet < 2",
+   "say": "A homeworld is no place for one ship: bring a fleet of two or more."
+  }
+ ],
+ "battle": [
+  {
+   "intel": "A station, batteries, the home fleet",
+   "planets": [
+    {
+     "id": "home",
+     "name": "{sector_owner_name} world",
+     "kind": "ocean",
+     "bearing_deg": 20,
+     "range_km": 120,
+     "radius_km": 18
+    }
+   ],
+   "groups": [
+    {
+     "id": "base",
+     "faction": "{sector_owner}",
+     "count": 1,
+     "role": "enemy",
+     "label": "Home station",
+     "hull": "station",
+     "range_km": 90,
+     "bearing_deg": -15
+    },
+    {
+     "id": "batteries",
+     "faction": "{sector_owner}",
+     "count": 2,
+     "role": "enemy",
+     "label": "Orbital battery",
+     "hull": "battery",
+     "at_planet": "home"
+    },
+    {
+     "id": "fleet_h",
+     "faction": "{sector_owner}",
+     "count": "strength + 2",
+     "role": "enemy",
+     "label": "Home fleet",
+     "range_km": 60,
+     "tier": 2
+    }
+   ],
+   "objectives": [
+    {
+     "id": "base",
+     "text": "Destroy the home station",
+     "primary": true,
+     "done": "alive(base) == 0"
+    },
+    {
+     "id": "fleet",
+     "text": "Break the home fleet",
+     "primary": true,
+     "done": "alive(fleet_h) == 0"
+    },
+    {
+     "id": "guns",
+     "text": "Silence the batteries",
+     "done": "alive(batteries) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{sector_owner}": -20,
+    "{side}": 12
+   },
+   "log": "The {sector_owner_name} home defences are broken."
+  }
+ ]
+}

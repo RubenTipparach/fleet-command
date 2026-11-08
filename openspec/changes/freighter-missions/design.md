@@ -24,6 +24,12 @@ the freighters change's design, provisional).
 
 - **Taken** is a prize that struck (hull at `capture_hull_frac`, 0.25) or a ship boarded and captured by marines
   (`Ship.Captured`): both now count for `taken()`, which before counted only the first.
+- **Striking, not burning** (found in the playtest, 2026-11-08). Through-shield hits knock out a freighter's coolant loops long
+  before her hull reaches the capture line: in the first Concord raid both loops were gone at 34 % hull and she melted down
+  20 s later, and in the next she struck at 25 % and the ship that had her locked kept firing until she broke up. So a prize
+  also strikes when her core goes critical (`Reactor.Melt > 0`), every lock on her is dropped as she strikes (as a meltdown
+  drops them), and a struck ship's core is shut down by the boarding party (`Battle.Reactor.cs`): it cools and never melts down.
+  Provisional (F4).
 - **Haul.** An outcome's `haul` (a faction) and `haul_cr` (an expression; the raid's is the reward x 3, 900-1500 cr) add the
   freighter to the fleet as a `CampShip` with `Haul` credits, her hull as she struck, `Maker` her faction. With the fleet at
   `rules.fleet_max` (4) her cargo is moved across and paid at half at once.
@@ -57,3 +63,4 @@ on the map and in battle is one glb and one `Cargo` component.
 | F1 | Should a raid on a faction you are not at war with need a confirmation, or cost more standing? | No confirmation; -4 standing, as written |
 | F2 | Should cargo sell for less at a foreign market than at your own port? | The same everywhere that deals with you |
 | F3 | Should the game-flow mockup (mockup 1) show the encounters and the real freighters? | Yes, as sync tasks 3.1-3.2 |
+| F4 | Should a prize whose core goes critical strike, and a struck ship's core be shut down? | Yes, both (survey V6) |

@@ -1,0 +1,101 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="CylinderMesh" id="hub"]
+top_radius = 0.13
+bottom_radius = 0.13
+height = 0.16
+radial_segments = 20
+
+[sub_resource type="BoxMesh" id="arm"]
+size = Vector3(0.03, 0.03, 0.2)
+
+[sub_resource type="CapsuleMesh" id="mod"]
+radius = 0.06
+height = 0.24
+radial_segments = 14
+rings = 4
+
+[sub_resource type="BoxMesh" id="panel"]
+size = Vector3(0.3, 0.008, 0.12)
+
+[sub_resource type="CylinderMesh" id="mast"]
+top_radius = 0.006
+bottom_radius = 0.01
+height = 0.26
+radial_segments = 6
+
+[sub_resource type="SphereMesh" id="lamp"]
+radius = 0.014
+height = 0.028
+radial_segments = 8
+rings = 4
+
+[node name="Outpost" type="Node3D"]
+
+[node name="HullHub" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("hub")
+
+[node name="HullArm0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.2)
+mesh = SubResource("arm")
+
+[node name="TrimModule0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, -0.36)
+mesh = SubResource("mod")
+
+[node name="GlowLamp0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, -0.5)
+mesh = SubResource("lamp")
+
+[node name="HullArm1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.2, 0, 0)
+mesh = SubResource("arm")
+
+[node name="TrimModule1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, 1, -1, 0, 0, 0, -1, 0, 0.36, 0, 0)
+mesh = SubResource("mod")
+
+[node name="GlowLamp1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0.03, 0)
+mesh = SubResource("lamp")
+
+[node name="HullArm2" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.2)
+mesh = SubResource("arm")
+
+[node name="TrimModule2" type="MeshInstance3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 0, -1, 0, -1, 0, 0, 0, 0.36)
+mesh = SubResource("mod")
+
+[node name="GlowLamp2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0.5)
+mesh = SubResource("lamp")
+
+[node name="HullArm3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, -0.2, 0, 0)
+mesh = SubResource("arm")
+
+[node name="TrimModule3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0, 0, -1, 1, 0, 0, 0, -1, 0, -0.36, 0, 0)
+mesh = SubResource("mod")
+
+[node name="GlowLamp3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.5, 0.03, 0)
+mesh = SubResource("lamp")
+
+[node name="TrimPanelL" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.6964, 0.1736, -0.6964, -0.1228, 0.9848, 0.1228, 0.7071, 0, 0.7071, -0.2, 0.12, 0.2)
+mesh = SubResource("panel")
+
+[node name="TrimPanelR" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.6964, -0.1736, -0.6964, 0.1228, 0.9848, -0.1228, 0.7071, 0, 0.7071, 0.2, 0.12, -0.2)
+mesh = SubResource("panel")
+
+[node name="HullMast" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.21, 0)
+mesh = SubResource("mast")
+
+[node name="GlowBeacon" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, 0)
+mesh = SubResource("lamp")

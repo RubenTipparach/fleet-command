@@ -45,7 +45,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
         string cur = sel.Length > 0 && sel.All(m => m.State == sel[0].State) ? sel[0].State.ToString().ToLowerInvariant() : "";
         float w1 = (b.Size.X - 6) * 0.62f, x0 = b.Position.X, y0 = b.Position.Y;
         Button("fire", new Rect2(x0, y0, w1, 48), $"Fire · {B.WouldFire().Length}", () => B.Fire(), center: false,
-            tip: new Tip(t == null ? "Fire: lock a target first" : $"Fire the selected weapons at {t.Name} (F)"));
+            tip: new Tip(t == null ? "Fire: lock a target first" : $"Fire the selected weapons at {Aiming.ContactName(B, t)} (F)"));
         Button("volley", new Rect2(x0 + w1 + 6, y0, b.Size.X - w1 - 6, 48), s.Volley ? "Multiple" : "Single", () => B.ToggleVolley(), s.Volley, center: false,
             tip: new Tip(s.Volley ? "Multiple: every ready weapon fires (M)" : "Single: one weapon per press (M)"));
         // every arming mode; one no selected weapon has is dimmed (weapon-arming design)
@@ -91,7 +91,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
         if (t != null)
         {
             bool arc = Rules.InArc(s, m, t), rng = Rules.InRange(s, m, t);
-            Pairs("wd.t", rx, y + 62, new (string, string, Color?)[] { ("Target", t.Name, null), ("To hit", Pct(B.Rules.HitChance(s, m, t)), null),
+            Pairs("wd.t", rx, y + 62, new (string, string, Color?)[] { ("Target", Aiming.ContactName(B, t), null), ("To hit", Pct(B.Rules.HitChance(s, m, t)), null),
                 ("In arc", arc ? "Yes" : "No", arc ? C.Accord : C.Alert), ("In range", rng ? "Yes" : "No", rng ? C.Accord : C.Alert) }, 20);
         }
         else Lbl("No target", rx, y + 62);
@@ -120,6 +120,8 @@ public sealed partial class RadarPanel : ConsolePanel
         Vector2 c = dr.GetCenter();
         float rr = 120 * 0.4f;
         foreach (float f in new[] { 0.5f, 1f }) DrawArc(c, rr * f, 0, Mathf.Tau, 48, C.Deep, 1.5f, true);
+        // your sensors' reach, a faint ring (beyond it an enemy is an unknown contact: Battle.Identified)
+        DrawArc(c, (float)Math.Min(1.08, B.SensorKm(Me) / ScaleKm) * rr, 0, Mathf.Tau, 48, new Color(C.Sky, 0.35f), 1, true);
         foreach (Ship o in B.Ships)
         {
             if (!o.Alive || o == Me || !B.Detected(Me, o)) continue;   // a cloaked ship unseen is not on the radar
@@ -138,7 +140,8 @@ public sealed partial class RadarPanel : ConsolePanel
     }
 }
 
-/// <summary>The top strip: own hull, the weapon capacitor in cells, the target's hull, the clock, Pause and Menu. A skin
+/// <summary>The top strip: own hull, the weapon capacitor in cells, the target's hull, the clock (the time left under a time
+/// limit), Pause and Menu. A skin
 /// whose strips join its column draws the joined strip, its content moved into the strip's channel.</summary>
 public sealed partial class TopStrip : ConsolePanel
 {
@@ -155,9 +158,20 @@ public sealed partial class TopStrip : ConsolePanel
         Lbl("Weapon capacitor", xx, cy + 13, u * 1.2f);
         CellRow("cap", new Rect2(xx, cy + 19, u * 1.2f, 16), 14, s.Capacitor / s.Class.CapacitorE * 14, null, null); xx += u * 1.2f + gap;
         Ship? t = B.TargetOf(s);
-        Bar(xx, cy, u, t != null ? $"Target hull · {t.Name}" : "Target hull", t != null ? t.Hull / t.Class.HullHp : 0, true); xx += u + gap;
-        int secs = (int)B.T;
-        Num($"{secs / 60:00}:{secs % 60:00}", xx + 70, cy + 30, 0, null, HorizontalAlignment.Right); xx += 70 + gap;
+        Bar(xx, cy, u, t != null ? $"Target hull · {Aiming.ContactName(B, t)}" : "Target hull", t != null ? t.Hull / t.Class.HullHp : 0, true); xx += u + gap;
+        // the mission clock, or with a time limit the time left (Battle.TimeLeftS), in Caution for its last minute
+        if (B.TimeLeftS is { } left)
+        {
+            int ls = (int)Math.Ceiling(left);
+            Lbl("Time left", xx + 70, cy + 11, 0, null, HorizontalAlignment.Right, 12);
+            Num($"{ls / 60:00}:{ls % 60:00}", xx + 70, cy + 33, 0, left < 60 ? C.Caution : null, HorizontalAlignment.Right);
+        }
+        else
+        {
+            int secs = (int)B.T;
+            Num($"{secs / 60:00}:{secs % 60:00}", xx + 70, cy + 30, 0, null, HorizontalAlignment.Right);
+        }
+        xx += 70 + gap;
         Button("pause", new Rect2(xx, cy + 4, 100, 30), X.State.Paused ? "Resume" : "Pause", X.Act.Pause, X.State.Paused, tip: new Tip("Pause (Space): orders still work")); xx += 100 + gap;
         Button("menu", new Rect2(xx, cy + 4, 80, 30), "Menu", X.Act.Menu, X.State.MenuOpen);
     }

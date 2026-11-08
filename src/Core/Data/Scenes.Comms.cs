@@ -19,7 +19,27 @@ public sealed record ShipSetup(int? Marines, IReadOnlyDictionary<string, int> Te
     IReadOnlyList<double> MountsHp);
 
 /// <summary>A planet in a scene: where it is and its radius (metres), its colour, and what it asks to be given.</summary>
-public sealed record PlanetDef(string Id, string Name, double XM, double ZM, double RadiusM, string Color, IReadOnlyDictionary<string, int> Needs);
+public sealed record PlanetDef(string Id, string Name, double XM, double ZM, double RadiusM, string Color, IReadOnlyDictionary<string, int> Needs)
+{
+    /// <summary>The kind of world, which picks its look in the view (PlanetLooks): terran, ocean, desert, ice, lava, barren or gas.</summary>
+    public string Kind { get; init; } = "terran";
+    /// <summary>What stands on its surface, to scan and send an away team to (Battle.Field).</summary>
+    public IReadOnlyList<InstallationDef> Installations { get; init; } = System.Array.Empty<InstallationDef>();
+    /// <summary>Whether its people will receive an envoy beamed down (a diplomat run).</summary>
+    public bool TakesEnvoy { get; init; }
+    /// <summary>Someone on the surface waiting to be beamed up (an envoy or a research team to extract), or null.</summary>
+    public string? Waiting { get; init; }
+    /// <summary>The planet kinds the view can draw.</summary>
+    public static readonly string[] Kinds = { "terran", "ocean", "desert", "ice", "lava", "barren", "gas" };
+}
+
+/// <summary>Something on a planet's surface: a name, its kind (outpost, lab, ruin, mine, city, battery or wreck), where it
+/// stands (latitude and longitude, degrees), whether it is hostile and the garrison an away team must beat there, and
+/// whether it shows before the planet is scanned.</summary>
+public sealed record InstallationDef(string Id, string Name, string Kind, double LatDeg, double LonDeg, bool Hostile, int Garrison, bool Known)
+{
+    public static readonly string[] Kinds = { "outpost", "lab", "ruin", "mine", "city", "battery", "wreck" };
+}
 
 /// <summary>A scene's goal: "taken", the ship Id joined to the player's side; or "relieved", the ship or planet Id given all it
 /// asked for. Met, the battle is won; the ship destroyed first, it is lost.</summary>

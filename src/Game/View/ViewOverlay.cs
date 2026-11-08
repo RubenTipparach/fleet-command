@@ -194,7 +194,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 var ep = Size / 2 + new Vector2(Mathf.Cos(an) * (Size.X / 2 - 40), Mathf.Sin(an) * (Size.Y / 2 - 40));
                 Color edge = s.Side != me.Side ? C.Alert : C.Accord;
                 DrawArc(ep, 14, 0, Mathf.Tau, 24, edge, 3, true);
-                f.Draw(this, s.Name.ToUpperInvariant(), ep.X, ep.Y + 32, 16, edge, HorizontalAlignment.Center);
+                f.Draw(this, Aiming.ContactName(b, s).ToUpperInvariant(), ep.X, ep.Y + 32, 16, edge, HorizontalAlignment.Center);
                 continue;
             }
             bool foe = s.Side != me.Side, hot = p.DistanceTo(_mouse) < (locked ? 50 : 22);
@@ -209,7 +209,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                     var corner = p + new Vector2(sx * w / 2, sy * h / 2);
                     DrawPolyline(new[] { corner - new Vector2(sx * c0, 0), corner, corner - new Vector2(0, sy * c0) }, bc, 3.5f + (hot ? 1 : 0), true);
                 }
-                string lab = big ? s.Name : $"{s.Name} · {s.Class.Code} · {Rules.DistKm(me, s):0.0} km · {Math.Round(s.V)}";
+                string lab = big ? Aiming.ContactName(b, s) : $"{Aiming.ContactName(b, s)} · {Aiming.ContactCode(b, s)} · {Rules.DistKm(me, s):0.0} km · {Math.Round(s.V)}";
                 f.Draw(this, lab.ToUpperInvariant(), p.X, p.Y + 58, 20, C.Text, HorizontalAlignment.Center);
                 HullBar(p.X, p.Y + 70, s);
             }
@@ -217,7 +217,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             {
                 float r = 16 * (hot ? 1.18f : 1);
                 DrawArc(p, r, 0, Mathf.Tau, 32, hot ? col.Lightened(0.35f) : new Color(col, 0.7f), 1.5f + (hot ? 1 : 0), true);
-                f.Draw(this, s.Name.ToUpperInvariant(), p.X, p.Y + 34, 16, col, HorizontalAlignment.Center);
+                f.Draw(this, Aiming.ContactName(b, s).ToUpperInvariant(), p.X, p.Y + 34, 16, col, HorizontalAlignment.Center);
             }
         }
         // a mission's marker beacons: each shown one a diamond with its name and range, a click steering for it (as a click on
@@ -278,7 +278,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         if (t != null)
         {
             Mount[] arc = me.Mounts.Where(m => !m.Weapon.IsPointDefence && m.State != Arming.Offline && Rules.InArc(me, m, t) && Rules.InRange(me, m, t)).ToArray();
-            f.DrawRich(this, new[] { (t.Name, C.Sky), ($" {t.Class.Name} · range ", C.Lilac), ($"{Rules.DistKm(me, t):0.0} km", C.Sky), (" · speed ", C.Lilac), (Math.Round(t.V).ToString(), C.Sky) }, 18, ry - 28, 22, mw);
+            f.DrawRich(this, new[] { (Aiming.ContactName(b, t), C.Sky), ($" {Aiming.ContactClass(b, t)} · range ", C.Lilac), ($"{Rules.DistKm(me, t):0.0} km", C.Sky), (" · speed ", C.Lilac), (Math.Round(t.V).ToString(), C.Sky) }, 18, ry - 28, 22, mw);
             f.DrawRich(this, new[] { ("in arc ", C.Lilac), (arc.Length.ToString(), C.Sky), (" · charged ", C.Lilac), (arc.Count(Rules.Ready).ToString(), C.Sky) }, 18, ry, 22, mw);
         }
         else f.DrawRich(this, new[] { ("No target", C.Sky), (" · click a ship to select it", C.Lilac) }, 18, ry, 22, mw);
@@ -296,7 +296,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             float w = Math.Min(320, Size.X * 0.3f), h = w * 0.86f, bx = Size.X - w - 16, by = 14;
             DrawRect(new Rect2(bx + 2, by + 2, w - 4, h - 4), _x.Kit.Style.R.Plate);
             _x.Kit.Piece(this, "frame.inset", new Rect2(bx, by, w, h));
-            f.Draw(this, $"TARGET · {t.Name.ToUpperInvariant()}", bx + 18, by + 34, 18, C.Sky, HorizontalAlignment.Left, w - 90, 600, 1);
+            f.Draw(this, $"TARGET · {Aiming.ContactName(b, t).ToUpperInvariant()}", bx + 18, by + 34, 18, C.Sky, HorizontalAlignment.Left, w - 90, 600, 1);
             var xr = new Rect2(bx + w - 34, by + 14, 24, 24);
             HitState xs = _ui.Reg("v.target.x", xr, _ => _x.State.ShowTarget = false, null, new Tip("Close the Target box"));
             Color xf = xs.Hot ? C.Alert : C.Signal, xi = _x.Kit.Style.InkOn(xf);
