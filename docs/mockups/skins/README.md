@@ -51,6 +51,15 @@ The page refuses a skin missing any of these (see `REQUIRED` in the page):
   `helm.pad` 300 x 300 (eight direction keys and a centre key; arrows are drawn live by `live.arrow`), `ssd.bezel`
   460 x 300 (a frame round an empty field for `live.ssd`), `dial` 120 x 120 (a housing; `live.dial` draws the
   reading), `lamp.alert.green`, `.yellow`, `.red` 64 x 64, `crest` 96 x 96 (an original faction mark).
+- **Column ground (optional)**: `build()` may return its kit with a `column` field, a PNG data URL of the whole column
+  (472 x 1080), e.g. `Object.assign(FCK.fromPainters(...), { column: FCK.png(FCK.paint(472, 1080, draw)) })`. The page
+  draws it behind the column's panels and shows it on the kit sheet. Every metal skin needs one (CLAUDE.md section 7: no
+  black behind a metallic skin's panels); the rendered kits carry theirs as `console.column` or `console.backing`.
+- **Overgrowth (optional)**: `def.overgrow(x, rects)` paints over the whole console (1920 x 1080) once it is laid out,
+  for growth that crosses between pieces (tendrils over the gaps, reef swelling past the column's edge). `rects` maps
+  every slot (`nameplate`, `helm.pad`, `inset.helm-readout`, `ssd.bezel`, `panel.weapons`, `dial`, `inset.contacts`,
+  `crest`, `strip.top`, `strip.bottom`, ...) to `[x, y, w, h]` in console px. It must keep clear of every label, readout
+  and key face (`tools/mockups/console_fit.mjs` checks).
 - `icon(name)` returns a canvas (use `FCK.paint(48, 48, draw)`) for every name in `FCK.ICONS`: helm, fire,
   shields, tractor, transport, science, comms, repair, map, settings.
 

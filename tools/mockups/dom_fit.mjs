@@ -17,7 +17,9 @@ import path from 'node:path';
 const { chromium } = createRequire(import.meta.url)('playwright');
 const [target, only] = process.argv.slice(2);
 const SIZES = [['desktop', { width: 1920, height: 1080 }], ['phone', { width: 844, height: 390 }], ['portrait', { width: 390, height: 844 }]];
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// The 2D canvas stays on the CPU: on the software GPU every toDataURL of a painted piece reads back from swiftshader, and
+// a page of painted skins took over four minutes to load (2026-11-07); WebGL still runs on swiftshader.
+const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-accelerated-2d-canvas'] });
 let total = 0;
 for (const [sizeName, viewport] of SIZES) {
   const page = await browser.newPage({ viewport });

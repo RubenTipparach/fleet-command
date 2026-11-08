@@ -3,7 +3,7 @@
 <title>Fleet Command Console Skins</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Saira+Stencil+One&family=Saira+Condensed:wght@500;700&family=Permanent+Marker&family=Patrick+Hand&family=Metamorphous&family=Barlow+Condensed:wght@600&family=Michroma&family=Exo+2:wght@300;600&family=Cinzel:wght@700&family=Alegreya+Sans+SC:wght@700&family=Russo+One&family=Teko:wght@500;600&family=Syncopate:wght@700&family=Quicksand:wght@500;700&family=Courier+Prime:wght@700&family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Black+Ops+One&family=VT323&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Antonio:wght@400;600;700&family=Saira+Stencil+One&family=Saira+Condensed:wght@500;700&family=Permanent+Marker&family=Patrick+Hand&family=Metamorphous&family=Barlow+Condensed:wght@600&family=Michroma&family=Exo+2:wght@300;600&family=Cinzel:wght@700&family=Alegreya+Sans+SC:wght@700&family=Russo+One&family=Teko:wght@500;600&family=Syncopate:wght@700&family=Quicksand:wght@500;700&family=Courier+Prime:wght@700&family=Share+Tech+Mono&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&family=Black+Ops+One&family=VT323&family=Space+Mono:wght@400;700&family=Martian+Mono:wght@700&family=Allerta+Stencil&family=Chivo+Mono:wght@500;700&family=Stardos+Stencil:wght@400;700&family=Special+Elite&display=swap">
 <style>
 /* Mockup 4, version 2 (OpenSpec change console-skins): one UI kit of named 9-slice and hero pieces, and three faction
    skins that are three design languages (owner, 2026-10-30: "NO skin uses the same button shape", palettes from each
@@ -122,10 +122,10 @@ table.kit code { font: 500 12px var(--mono); color: var(--accent); }
 
 <div class="wrap">
   <header class="top">
-    <div class="eyebrow">Mockup 4 · console-skins · version 28</div>
+    <div class="eyebrow">Mockup 4 · console-skins · version 30</div>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
     <h1>Console Skins</h1>
-    <p class="muted">One kit of interface pieces, ten factions, ten design languages. Concord is flat back-lit vector on LCARS's principles, the Vos are hand-drawn, the Aelith are hologram light in a rendered shell, and the rest are modelled and rendered in Blender. No two share a button, a palette or an icon shape. Press the keys, switch the toggles and drag the bars.</p>
+    <p class="muted">One kit of interface pieces, thirteen factions, thirteen design languages. Concord is flat back-lit vector on LCARS's principles, the Vos are hand-drawn, the Aelith are hologram light in a rendered shell, the Axiom are drawn by the mathematics itself (Koch, Sierpinski, Cantor, escape-time), the Exponent and the Red Tithe are painted first passes (utilitarian steel taken over by a reef; scorched, bloodied paper nailed to oak), and the rest are modelled and rendered in Blender. No two share a button, a palette or an icon shape. Press the keys, switch the toggles and drag the bars.</p>
   </header>
   <nav class="switch" id="switch" aria-label="Skin"></nav>
 
@@ -857,6 +857,9 @@ function buildConsole() {
   const bot = slot(el('div', 'nine k-strip bottom'), 'strip.bottom'); bot.append(el('div', 'lbl', 'Speed'), el('div', 'num', '17.8'), bar('Power', 71), bar('Systems', 54, true));
   const lamp = slot(heroEl('lamp.alert.yellow', 48, 48), 'lamp.alert.yellow'); bot.append(lamp);
   root.append(top, bot);
+  // A painted skin's ground behind the column (CLAUDE.md section 7: no black behind a metal skin's panels), when its kit
+  // has one: `column`, an image of the column's whole 472 x 1080.
+  if (K.column) { const g = new Image(); g.src = K.column; g.alt = ''; g.className = 'ground'; g.style.cssText = 'position:absolute;left:0;top:0;width:472px;height:1080px;pointer-events:none'; root.append(g); }
   const col = el('div', 'col');
   // Name plate with the captain's name written live into its field.
   const plate = slot(heroEl('nameplate', 460, 56), 'nameplate'); const pt = S.plateText, pn = el('div', 'ovl', pt.sub);
@@ -884,6 +887,14 @@ function buildConsole() {
   const crest = slot(heroEl('crest', 96, 96), 'crest');
   radar.append(dial, rp, crest); col.append(radar);
   root.append(col);
+  // A skin's growth over the console (optional `overgrow(x, rects)`): painted once the console is laid out, over its
+  // pieces and the gaps between them, given every slot's rectangle in console px so it keeps clear of their content.
+  if (S.overgrow) {
+    const rel = (n) => { let px = 0, py = 0; for (let e = n; e && e !== root; e = e.offsetParent) { px += e.offsetLeft; py += e.offsetTop; } return [px, py, n.offsetWidth, n.offsetHeight]; };
+    const rects = {}; for (const n of root.querySelectorAll('[data-slot]')) rects[n.dataset.slot] = rel(n);
+    const ov = paint(1920, 1080, (x) => S.overgrow(x, rects)); ov.className = 'overgrowth'; ov.style.cssText = 'position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none';
+    root.append(ov);
+  }
   if (K.organic) { organicPin(root); organicPortrait(plate, K); organicBacking(root, view, K); }
   layoutCells(root);
   for (const tr of root.querySelectorAll('.k-track')) { const row = tr.querySelector('.k-cells'); tr.dataset.pct = row ? row.dataset.pct : (parseFloat((tr.querySelector('.k-fill')?.style.width.match(/\* ([\d.]+)\)/) || [])[1]) * 100 || 50); }
@@ -1213,6 +1224,7 @@ function buildProof() {
 function buildHeroes() {
   const K = kit(SKIN), hr = document.getElementById('heroes'); hr.replaceChildren();
   for (const [id, [w, h]] of Object.entries(HERO)) { const d = el('div', ''); const im = new Image(); im.src = K.hero[id].src; im.width = w; im.height = h; im.alt = id; d.append(im, el('div', 'cap', `${id} · ${w} x ${h}`)); hr.append(d); }
+  if (K.column) { const d = el('div', ''); const im = new Image(); im.src = K.column; im.width = 236; im.height = 540; im.alt = 'console.column'; d.append(im, el('div', 'cap', 'console.column · 472 x 1080 (shown at half size)')); hr.append(d); }
 }
 
 const top = () => scrollTo(0, 0), at = (id) => document.getElementById(id).scrollIntoView();
@@ -2757,6 +2769,2127 @@ F.register('ssarith', {
   palette: [['Gunmetal', '#3a4044', 'Plates, bezels, keys', 'The hunter\'s gear: plain, made to outlast the hunt'], ['Canopy', '#2f4a2a', 'Camouflage, field paint', 'The hunting ground; staying unseen'],
     ['Moss', '#5b6340', 'Camouflage mottling', 'Patience: the hunter becomes the jungle'], ['Phosphor', SS.phos, 'Tubes, readouts, traces', 'The tracker: the quarry in sight'],
     ['Bone', SS.bone, 'Tally marks, trophies, titles', 'The count of worthy kills'], ['Kill red', '#c2412b', 'Alerts only', 'The strike, given once']],
+});
+})();
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/skins/axiom.js -->
+<script data-src="docs/mockups/skins/axiom.js">
+// The Axiom skin (mockup 4, OpenSpec change console-skins): a purely mathematical faction (owner, 2026-11-07: "Id like a
+// faction that is purely mathematical. A faction based on fractal patterns and designs."). Name and culture are ours and
+// provisional until the owner sets them on the survey. Their creed: every true thing is a rule and its iteration, and a
+// structure is honoured by how deep its rule has been carried. They keep three schools at once, and each one owns part of
+// the console: the escape-time school (boundary art of iterated maps) owns the screens, the tilers (self-similar and
+// substitution tilings) own the frames and plates, and the branchers (rewriting systems) own the icons and marks.
+// Nothing is drawn from their bodies (CLAUDE.md section 1): their bodies are not described and shape nothing here.
+//
+// Method: flat and exact, drawn by the mathematics itself in canvas, with no painted material or depth (CLAUDE.md
+// section 7: vector for flat styles). Thin lines and filled regions on the void, glowing a little; the depth of an
+// iteration is shown by its colour, indigo for shallow, cyan for deep. Every shape comes from an explicit rule (Koch
+// edges, Sierpinski triangles and carpets, Hilbert curves, Cantor sets, the dragon curve, a Julia set computed per
+// pixel, golden-ratio proportions), so every piece is deterministic and there is no randomness at all.
+// The key is the Koch key: an elongated hexagon whose short ends are Koch edges, one level deeper on hover, filled solid
+// when pressed. Registers itself with the page's skin registry (docs/mockups/skins). Our own design throughout.
+(function () {
+'use strict';
+const F = window.FCK, P = F.P;
+const AX = { void: '#05060c', plate: '#080a18', proof: '#e8ecf6', dim: '#9aa8e0', indigo: '#4b3fd8', indigoHi: '#6a5cf0', cyan: '#3fe0e6',
+  gold: '#f2c14e', magenta: '#ff3d8b', solid: '#2f2696' };
+const PHI = (1 + Math.sqrt(5)) / 2;
+function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+// The colour of an iteration depth t in [0, 1]: indigo (shallow) to cyan (deep).
+function band(t, a = 1) {
+  const A = [0x4b, 0x3f, 0xd8], B = [0x3f, 0xe0, 0xe6], k = Math.max(0, Math.min(1, t));
+  return `rgba(${A.map((v, i) => Math.round(v + (B[i] - v) * k)).join(',')},${a})`;
+}
+
+// ---- the rules ---------------------------------------------------------------------------------------------------
+// A Koch edge from a to b, d levels deep, its bumps on the side s (1: left of a->b, which is outward for a polygon wound
+// clockwise on screen). Returns the points from a up to, but not including, b.
+function koch(a, b, d, s = 1) {
+  if (d <= 0) return [a];
+  const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy), hgt = L / 3 * Math.sqrt(3) / 2 * s;
+  const p1 = [a[0] + dx / 3, a[1] + dy / 3], p3 = [a[0] + 2 * dx / 3, a[1] + 2 * dy / 3];
+  const ap = [(a[0] + b[0]) / 2 + dy / L * hgt, (a[1] + b[1]) / 2 - dx / L * hgt];
+  return [...koch(a, p1, d - 1, s), ...koch(p1, ap, d - 1, s), ...koch(ap, p3, d - 1, s), ...koch(p3, b, d - 1, s)];
+}
+// A closed polygon whose every edge is a Koch edge (wound clockwise on screen, so s = 1 bumps outward, -1 inward).
+function kochPoly(verts, d, s = 1) { const o = []; for (let i = 0; i < verts.length; i++) o.push(...koch(verts[i], verts[(i + 1) % verts.length], d, s)); return o; }
+// The Koch snowflake of circumradius r round (cx, cy), d levels deep, one point up.
+function snowflake(cx, cy, r, d) { const v = [0, 1, 2].map((i) => [cx + Math.cos(-P / 2 + i * 2 * P / 3) * r / 1, cy + Math.sin(-P / 2 + i * 2 * P / 3) * r]); return kochPoly(v, d, 1); }
+// The Koch key: an elongated hexagon whose short ends are Koch edges. Its ends are e px long (tip to corner) and its
+// long sides are plain, so it stretches along its length.
+function kochKey(X, Y, W, H, d, e) {
+  const cy = Y + H / 2, tl = [X + e, Y], tr = [X + W - e, Y], rt = [X + W, cy], br = [X + W - e, Y + H], bl = [X + e, Y + H], lt = [X, cy];
+  return [...koch(lt, tl, d), tl, ...koch(tr, rt, d), ...koch(rt, br, d), br, ...koch(bl, lt, d)];
+}
+// The Cantor set on [x0, x1], d levels deep: the segments that remain.
+function cantor(x0, x1, d) { if (d <= 0) return [[x0, x1]]; const t = (x1 - x0) / 3; return [...cantor(x0, x0 + t, d - 1), ...cantor(x1 - t, x1, d - 1)]; }
+// A Sierpinski triangle on the triangle (a, b, c), d levels deep: the filled triangles.
+function sierpinski(a, b, c, d) {
+  if (d <= 0) return [[a, b, c]];
+  const m = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2], ab = m(a, b), bc = m(b, c), ca = m(c, a);
+  return [...sierpinski(a, ab, ca, d - 1), ...sierpinski(ab, b, bc, d - 1), ...sierpinski(ca, bc, c, d - 1)];
+}
+// The Hilbert curve of order n in the unit square, as 4^n points (the classic index-to-point rule).
+function hilbert(n) {
+  const N = 1 << n, out = [];
+  for (let i = 0; i < N * N; i++) {
+    let t = i, x = 0, y = 0;
+    for (let s = 1; s < N; s *= 2) {
+      const rx = 1 & (t / 2), ry = 1 & (t ^ rx);
+      if (ry === 0) { if (rx === 1) { x = s - 1 - x; y = s - 1 - y; } const q = x; x = y; y = q; }
+      x += s * rx; y += s * ry; t = Math.floor(t / 4);
+    }
+    out.push([(x + 0.5) / N, (y + 0.5) / N]);
+  }
+  return out;
+}
+// The Heighway dragon of n folds: the turn sequence by the regular paper-folding rule, as points on a unit grid.
+function dragon(n) {
+  const pts = [[0, 0]]; let x = 0, y = 0, dir = 0;
+  const steps = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+  for (let i = 1; i <= (1 << n); i++) {
+    x += steps[dir][0]; y += steps[dir][1]; pts.push([x, y]);
+    const k = i & -i, turn = (((i / k) - 1) / 2) % 2 === 0 ? 1 : -1;   // the paper-folding sequence
+    dir = (dir + turn + 4) % 4;
+  }
+  return pts;
+}
+
+// ---- drawing -----------------------------------------------------------------------------------------------------
+function path(x, pts, closed = true) { x.beginPath(); x.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) x.lineTo(pts[i][0], pts[i][1]); if (closed) x.closePath(); }
+// A line of light: a soft glow and an exact core.
+function glow(x, pts, col, lw = 1.2, blur = 4, closed = true) {
+  x.save(); x.lineJoin = 'miter'; x.miterLimit = 3; x.shadowColor = col; x.shadowBlur = blur; x.strokeStyle = col; x.lineWidth = lw; path(x, pts, closed); x.stroke(); x.restore();
+}
+function fillTris(x, tris, col, blur = 0) { x.save(); x.fillStyle = col; x.shadowColor = col; x.shadowBlur = blur; x.beginPath(); for (const [a, b, c] of tris) { x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.lineTo(c[0], c[1]); x.closePath(); } x.fill(); x.restore(); }
+// A Cantor rule: the set's segments as one line at height y.
+function cantorLine(x, x0, x1, y, d, col, lw = 2, blur = 3) { x.save(); x.strokeStyle = col; x.lineWidth = lw; x.lineCap = 'butt'; x.shadowColor = col; x.shadowBlur = blur; x.beginPath(); for (const [a, b] of cantor(x0, x1, d)) { x.moveTo(a, y); x.lineTo(b, y); } x.stroke(); x.restore(); }
+// A Sierpinski corner: the right triangle whose right angle sits at (cx, cy), legs of n px along sx and sy.
+function sierCorner(x, cx, cy, n, sx, sy, d, col, blur = 3) { fillTris(x, sierpinski([cx, cy], [cx + sx * n, cy], [cx, cy + sy * n], d), col, blur); }
+// A Hilbert trace filling the n px square at (X, Y).
+function hilbertTrace(x, X, Y, n, order, col, lw = 1) { glow(x, hilbert(order).map(([u, v]) => [X + u * n, Y + v * n]), col, lw, 2, false); }
+
+// ---- the kit -----------------------------------------------------------------------------------------------------
+// The Koch key in a state: idle a thin outline round a faint fill, hover one level deeper and brighter with the shallower
+// rule left faintly behind it, pressed filled solid inside a gold outline (the statement proved).
+const KEY_E = 22;
+function keyState(st) {
+  return (x, w, h) => {
+    const d = st === 'idle' ? 1 : 2, pts = kochKey(3, 7, w - 6, h - 14, d, KEY_E);
+    x.fillStyle = st === 'pressed' ? AX.solid : st === 'hover' ? hexA(AX.cyan, 0.13) : hexA(AX.indigo, 0.16); path(x, pts); x.fill();
+    if (st !== 'idle') glow(x, kochKey(3, 7, w - 6, h - 14, 1, KEY_E), hexA(AX.indigoHi, 0.45), 0.8, 0);
+    glow(x, pts, st === 'pressed' ? AX.gold : st === 'hover' ? AX.cyan : AX.indigoHi, st === 'idle' ? 1.2 : 1.5, st === 'idle' ? 2 : 6);
+  };
+}
+// A tab: an open bracket whose foot is a Cantor rule; the chosen tab's rule turns gold and its head closes.
+function tabState(on) {
+  return (x, w, h) => {
+    x.fillStyle = on ? hexA(AX.gold, 0.10) : hexA(AX.indigo, 0.10); x.fillRect(3, 4, w - 6, h - 8);
+    const col = on ? AX.gold : AX.indigoHi;
+    glow(x, [[3.5, 10], [3.5, h - 4.5], [12, h - 4.5]], col, 1.2, 2, false); glow(x, [[w - 3.5, 10], [w - 3.5, h - 4.5], [w - 12, h - 4.5]], col, 1.2, 2, false);
+    glow(x, [[12, h - 4.5], [w - 12, h - 4.5]], hexA(col, 0.6), 0.8, 0, false);
+    cantorLine(x, 3, 13, h - 4.5, 2, col, on ? 2.6 : 1.8, on ? 5 : 2); cantorLine(x, w - 13, w - 3, h - 4.5, 2, col, on ? 2.6 : 1.8, on ? 5 : 2);
+    if (on) glow(x, [[3.5, 4.5], [w - 3.5, 4.5]], hexA(AX.gold, 0.7), 1, 3, false);
+  };
+}
+// The tilers' frame: a fine rule round a plain plate, a Sierpinski triangle in each corner.
+function framePanel(x, w, h) {
+  x.fillStyle = hexA('#080a18', 0.94); x.fillRect(4, 4, w - 8, h - 8);
+  glow(x, [[4.5, 4.5], [w - 4.5, 4.5], [w - 4.5, h - 4.5], [4.5, h - 4.5]], AX.indigoHi, 1, 2);
+  for (const [cx, cy, sx, sy] of [[4.5, 4.5, 1, 1], [w - 4.5, 4.5, -1, 1], [4.5, h - 4.5, 1, -1], [w - 4.5, h - 4.5, -1, -1]]) sierCorner(x, cx, cy, 19, sx, sy, 3, AX.cyan, 3);
+}
+function frameInset(x, w, h) {
+  x.fillStyle = hexA('#03040a', 0.9); x.fillRect(2, 2, w - 4, h - 4);
+  glow(x, [[2.5, 2.5], [w - 2.5, 2.5], [w - 2.5, h - 2.5], [2.5, h - 2.5]], hexA(AX.indigoHi, 0.8), 1, 1);
+  for (const [X, Y] of [[0, 0], [w - 10, 0], [0, h - 10], [w - 10, h - 10]]) hilbertTrace(x, X + 1, Y + 1, 8, 2, AX.cyan, 0.9);
+}
+// The strips: a fine rule along the inner edge; at the left end the Cantor set iterated row by row (its depth ladder),
+// at the right the Koch curve iterated row by row. The open band between them is plain.
+function strip(x, w, h, flip) {
+  x.save(); if (flip) { x.translate(0, h); x.scale(1, -1); }
+  x.fillStyle = hexA('#06081a', 0.96); x.fillRect(0, 0, w, h - 4);
+  glow(x, [[0, h - 4.5], [w, h - 4.5]], AX.indigoHi, 1.2, 3, false);
+  glow(x, [[0, 1.5], [w, 1.5]], hexA(AX.indigo, 0.5), 0.8, 0, false);
+  for (let d = 0; d < 5; d++) cantorLine(x, 12, 102, 13 + d * 11, d, band(d / 4), 2.4, 3);
+  for (let d = 0; d < 4; d++) glow(x, [...koch([w - 102, 56], [w - 12, 56], d), [w - 12, 56]], band(d / 3, 0.55 + d * 0.15), d === 3 ? 1.4 : 1, d === 3 ? 4 : 0, false);
+  x.restore();
+}
+const nine = {
+  'frame.panel': { size: [160, 120], m: [26, 26, 26, 26], draw: framePanel },
+  'frame.inset': { size: [64, 48], m: [12, 12, 12, 12], draw: frameInset },
+  'bar.track': { size: [96, 20], m: [0, 12, 0, 12], inset: [8, 4], draw: (x, w, h) => {
+    x.fillStyle = hexA('#03040a', 0.95); x.fillRect(4, 2, w - 8, h - 4);
+    glow(x, [[4.5, 2.5], [w - 4.5, 2.5], [w - 4.5, h - 2.5], [4.5, h - 2.5]], hexA(AX.indigoHi, 0.85), 1, 1);
+    x.save(); x.strokeStyle = AX.cyan; x.lineWidth = 1.4; x.lineCap = 'butt'; x.beginPath(); for (const [a, b] of cantor(2, h - 2, 2)) { x.moveTo(1.5, a); x.lineTo(1.5, b); x.moveTo(w - 1.5, a); x.lineTo(w - 1.5, b); } x.stroke(); x.restore();
+  } },
+  'bar.fill': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => fillBar(x, w, h, AX.cyan) },
+  'bar.fill.red': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => fillBar(x, w, h, AX.magenta) },
+  // Symbol bars: a row of Sierpinski carpet cells (one level: eight squares round an empty centre), the tilers' plate.
+  'bar.cell.off': { size: [12, 12], gap: 3, draw: (x, w, h) => carpet(x, w, h, hexA(AX.indigoHi, 0.75), false) },
+  'bar.cell.on': { size: [12, 12], gap: 3, draw: (x, w, h) => carpet(x, w, h, AX.cyan, true) },
+  'bar.cell.warn': { size: [12, 12], gap: 3, draw: (x, w, h) => carpet(x, w, h, AX.magenta, true) },
+  'button.idle': { size: [160, 48], m: [20, 28, 20, 28], draw: keyState('idle') },
+  'button.hover': { size: [160, 48], m: [20, 28, 20, 28], draw: keyState('hover') },
+  'button.pressed': { size: [160, 48], m: [20, 28, 20, 28], draw: keyState('pressed') },
+  'tab.idle': { size: [120, 40], m: [12, 14, 12, 14], draw: tabState(false) },
+  'tab.active': { size: [120, 40], m: [12, 14, 12, 14], draw: tabState(true) },
+  'strip.top': { size: [512, 72], m: [12, 116, 12, 116], draw: (x, w, h) => strip(x, w, h, false) },
+  'strip.bottom': { size: [512, 72], m: [12, 116, 12, 116], draw: (x, w, h) => strip(x, w, h, true) },
+  'divider': { size: [128, 10], m: [0, 24, 0, 24], draw: (x, w, h) => {
+    glow(x, [[0, 5], [w, 5]], hexA(AX.indigoHi, 0.8), 1, 1, false);
+    cantorLine(x, 1, 22, 5, 2, AX.cyan, 3, 3); cantorLine(x, w - 22, w - 1, 5, 2, AX.cyan, 3, 3);
+  } },
+};
+function fillBar(x, w, h, col) {
+  x.save(); x.shadowColor = col; x.shadowBlur = 4; x.fillStyle = hexA(col, 0.9); x.fillRect(1, 2, w - 2, h - 4); x.restore();
+  x.fillStyle = AX.void; for (const [a, b] of [[1, 2], [w - 2, w - 1]]) x.fillRect(a, 2, b - a, h - 4);
+}
+function carpet(x, w, h, col, lit) {
+  const s = Math.min(w, h) - 1, X = (w - s) / 2, Y = (h - s) / 2, c = s / 3;
+  x.save(); if (lit) { x.shadowColor = col; x.shadowBlur = 3; }
+  for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) {
+    if (i === 1 && j === 1) continue;
+    if (lit) { x.fillStyle = col; x.fillRect(X + i * c + 0.3, Y + j * c + 0.3, c - 0.6, c - 0.6); }
+    else { x.strokeStyle = col; x.lineWidth = 0.6; x.strokeRect(X + i * c + 0.6, Y + j * c + 0.6, c - 1.2, c - 1.2); }
+  }
+  x.restore();
+}
+
+// ---- hero pieces -------------------------------------------------------------------------------------------------
+// The escape-time school's screen: the Julia set of z -> z^2 + c, coloured by how fast each point escapes (its depth of
+// iteration), drawn faint behind a field so the live readouts stay first. Computed per device pixel.
+function juliaField(x, X, Y, W, H, opt = {}) {
+  const k = 2, cw = Math.round(W * k), ch = Math.round(H * k), off = document.createElement('canvas'); off.width = cw; off.height = ch;
+  const o = off.getContext('2d'), img = o.createImageData(cw, ch), d = img.data;
+  const [cr, ci] = opt.c || [-0.7269, 0.1889], MAX = opt.max || 72, span = opt.span || 1.6, alpha = opt.alpha ?? 0.34;
+  const A = [0x4b, 0x3f, 0xd8], B = [0x3f, 0xe0, 0xe6];
+  for (let py = 0; py < ch; py++) for (let px = 0; px < cw; px++) {
+    let zr = (px / cw - 0.5) * 2 * span * (cw / ch), zi = (py / ch - 0.5) * 2 * span, n = 0;
+    while (n < MAX && zr * zr + zi * zi < 16) { const t = zr * zr - zi * zi + cr; zi = 2 * zr * zi + ci; zr = t; n++; }
+    const i = (py * cw + px) * 4;
+    if (n >= MAX) { d[i] = A[0]; d[i + 1] = A[1]; d[i + 2] = A[2]; d[i + 3] = Math.round(255 * alpha * 0.18); continue; }
+    const mu = Math.max(0, n + 1 - Math.log2(Math.log2(Math.sqrt(zr * zr + zi * zi) + 1e-9) + 1e-9)), v = Math.min(1, Math.log(mu + 1) / Math.log(MAX + 1));
+    for (let j = 0; j < 3; j++) d[i + j] = Math.round(A[j] + (B[j] - A[j]) * v);
+    d[i + 3] = Math.round(255 * alpha * Math.pow(v, 2.2));
+  }
+  o.putImageData(img, 0, 0); x.drawImage(off, X, Y, W, H);
+}
+const hero = {
+  // The name plate: a long Koch key three levels deep at its ends, its middle a plain field for the captain's name.
+  'nameplate': (x, w, h) => {
+    const pts = kochKey(3, 5, w - 6, h - 10, 3, 42);
+    x.fillStyle = hexA(AX.indigo, 0.14); path(x, pts); x.fill();
+    glow(x, kochKey(3, 5, w - 6, h - 10, 2, 42), hexA(AX.indigo, 0.5), 0.8, 0);
+    glow(x, pts, AX.cyan, 1.3, 5);
+    glow(x, [[54, h - 10.5], [w - 54, h - 10.5]], hexA(AX.indigoHi, 0.6), 0.8, 0, false);
+  },
+  // The helm: a recursive ring. Eight Koch snowflakes round a larger one (the stop key, gold: the fixed point), on one
+  // circle, inside a ring of Koch edges turned inward.
+  'helm.pad': (x, w, h) => {
+    const c = w / 2, ring = [];
+    for (let i = 0; i < 24; i++) { const a = -P / 2 + i * 2 * P / 24; ring.push([c + Math.cos(a) * 144, c + Math.sin(a) * 144]); }
+    glow(x, kochPoly(ring, 2, -1), hexA(AX.indigoHi, 0.75), 1, 2);
+    glow(x, F.arcPts(c, c, 100, 100, 0, 2 * P, 96), hexA(AX.indigo, 0.6), 0.8, 0);
+    for (let i = 0; i < 8; i++) {
+      const a = -P / 2 + i * P / 4, kx = c + Math.cos(a) * 100, ky = c + Math.sin(a) * 100, s = snowflake(kx, ky, 30, 2);
+      x.fillStyle = hexA(AX.indigo, 0.2); path(x, s); x.fill(); glow(x, s, AX.indigoHi, 1.2, 3);
+    }
+    const s = snowflake(c, c, 50, 3); x.fillStyle = hexA(AX.gold, 0.08); path(x, s); x.fill(); glow(x, s, AX.gold, 1.3, 5);
+  },
+  // The ship systems display: a screen of the escape-time school inside a tilers' frame.
+  'ssd.bezel': (x, w, h) => {
+    x.fillStyle = AX.void; x.fillRect(4, 4, w - 8, h - 8);
+    juliaField(x, 10, 10, w - 20, h - 20, { alpha: 0.5, c: [-0.8, 0.156], span: 1.25, max: 96 });
+    glow(x, [[4.5, 4.5], [w - 4.5, 4.5], [w - 4.5, h - 4.5], [4.5, h - 4.5]], AX.indigoHi, 1.2, 3);
+    for (const [cx, cy, sx, sy] of [[4.5, 4.5, 1, 1], [w - 4.5, 4.5, -1, 1], [4.5, h - 4.5, 1, -1], [w - 4.5, h - 4.5, -1, -1]]) sierCorner(x, cx, cy, 40, sx, sy, 4, AX.cyan, 3);
+  },
+  // The dial: a ring cut by the Cantor set (three levels), two finer rings inside.
+  'dial': (x, w) => {
+    const c = w / 2; x.fillStyle = hexA('#03040a', 0.95); x.beginPath(); x.arc(c, c, 57, 0, 2 * P); x.fill();
+    x.save(); x.strokeStyle = AX.cyan; x.lineWidth = 3; x.lineCap = 'butt'; x.shadowColor = AX.cyan; x.shadowBlur = 3;
+    for (let q = 0; q < 4; q++) for (const [a, b] of cantor(q * P / 2, (q + 1) * P / 2, 2)) { x.beginPath(); x.arc(c, c, 54, a - P / 2, b - P / 2); x.stroke(); }
+    x.restore();
+    glow(x, F.arcPts(c, c, 36, 36, 0, 2 * P, 64), hexA(AX.indigoHi, 0.7), 0.9, 0);
+    glow(x, F.arcPts(c, c, 36 / PHI / PHI, 36 / PHI / PHI, 0, 2 * P, 48), hexA(AX.indigoHi, 0.5), 0.8, 0);
+  },
+  'lamp.alert.green': (x, w) => lamp(x, w, AX.cyan), 'lamp.alert.yellow': (x, w) => lamp(x, w, AX.gold), 'lamp.alert.red': (x, w) => lamp(x, w, AX.magenta),
+  // The Axiom mark (our own): a Heighway dragon of ten folds, in gold, inside a circle.
+  'crest': (x, w) => {
+    const c = w / 2, pts = dragon(10), xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys), s = 56 / Math.max(x1 - x0, y1 - y0);
+    x.fillStyle = AX.void; x.beginPath(); x.arc(c, c, 46, 0, 2 * P); x.fill();
+    glow(x, F.arcPts(c, c, 45, 45, 0, 2 * P, 96), AX.cyan, 1.4, 4);
+    glow(x, F.arcPts(c, c, 45 / PHI, 45 / PHI, 0, 2 * P, 64), hexA(AX.indigo, 0.5), 0.8, 0);
+    glow(x, pts.map(([px, py]) => [c + (px - (x0 + x1) / 2) * s, c + (py - (y0 + y1) / 2) * s]), AX.gold, 0.9, 3, false);
+  },
+};
+// An alert lamp: a Koch snowflake three levels deep, filled with its light.
+function lamp(x, w, col) {
+  const c = w / 2, s = snowflake(c, c + 2, 27, 3);
+  x.save(); x.shadowColor = col; x.shadowBlur = 10; const g = x.createRadialGradient(c, c, 2, c, c, 26); g.addColorStop(0, '#ffffff'); g.addColorStop(0.35, col); g.addColorStop(1, hexA(col, 0.55));
+  x.fillStyle = g; path(x, s); x.fill(); x.restore();
+  glow(x, s, hexA('#ffffff', 0.7), 0.8, 0);
+}
+
+// ---- icons: the branchers' marks. One cyan ink, a 3 px line, solid for the thing, iterated strokes for what it gives off.
+function icon(name) {
+  return F.paint(48, 48, (x) => {
+    const C = AX.cyan; x.strokeStyle = C; x.fillStyle = C; x.lineWidth = 3; x.shadowColor = C; x.shadowBlur = 3; x.lineCap = 'butt';
+    const L = (pts, closed = false) => { path(x, pts, closed); x.stroke(); };
+    const D = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill(); };
+    const O = (cx, cy, r) => { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke(); };
+    const CANT = (x0, y0, x1, y1, d) => { const L0 = Math.hypot(x1 - x0, y1 - y0); x.beginPath(); for (const [a, b] of cantor(0, L0, d)) { x.moveTo(x0 + (x1 - x0) * a / L0, y0 + (y1 - y0) * a / L0); x.lineTo(x0 + (x1 - x0) * b / L0, y0 + (y1 - y0) * b / L0); } x.stroke(); };
+    ({
+      // A ship's wheel: an exact rim, a solid hub, eight spokes to eight handles.
+      helm: () => { O(24, 24, 13); D(24, 24, 4.5); for (let i = 0; i < 8; i++) { const a = i * P / 4, cs = Math.cos(a), sn = Math.sin(a); L([[24 + cs * 4, 24 + sn * 4], [24 + cs * 18, 24 + sn * 18]]); D(24 + cs * 19.5, 24 + sn * 19.5, 2.6); } },
+      // A sight: a ring, its cross-hairs cut by the Cantor set, the mark solid at the centre.
+      fire: () => { O(24, 24, 15); x.lineWidth = 2.6; CANT(24, 2, 24, 20, 1); CANT(24, 28, 24, 46, 1); CANT(2, 24, 20, 24, 1); CANT(28, 24, 46, 24, 1); D(24, 24, 3.5); },
+      // Shields: six arcs, each cut by the Cantor set, round a solid ship.
+      shields: () => { x.lineWidth = 4; for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; for (const [p, q] of cantor(a - P / 6 + 0.14, a + P / 6 - 0.14, 1)) { x.beginPath(); x.arc(24, 24, 19, p, q); x.stroke(); } } fillTris(x, [[[24, 15], [31, 30], [17, 30]]], C, 3); },
+      // A tractor: a solid emitter, a beam that widens in Cantor steps, the held box.
+      tractor: () => { x.fillRect(3, 18, 9, 12); x.lineWidth = 2.4; CANT(12, 21, 33, 11, 2); CANT(12, 27, 33, 37, 2); x.lineWidth = 3; x.strokeRect(34, 15, 10, 18); },
+      // Transport: a figure solid above the waist, dissolving below into Cantor dust, finer row by row.
+      transport: () => {
+        D(24, 8, 5.5); x.beginPath(); x.moveTo(14, 26); x.lineTo(15, 19); x.quadraticCurveTo(24, 13, 33, 19); x.lineTo(34, 26); x.closePath(); x.fill();
+        x.lineWidth = 2.6; for (let r = 0; r < 4; r++) CANT(14, 30 + r * 4.4, 34, 30 + r * 4.4, r + 1);
+      },
+      // Science: an atom; three exact orbits and a solid nucleus.
+      science: () => { x.lineWidth = 2.4; for (const r of [0, P / 3, -P / 3]) { x.beginPath(); x.ellipse(24, 24, 20, 7.5, r, 0, 2 * P); x.stroke(); } D(24, 24, 4.5); },
+      // Comms: a solid dish on its stand, its waves spaced by the golden ratio.
+      comms: () => { x.beginPath(); x.arc(15, 27, 11, P * 0.75, P * 1.75, true); x.closePath(); x.fill(); x.lineWidth = 2.6; L([[15, 27], [11, 44]]); L([[15, 27], [19, 44]]); L([[8, 44], [22, 44]]); D(23, 19, 2.5); for (let i = 0; i < 3; i++) { const r = 6 * Math.pow(PHI, i); x.beginPath(); x.arc(23, 19, r, -P * 0.5, 0); x.stroke(); } },
+      // Repair: a solid wrench.
+      repair: () => { x.lineWidth = 6; x.lineCap = 'round'; L([[10, 38], [26, 22]]); x.lineWidth = 5; x.beginPath(); x.arc(31, 17, 9, -P / 4 + 0.95, -P / 4 - 0.95 + 2 * P); x.stroke(); x.lineCap = 'butt'; },
+      // The map: a star chart; solid stars joined by routes that branch, the branchers' rule.
+      map: () => { x.lineWidth = 2.2; L([[24, 40], [24, 28]]); L([[24, 28], [13, 16]]); L([[24, 28], [35, 16]]); L([[13, 16], [8, 8]]); L([[13, 16], [18, 7]]); L([[35, 16], [30, 7]]); L([[35, 16], [40, 8]]); D(24, 40, 4); D(24, 28, 3.2); D(13, 16, 3.2); D(35, 16, 3.2); for (const [px, py] of [[8, 8], [18, 7], [30, 7], [40, 8]]) D(px, py, 2.4); },
+      // Settings: a solid gear with an exact bore.
+      settings: () => { const o = []; for (let i = 0; i < 32; i++) { const a = i * 2 * P / 32 - P / 32, r = (i >> 1) % 2 ? 14.5 : 20; o.push([24 + Math.cos(a) * r, 24 + Math.sin(a) * r]); } x.beginPath(); path(x, o); x.arc(24, 24, 6, 0, 2 * P, true); x.fill('evenodd'); },
+    })[name]();
+  });
+}
+
+// ---- the skin ----------------------------------------------------------------------------------------------------
+F.register('axiom', {
+  name: 'The Axiom', kind: 'Flat and exact, drawn by the mathematics: Koch keys, Sierpinski corners, Cantor rules, escape-time screens', bg: AX.void,
+  css: { '--s-ink': AX.proof, '--s-dim': AX.dim, '--s-num': AX.cyan, '--s-body': '"Space Mono", monospace', '--btn-ink': AX.proof, '--btn-shadow': '0 0 2px #05060c, 0 0 6px rgba(63,224,230,0.45)', '--btn-justify': 'center',
+    '--btn-font': '700 15px/1 "Space Mono", monospace', '--btn-track': '0.12em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1px',
+    '--tab-font': '400 13px/1 "Space Mono", monospace', '--tab-ink': AX.dim, '--tab-ink-on': AX.gold, '--title-font': '700 14px/1 "Martian Mono", monospace', '--title-ink': AX.cyan,
+    '--lbl-font': '400 13px/1 "Space Mono", monospace', '--num-font': '700 24px/1 "Space Mono", monospace',
+    // The strips are 72 px; their open band lies between the outer hairline (row 1.5) and the inner rule (row 67.5 of the
+    // top strip, 4.5 of the bottom), so each label stands over its bar clear of both.
+    '--stt-pt': '7px', '--stt-pb': '10px', '--stb-pt': '10px', '--stb-pb': '7px', '--strip-lamp': '44px' },
+  accent: AX.cyan, warn: AX.magenta,
+  // The title sits in the frame's top band, right of the corner's Sierpinski triangle, under the fine rule.
+  title: (t, m) => { t.style.cssText = `left:${30 - m[3]}px;top:${9 - m[0]}px;letter-spacing:0.08em;`; },
+  // The captain's name sits in the plain middle of the name plate's Koch key (54-406), clear of its Koch ends.
+  plateText: { left: 62, top: 12, width: 336, height: 28, font: '700 19px/28px "Space Mono", monospace', color: AX.proof, sub: 'FIXED POINT · ITERANT ORU' },
+  helmKeys: 'ring', helmR: 100, shield: [AX.cyan, AX.gold, AX.magenta],
+  fonts: ['400 20px "Space Mono"', '700 20px "Space Mono"', '700 20px "Martian Mono"'], view: { title: '700 26px "Space Mono"', body: '400 22px "Space Mono"', upper: true, ink: AX.proof, dim: AX.dim },
+  build: () => F.fromPainters(nine, hero, icon, false),
+  live: {
+    // A direction: a Sierpinski triangle of one level, pointing the way.
+    arrow: (x) => { fillTris(x, sierpinski([12, 0], [-7, -10], [-7, 10], 1), AX.proof, 3); },
+    helmCentre: (x, c) => { x.fillStyle = AX.gold; x.font = '700 15px "Space Mono"'; x.textAlign = 'center'; x.fillText('STOP', c, c + 7); },
+    // The ship from above, a Koch key turned on end; its shield facings as arcs cut by the Cantor set, mounts in gold.
+    ssd: (x, cx, cy, sh, col) => {
+      x.save(); x.lineCap = 'butt';
+      for (let i = 0; i < 6; i++) {
+        const a = -P / 2 + i * P / 3; x.strokeStyle = col(sh[i]); x.shadowColor = col(sh[i]); x.shadowBlur = 5; x.lineWidth = 6;
+        for (const [p, q] of cantor(a - P / 6 + 0.07, a + P / 6 - 0.07, 2)) { x.beginPath(); x.arc(cx, cy, 100, p, q); x.stroke(); }
+      }
+      x.restore();
+      const hull = kochKey(0, 0, 150, 52, 2, 34).map(([u, v]) => [cx + (v - 26), cy - 75 + u]);
+      x.fillStyle = hexA(AX.void, 0.7); path(x, hull); x.fill(); glow(x, hull, AX.cyan, 2, 5);
+      glow(x, [[cx, cy - 62], [cx, cy + 62]], hexA(AX.cyan, 0.7), 1, 2, false);
+      for (const t of [1 / PHI / PHI, 1 / PHI]) { const y = cy - 75 + 150 * t; glow(x, [[cx - 24, y], [cx + 24, y]], hexA(AX.cyan, 0.7), 1, 2, false); }
+      for (const [mx, my] of [[cx, cy - 58], [cx - 16, cy + 4], [cx + 16, cy + 4], [cx, cy + 50]]) fillTris(x, [[[mx, my - 6], [mx + 6, my + 5], [mx - 6, my + 5]]], AX.gold, 4);
+    },
+    // The radar: a sweep in cyan, its wake a fan of fading rays; contacts as small magenta triangles.
+    dial: (x, c, cts) => {
+      const a0 = -0.9; for (let i = 0; i < 6; i++) glow(x, [[c, c], [c + Math.cos(a0 - i * 0.09) * 50, c + Math.sin(a0 - i * 0.09) * 50]], hexA(AX.cyan, 0.9 - i * 0.15), i ? 1 : 2, i ? 0 : 4, false);
+      for (const [dx, dy] of cts) { const px = c + dx * 36, py = c + dy * 36; fillTris(x, [[[px, py - 5], [px + 5, py + 4], [px - 5, py + 4]]], AX.magenta, 4); }
+    },
+    // The target: a Sierpinski triangle at each corner on two fine legs.
+    bracket: (x, bx, by, bw, bh) => {
+      for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
+        sierCorner(x, px, py, 26, sx, sy, 3, AX.cyan, 4);
+        glow(x, [[px + sx * 26, py], [px + sx * 48, py]], AX.cyan, 1.4, 3, false); glow(x, [[px, py + sy * 26], [px, py + sy * 48]], AX.cyan, 1.4, 3, false);
+      }
+    },
+  },
+  world: ['Every true thing is a rule and its iteration; a structure is honoured by how deep its rule has been carried.',
+    'Their bodies are not described and shape nothing here: the console answers to their three schools of thought.',
+    'Three schools at once: the escape-time school\'s boundary screens, the tilers\' self-similar frames and plates, the branchers\' grown marks.',
+    'Hulls laid out by substitution: every part a smaller copy of the whole (provisional).'],
+  shapes: 'Koch keys (hexagons with snowflake ends), Sierpinski corners and carpet cells, Hilbert traces, Cantor rules, a dragon-curve crest.',
+  light: 'None painted: exact thin lines and flat fills on the void, glowing a little; depth of iteration is colour, indigo to cyan.',
+  motion: 'A hovered key iterates one level deeper; a pressed key fills solid in a gold outline; bar cells light one by one.',
+  type: '"Martian Mono" titles, wide and even, over "Space Mono" keys and readouts.',
+  palette: [['Void', AX.void, 'The ground', 'The unbounded plane every rule is drawn on'], ['Proof white', AX.proof, 'Text, labels', 'Stated truth'],
+    ['Iteration indigo', AX.indigo, 'Frames, idle keys', 'A rule applied once or twice: shallow'], ['Iteration cyan', AX.cyan, 'Live lines, readouts, icons', 'A rule carried deep'],
+    ['Convergence gold', AX.gold, 'Pressed keys, the chosen tab, stop', 'What converges is true; ready'], ['Divergence magenta', AX.magenta, 'Alerts only', 'What escapes to infinity: danger']],
+});
+})();
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/skins/exponent.js -->
+<script data-src="docs/mockups/skins/exponent.js">
+// The Exponent skin (mockup 4, OpenSpec change console-skins). The owner, 2026-11-07, replacing the earlier hybrid idea:
+// "Exponent is not a mix of two races. It is its own thing. Inspired by Borg. It's ship ui is a metalic utilitarian look.
+// With veins a and tentacles and barnacles growing. Like am abandoned rusted ship at sea. Take over by reefs and coral".
+// Take the shape, not the text (CLAUDE.md section 1): what we take is a collective that takes in whatever it meets and
+// runs on plain machinery. No names, glyphs, shapes, colours or art from any film or game.
+//
+// Provisional culture, ours, the owner's to correct on the survey: the Exponent is one collective that grows by taking in
+// ships, stations and crews. Nothing is decorated; everything is function. Its machines are kept running long past any
+// refit, and what it has absorbed keeps growing on them, like a hulk that has lain on a sea floor. Three traditions,
+// and which piece comes from which (never from a species' body, CLAUDE.md section 1):
+//   - the assimilators: whatever is taken is bolted on as found. The keys are access hatches on hinges with dog latches,
+//     the frames riveted plate with mismatched patches, the ship display a hull of joined modules, the crest a ring of
+//     seven unlike plates bolted shut;
+//   - the conduit-keepers: power carried in veins of cable and fluid line under translucent sheaths, a dim pulse in each;
+//     they run along the frames' feet, between the helm's hatches and up the column, and the bars fill as a lit conduit;
+//   - the reef: growth the collective tolerates and builds on, accreting in layers: barnacles (the bars' cells), brain and
+//     branching coral, tube worms, cabled kelp-like tendrils curling over edges, salt crust and verdigris on rusted plate.
+//     Growth keeps to margins and corners: it never covers a label, a key's slot or a readout.
+//
+// First pass, painted in canvas with shading lit from the upper left. Every scatter comes from the page's seeded generator
+// (FCK.rng over FCK.hash, Mulberry32), never a cheap hash (CLAUDE.md section 10). The kit's nine-slice pieces keep their
+// detail in the margins and their centres plain. A metal skin, so the column has a painted ground (CLAUDE.md section 7):
+// `column`, a deck bulkhead with conduits and reef, drawn behind the panels. Registers itself with the page's skin
+// registry (docs/mockups/skins). Our own design: nothing traced from another game.
+(function () {
+'use strict';
+const F = window.FCK, P = F.P;
+// The palette (six rows below) and the shades painted between them.
+const EX = {
+  steel: '#5d686d', steelHi: '#97a3a6', steelLo: '#262e31', deep: '#0b1113', bg: '#0d1315', glass: '#091012',
+  rust: '#8c4522', rustHi: '#c46d36', rustLo: '#43200f', verd: '#4f8c7a', verdHi: '#8cc4ae',
+  coral: '#d27a6a', coralHi: '#f2b19c', coralLo: '#7e3a3a', ochre: '#c6935a', ochreLo: '#6b4526',
+  bone: '#e3dbc6', boneLo: '#7d776a', kelp: '#46634c', kelpHi: '#a8cca6',
+  lumen: '#8be6dc', lumenHot: '#e2fffa', lumenLo: '#1d5e5c', breach: '#ff5a36', breachHot: '#ffd2c2', amber: '#f0b04a', sea: '#5fd68e',
+};
+const RNG = (k) => F.rng(F.hash('exponent.' + k));
+function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+function mix(h1, h2, t) {
+  const a = parseInt(h1.slice(1), 16), b = parseInt(h2.slice(1), 16), l = (s) => Math.round(((a >> s) & 255) * (1 - t) + ((b >> s) & 255) * t);
+  return `rgb(${l(16)},${l(8)},${l(0)})`;
+}
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+// ---- shapes ------------------------------------------------------------------------------------------------------
+// A chamfered rectangle: plate cut at 45 degrees at each corner by c (an array of four for unequal corners).
+function cham(x, X, Y, W, H, c) {
+  const [a, b, d, e] = Array.isArray(c) ? c : [c, c, c, c];
+  x.beginPath(); x.moveTo(X + a, Y); x.lineTo(X + W - b, Y); x.lineTo(X + W, Y + b); x.lineTo(X + W, Y + H - d); x.lineTo(X + W - d, Y + H);
+  x.lineTo(X + e, Y + H); x.lineTo(X, Y + H - e); x.lineTo(X, Y + a); x.closePath();
+}
+function disc(x, cx, cy, r) { x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); }
+// Points along a Catmull-Rom curve through pts, n per span.
+function curve(pts, n = 10) {
+  const out = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    for (let k = 0; k < n; k++) {
+      const t = k / n, t2 = t * t, t3 = t2 * t;
+      out.push([0, 1].map((j) => 0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t2 + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t3)));
+    }
+  }
+  out.push(pts[pts.length - 1]); return out;
+}
+
+// ---- materials: the assimilators' plate ------------------------------------------------------------------------------
+// Painted steel kept running long past any refit: grey-blue paint over steel, lit from the top, brushed grain, paint
+// chipped through to rust bloom with its edge catching the light, rust run down from the chips, salt crust settled toward
+// the foot, a stain of verdigris. where(px, py) gives 0 to 1: how much wear a spot may take (0 keeps a stretching centre plain).
+function plate(x, path, box, R, o = {}) {
+  const [x0, y0, x1, y1] = box, w = x1 - x0, h = y1 - y0, where = o.where || (() => 1);
+  x.save(); path(); x.clip();
+  const g = x.createLinearGradient(x0, y0, x0 + w * 0.25, y1); g.addColorStop(0, o.hi || '#76838a'); g.addColorStop(0.5, o.mid || EX.steel); g.addColorStop(1, o.lo || '#3a4448');
+  x.fillStyle = g; x.fillRect(x0, y0, w, h);
+  // brushed grain, along the plate
+  for (let y = y0; y < y1; y += 1.3) { x.fillStyle = R() < 0.5 ? `rgba(255,255,255,${0.02 + R() * 0.035})` : `rgba(0,0,0,${0.03 + R() * 0.05})`; x.fillRect(x0, y, w, 0.6); }
+  // mottle
+  const nm = Math.round(w * h / 900);
+  for (let i = 0; i < nm; i++) {
+    const cx = x0 + R() * w, cy = y0 + R() * h, r = 4 + R() * 16, dark = R() < 0.6, k = where(cx, cy);
+    if (k <= 0.05) continue;
+    const b = x.createRadialGradient(cx, cy, 0, cx, cy, r); b.addColorStop(0, dark ? `rgba(15,20,22,${0.18 * k})` : `rgba(200,210,212,${0.08 * k})`); b.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = b; x.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+  }
+  // rust: patches where the paint has failed, each a soft bloom stain round a crowd of chips (dense at its heart, thin
+  // at its edge), the bigger chips' lower lips catching the light, and a run of rust down from some
+  const nr = Math.round(w * h / (o.rustEvery || 6000)), sc = o.rustScale || 1;
+  for (let i = 0; i < nr; i++) {
+    const cx = x0 + R() * w, cy = y0 + R() * h, k = where(cx, cy), rc = (3 + R() * 10) * sc;
+    if (R() > k) continue;
+    for (let j = 0; j < 3; j++) {
+      const bx = cx + (R() - 0.5) * rc, by = cy + (R() - 0.5) * rc, br = rc * (0.7 + R() * 0.7), b = x.createRadialGradient(bx, by, 0, bx, by, br);
+      b.addColorStop(0, hexA(EX.rust, 0.28)); b.addColorStop(0.6, hexA(EX.rustLo, 0.12)); b.addColorStop(1, 'rgba(67,32,15,0)'); x.fillStyle = b; x.fillRect(bx - br, by - br, 2 * br, 2 * br);
+    }
+    const nchip = Math.round(rc * 1.6 + 2);
+    for (let j = 0; j < nchip; j++) {
+      const g3 = (R() + R() + R() - 1.5) / 1.5, g4 = (R() + R() + R() - 1.5) / 1.5, px = cx + g3 * rc, py = cy + g4 * rc * 0.8;
+      const r = (0.5 + Math.pow(R(), 2.2) * 3.2) * Math.sqrt(sc) * (1.2 - Math.hypot(g3, g4) * 0.5), n = 5 + Math.floor(R() * 3), pts = [];
+      if (r < 0.35) continue;
+      for (let q = 0; q < n; q++) { const a = q / n * 2 * P + R() * 0.5, rr = r * (0.5 + R() * 0.7); pts.push([px + Math.cos(a) * rr, py + Math.sin(a) * rr]); }
+      x.beginPath(); pts.forEach(([a, bb], q) => (q ? x.lineTo(a, bb) : x.moveTo(a, bb))); x.closePath();
+      x.fillStyle = mix(EX.rustLo, R() < 0.3 ? EX.rustHi : EX.rust, 0.3 + R() * 0.7); x.fill();
+      if (r > 1) { x.save(); x.translate(0.35, 0.45); x.strokeStyle = 'rgba(205,215,215,0.32)'; x.lineWidth = 0.45; x.stroke(); x.restore(); }
+    }
+    if (R() < 0.75) {
+      const L = 12 + R() * 46 * sc, sw = 1 + R() * 2.6, sx = cx + (R() - 0.5) * rc * 0.6, sg = x.createLinearGradient(0, cy, 0, cy + L);
+      sg.addColorStop(0, hexA(EX.rust, 0.5)); sg.addColorStop(1, 'rgba(140,69,34,0)'); x.fillStyle = sg;
+      x.beginPath(); x.moveTo(sx - sw / 2, cy); x.lineTo(sx + sw / 2, cy); x.lineTo(sx + sw * 0.2, cy + L); x.lineTo(sx - sw * 0.2, cy + L); x.closePath(); x.fill();
+    }
+  }
+  // verdigris and sea stain
+  const nv = Math.round(w * h / (o.verdEvery || 5000));
+  for (let i = 0; i < nv; i++) {
+    const cx = x0 + R() * w, cy = y0 + R() * h, k = where(cx, cy), r = 5 + R() * 14;
+    if (R() > k) continue;
+    const b = x.createRadialGradient(cx, cy, 0, cx, cy, r); b.addColorStop(0, hexA(EX.verd, 0.4)); b.addColorStop(1, 'rgba(79,140,122,0)'); x.fillStyle = b; x.fillRect(cx - r, cy - r, 2 * r, 2 * r);
+  }
+  // salt crust, settled toward the foot
+  const ns = Math.round(w * h / (o.saltEvery || 40));
+  for (let i = 0; i < ns; i++) {
+    const px = x0 + R() * w, py = y0 + Math.pow(R(), 0.55) * h, k = where(px, py);
+    if (R() > k * (0.25 + 0.75 * (py - y0) / h)) continue;
+    x.fillStyle = `rgba(232,228,212,${0.18 + R() * 0.35})`; x.fillRect(px, py, 0.5 + R() * 0.9, 0.5 + R() * 0.7);
+  }
+  x.restore();
+}
+// The bevel of a plate's edge: lit along its top and left, shaded along its bottom and right.
+function bevel(x, path, lw = 1.2) {
+  x.save(); path(); x.clip();
+  x.save(); x.translate(lw * 0.6, lw * 0.6); path(); x.strokeStyle = 'rgba(210,222,224,0.45)'; x.lineWidth = lw * 1.6; x.stroke(); x.restore();
+  x.save(); x.translate(-lw * 0.6, -lw * 0.6); path(); x.strokeStyle = 'rgba(8,10,11,0.6)'; x.lineWidth = lw * 1.6; x.stroke(); x.restore();
+  x.restore();
+  path(); x.strokeStyle = '#070b0c'; x.lineWidth = lw; x.stroke();
+}
+// A recess (a slot, a screen well): dark, its top lip in shadow and its lower lip lit.
+function recess(x, path, box, fill = EX.glass) {
+  const [x0, y0, , y1] = box;
+  path(); x.fillStyle = fill; x.fill();
+  x.save(); path(); x.clip();
+  const g = x.createLinearGradient(0, y0, 0, y0 + Math.min(10, (y1 - y0) * 0.4)); g.addColorStop(0, 'rgba(0,0,0,0.75)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(x0 - 2, y0, box[2] - x0 + 4, y1 - y0);
+  x.restore();
+  x.save(); path(); x.clip(); x.translate(0, -1); path(); x.strokeStyle = 'rgba(190,205,205,0.35)'; x.lineWidth = 1.4; x.stroke(); x.restore();
+  path(); x.strokeStyle = '#050809'; x.lineWidth = 1; x.stroke();
+}
+// A domed rivet, lit from the upper left, with rust bled round it and sometimes run below.
+function rivet(x, cx, cy, r, R) {
+  x.fillStyle = 'rgba(0,0,0,0.45)'; x.beginPath(); x.ellipse(cx + r * 0.35, cy + r * 0.45, r * 1.1, r, 0, 0, 2 * P); x.fill();
+  if (R && R() < 0.55) { const L = 4 + R() * 12, g = x.createLinearGradient(0, cy, 0, cy + L); g.addColorStop(0, hexA(EX.rust, 0.6)); g.addColorStop(1, 'rgba(140,69,34,0)'); x.fillStyle = g; x.fillRect(cx - r * 0.4, cy, r * 0.8, L); }
+  const g = x.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.1, cx, cy, r); g.addColorStop(0, '#c9d2d3'); g.addColorStop(0.45, '#6d787c'); g.addColorStop(1, '#1d2326');
+  disc(x, cx, cy, r); x.fillStyle = g; x.fill();
+  x.strokeStyle = hexA(EX.rust, 0.55); x.lineWidth = 0.7; x.stroke();
+}
+// A hex bolt, its flats catching the light in steps.
+function bolt(x, cx, cy, r, rot = 0.3) {
+  x.fillStyle = 'rgba(0,0,0,0.5)'; disc(x, cx + r * 0.3, cy + r * 0.4, r * 1.05); x.fill();
+  for (let i = 0; i < 6; i++) {
+    const a0 = rot + i * P / 3, a1 = a0 + P / 3, mid = (a0 + a1) / 2, lit = 0.5 - 0.5 * Math.cos(mid - (-3 * P / 4));
+    x.beginPath(); x.moveTo(cx, cy); x.lineTo(cx + Math.cos(a0) * r, cy + Math.sin(a0) * r); x.lineTo(cx + Math.cos(a1) * r, cy + Math.sin(a1) * r); x.closePath();
+    x.fillStyle = mix('#c4cdce', '#283034', 1 - lit); x.fill();
+  }
+  disc(x, cx, cy, r * 0.55); x.fillStyle = '#4c575b'; x.fill(); x.strokeStyle = 'rgba(10,12,12,0.6)'; x.lineWidth = 0.5; x.stroke();
+}
+
+// ---- the reef --------------------------------------------------------------------------------------------------------
+// A barnacle: a low cone of six wall plates seen from above, lit from the upper left, its dark aperture at the top.
+// lit: 0 dark, otherwise a colour the aperture glows (the symbol cells).
+function barnacle(x, cx, cy, r, R, lit) {
+  const rot = R() * P, n = 6, apx = cx - r * 0.08, apy = cy - r * 0.12, ar = r * 0.42;
+  x.fillStyle = 'rgba(0,0,0,0.42)'; x.beginPath(); x.ellipse(cx + r * 0.3, cy + r * 0.35, r * 1.08, r * 0.98, 0, 0, 2 * P); x.fill();
+  const base = [], top = [];
+  for (let i = 0; i < n; i++) { const a = rot + i * 2 * P / n, j = 0.85 + R() * 0.25; base.push([cx + Math.cos(a) * r * j, cy + Math.sin(a) * r * j]); top.push([apx + Math.cos(a) * ar, apy + Math.sin(a) * ar * 0.8]); }
+  for (let i = 0; i < n; i++) {
+    const a = base[i], b = base[(i + 1) % n], c = top[(i + 1) % n], d = top[i], mx = (a[0] + b[0]) / 2 - cx, my = (a[1] + b[1]) / 2 - cy, L = Math.hypot(mx, my) || 1;
+    const lit2 = clamp(0.5 - 0.5 * ((mx / L) * 0.62 + (my / L) * 0.78), 0, 1);
+    x.beginPath(); x.moveTo(a[0], a[1]); x.lineTo(b[0], b[1]); x.lineTo(c[0], c[1]); x.lineTo(d[0], d[1]); x.closePath();
+    x.fillStyle = mix(EX.boneLo, EX.bone, 0.15 + lit2 * 0.85); x.fill();
+    x.strokeStyle = 'rgba(40,36,30,0.55)'; x.lineWidth = Math.max(0.35, r * 0.07); x.stroke();
+    // growth ridges across the plate
+    x.strokeStyle = 'rgba(60,54,44,0.25)'; x.lineWidth = Math.max(0.25, r * 0.04);
+    for (const t of [0.35, 0.65]) { x.beginPath(); x.moveTo(a[0] + (d[0] - a[0]) * t, a[1] + (d[1] - a[1]) * t); x.lineTo(b[0] + (c[0] - b[0]) * t, b[1] + (c[1] - b[1]) * t); x.stroke(); }
+  }
+  // the aperture: two closing plates over a dark opening, or a light deep inside
+  x.save(); x.beginPath(); x.ellipse(apx, apy, ar * 0.82, ar * 0.62, rot * 0.3, 0, 2 * P);
+  if (lit) { x.shadowColor = lit; x.shadowBlur = r * 1.4; x.fillStyle = lit; x.fill(); x.shadowBlur = 0; const g = x.createRadialGradient(apx, apy, 0, apx, apy, ar * 0.8); g.addColorStop(0, '#ffffff'); g.addColorStop(1, hexA(lit === EX.breach ? EX.breach : EX.lumen, 0)); x.fillStyle = g; x.fill(); }
+  else { x.fillStyle = '#16140f'; x.fill(); x.strokeStyle = 'rgba(160,150,130,0.4)'; x.lineWidth = Math.max(0.3, r * 0.05); x.beginPath(); x.moveTo(apx - ar * 0.6, apy); x.lineTo(apx + ar * 0.6, apy); x.stroke(); }
+  x.restore();
+}
+// A cluster of barnacles round a point, big ones first and small ones filling between, drawn back to front.
+function barnacles(x, cx, cy, sx, sy, n, rmin, rmax, R) {
+  const got = [];
+  for (let t = 0; t < n * 12 && got.length < n; t++) {
+    const k = got.length / n, r = rmax - (rmax - rmin) * Math.sqrt(k) * (0.7 + R() * 0.3), a = R() * 2 * P, d = Math.sqrt(R());
+    const p = [cx + Math.cos(a) * sx * d, cy + Math.sin(a) * sy * d, r];
+    if (got.every((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) > (q[2] + r) * 0.82)) got.push(p);
+  }
+  got.sort((a, b) => a[1] - b[1]);
+  for (const [px, py, r] of got) barnacle(x, px, py, r, R, 0);
+}
+// Brain coral: a dome grooved by meanders, lit from the upper left.
+function brain(x, cx, cy, rx, ry, R, col = EX.ochre) {
+  x.fillStyle = 'rgba(0,0,0,0.45)'; x.beginPath(); x.ellipse(cx + rx * 0.18, cy + ry * 0.25, rx * 1.05, ry * 1.02, 0, 0, 2 * P); x.fill();
+  x.save(); x.beginPath(); x.ellipse(cx, cy, rx, ry, 0, 0, 2 * P); x.clip();
+  const g = x.createRadialGradient(cx - rx * 0.35, cy - ry * 0.4, 0, cx, cy, Math.max(rx, ry) * 1.1); g.addColorStop(0, mix(col, '#fff3e0', 0.45)); g.addColorStop(0.55, col); g.addColorStop(1, EX.ochreLo);
+  x.fillStyle = g; x.fillRect(cx - rx, cy - ry, 2 * rx, 2 * ry);
+  // the ridges: radial septa from a mouth near the top of the dome to its rim, each wavering a little and some forking,
+  // a dark groove between each pair, and growth bands round them
+  const rm = Math.max(rx, ry), n = Math.max(14, Math.round(2 * P * rm / 2.4)), mx = cx - rx * 0.08, my = cy - ry * 0.1, ph = R() * 2 * P;
+  for (let i = 0; i < n; i++) {
+    const a0 = i / n * 2 * P + (R() - 0.5) * 0.08, wob = 0.08 + R() * 0.1, t0 = i % 3 === 0 ? 0.12 : 0.3 + R() * 0.15, pts = [];
+    for (let t = t0; t <= 1.02; t += 0.06) { const a = a0 + Math.sin(t * 7 + ph + i) * wob * t; pts.push([mx + Math.cos(a) * rx * t, my + Math.sin(a) * ry * t]); }
+    const line = () => { x.beginPath(); pts.forEach(([a1, b1], j) => (j ? x.lineTo(a1, b1) : x.moveTo(a1, b1))); };
+    const lit = clamp(0.5 - 0.5 * (Math.cos(a0) * 0.62 + Math.sin(a0) * 0.78), 0, 1);
+    line(); x.strokeStyle = 'rgba(50,30,14,0.55)'; x.lineWidth = Math.max(0.9, rm * 0.085); x.stroke();
+    line(); x.strokeStyle = `rgba(255,240,214,${0.25 + 0.45 * lit})`; x.lineWidth = Math.max(0.45, rm * 0.035); x.stroke();
+  }
+  for (const t of [0.45, 0.72]) { x.beginPath(); x.ellipse(mx, my, rx * t, ry * t, 0, 0, 2 * P); x.strokeStyle = 'rgba(60,34,16,0.22)'; x.lineWidth = Math.max(0.6, rm * 0.05); x.stroke(); }
+  x.beginPath(); x.ellipse(mx, my, rx * 0.14, ry * 0.1, 0, 0, 2 * P); x.fillStyle = 'rgba(40,22,10,0.7)'; x.fill();
+  const sh = x.createRadialGradient(cx - rx * 0.3, cy - ry * 0.35, Math.min(rx, ry) * 0.4, cx, cy, Math.max(rx, ry) * 1.05); sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(25,12,5,0.55)');
+  x.fillStyle = sh; x.fillRect(cx - rx, cy - ry, 2 * rx, 2 * ry);
+  x.restore();
+}
+// Plate coral: shelves stacked in tiers, each a fan grooved from its root to a pale lip, its underside in shadow.
+// a: the way the shelves face.
+function plateCoral(x, cx, cy, r, a, R, col = '#b9895c') {
+  for (let k = 0; k < 3; k++) {
+    const rr = r * (1 - k * 0.22), ox = cx + Math.cos(a) * r * 0.18 * k + (R() - 0.5) * r * 0.2, oy = cy + Math.sin(a) * r * 0.18 * k + (R() - 0.5) * r * 0.2, s = 0.85 + R() * 0.35;
+    const fan = () => { x.beginPath(); x.moveTo(ox, oy); x.arc(ox, oy, rr, a - s, a + s); x.closePath(); };
+    x.save(); x.translate(1.2, 1.8); fan(); x.fillStyle = 'rgba(0,0,0,0.45)'; x.fill(); x.restore();
+    fan(); const g = x.createRadialGradient(ox, oy, 0, ox, oy, rr); g.addColorStop(0, mix(col, '#2a1a10', 0.45)); g.addColorStop(0.75, col); g.addColorStop(1, mix(col, '#fff0dc', 0.45)); x.fillStyle = g; x.fill();
+    x.save(); fan(); x.clip(); x.strokeStyle = 'rgba(60,36,18,0.4)'; x.lineWidth = Math.max(0.4, rr * 0.03);
+    for (let i = 0; i <= 16; i++) { const b = a - s + 2 * s * i / 16; x.beginPath(); x.moveTo(ox, oy); x.lineTo(ox + Math.cos(b) * rr, oy + Math.sin(b) * rr); x.stroke(); }
+    for (const t of [0.5, 0.75]) { x.beginPath(); x.arc(ox, oy, rr * t, a - s, a + s); x.stroke(); }
+    x.restore();
+    x.beginPath(); x.arc(ox, oy, rr - 0.6, a - s, a + s); x.strokeStyle = mix(col, '#fff6e8', 0.6); x.lineWidth = Math.max(0.6, rr * 0.06); x.stroke();
+  }
+}
+// A sponge: an upright barrel seen from above and in front, its rim open on a dark well, its skin pitted with pores.
+function sponge(x, cx, cy, w, h, R, col = '#c07a3a') {
+  x.fillStyle = 'rgba(0,0,0,0.45)'; x.beginPath(); x.ellipse(cx + w * 0.25, cy + h * 0.1, w * 0.6, h * 0.2, 0, 0, 2 * P); x.fill();
+  const body = () => { x.beginPath(); x.moveTo(cx - w * 0.5, cy - h); x.bezierCurveTo(cx - w * 0.62, cy - h * 0.4, cx - w * 0.5, cy, cx, cy); x.bezierCurveTo(cx + w * 0.5, cy, cx + w * 0.62, cy - h * 0.4, cx + w * 0.5, cy - h); x.closePath(); };
+  body(); const g = x.createLinearGradient(cx - w * 0.6, 0, cx + w * 0.6, 0); g.addColorStop(0, mix(col, '#fff0d8', 0.3)); g.addColorStop(0.45, col); g.addColorStop(1, mix(col, '#1a0e08', 0.55)); x.fillStyle = g; x.fill();
+  x.save(); body(); x.clip(); for (let i = 0; i < w * h * 0.25; i++) { disc(x, cx + (R() - 0.5) * w * 1.1, cy - R() * h, 0.4 + R() * 0.6); x.fillStyle = 'rgba(40,20,8,0.45)'; x.fill(); } x.restore();
+  x.beginPath(); x.ellipse(cx, cy - h, w * 0.5, w * 0.2, 0, 0, 2 * P); x.fillStyle = mix(col, '#fff0d8', 0.35); x.fill();
+  x.beginPath(); x.ellipse(cx, cy - h + w * 0.02, w * 0.36, w * 0.13, 0, 0, 2 * P); x.fillStyle = '#140a06'; x.fill();
+}
+// An anemone: a ring of tapering tentacles round a disc, each curling at its tip, pale-tipped and translucent.
+function anemone(x, cx, cy, r, R, col = '#d9768a') {
+  const n = 16 + Math.floor(R() * 8), ph = R() * 2 * P;
+  for (let pass = 0; pass < 2; pass++) for (let i = 0; i < n; i++) {
+    const a = ph + i / n * 2 * P + (R() - 0.5) * 0.2, L = r * (0.75 + R() * 0.4), c = (R() - 0.5) * 1.4;
+    const ex = cx + Math.cos(a) * L, ey = cy + Math.sin(a) * L * 0.85, mx = cx + Math.cos(a + c * 0.4) * L * 0.6, my = cy + Math.sin(a + c * 0.4) * L * 0.5;
+    x.lineCap = 'round'; x.beginPath(); x.moveTo(cx, cy); x.quadraticCurveTo(mx, my, ex, ey);
+    if (pass === 0) { x.strokeStyle = 'rgba(0,0,0,0.35)'; x.lineWidth = r * 0.22; x.stroke(); }
+    else { x.strokeStyle = hexA(col, 0.85); x.lineWidth = r * 0.16; x.stroke(); x.strokeStyle = 'rgba(255,230,236,0.45)'; x.lineWidth = r * 0.05; x.stroke(); disc(x, ex, ey, r * 0.09); x.fillStyle = '#fbe2e6'; x.fill(); }
+  }
+  disc(x, cx, cy, r * 0.28); x.fillStyle = mix(col, '#2a1016', 0.4); x.fill(); disc(x, cx, cy, r * 0.1); x.fillStyle = '#1a0a0e'; x.fill();
+}
+// A tide line of salt: a ragged pale crust along a run, thickest where it dried last.
+function salt(x, x0, x1, y, th, R) {
+  for (let px = x0; px < x1; px += 0.7) {
+    const t = th * (0.3 + R() * 0.7) * (0.6 + 0.4 * Math.sin(px * 0.13 + y));
+    x.fillStyle = `rgba(234,230,216,${0.25 + R() * 0.4})`; x.fillRect(px, y - t * R(), 0.8 + R() * 0.6, t);
+  }
+}
+// A reef mass: the reef's layers over a patch, crust first, then shelves, sponges and domes, then branching coral,
+// anemones, worms and a dense crowd of barnacles over all. k scales it.
+function reef(x, cx, cy, rx, ry, R, k = 1, face = -P / 2) {
+  const at = () => [cx + (R() - 0.5) * rx * 1.6, cy + (R() - 0.5) * ry * 1.6];
+  for (let i = 0; i < 4; i++) { const [px, py] = at(); crust(x, px, py, rx * (0.35 + R() * 0.35), ry * (0.35 + R() * 0.35), R, ['#a1707a', '#567f6c', '#8f6f86', '#7d6a4e'][i]); }
+  { const [px, py] = at(); plateCoral(x, px, py, 9 * k + R() * 5 * k, face + (R() - 0.5), R); }
+  if (k > 0.7) { const [px, py] = at(); sponge(x, px, py, 7 * k, 10 * k, R, R() < 0.5 ? '#c07a3a' : '#7d4f7a'); }
+  { const [px, py] = at(); brain(x, px, py, 7 * k + R() * 4 * k, 6 * k + R() * 3 * k, R, R() < 0.5 ? '#b6a06a' : '#8fa07a'); }
+  { const [px, py] = at(); coral(x, px, py, face + (R() - 0.5) * 0.8, 6 * k + R() * 4 * k, 2.6 * k, 2, R, R() < 0.5 ? EX.coral : '#e0a24a'); }
+  for (let i = 0; i < (k > 0.7 ? 2 : 1); i++) { const [px, py] = at(); anemone(x, px, py, 5 * k + R() * 3 * k, R, ['#d9768a', '#d8b860', '#8fd0c0'][Math.floor(R() * 3)]); }
+  { const [px, py] = at(); tubes(x, px, py, 4, 7 * k, R, face); }
+  barnacles(x, cx, cy, rx, ry, Math.round(10 * k), 0.9, 2.2 + 2.6 * k, R);
+}
+// Encrusting growth: a flat crust of coralline pink (or sea green) spread over the plate in an irregular lobe, its
+// surface pebbled, its edge raised a little. The reef's first layer, laid down before anything else settles.
+function crust(x, cx, cy, rx, ry, R, col = '#a1707a') {
+  const n = 18, pts = [];
+  for (let i = 0; i < n; i++) { const a = i / n * 2 * P, k = 0.55 + R() * 0.55; pts.push([cx + Math.cos(a) * rx * k, cy + Math.sin(a) * ry * k]); }
+  const path = () => { const m = (i) => [(pts[i % n][0] + pts[(i + 1) % n][0]) / 2, (pts[i % n][1] + pts[(i + 1) % n][1]) / 2]; x.beginPath(); const s0 = m(0); x.moveTo(s0[0], s0[1]); for (let i = 1; i <= n; i++) { const p = pts[i % n], q = m(i); x.quadraticCurveTo(p[0], p[1], q[0], q[1]); } x.closePath(); };
+  x.save(); x.translate(0.6, 0.8); path(); x.fillStyle = 'rgba(0,0,0,0.35)'; x.fill(); x.restore();
+  x.save(); x.globalAlpha = 0.88;
+  path(); const g = x.createRadialGradient(cx - rx * 0.3, cy - ry * 0.3, 0, cx, cy, Math.max(rx, ry)); g.addColorStop(0, mix(col, '#e8e0d8', 0.12)); g.addColorStop(1, mix(col, '#1a1416', 0.5));
+  x.fillStyle = g; x.fill();
+  x.save(); path(); x.clip();
+  for (let i = 0; i < rx * ry * 1.1; i++) { const px = cx + (R() - 0.5) * 2 * rx, py = cy + (R() - 0.5) * 2 * ry, r = 0.4 + R() * 1.1; disc(x, px, py, r); x.fillStyle = R() < 0.45 ? 'rgba(240,230,225,0.2)' : 'rgba(30,18,22,0.35)'; x.fill(); }
+  x.restore();
+  path(); x.strokeStyle = 'rgba(20,14,16,0.6)'; x.lineWidth = 0.8; x.stroke();
+  x.restore();
+}
+// Branching coral: limbs that fork by a seeded rule, rounded tips with polyps, shaded along their lower side.
+function coral(x, x0, y0, a, len, w, depth, R, col = EX.coral) {
+  const segs = [];
+  const grow = (px, py, ang, L, W, d) => {
+    const bend = (R() - 0.5) * 0.5, mx = px + Math.cos(ang + bend) * L * 0.5, my = py + Math.sin(ang + bend) * L * 0.5, ex = px + Math.cos(ang) * L, ey = py + Math.sin(ang) * L;
+    segs.push([px, py, mx, my, ex, ey, W, d === 0]);
+    if (d <= 0) return;
+    const k = R() < 0.3 ? 3 : 2;
+    for (let i = 0; i < k; i++) grow(ex, ey, ang + (i - (k - 1) / 2) * (0.55 + R() * 0.35), L * (0.62 + R() * 0.18), W * 0.74, d - 1);
+  };
+  grow(x0, y0, a, len, w, depth);
+  const stroke = (dx, dy, wk, style) => { x.strokeStyle = style; x.lineCap = 'round'; for (const s of segs) { x.lineWidth = s[6] * wk; x.beginPath(); x.moveTo(s[0] + dx, s[1] + dy); x.quadraticCurveTo(s[2] + dx, s[3] + dy, s[4] + dx, s[5] + dy); x.stroke(); } };
+  stroke(1.2, 1.5, 1.15, 'rgba(0,0,0,0.4)');
+  stroke(0, 0, 1.25, mix(EX.coralLo, '#000000', 0.25));
+  stroke(0, 0, 1, mix(col, EX.coralLo, 0.35));
+  stroke(-0.25, -0.3, 0.6, col);
+  stroke(-0.45, -0.55, 0.22, hexA(EX.coralHi, 0.8));
+  for (const s of segs) if (s[7]) { disc(x, s[4], s[5], s[6] * 0.62); x.fillStyle = EX.coralHi; x.fill(); }
+  // polyps: pale pores along the limbs
+  for (const s of segs) for (let t = 0.3; t < 1; t += 0.35) { const px = s[0] + (s[4] - s[0]) * t + (R() - 0.5) * s[6] * 0.5, py = s[1] + (s[5] - s[1]) * t + (R() - 0.5) * s[6] * 0.5; x.fillStyle = 'rgba(255,225,210,0.55)'; x.fillRect(px - 0.4, py - 0.4, 0.8, 0.8); }
+}
+// Tube worms: chalk tubes with growth rings and dark mouths, some with a red plume fanned out.
+function tubes(x, cx, cy, n, len, R, dir = -P / 2) {
+  for (let i = 0; i < n; i++) {
+    const a = dir + (R() - 0.5) * 1.3, L = len * (0.55 + R() * 0.5), w = 1.2 + R() * 1.1, bx = cx + (R() - 0.5) * len * 0.8, by = cy + (R() - 0.5) * len * 0.4;
+    const ex = bx + Math.cos(a) * L, ey = by + Math.sin(a) * L, mx = (bx + ex) / 2 + (R() - 0.5) * L * 0.4, my = (by + ey) / 2 + (R() - 0.5) * L * 0.4;
+    x.lineCap = 'round';
+    x.strokeStyle = 'rgba(0,0,0,0.45)'; x.lineWidth = w + 1.4; x.beginPath(); x.moveTo(bx + 0.8, by + 1); x.quadraticCurveTo(mx + 0.8, my + 1, ex + 0.8, ey + 1); x.stroke();
+    x.strokeStyle = EX.boneLo; x.lineWidth = w + 0.6; x.beginPath(); x.moveTo(bx, by); x.quadraticCurveTo(mx, my, ex, ey); x.stroke();
+    x.strokeStyle = EX.bone; x.lineWidth = w * 0.55; x.beginPath(); x.moveTo(bx - 0.3, by - 0.3); x.quadraticCurveTo(mx - 0.3, my - 0.3, ex - 0.3, ey - 0.3); x.stroke();
+    x.fillStyle = '#17110c'; disc(x, ex, ey, w * 0.5); x.fill();
+    if (R() < 0.45) { x.strokeStyle = 'rgba(226,72,60,0.85)'; x.lineWidth = 0.45; for (let k = -3; k <= 3; k++) { const b = a + k * 0.24; x.beginPath(); x.moveTo(ex, ey); x.lineTo(ex + Math.cos(b) * w * 2.4, ey + Math.sin(b) * w * 2.4); x.stroke(); } }
+  }
+}
+// A cabled tendril: a kelp-like cable along a curve, tapering, wrapped in bands, its end curled.
+function tendril(x, pts, w0, w1, R, curl = 1) {
+  let c = curve(pts, 12);
+  if (curl) {   // curl the last point into a small spiral turning to one side
+    const [ex, ey] = c[c.length - 1], [px, py] = c[c.length - 2]; let a = Math.atan2(ey - py, ex - px), r = w0 * 1.6, cx = ex, cy = ey; const tail = [];
+    for (let i = 0; i < 18; i++) { a += curl * 0.38; r *= 0.93; cx += Math.cos(a) * r * 0.45; cy += Math.sin(a) * r * 0.45; tail.push([cx, cy]); }
+    c = c.concat(tail);
+  }
+  const n = c.length, W = (i) => w0 + (w1 - w0) * i / (n - 1);
+  const pass = (dx, dy, wk, style) => { x.strokeStyle = style; x.lineCap = 'round'; for (let i = 1; i < n; i++) { x.lineWidth = W(i) * wk; x.beginPath(); x.moveTo(c[i - 1][0] + dx, c[i - 1][1] + dy); x.lineTo(c[i][0] + dx, c[i][1] + dy); x.stroke(); } };
+  pass(1.4, 1.8, 1.05, 'rgba(0,0,0,0.42)');
+  pass(0, 0, 1.15, '#101a16');
+  pass(0, 0, 1, EX.kelp);
+  pass(-W(0) * 0.12, -W(0) * 0.16, 0.42, hexA(EX.kelpHi, 0.7));
+  // the cable's wrap: a slanted band every few pixels
+  let acc = 0;
+  for (let i = 1; i < n; i++) {
+    const dx = c[i][0] - c[i - 1][0], dy = c[i][1] - c[i - 1][1], L = Math.hypot(dx, dy); acc += L;
+    if (acc < 3.4 || L === 0) continue; acc = 0;
+    const nx = -dy / L, ny = dx / L, ww = W(i) * 0.5, sx = dx / L * ww * 0.5, sy = dy / L * ww * 0.5;
+    x.strokeStyle = 'rgba(8,14,12,0.55)'; x.lineWidth = Math.max(0.35, W(i) * 0.14); x.beginPath(); x.moveTo(c[i][0] + nx * ww - sx, c[i][1] + ny * ww - sy); x.lineTo(c[i][0] - nx * ww + sx, c[i][1] - ny * ww + sy); x.stroke();
+  }
+  // a few barnacle spat riding on it
+  for (let i = 0; i < 3; i++) { const p = c[Math.floor((0.15 + R() * 0.55) * n)]; if (W(0) > 3) barnacle(x, p[0] + (R() - 0.5), p[1] + (R() - 0.5), 1 + R() * 1.2, R, 0); }
+}
+// The conduit-keepers' vein: a line of power under a translucent sheath, a dim core with brighter beads of pulse.
+// k: how lit, 0 to 1. Clamps of steel hold it at the ends.
+function vein(x, pts, w, R, k = 0.6, clampEnds = true, col = EX.lumen, hot = EX.lumenHot) {
+  const c = curve(pts, 10), n = c.length;
+  const pass = (wd, style, dx = 0, dy = 0) => { x.strokeStyle = style; x.lineWidth = wd; x.lineCap = 'round'; x.lineJoin = 'round'; x.beginPath(); c.forEach(([a, b], i) => (i ? x.lineTo(a + dx, b + dy) : x.moveTo(a + dx, b + dy))); x.stroke(); };
+  pass(w + 2.2, 'rgba(0,0,0,0.45)', 0.8, 1.1);
+  pass(w + 1.4, '#08100f');
+  pass(w, '#1b3533');
+  if (k > 0) { x.save(); x.shadowColor = col; x.shadowBlur = 4 * k; pass(w * 0.42, hexA(col, 0.25 + 0.45 * k)); x.restore(); }
+  pass(w * 0.22, hexA(hot, 0.15 + 0.5 * k));
+  pass(w * 0.3, 'rgba(210,235,230,0.28)', -w * 0.18, -w * 0.24);   // the sheath's wet highlight
+  // beads of pulse along it
+  let acc = R() * 10;
+  for (let i = 1; i < n; i++) {
+    acc += Math.hypot(c[i][0] - c[i - 1][0], c[i][1] - c[i - 1][1]);
+    if (acc < 11) continue; acc = R() * 4;
+    const b = (0.3 + R() * 0.7) * k, g = x.createRadialGradient(c[i][0], c[i][1], 0, c[i][0], c[i][1], w * 1.3);
+    g.addColorStop(0, hexA(hot, 0.8 * b)); g.addColorStop(0.5, hexA(col, 0.4 * b)); g.addColorStop(1, hexA(col, 0)); x.fillStyle = g; x.fillRect(c[i][0] - w * 1.3, c[i][1] - w * 1.3, w * 2.6, w * 2.6);
+  }
+  if (clampEnds) for (const i of [2, n - 3]) {
+    const p = c[i], q = c[i + 1] || c[i - 1], a = Math.atan2(q[1] - p[1], q[0] - p[0]);
+    x.save(); x.translate(p[0], p[1]); x.rotate(a); const g = x.createLinearGradient(0, -w, 0, w); g.addColorStop(0, '#b5bfc1'); g.addColorStop(1, '#2a3134');
+    x.fillStyle = g; x.fillRect(-1.6, -w * 0.95, 3.2, w * 1.9); x.strokeStyle = '#070b0c'; x.lineWidth = 0.6; x.strokeRect(-1.6, -w * 0.95, 3.2, w * 1.9); x.restore();
+  }
+}
+
+// ---- the kit -----------------------------------------------------------------------------------------------------
+// The frame: riveted plate round a plain dark well. Rivets and growth only in the corners (the margins); along the top
+// edge a cabled tendril grown out of the upper-right corner's coral, along the foot a vein under its sheath, and the
+// sides plain (they stretch the most).
+function frame(x, w, h, o) {
+  const { m, band, c, key } = o, R = RNG(key), small = band < 14;
+  const outer = () => cham(x, 1, 1, w - 2, h - 2, c);
+  const inCorner = (px, py) => (Math.min(px, w - px) < m * 1.4 && Math.min(py, h - py) < m * 1.4 ? 1 : 0);
+  plate(x, outer, [0, 0, w, h], R, { where: (px, py) => Math.max(inCorner(px, py), 0.15), rustEvery: small ? 900 : 1300, rustScale: small ? 0.5 : 1, saltEvery: 26 });
+  bevel(x, outer, 1.3);
+  // a patch plate, bolted on as found (the assimilators), across the lower-left corner
+  if (!small) {
+    const pp = () => cham(x, 4, h - m - 6, m + 10, m + 3, [0, 0, 6, 0]);
+    plate(x, pp, [4, h - m - 6, m + 14, h - 3], R, { hi: '#6f6a5c', mid: '#57534a', lo: '#36332d', rustEvery: 500, rustScale: 0.7 });
+    bevel(x, pp, 0.8);
+  }
+  // the well, plain
+  const well = () => cham(x, band, band, w - 2 * band, h - 2 * band, Math.max(3, c - band * 0.6));
+  recess(x, well, [band, band, w - band, h - band], EX.glass);
+  // corner rivets (the margins only)
+  const rr = small ? 1.6 : 2.6;
+  for (const [sx, sy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
+    const px = sx ? w - band / 2 - 1 : band / 2 + 1, py = sy ? h - band / 2 - 1 : band / 2 + 1, along = small ? 0 : 10;
+    rivet(x, sx ? px - along * 0.2 : px + along * 0.2, py, rr, R);
+    if (!small) { rivet(x, sx ? px - m * 0.75 : px + m * 0.75, py, rr * 0.85, R); rivet(x, px, sy ? py - m * 0.75 : py + m * 0.75, rr * 0.85, R); }
+  }
+  if (small) {   // an inset: a little crust in one corner
+    x.save(); outer(); x.rect(w - m, m, -(w - 2 * m), h - 2 * m); x.clip('evenodd');
+    crust(x, w - 8, h - 7, 10, 7, R); crust(x, 7, 7, 8, 6, R, '#567f6c');
+    barnacles(x, w - 7, h - 6, 7, 5, 7, 0.9, 3, R); barnacles(x, 6, 6, 5, 4, 4, 0.8, 2.4, R);
+    anemone(x, w - 10, 8, 4.5, R, '#d8b860');
+    x.restore();
+    outer(); x.strokeStyle = '#060909'; x.lineWidth = 1; x.stroke();
+    return;
+  }
+  // the foot: a vein under its sheath along the bottom band (the conduit-keepers)
+  salt(x, m, w - m, h - 3, 3, R); salt(x, 6, w - 6, band - 1, 2, R);
+  vein(x, [[m * 0.4, h - band / 2 + 1], [w * 0.3, h - band / 2 - 0.5], [w * 0.7, h - band / 2 + 1.5], [w - m * 0.4, h - band / 2 + 1]], 5, R, 0.85);
+  // the reef, swelling out of every corner, kept outside the content box (inside the margins: nothing reaches a label)
+  x.save(); outer(); x.rect(w - m, m, -(w - 2 * m), h - 2 * m); x.clip('evenodd');
+  reef(x, 15, 14, 16, 13, R, 1.1, -P * 0.75);
+  reef(x, w - 15, 15, 15, 13, R, 1, -P * 0.25);
+  reef(x, 16, h - 15, 15, 12, R, 1, P * 0.75);
+  reef(x, w - 16, h - 15, 16, 13, R, 1.15, P * 0.25);
+  brain(x, w - 18, h - 16, 12, 10, R, '#b6a06a');
+  coral(x, w - 6, 40, P * 1.05, 10, 3.6, 3, R);
+  coral(x, 6, h - 40, P * -0.05, 9, 3.2, 3, R, '#e0a24a');
+  barnacles(x, 45, h - 9, 14, 6, 10, 1, 3.6, R); barnacles(x, w - 48, 9, 14, 6, 10, 1, 3.6, R);
+  // tendrils grown from the corners: one along the top band, one down the right side, both curling at their ends
+  tendril(x, [[w - 12, 15], [w - m - 20, 9], [w * 0.55, 13], [w * 0.3, 8], [m + 22, 12]], 6.4, 2.2, R, -1);
+  tendril(x, [[w - 8, h - 20], [w - 13, h * 0.6], [w - 6, h * 0.35], [w - 12, m + 14]], 5.2, 2, R, 1);
+  x.restore();
+  outer(); x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
+}
+
+// The hatch key (the assimilators' access hatch, bolted on as found): a rectangular steel hatch on a hinge at its left,
+// a dog latch at its right, a hex bolt in each corner, a lit slot across its face, barnacles crusted on the hinge end.
+// Idle the slot is dim; hover lights it; pressed the hatch sinks a pixel and the slot's light flares.
+function hatch(state) {
+  return (x, w) => {
+    const R = RNG('hatch'), dy = state === 2 ? 1 : 0;
+    // the hatch's shadow on the panel
+    cham(x, 6, 4 + 2 - dy, w - 8, 42, 5); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    x.save(); x.translate(0, dy);
+    // the hinge: two knuckles on a pin, standing proud of the plate's left edge
+    for (const [y0, y1] of [[7, 21], [27, 41]]) {
+      const g = x.createLinearGradient(0, 0, 11, 0); g.addColorStop(0, '#1e2528'); g.addColorStop(0.4, '#a9b4b6'); g.addColorStop(1, '#2c3437');
+      F.rr(x, 1, y0, 10, y1 - y0, 3); x.fillStyle = g; x.fill(); x.strokeStyle = '#070b0c'; x.lineWidth = 0.8; x.stroke();
+    }
+    x.fillStyle = '#39423f'; x.fillRect(4.5, 21, 3, 6);
+    const body = () => cham(x, 7, 3, w - 9, 42, 5);
+    plate(x, body, [7, 3, w - 2, 45], R, { where: (px) => (px < 28 || px > w - 26 ? 1 : 0), rustEvery: 700, rustScale: 0.45, saltEvery: 18 });
+    bevel(x, body, 1.2);
+    // the slot: recessed, its light by state
+    const sx = 24, sw = w - 48, slot = () => F.rr(x, sx, 12, sw, 25, 3);
+    const glow = [0.0, 0.55, 1][state];
+    recess(x, slot, [sx, 12, sx + sw, 37], ['#0a1a1c', '#0f3b3d', '#16605f'][state]);
+    if (glow) {
+      x.save(); slot(); x.clip();
+      const g = x.createLinearGradient(0, 12, 0, 37); g.addColorStop(0, hexA(EX.lumen, 0.14 * glow)); g.addColorStop(0.5, hexA(EX.lumen, 0.2 * glow)); g.addColorStop(1, hexA(EX.lumen, 0.26 * glow));
+      x.fillStyle = g; x.fillRect(sx, 12, sw, 25);
+      x.restore();
+      x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 8 * glow; slot(); x.strokeStyle = hexA(EX.lumen, 0.5 * glow); x.lineWidth = 1; x.stroke(); x.restore();
+    } else {
+      x.strokeStyle = hexA(EX.lumen, 0.18); x.lineWidth = 0.8; x.beginPath(); x.moveTo(sx + 4, 35.5); x.lineTo(sx + sw - 4, 35.5); x.stroke();
+    }
+    // bolts, the latch
+    for (const [bx, by] of [[17, 9], [17, 39], [w - 16, 9], [w - 16, 39]]) bolt(x, bx, by, 3, 0.2 + bx * 0.01);
+    const lg = x.createLinearGradient(w - 10, 0, w - 3, 0); lg.addColorStop(0, '#b8c2c4'); lg.addColorStop(1, '#2a3235');
+    x.beginPath(); x.moveTo(w - 10, 16); x.lineTo(w - 4, 18); x.lineTo(w - 4, 30); x.lineTo(w - 10, 32); x.closePath(); x.fillStyle = lg; x.fill(); x.strokeStyle = '#070b0c'; x.lineWidth = 0.8; x.stroke();
+    disc(x, w - 7, 24, 1.4); x.fillStyle = '#20282a'; x.fill();
+    // the hinge end crusted with barnacles and salt
+    crust(x, 10, 38, 10, 8, R);
+    barnacles(x, 10, 38, 8, 6, 6, 1, 4.4, R);
+    barnacles(x, 8, 9, 5, 4, 3, 0.8, 2.6, R);
+    x.restore();
+  };
+}
+// A tab: a stencil plate with its upper corners cut, a rivet at each end, a lamp strip along its foot (lit when active).
+function tab(on) {
+  return (x, w, h) => {
+    const R = RNG('tab'), body = () => cham(x, 1, 2, w - 2, h - 4, [8, 8, 2, 2]);
+    plate(x, body, [0, 0, w, h], R, { where: (px) => (px < 16 || px > w - 16 ? 1 : 0), rustEvery: 800, rustScale: 0.4, saltEvery: 22 });
+    bevel(x, body, 1.1);
+    const lamp = () => F.rr(x, 14, h - 9, w - 28, 4, 2);
+    lamp(); x.fillStyle = on ? EX.lumen : '#14292a'; if (on) { x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; x.fill(); x.restore(); } else x.fill();
+    if (on) { lamp(); x.fillStyle = hexA(EX.lumenHot, 0.6); x.fill(); }
+    lamp(); x.strokeStyle = '#060909'; x.lineWidth = 0.7; x.stroke();
+    rivet(x, 7, h / 2 + 1, 2.1, R); rivet(x, w - 7, h / 2 + 1, 2.1, R);
+    barnacles(x, w - 6, h - 6, 4, 3, 3, 0.7, 1.8, R);
+  };
+}
+// A strip: a long plate with a rail along its outer lip and a plain dark channel for the readouts. At its left end a
+// hand wheel on a valve (the conduit-keepers' cock), crusted; at its right a bolted junction box under brain coral.
+function strip(flip) {
+  return (x, w, h) => {
+    const R = RNG('strip' + (flip ? 'b' : 't'));
+    x.save(); if (flip) { x.translate(0, h); x.scale(1, -1); }
+    const outer = () => cham(x, 1, 1, w - 2, h - 2, [2, 2, 14, 14]);
+    plate(x, outer, [0, 0, w, h], R, { where: (px) => (px < 100 || px > w - 100 ? 1 : 0.04), rustEvery: 2200, saltEvery: 30 });
+    bevel(x, outer, 1.2);
+    const ch = () => F.rr(x, 92, 11, w - 184, h - 22, 3);
+    recess(x, ch, [92, 11, w - 92, h - 11], EX.glass);
+    // the rail on the outer lip: a vein in its sheath
+    vein(x, [[96, 5.5], [w / 2, 5.5], [w - 96, 5.5]], 3.2, R, 0.45, false);
+    // left: the valve wheel
+    const vx = 46, vy = 36;
+    disc(x, vx + 2, vy + 3, 27); x.fillStyle = 'rgba(0,0,0,0.45)'; x.fill();
+    disc(x, vx, vy, 27); const rg = x.createRadialGradient(vx - 8, vy - 10, 2, vx, vy, 27); rg.addColorStop(0, '#9aa5a8'); rg.addColorStop(1, '#2a3235'); x.strokeStyle = rg; x.lineWidth = 5; x.stroke();
+    for (let i = 0; i < 5; i++) { const a = i * 2 * P / 5 + 0.3; x.strokeStyle = '#3c4649'; x.lineWidth = 3.4; x.beginPath(); x.moveTo(vx, vy); x.lineTo(vx + Math.cos(a) * 25, vy + Math.sin(a) * 25); x.stroke(); x.strokeStyle = 'rgba(200,212,214,0.35)'; x.lineWidth = 1; x.beginPath(); x.moveTo(vx - 0.8, vy - 0.8); x.lineTo(vx + Math.cos(a) * 25 - 0.8, vy + Math.sin(a) * 25 - 0.8); x.stroke(); }
+    bolt(x, vx, vy, 6, 0.1);
+    salt(x, 96, w - 96, h - 2, 3, R);
+    x.save(); outer(); x.rect(90, 10, w - 180, h - 20); x.clip('evenodd');
+    reef(x, 70, 56, 20, 12, R, 1.1, P * 0.3); reef(x, 14, 22, 12, 18, R, 1, -P * 0.8);
+    reef(x, 30, 64, 16, 7, R, 0.9, P * 0.5);
+    barnacles(x, vx + 16, vy + 18, 14, 7, 8, 1, 4, R);
+    tendril(x, [[86, 66], [70, 40], [84, 18], [70, 6]], 6, 2.2, R, 1);
+    x.restore();
+    // right: the junction box under the reef
+    const jx = w - 82;
+    const box = () => cham(x, jx, 12, 62, 48, 4);
+    plate(x, box, [jx, 12, jx + 62, 60], R, { hi: '#6b7478', rustEvery: 600, rustScale: 0.6 }); bevel(x, box, 1);
+    for (const [bx, by] of [[jx + 6, 18], [jx + 56, 18], [jx + 6, 54], [jx + 56, 54]]) bolt(x, bx, by, 2.4);
+    x.save(); outer(); x.rect(90, 10, w - 180, h - 20); x.clip('evenodd');
+    reef(x, w - 46, 34, 30, 22, R, 1.3, -P * 0.4);
+    brain(x, w - 40, 42, 18, 14, R, '#b6a06a');
+    reef(x, w - 76, 60, 14, 8, R, 0.9, P * 0.5);
+    tendril(x, [[w - 60, 64], [w - 80, 68], [w - 98, 63], [w - 104, 56]], 5, 1.8, R, 1);
+    x.restore();
+    x.restore();
+  };
+}
+// A symbol cell: one barnacle, the same seed lit or unlit; its aperture glows lumen (on) or breach (warn).
+function cell(mode) {
+  return (x) => {
+    const R = RNG('cell');
+    if (mode) { const g = x.createRadialGradient(6, 7, 0, 6, 7, 8); g.addColorStop(0, hexA(mode === 2 ? EX.breach : EX.lumen, 0.55)); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(0, 0, 12, 14); }
+    barnacle(x, 6, 7.4, 5.4, R, mode === 2 ? EX.breach : mode ? EX.lumen : 0);
+    if (!mode) { x.fillStyle = 'rgba(8,12,12,0.35)'; disc(x, 6, 7.4, 5.6); x.fill(); }
+  };
+}
+const nine = {
+  'frame.panel': { size: [420, 300], m: [32, 32, 32, 32], draw: (x, w, h) => frame(x, w, h, { m: 32, band: 24, c: 10, key: 'panel' }) },
+  'frame.inset': { size: [220, 160], m: [14, 14, 14, 14], draw: (x, w, h) => frame(x, w, h, { m: 14, band: 9, c: 5, key: 'inset' }) },
+  'bar.track': { size: [96, 22], m: [0, 14, 0, 14], inset: [10, 4], draw: (x, w, h) => {
+    const R = RNG('track'), body = () => cham(x, 1, 1, w - 2, h - 2, 4);
+    plate(x, body, [0, 0, w, h], R, { where: (px) => (px < 12 || px > w - 12 ? 1 : 0), rustEvery: 500, rustScale: 0.35, saltEvery: 20 });
+    bevel(x, body, 1);
+    recess(x, () => F.rr(x, 9, 3.5, w - 18, h - 7, 2), [9, 3.5, w - 9, h - 3.5], '#071012');
+    rivet(x, 5, h / 2, 1.8); rivet(x, w - 5, h / 2, 1.8);
+  } },
+  'bar.fill': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => vein(x, [[4, h / 2], [w - 4, h / 2]], 6, RNG('fill'), 1, false) },
+  'bar.fill.red': { size: [64, 10], m: [0, 8, 0, 8], draw: (x, w, h) => vein(x, [[4, h / 2], [w - 4, h / 2]], 6, RNG('fillr'), 1, false, EX.breach, EX.breachHot) },
+  'bar.cell.off': { size: [12, 14], gap: 2, draw: cell(0) },
+  'bar.cell.on': { size: [12, 14], gap: 2, draw: cell(1) },
+  'bar.cell.warn': { size: [12, 14], gap: 2, draw: cell(2) },
+  'button.idle': { size: [150, 48], m: [24, 26, 24, 28], draw: hatch(0) },
+  'button.hover': { size: [150, 48], m: [24, 26, 24, 28], draw: hatch(1) },
+  'button.pressed': { size: [150, 48], m: [24, 26, 24, 28], draw: hatch(2) },
+  'tab.idle': { size: [120, 40], m: [16, 16, 16, 16], draw: tab(false) },
+  'tab.active': { size: [120, 40], m: [16, 16, 16, 16], draw: tab(true) },
+  'strip.top': { size: [1200, 72], m: [12, 100, 12, 100], draw: strip(false) },
+  'strip.bottom': { size: [1200, 72], m: [12, 100, 12, 100], draw: strip(true) },
+  'divider': { size: [128, 10], m: [0, 18, 0, 18], draw: (x, w, h) => {
+    const R = RNG('divider');
+    vein(x, [[6, h / 2], [w - 6, h / 2]], 3.6, R, 0.5, false);
+    for (const cx of [9, w - 9]) { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#b5bfc1'); g.addColorStop(1, '#262d30'); x.fillStyle = g; x.fillRect(cx - 3, 0.5, 6, h - 1); x.strokeStyle = '#060909'; x.lineWidth = 0.7; x.strokeRect(cx - 3, 0.5, 6, h - 1); }
+  } },
+};
+
+// ---- hero pieces -------------------------------------------------------------------------------------------------
+// The helm: a bulkhead plate holding a three by three bank of square hatch keys, the stop a round valve hatch at the
+// heart, veins run in the gaps between keys, reef in the corners. Key centres clockwise from the north-west.
+const HELM = [[60, 60], [150, 60], [240, 60], [240, 150], [240, 240], [150, 240], [60, 240], [60, 150]];
+function squareHatch(x, cx, cy, s, R) {
+  const h = s / 2;
+  cham(x, cx - h + 2, cy - h + 3, s, s, 6); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+  const body = () => cham(x, cx - h, cy - h, s, s, 6);
+  plate(x, body, [cx - h, cy - h, cx + h, cy + h], R, { where: (px, py) => (Math.max(Math.abs(px - cx), Math.abs(py - cy)) > h - 10 ? 1 : 0), rustEvery: 1000, rustScale: 0.5, saltEvery: 22 });
+  bevel(x, body, 1.2);
+  const win = () => F.rr(x, cx - h + 11, cy - h + 11, s - 22, s - 22, 4);
+  recess(x, win, [cx - h + 11, cy - h + 11, cx + h - 11, cy + h - 11], '#0a1a1c');
+  x.save(); win(); x.clip(); const g = x.createRadialGradient(cx, cy, 0, cx, cy, h); g.addColorStop(0, hexA(EX.lumen, 0.16)); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(cx - h, cy - h, s, s); x.restore();
+  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) bolt(x, cx + sx * (h - 5.5), cy + sy * (h - 5.5), 2.6, 0.3 + sx * 0.2);
+}
+const hero = {
+  nameplate: (x, w, h) => {
+    const R = RNG('plate'), outer = () => cham(x, 1, 1, w - 2, h - 2, [10, 4, 10, 4]);
+    plate(x, outer, [0, 0, w, h], R, { where: (px) => (px < 62 || px > 428 ? 1 : 0.15), rustEvery: 1400, rustScale: 0.7, saltEvery: 24 });
+    bevel(x, outer, 1.3);
+    const field = () => F.rr(x, 62, 9, 366, 38, 3);
+    recess(x, field, [62, 9, 428, 47], EX.glass);
+    // left: a porthole lens on the plate, ringed with bolts
+    disc(x, 32, 29, 21); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    disc(x, 31, 28, 21); const rg = x.createRadialGradient(25, 21, 2, 31, 28, 21); rg.addColorStop(0, '#a8b3b5'); rg.addColorStop(1, '#283033'); x.fillStyle = rg; x.fill(); x.strokeStyle = '#060909'; x.lineWidth = 1; x.stroke();
+    disc(x, 31, 28, 13); const lg = x.createRadialGradient(28, 24, 1, 31, 28, 13); lg.addColorStop(0, EX.lumenHot); lg.addColorStop(0.35, EX.lumen); lg.addColorStop(1, EX.lumenLo); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 8; x.fillStyle = lg; x.fill(); x.restore();
+    x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
+    for (let i = 0; i < 6; i++) { const a = i * P / 3 + 0.4; bolt(x, 31 + Math.cos(a) * 17, 28 + Math.sin(a) * 17, 1.9, a); }
+    // both ends crusted over, kept off the name field and the lens
+    x.save(); outer(); x.rect(428, 7, -368, 42); x.moveTo(45, 28); x.arc(31, 28, 14, 0, 2 * P, true); x.closePath(); x.clip('evenodd');
+    reef(x, 14, 46, 14, 9, R, 0.9, P * 0.7); reef(x, 50, 8, 12, 6, R, 0.7, -P / 2); reef(x, 52, 50, 10, 6, R, 0.7, P / 2);
+    barnacles(x, 31, 28, 21, 21, 14, 0.9, 3.2, R);
+    reef(x, w - 16, 28, 14, 24, R, 1.15, 0); reef(x, w - 26, 50, 12, 6, R, 0.7, P / 2);
+    coral(x, w - 18, 54, -P / 2 - 0.25, 13, 3.2, 2, R);
+    tendril(x, [[w - 6, 6], [w - 20, 4], [w - 30, 12], [w - 26, 26]], 4.4, 1.6, R, 1);
+    x.restore();
+    rivet(x, 440, 9, 2, R); rivet(x, 440, 47, 2, R);
+  },
+  'helm.pad': (x, w) => {
+    const R = RNG('helm'), outer = () => cham(x, 2, 2, w - 4, w - 4, 26);
+    plate(x, outer, [0, 0, w, w], R, { rustEvery: 2400, saltEvery: 28 });
+    bevel(x, outer, 1.5);
+    // the bank's floor: a grating seen through the gaps
+    x.save(); F.rr(x, 18, 18, w - 36, w - 36, 6); x.clip(); x.fillStyle = '#121a1c'; x.fillRect(18, 18, w - 36, w - 36);
+    for (let i = 18; i < w - 18; i += 6) { x.fillStyle = 'rgba(120,135,138,0.22)'; x.fillRect(i, 18, 1.4, w - 36); }
+    for (let j = 18; j < w - 18; j += 18) { x.fillStyle = 'rgba(0,0,0,0.55)'; x.fillRect(18, j, w - 36, 2); x.fillStyle = 'rgba(150,165,168,0.18)'; x.fillRect(18, j + 2, w - 36, 0.8); }
+    x.restore();
+    recess(x, () => F.rr(x, 18, 18, w - 36, w - 36, 6), [18, 18, w - 18, w - 18], 'rgba(0,0,0,0)');
+    // veins in the gaps between keys (the conduit-keepers)
+    vein(x, [[22, 105], [105, 106], [195, 104], [278, 105]], 3.6, R, 0.55);
+    vein(x, [[22, 196], [105, 195], [195, 196], [278, 194]], 3.6, R, 0.55);
+    vein(x, [[105, 22], [104, 105]], 3, R, 0.45); vein(x, [[196, 278], [195, 196]], 3, R, 0.45);
+    // the keys
+    for (const [kx, ky] of HELM) squareHatch(x, kx, ky, 68, R);
+    // the stop: a round valve hatch with a lit ring
+    disc(x, 152, 153, 36); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    disc(x, 150, 150, 36); const rg = x.createRadialGradient(140, 138, 4, 150, 150, 36); rg.addColorStop(0, '#9ca7aa'); rg.addColorStop(1, '#2b3336'); x.fillStyle = rg; x.fill(); x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
+    disc(x, 150, 150, 25); x.fillStyle = '#0a1a1c'; x.fill(); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; x.strokeStyle = hexA(EX.lumen, 0.7); x.lineWidth = 1.6; x.stroke(); x.restore();
+    for (let i = 0; i < 8; i++) { const a = i * P / 4 + P / 8; bolt(x, 150 + Math.cos(a) * 30.5, 150 + Math.sin(a) * 30.5, 2.2, a); }
+    // the reef packed into every gap and round the rim, clipped clear of every key and the stop
+    x.save(); outer();
+    for (const [kx, ky] of HELM) { x.moveTo(kx - 36, ky - 36); x.lineTo(kx - 36, ky + 36); x.lineTo(kx + 36, ky + 36); x.lineTo(kx + 36, ky - 36); x.closePath(); }
+    x.moveTo(188, 150); x.arc(150, 150, 38, 0, 2 * P, true); x.closePath(); x.clip('evenodd');
+    vein(x, [[22, 150], [60, 113], [150, 108], [240, 113], [278, 150]], 2.6, R, 0.9, false);
+    for (const [px, py, rx, ry] of [[105, 60, 9, 24], [195, 60, 9, 24], [105, 240, 9, 24], [195, 240, 9, 24], [60, 105, 24, 9], [240, 105, 24, 9], [60, 195, 24, 9], [240, 195, 24, 9]]) reef(x, px, py, rx, ry, R, 0.6, rx > ry ? -P / 2 : 0);
+    for (const [px, py] of [[105, 105], [195, 105], [105, 195], [195, 195]]) { crust(x, px, py, 11, 11, R); barnacles(x, px, py, 9, 9, 8, 1, 3.8, R); }
+    anemone(x, 105, 196, 7, R, '#d8b860'); anemone(x, 196, 104, 6, R, '#8fd0c0');
+    reef(x, 18, 18, 16, 16, R, 1.1, -P * 0.75); reef(x, 282, 18, 16, 16, R, 1, -P * 0.25);
+    reef(x, 18, 282, 18, 16, R, 1.2, P * 0.75); reef(x, 282, 282, 16, 16, R, 1.1, P * 0.25);
+    brain(x, 24, 278, 15, 13, R, '#b6a06a'); plateCoral(x, 286, 150, 14, P, R);
+    for (const [px, py, rx, ry] of [[150, 12, 50, 8], [150, 288, 50, 8], [12, 150, 8, 50], [288, 150, 8, 40]]) reef(x, px, py, rx, ry, R, 0.7);
+    tendril(x, [[6, 40], [12, 110], [5, 175], [12, 228], [30, 284]], 6, 2, R, 1);
+    tendril(x, [[290, 260], [294, 200], [288, 140], [292, 70]], 5, 1.8, R, -1);
+    tendril(x, [[110, 6], [150, 12], [190, 5], [230, 12]], 4.6, 1.8, R, 1);
+    x.restore();
+  },
+  'ssd.bezel': (x, w, h) => {
+    const R = RNG('ssd'), outer = () => cham(x, 2, 2, w - 4, h - 4, 18);
+    plate(x, outer, [0, 0, w, h], R, { where: (px) => (px < 46 || px > w - 46 ? 1 : 0.4), rustEvery: 2000, saltEvery: 26 });
+    bevel(x, outer, 1.5);
+    const well = () => cham(x, 46, 14, w - 92, h - 28, 14);
+    recess(x, well, [46, 14, w - 46, h - 14], EX.glass);
+    // a faint graticule in the well
+    x.save(); well(); x.clip(); x.strokeStyle = hexA(EX.lumen, 0.06); x.lineWidth = 1;
+    for (let gx = 50; gx < w - 46; gx += 24) { x.beginPath(); x.moveTo(gx, 14); x.lineTo(gx, h - 14); x.stroke(); }
+    for (let gy = 18; gy < h - 14; gy += 24) { x.beginPath(); x.moveTo(46, gy); x.lineTo(w - 46, gy); x.stroke(); }
+    x.restore();
+    // side veins, rivets
+    vein(x, [[23, 40], [24, 150], [22, 260]], 5, R, 0.85);
+    vein(x, [[w - 23, 40], [w - 22, 150], [w - 24, 260]], 5, R, 0.85);
+    for (const py of [24, 276]) { rivet(x, 12, py, 2.4, R); rivet(x, w - 12, py, 2.4, R); }
+    salt(x, 30, w - 30, h - 4, 3, R);
+    // the reef: up both side bands and into the well's corners, clear of the display's ring
+    x.save(); outer(); x.moveTo(230 + 118, 150); x.arc(230, 150, 118, 0, 2 * P, true); x.closePath(); x.clip('evenodd');
+    reef(x, 24, 262, 22, 34, R, 1.3, P * 0.7); reef(x, 22, 40, 20, 26, R, 1, -P * 0.7); reef(x, 22, 150, 12, 40, R, 0.8, P);
+    reef(x, w - 24, 34, 22, 30, R, 1.25, -P * 0.25); reef(x, w - 22, 262, 20, 30, R, 1.1, P * 0.25); reef(x, w - 20, 150, 12, 36, R, 0.8, 0);
+    reef(x, 72, 266, 26, 18, R, 1, P / 2); reef(x, w - 74, 30, 24, 16, R, 0.9, -P / 2);
+    brain(x, w - 26, 28, 16, 13, R, '#b6a06a'); plateCoral(x, 56, 250, 18, -P * 0.3, R);
+    tendril(x, [[8, 22], [36, 10], [70, 18], [96, 10], [120, 18]], 6, 2, R, 1);
+    tendril(x, [[w - 8, 290], [w - 40, 288], [w - 70, 294], [w - 100, 286]], 5.4, 2, R, -1);
+    x.restore();
+  },
+  dial: (x, w) => {
+    const R = RNG('dial'), c = w / 2;
+    disc(x, c + 2, c + 3, 57); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    plate(x, () => disc(x, c, c, 57), [0, 0, w, w], R, { rustEvery: 900, rustScale: 0.6, saltEvery: 22 });
+    bevel(x, () => disc(x, c, c, 57), 1.3);
+    recess(x, () => disc(x, c, c, 45), [c - 45, c - 45, c + 45, c + 45], EX.glass);
+    for (let i = 0; i < 6; i++) { const a = i * P / 3 + 0.5; bolt(x, c + Math.cos(a) * 51, c + Math.sin(a) * 51, 2.6, a); }
+    x.save(); x.beginPath(); x.arc(c, c, 58, 0, 2 * P); x.arc(c, c, 46, 0, 2 * P, true); x.clip();
+    barnacles(x, c + 34, c + 38, 14, 10, 8, 1, 3.6, R);
+    x.restore();
+  },
+  'lamp.alert.green': (x, w) => lamp(x, w, EX.sea, 'green'), 'lamp.alert.yellow': (x, w) => lamp(x, w, EX.amber, 'yellow'), 'lamp.alert.red': (x, w) => lamp(x, w, EX.breach, 'red'),
+  // The Exponent's mark (original, ours): a ring of seven unlike plates bolted together (whatever is taken is joined as
+  // found), round a conduit that branches upward from one root to three lit ends (power carried where it is needed).
+  crest: (x, w) => {
+    const R = RNG('crest'), c = w / 2;
+    disc(x, c + 1.5, c + 2, 46); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+    disc(x, c, c, 46); x.fillStyle = EX.deep; x.fill();
+    let a = -P / 2 + 0.2;
+    for (let i = 0; i < 7; i++) {
+      const span = 2 * P / 7 * (0.8 + R() * 0.4), a1 = Math.min(a + span, -P / 2 + 0.2 + 2 * P - 0.06 * (6 - i)) - 0.06, r0 = 31 + R() * 3, r1 = 44 - R() * 3;
+      const seg = () => { x.beginPath(); x.arc(c, c, r1, a, a1); x.arc(c, c, r0, a1, a, true); x.closePath(); };
+      plate(x, seg, [0, 0, w, w], R, { hi: i % 2 ? '#7a8589' : '#6d6a5e', mid: i % 3 ? EX.steel : '#5c5a50', rustEvery: 500, rustScale: 0.35 });
+      bevel(x, seg, 0.9);
+      const m = (a + a1) / 2; bolt(x, c + Math.cos(m) * (r0 + r1) / 2, c + Math.sin(m) * (r0 + r1) / 2, 2.2, m);
+      a = a1 + 0.06;
+    }
+    vein(x, [[c, c + 24], [c, c + 4]], 4.2, R, 0.9, false);
+    vein(x, [[c, c + 4], [c - 7, c - 6], [c - 12, c - 16]], 3.2, R, 0.9, false);
+    vein(x, [[c, c + 4], [c, c - 20]], 3.2, R, 0.9, false);
+    vein(x, [[c, c + 4], [c + 7, c - 6], [c + 12, c - 16]], 3.2, R, 0.9, false);
+    for (const [px, py] of [[c - 12, c - 17], [c, c - 21], [c + 12, c - 17]]) { x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 8; disc(x, px, py, 3.4); x.fillStyle = EX.lumenHot; x.fill(); x.restore(); }
+    disc(x, c, c + 25, 4.5); x.fillStyle = '#3a4447'; x.fill(); x.strokeStyle = '#060909'; x.lineWidth = 0.8; x.stroke();
+  },
+};
+// A caged bulkhead lamp: a bolted housing, a glowing lens behind two guard bars, a little crust on the rim.
+function lamp(x, w, col, key) {
+  const R = RNG('lamp.' + key), c = w / 2;
+  disc(x, c + 1.5, c + 2, 30); x.fillStyle = 'rgba(0,0,0,0.5)'; x.fill();
+  plate(x, () => disc(x, c, c, 30), [0, 0, w, w], R, { rustEvery: 700, rustScale: 0.4, saltEvery: 20 });
+  bevel(x, () => disc(x, c, c, 30), 1);
+  disc(x, c, c, 21); const g = x.createRadialGradient(c - 5, c - 6, 1, c, c, 21); g.addColorStop(0, '#ffffff'); g.addColorStop(0.3, col); g.addColorStop(1, mix(col, '#000000', 0.55));
+  x.save(); x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = g; x.fill(); x.restore(); x.strokeStyle = '#060909'; x.lineWidth = 1.2; x.stroke();
+  for (const dx of [-7, 7]) { const bg = x.createLinearGradient(c + dx - 2, 0, c + dx + 2, 0); bg.addColorStop(0, '#2a3235'); bg.addColorStop(0.5, '#b5bfc1'); bg.addColorStop(1, '#2a3235'); x.fillStyle = bg; x.fillRect(c + dx - 1.8, c - 21, 3.6, 42); }
+  for (let i = 0; i < 4; i++) { const a = i * P / 2 + P / 4; bolt(x, c + Math.cos(a) * 25.5, c + Math.sin(a) * 25.5, 2.2, a); }
+  barnacles(x, c + 18, c + 22, 7, 5, 4, 0.8, 2.4, R);
+}
+// The column's ground (CLAUDE.md section 7: no black behind a metal skin's panels): a bulkhead of riveted plates over
+// deck grating, two veins climbing it, and the reef grown up from its foot. 472 x 1080, drawn behind the panels.
+function column(x, w, h) {
+  const R = RNG('column');
+  x.fillStyle = '#121a1c'; x.fillRect(0, 0, w, h);
+  const seamsX = [0, 150, 322, w], seamsY = [0, 260, 540, 810, h];
+  for (let i = 0; i < seamsX.length - 1; i++) for (let j = 0; j < seamsY.length - 1; j++) {
+    const X = seamsX[i] + 1, Y = seamsY[j] + 1, W = seamsX[i + 1] - seamsX[i] - 2, H = seamsY[j + 1] - seamsY[j] - 2, p = () => { x.beginPath(); x.rect(X, Y, W, H); };
+    const tone = R();
+    plate(x, p, [X, Y, X + W, Y + H], R, { hi: mix('#4e585c', '#5a574d', tone), mid: mix('#3a4347', '#46443c', tone), lo: '#22292c', rustEvery: 4000, saltEvery: 34, rustScale: 1.6, where: (px, py) => (Math.min(Math.abs(px - X), Math.abs(px - X - W), Math.abs(py - Y), Math.abs(py - Y - H)) < 16 ? 1 : 0.35) });
+    bevel(x, p, 1.2);
+    for (let k = X + 10; k < X + W - 6; k += 22) { rivet(x, k, Y + 7, 1.9, R); rivet(x, k, Y + H - 7, 1.9, R); }
+  }
+  // veins climbing the bulkhead at its edges, and along the seams
+  vein(x, [[4, h], [5, 700], [3, 380], [5, 0]], 5, R, 0.5, false);
+  vein(x, [[w - 4, h], [w - 3, 600], [w - 5, 250], [w - 4, 0]], 5, R, 0.5, false);
+  vein(x, [[150, h], [151, 540], [149, 0]], 3.4, R, 0.35, false);
+  // the reef, grown up from the foot and down from the head, in layers: crust first, then what settles on it
+  for (let i = 0; i < 26; i++) crust(x, R() * w, h - Math.pow(R(), 1.6) * 160, 14 + R() * 26, 8 + R() * 16, R, R() < 0.6 ? '#a1707a' : '#567f6c');
+  for (let i = 0; i < 10; i++) crust(x, R() * w, Math.pow(R(), 1.6) * 60, 10 + R() * 20, 6 + R() * 10, R, R() < 0.5 ? '#a1707a' : '#567f6c');
+  // most of the bulkhead is reef now: masses on a jittered grid, a few left out so patches of plate still show
+  for (let gy = 30; gy < h; gy += 58) for (let gx = 30; gx < w; gx += 62) {
+    if (R() < 0.22) continue;
+    reef(x, gx + (R() - 0.5) * 30, gy + (R() - 0.5) * 30, 26 + R() * 10, 22 + R() * 10, R, 1.2 + R() * 0.5, -P / 2 + (R() - 0.5) * 2);
+  }
+  for (let i = 0; i < 16; i++) { const px = R() * w, py = R() * h; if (R() < 0.5) brain(x, px, py, 10 + R() * 12, 9 + R() * 9, R, R() < 0.5 ? '#b6a06a' : '#8fa07a'); else plateCoral(x, px, py, 12 + R() * 10, -P / 2 + (R() - 0.5) * 2, R); }
+  for (let i = 0; i < 6; i++) { const sx = 20 + R() * (w - 40); tendril(x, [[sx, h], [sx + (R() - 0.5) * 80, h * 0.75], [sx + (R() - 0.5) * 80, h * 0.5], [sx + (R() - 0.5) * 80, h * 0.25], [sx + (R() - 0.5) * 60, 20 + R() * 100]], 8, 3, R, R() < 0.5 ? 1 : -1); }
+  for (let i = 0; i < 9; i++) brain(x, 20 + R() * (w - 40), h - 10 - R() * 40, 12 + R() * 16, 10 + R() * 10, R);
+  for (let i = 0; i < 6; i++) coral(x, 10 + R() * (w - 20), h - 4, -P / 2 + (R() - 0.5) * 0.8, 16 + R() * 14, 4, 3, R);
+  barnacles(x, w / 2, h - 30, w / 2, 30, 60, 1.2, 6, R);
+  barnacles(x, w / 2, 14, w / 2, 14, 40, 1, 4.6, R);
+  for (const [px, py] of [[8, 300], [w - 8, 520], [8, 780], [w - 8, 900]]) barnacles(x, px, py, 8, 40, 14, 1, 4, R);
+  tendril(x, [[2, 120], [16, 200], [4, 300], [14, 420]], 5, 2, R, 1);
+  tendril(x, [[w - 2, 640], [w - 14, 720], [w - 4, 820], [w - 14, 930]], 5, 2, R, -1);
+}
+
+// The overgrowth (the page's `overgrow` hook): what has grown across the console, between and over its pieces. It keeps
+// to what no label, readout or key face uses: the column's outer edges (14 px in), the gaps between pieces (a cable lies
+// in each, no thicker than the pieces' plain bands), the strips' outer lips and their ends, and a little way over the
+// battle's edge where the console meets it. r gives every slot's rectangle in console px.
+function overgrow(x, r) {
+  const R = RNG('over'), col = 472;
+  const blocks = ['nameplate', 'helm.pad', 'ssd.bezel', 'panel.weapons', 'dial'].map((k) => r[k]).filter(Boolean);
+  // the column's left edge: reef climbing it, a thick cable winding up through it
+  for (let y = 40; y < 1060; y += 64 + R() * 30) reef(x, 6 + R() * 4, y, 8, 22, R, 0.8, P);
+  tendril(x, [[4, 1080], [12, 900], [3, 720], [13, 540], [4, 360], [12, 200], [6, 70]], 8, 3, R, 1);
+  // its right edge, swelling a little over the battle
+  for (let y = 100; y < 1000; y += 70 + R() * 30) reef(x, col - 2 + R() * 6, y, 9, 24, R, 0.85, 0);
+  tendril(x, [[col + 4, 990], [col - 6, 820], [col + 6, 640], [col - 4, 470], [col + 6, 300], [col - 2, 120]], 8, 3, R, -1);
+  // a cable in every gap between the column's pieces, wrapping in from the edges, barnacles where it crosses
+  for (let i = 0; i < blocks.length - 1; i++) {
+    const a = blocks[i], gy = a[1] + a[3] + 3;
+    tendril(x, [[-4, gy + 2], [40, gy - 1], [90, gy + 1.5], [140, gy], [170, gy - 1]], 6, 2, R, i % 2 ? 1 : -1);
+    tendril(x, [[col + 6, gy - 1], [430, gy + 1.5], [380, gy - 1], [330, gy]], 6, 2, R, i % 2 ? -1 : 1);
+    barnacles(x, 14, gy, 8, 4, 6, 1, 3.4, R); barnacles(x, col - 12, gy, 8, 4, 6, 1, 3.4, R);
+    crust(x, 230 + (R() - 0.5) * 120, gy, 26, 3.5, R, R() < 0.5 ? '#a1707a' : '#567f6c');
+  }
+  // the gap between the helm and its readout
+  const hp = r['helm.pad'];
+  if (hp) { const gx = hp[0] + hp[2] + 3; tendril(x, [[gx, hp[1] + hp[3] + 4], [gx - 1.5, hp[1] + hp[3] * 0.6], [gx + 1.5, hp[1] + hp[3] * 0.3], [gx, hp[1] - 2]], 5, 2, R, 1); barnacles(x, gx, hp[1] + hp[3] * 0.5, 3, 20, 6, 0.9, 2.6, R); }
+  // where the column meets the strips: big reef masses over the corners
+  for (const [cy, face] of [[74, P * 0.25], [1006, -P * 0.25]]) { reef(x, col + 2, cy, 30, 20, R, 1.5, face); reef(x, col + 30, cy + (cy < 500 ? -8 : 8), 22, 10, R, 1.1, face); brain(x, col - 6, cy, 13, 11, R, '#b6a06a'); }
+  // the strips: growth along their outer lips and hanging over the battle's edge, crusted ends
+  for (const [y, dir] of [[72, 1], [1008, -1]]) {
+    for (let px = 540; px < 1900; px += 70 + R() * 70) {
+      if (dir < 0 && px < 940) continue;   // keep the battle's readouts clear
+      const L = dir > 0 ? 18 + R() * 30 : 6 + R() * 8, k = R();
+      if (k < 0.35) tendril(x, [[px, y + dir * 2], [px + (R() - 0.5) * 16, y + dir * L * 0.5], [px + (R() - 0.5) * 20, y + dir * L]], 4.4, 1.6, R, R() < 0.5 ? 1 : -1);
+      else if (k < 0.7) coral(x, px, y + dir * 2, dir > 0 ? P / 2 + (R() - 0.5) * 0.7 : -P / 2 + (R() - 0.5) * 0.7, L * 0.42, 3.2, 2, R, R() < 0.5 ? EX.coral : '#e0a24a');
+      else if (dir > 0) anemone(x, px, y + 6, 7 + R() * 4, R, ['#d9768a', '#d8b860', '#8fd0c0'][Math.floor(R() * 3)]);
+      crust(x, px + 24, y + dir * 1, 26, 5, R, R() < 0.5 ? '#a1707a' : '#567f6c');
+      barnacles(x, px + 26, y + dir * 3, 22, 4, 9, 1, 3.8, R);
+    }
+    tendril(x, [[560, y + dir * 3], [900, y + dir * 8], [1250, y + dir * 2], [1600, y + dir * 9], [1900, y + dir * 3]], 7, 3, R, dir);
+    reef(x, 1904, y, 24, 18, R, 1.3, dir > 0 ? P * 0.75 : -P * 0.75);
+  }
+}
+
+// ---- icons: pictures of the job, cut as stencils ---------------------------------------------------------------------
+// Utilitarian stencil marks: solid shapes in one ink (lumen), broken by the bridges a stencil needs. Colour is for state.
+function icon(name) {
+  return F.paint(48, 48, (x) => {
+    const ink = EX.lumen;
+    x.fillStyle = ink; x.strokeStyle = ink; x.lineCap = 'butt'; x.lineJoin = 'miter';
+    const ring = (cx, cy, r, lw) => { x.lineWidth = lw; x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.stroke(); };
+    const bar = (a, b, c, d, lw) => { x.lineWidth = lw; x.beginPath(); x.moveTo(a, b); x.lineTo(c, d); x.stroke(); };
+    // a stencil bridge: a gap cut across the mark at (cx, cy), at angle a, gw wide
+    const cut = (cx, cy, a, gw = 2.4, L = 30) => { x.save(); x.globalCompositeOperation = 'destination-out'; x.translate(cx, cy); x.rotate(a); x.fillRect(-gw / 2, -L / 2, gw, L); x.restore(); };
+    ({
+      // a ship's wheel: rim, hub and eight handles, the rim bridged four times
+      helm: () => { ring(24, 24, 13, 4); disc(x, 24, 24, 5); x.fill(); for (let i = 0; i < 8; i++) { const a = i * P / 4; bar(24 + Math.cos(a) * 5, 24 + Math.sin(a) * 5, 24 + Math.cos(a) * 21, 24 + Math.sin(a) * 21, 3.2); } for (let i = 0; i < 4; i++) { const a = P / 8 + i * P / 2; cut(24 + Math.cos(a) * 13, 24 + Math.sin(a) * 13, a, 2.2, 7); } },
+      // a target: two rings and four ticks, bridged on the diagonals
+      fire: () => { ring(24, 24, 17, 3.6); ring(24, 24, 8.5, 3.2); disc(x, 24, 24, 2.6); x.fill(); for (const a of [0, P / 2, P, 1.5 * P]) bar(24 + Math.cos(a) * 12, 24 + Math.sin(a) * 12, 24 + Math.cos(a) * 23, 24 + Math.sin(a) * 23, 3.2); for (let i = 0; i < 4; i++) { const a = P / 4 + i * P / 2; cut(24 + Math.cos(a) * 13, 24 + Math.sin(a) * 13, a, 2.2, 16); } },
+      // six shield facings round a hull
+      shields: () => { for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.lineWidth = 4.4; x.beginPath(); x.arc(24, 24, 18, a - P / 6 + 0.16, a + P / 6 - 0.16); x.stroke(); } x.beginPath(); x.moveTo(24, 13); x.lineTo(30, 22); x.lineTo(29, 35); x.lineTo(19, 35); x.lineTo(18, 22); x.closePath(); x.fill(); cut(24, 27, P / 2, 2, 14); },
+      // an emitter's widening beam drawing a crate in
+      tractor: () => { x.fillRect(4, 18, 8, 12); x.lineWidth = 2.4; x.beginPath(); x.moveTo(12, 21); x.lineTo(32, 12); x.moveTo(12, 27); x.lineTo(32, 36); x.stroke(); for (const r of [11, 17]) { x.beginPath(); x.arc(8, 24, r, -0.38, 0.38); x.stroke(); } x.fillRect(33, 15, 12, 18); cut(39, 24, P / 2, 2, 14); cut(8, 24, 0, 2, 14); },
+      // a figure, whole above, dissolving into slices below
+      transport: () => { disc(x, 24, 9, 5.5); x.fill(); x.beginPath(); x.moveTo(14, 36); x.lineTo(15, 21); x.lineTo(33, 21); x.lineTo(34, 36); x.closePath(); x.fill(); x.fillRect(16, 35, 6, 9); x.fillRect(26, 35, 6, 9); x.globalCompositeOperation = 'destination-out'; for (let y = 26, k = 0; y < 46; y += 3.4, k++) x.fillRect(0, y, 48, 1 + k * 0.32); x.globalCompositeOperation = 'source-over'; },
+      // an atom: three orbits and a nucleus, each orbit bridged
+      science: () => { x.lineWidth = 3; for (const r of [0, P / 3, -P / 3]) { x.beginPath(); x.ellipse(24, 24, 20, 7.5, r, 0, 2 * P); x.stroke(); } disc(x, 24, 24, 4.4); x.fill(); for (const r of [0, P / 3, -P / 3]) cut(24 + Math.cos(r) * 20, 24 + Math.sin(r) * 20, r, 2.2, 6); },
+      // a dish on its stand, sending
+      comms: () => { x.beginPath(); x.arc(17, 27, 12, P * 0.75, P * 1.75, true); x.closePath(); x.fill(); bar(17, 27, 12, 44, 3.4); bar(17, 27, 22, 44, 3.4); disc(x, 27, 17, 2.6); x.fill(); x.lineWidth = 2.6; for (const r of [8, 15]) { x.beginPath(); x.arc(27, 17, r, -P / 2 + 0.1, -0.1); x.stroke(); } cut(17, 27, P * 0.25, 2.2, 26); },
+      // a wrench
+      repair: () => { bar(10, 38, 27, 21, 6.4); x.lineWidth = 5.4; x.beginPath(); x.arc(31, 17, 8.5, -P / 4 + 0.95, -P / 4 - 0.95 + 2 * P); x.stroke(); cut(19, 29, P / 4, 2.2, 12); },
+      // a star map: three systems joined by lanes
+      map: () => { x.lineWidth = 2.6; x.beginPath(); x.moveTo(11, 13); x.lineTo(37, 19); x.lineTo(20, 37); x.closePath(); x.stroke(); for (const [cx, cy] of [[11, 13], [37, 19], [20, 37]]) { x.fillRect(cx - 5, cy - 5, 10, 10); cut(cx, cy, 0, 1.8, 12); } },
+      // a gear: a ring and its teeth, cut at the hub
+      settings: () => { ring(24, 24, 11, 5); for (let i = 0; i < 8; i++) { const a = i * P / 4; bar(24 + Math.cos(a) * 13, 24 + Math.sin(a) * 13, 24 + Math.cos(a) * 20, 24 + Math.sin(a) * 20, 5.6); } cut(24, 24, P / 4, 2.2, 30); },
+    })[name]();
+  });
+}
+
+// ---- the live readouts -----------------------------------------------------------------------------------------------
+// A stencil arrow: a solid head and shaft in lumen, a bridge across the shaft, outlined dark so it reads on the hatch.
+function stencilArrow(x, col) {
+  const shape = () => { x.beginPath(); x.moveTo(13, 0); x.lineTo(1, -10); x.lineTo(1, -4); x.lineTo(-12, -4); x.lineTo(-12, 4); x.lineTo(1, 4); x.lineTo(1, 10); x.closePath(); };
+  shape(); x.strokeStyle = '#040707'; x.lineWidth = 3.2; x.lineJoin = 'round'; x.stroke();
+  x.save(); x.shadowColor = col; x.shadowBlur = 5; shape(); x.fillStyle = col; x.fill(); x.restore();
+  x.fillStyle = '#0a1a1c'; x.fillRect(-5.5, -5, 2.2, 10);
+}
+
+// ---- the skin --------------------------------------------------------------------------------------------------
+F.register('exponent', {
+  name: 'Exponent', kind: 'Painted in canvas (first pass): a utilitarian steel console overgrown like a wreck on a reef: rust, salt, barnacles, coral, cabled tendrils and lit veins, hatch keys', bg: EX.bg, sampleBg: '#2a3236',
+  css: { '--s-ink': EX.bone, '--s-dim': '#9fb0ad', '--s-num': EX.lumen, '--s-body': '"Chivo Mono", monospace', '--btn-ink': '#eef8f4', '--btn-shadow': '0 1px 2px #000, 0 0 3px #000', '--btn-justify': 'center',
+    '--btn-font': '400 15px/1 "Allerta Stencil", sans-serif', '--btn-track': '0.08em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.06s', '--btn-sink': '1px', '--btn-pb': '2px',
+    '--tab-font': '400 12px/1 "Allerta Stencil", sans-serif', '--tab-ink': '#9fb0ad', '--tab-ink-on': EX.lumenHot, '--title-font': '400 18px/1 "Allerta Stencil", sans-serif', '--title-ink': EX.bone,
+    '--lbl-font': '500 13px/1 "Chivo Mono", monospace', '--num-font': '700 24px/1 "Chivo Mono", monospace',
+    // The strips are 72 px; their open band is the dark channel, rows 11-61.
+    '--stt-pt': '12px', '--stt-pb': '12px', '--stb-pt': '12px', '--stb-pb': '12px', '--strip-lamp': '44px', '--tab-pb': '4px' },
+  accent: EX.lumen, warn: EX.breach,
+  // The title stencilled at the head of the well, in bone, over a shadow.
+  title: (t) => { t.style.cssText = 'position:relative;justify-self:start;align-self:flex-start;margin-left:2px;letter-spacing:0.1em;text-transform:uppercase;text-shadow:0 1px 2px #000;'; },
+  plateText: { left: 72, top: 13, width: 344, height: 30, font: '400 19px/1 "Allerta Stencil", sans-serif', color: EX.bone, shadow: '0 1px 2px #000', sub: 'ACCRETION 41 · KEEPER OF LINES' },
+  helmKeys: HELM, shield: [EX.lumen, EX.amber, EX.breach],
+  fonts: ['400 20px "Allerta Stencil"', '700 20px "Chivo Mono"', '500 20px "Chivo Mono"'], view: { title: '400 26px "Allerta Stencil"', body: '700 21px "Chivo Mono"', upper: true, ink: EX.bone, dim: '#a9c4bf' },
+  build: () => Object.assign(F.fromPainters(nine, hero, icon, false), { column: F.png(F.paint(472, 1080, column)) }),
+  overgrow,
+  live: {
+    arrow: (x) => stencilArrow(x, EX.lumen),
+    helmCentre: (x, c) => { x.fillStyle = EX.bone; x.font = '400 13px "Allerta Stencil"'; x.textAlign = 'center'; x.shadowColor = '#000'; x.shadowBlur = 3; x.fillText('STOP', c, c + 5); x.shadowBlur = 0; },
+    // The hull as the assimilators keep it: modules taken from other ships, joined by plain collars, a conduit down its
+    // spine to each mount. Shields: six banks of ticks, coloured by strength.
+    ssd: (x, cx, cy, sh, col) => {
+      for (let i = 0; i < 6; i++) {
+        const a = -P / 2 + i * P / 3; x.save(); x.strokeStyle = col(sh[i]); x.shadowColor = col(sh[i]); x.shadowBlur = 5;
+        for (let k = -5; k <= 5; k++) { const t = a + k * (P / 3 - 0.22) / 10, r0 = 94, r1 = k % 5 === 0 ? 106 : 101; x.lineWidth = 2.4; x.beginPath(); x.moveTo(cx + Math.cos(t) * r0, cy + Math.sin(t) * r0); x.lineTo(cx + Math.cos(t) * r1, cy + Math.sin(t) * r1); x.stroke(); }
+        x.restore();
+      }
+      const mods = [[-12, -70, 24, 26, 4], [-20, -44, 40, 30, 2], [-30, -14, 60, 34, 6], [-22, 20, 44, 26, 2], [-14, 46, 28, 22, 3], [-44, -6, 14, 26, 2], [30, -6, 14, 26, 2]];
+      for (const [mx, my, mw, mh, c] of mods) { cham(x, cx + mx, cy + my, mw, mh, c); x.fillStyle = hexA(EX.lumen, 0.12); x.fill(); x.strokeStyle = EX.lumen; x.lineWidth = 1.6; x.stroke(); }
+      for (const yy of [-44, -14, 20, 46]) { x.fillStyle = hexA(EX.lumen, 0.7); x.fillRect(cx - 8, cy + yy - 1.5, 16, 3); }
+      x.strokeStyle = hexA(EX.lumenHot, 0.8); x.lineWidth = 1.2; x.setLineDash([3, 2]); x.beginPath(); x.moveTo(cx, cy - 66); x.lineTo(cx, cy + 64); x.stroke(); x.setLineDash([]);
+      for (const [mx, my] of [[cx, cy - 58], [cx - 37, cy + 7], [cx + 37, cy + 7], [cx, cy + 58]]) { x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; x.fillStyle = EX.lumenHot; x.fillRect(mx - 3, my - 3, 6, 6); x.restore(); }
+    },
+    // A sonar sweep in the gauge: range rings, a fading wedge, contacts as squares (lumen far, amber, breach near).
+    dial: (x, c, cts) => {
+      for (const r of [14, 28, 40]) { x.strokeStyle = hexA(EX.lumen, 0.22); x.lineWidth = 1; x.beginPath(); x.arc(c, c, r, 0, 2 * P); x.stroke(); }
+      x.strokeStyle = hexA(EX.lumen, 0.16); x.beginPath(); x.moveTo(c - 42, c); x.lineTo(c + 42, c); x.moveTo(c, c - 42); x.lineTo(c, c + 42); x.stroke();
+      const a0 = -0.9; for (let i = 0; i < 14; i++) { x.fillStyle = hexA(EX.lumen, 0.05 + 0.02 * i); x.beginPath(); x.moveTo(c, c); x.arc(c, c, 41, a0 - 0.9 + i * 0.065, a0 - 0.9 + (i + 1) * 0.065); x.closePath(); x.fill(); }
+      x.strokeStyle = EX.lumenHot; x.lineWidth = 1.4; x.beginPath(); x.moveTo(c, c); x.lineTo(c + Math.cos(a0) * 41, c + Math.sin(a0) * 41); x.stroke();
+      for (const [dx, dy] of cts) {
+        const d = Math.hypot(dx, dy), cl = d < 0.56 ? EX.breach : d < 0.8 ? EX.amber : EX.lumen, s = d < 0.56 ? 7 : 5.5;
+        x.save(); x.shadowColor = cl; x.shadowBlur = 6; x.fillStyle = cl; x.fillRect(c + dx * 34 - s / 2, c + dy * 34 - s / 2, s, s); x.restore();
+      }
+    },
+    // Four corner brackets of flat bar, each bolted at its corner and bridged like a stencil.
+    bracket: (x, bx, by, bw, bh) => {
+      for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
+        x.save(); x.translate(px, py); x.scale(sx, sy);
+        const L = () => { x.beginPath(); x.moveTo(0, 0); x.lineTo(34, 0); x.lineTo(34, 5); x.lineTo(5, 5); x.lineTo(5, 34); x.lineTo(0, 34); x.closePath(); };
+        L(); x.strokeStyle = '#040707'; x.lineWidth = 2.4; x.stroke(); x.save(); x.shadowColor = EX.lumen; x.shadowBlur = 6; L(); x.fillStyle = EX.lumen; x.fill(); x.restore();
+        x.fillStyle = '#020306'; x.fillRect(18, -1, 2.4, 7); x.fillRect(-1, 18, 7, 2.4);
+        disc(x, 2.5, 2.5, 1.6); x.fillStyle = '#0a1a1c'; x.fill();
+        x.restore();
+      }
+    },
+  },
+  world: ['One collective that grows by taking in ships, stations and crews; nothing is decorated, everything is function, and nothing taken is thrown away.',
+    'Provisional and the owner\'s to set; the design draws on none of it. Three traditions shape its things: the assimilators, the conduit-keepers, the reef.',
+    'Machinery kept running long past any refit: whatever is taken is bolted on as found, power runs in sheathed veins of cable and fluid line, and the growth it has absorbed is left to accrete in layers.',
+    'Hulks of joined hulls under barnacle, coral and cable, like wrecks that have lain on a sea floor and still run.'],
+  shapes: 'Hatch keys (a steel access hatch on a hinge, a dog latch, four bolts, a lit slot), riveted plate with patches bolted on, and a reef over all of it: coralline crust, plate, brain and branching coral, sponges, anemones, tube worms, dense barnacles, thick cabled tendrils across the gaps between panels, sheathed veins pulsing along every foot. Growth keeps to margins, edges and gaps, never a label or key face.',
+  light: 'A hard work light from the upper left over chipped paint, rust and salt; the only glow is the cold lumen in the slots, the veins and the lenses.',
+  motion: 'Hover lights a hatch\'s slot; pressed, the hatch sinks a pixel and its slot flares; the growth on it never moves.',
+  type: '"Allerta Stencil", a stencilled sans, for keys and titles, over "Chivo Mono" for labels and numbers.',
+  palette: [['Hull steel', EX.steel, 'Frames, keys, plates', 'The assimilators: nothing decorated, the plate as it was taken'], ['Rust', EX.rust, 'Wear, chips, runs', 'Kept running long past any refit'],
+    ['Reef coral', EX.coral, 'Coral, tube worm plumes', 'The reef: growth tolerated and built on, in layers'], ['Barnacle bone', EX.bone, 'Text, barnacles, labels', 'What has settled and stays'],
+    ['Lumen', EX.lumen, 'Lit slots, veins, readouts, icons', 'The conduit-keepers: power carried where it is needed, no further'], ['Breach', EX.breach, 'Alerts only', 'The hull open to the sea']],
+});
+})();
+</script>
+<!-- /INLINE -->
+<!-- INLINE docs/mockups/skins/redtithe.js -->
+<script data-src="docs/mockups/skins/redtithe.js">
+// The Red Tithe skin (mockup 4, OpenSpec change console-skins): a second, more brutal pirate faction (owner,
+// 2026-11-07: "Id also like another pirate faction. One more brutal. Decorate their UI with sharp teeth, bullets and
+// blades. Blood stained buttons and crusty paper with burn marks and drops of blood and grime on them"). Name and culture
+// are provisional, ours, and go to the survey: raiders who take a tithe of blood from every crew they board, whose orders
+// are written on bounty sheets and pinned up with knives, and whose captains count their standing in trophies (teeth
+// pulled from beaten crews of every species, spent cartridges, broken blades). Three traditions inside it, each named
+// where it shapes a piece: the sheet-keepers (paper, ledgers, burned seals), the gunners (bandoliers, brass, the revolver
+// cylinder of the helm) and the cutters (blades, the trap-jaw keys). Nothing here is drawn from how the Tithe look
+// (CLAUDE.md section 1): the teeth are other crews' trophies, never their own.
+//
+// This first pass is painted in canvas: crusted, stained and scorched paper nailed to the dark, scarred oak planks of the
+// Tithe's hall (owner, 2026-11-07: "More brown wood on the red tithe"), strap iron and rivets where steel is still needed,
+// the trophies shaded by hand. A later pass models the wood and metal (planks, jaws, knives, cartridges, teeth) in Blender and paints the paper in Krita
+// (krita-brushwork); until then this module is the one implementation. Every speck, stain, tear, drop and scratch comes
+// from the page's seeded generator (FCK.rng(FCK.hash('redtithe.<piece>'))), never a sine or product-modulo hash
+// (CLAUDE.md section 10). Blood, grime and burns sit only in a piece's margins, never under a label or readout.
+// Registers itself with the page's skin registry (docs/mockups/skins). Our own design: no other game's names, shapes or art.
+(function () {
+'use strict';
+const F = window.FCK, P = F.P;
+const RT = {
+  steel: '#2e3236', steelHi: '#7c848b', steelLo: '#141618', paper: '#c9b48a', paperHi: '#ddcba1', paperLo: '#9c8256',
+  dried: '#5a1a12', driedLo: '#33100a', fresh: '#c4141c', freshLo: '#6e0a0e', brass: '#c8963a', brassHi: '#f0cf7a', brassLo: '#6e4d16',
+  soot: '#1b1714', ink: '#1e1611', oak: '#4a301c', oakHi: '#62412a', oakLo: '#24160b', bone: '#e6d8b4', boneLo: '#9d8c6c', leather: '#3d2618', leatherHi: '#6b4429', bg: '#1a100a',
+};
+const RNG = (k) => F.rng(F.hash('redtithe.' + k));
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const trace = F.trace;
+
+// ---- edges --------------------------------------------------------------------------------------------------------
+// A torn edge: the outline resampled every `step` px and each point pushed in or out by the generator, with now and then
+// a deeper bite, as paper tears. `amp` is the tear's depth in px; `bite` the chance of a bite per point.
+function tear(pts, closed, amp, R, step = 3, bite = 0.06) {
+  const out = []; const segs = closed ? pts.length : pts.length - 1;
+  for (let i = 0; i < segs; i++) {
+    const a = pts[i], b = pts[(i + 1) % pts.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1, k = Math.max(1, Math.ceil(L / step));
+    const nx = -(b[1] - a[1]) / L, ny = (b[0] - a[0]) / L;
+    for (let j = 0; j < k; j++) {
+      const t = j / k, d = (R() - 0.5) * amp + (R() < bite ? -amp * (1 + R() * 1.5) : 0);
+      out.push([a[0] + (b[0] - a[0]) * t + nx * d, a[1] + (b[1] - a[1]) * t + ny * d]);
+    }
+  }
+  if (!closed) out.push(pts[pts.length - 1]);
+  return out;
+}
+// An irregular blob of radius r round (cx, cy), n points: for burn holes, drops and stains.
+function blob(cx, cy, r, R, n = 18, j = 0.3, sx = 1, sy = 1) {
+  const o = []; for (let i = 0; i < n; i++) { const a = i * 2 * P / n, q = r * (1 - j / 2 + R() * j); o.push([cx + Math.cos(a) * q * sx, cy + Math.sin(a) * q * sy]); } return o;
+}
+const bbox = (pts) => { const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]); return [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]; };
+
+// ---- materials ----------------------------------------------------------------------------------------------------
+// Gun steel: a dark plate, brushed along its length, scratched and pitted, lit from the upper left, its edge worn bright.
+function steel(x, pts, R, o = {}) {
+  const [x0, y0, x1, y1] = bbox(pts), w = x1 - x0, h = y1 - y0;
+  x.save(); trace(x, pts, true); x.clip();
+  const g = x.createLinearGradient(x0, y0, x0 + w * 0.3, y1); g.addColorStop(0, o.hi || '#4b5157'); g.addColorStop(0.5, o.mid || RT.steel); g.addColorStop(1, o.lo || '#191b1e');
+  x.fillStyle = g; x.fillRect(x0, y0, w, h);
+  for (let i = 0; i < h * 1.4; i++) { const y = y0 + R() * h; x.strokeStyle = R() < 0.5 ? 'rgba(255,255,255,0.045)' : 'rgba(0,0,0,0.10)'; x.lineWidth = 0.5; x.beginPath(); x.moveTo(x0 + R() * w * 0.5, y); x.lineTo(x0 + w * (0.5 + R() * 0.5), y + (R() - 0.5)); x.stroke(); }
+  const ns = Math.max(2, Math.round(w * h / 900));
+  for (let i = 0; i < ns; i++) { const sx = x0 + R() * w, sy = y0 + R() * h, a = R() * P, L = 4 + R() * 16; x.strokeStyle = `rgba(210,215,220,${0.12 + R() * 0.22})`; x.lineWidth = 0.5; x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + Math.cos(a) * L, sy + Math.sin(a) * L); x.stroke(); }
+  for (let i = 0; i < w * h / 60; i++) { x.fillStyle = R() < 0.6 ? 'rgba(0,0,0,0.35)' : 'rgba(150,120,90,0.18)'; x.fillRect(x0 + R() * w, y0 + R() * h, 0.7, 0.7); }
+  // grime pooled toward the bottom
+  const gr = x.createLinearGradient(0, y0 + h * 0.5, 0, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(14,10,8,0.45)'); x.fillStyle = gr; x.fillRect(x0, y0, w, h);
+  x.restore();
+  x.save(); trace(x, pts, true); x.clip(); x.translate(1, 1); trace(x, pts, true); x.strokeStyle = 'rgba(220,226,232,0.32)'; x.lineWidth = 1.2; x.stroke(); x.restore();
+  trace(x, pts, true); x.strokeStyle = '#08090a'; x.lineWidth = 1.2; x.stroke();
+}
+// Crusty paper: yellowed, darker toward its scorched edge, fibre grain, foxing, laid over the steel with a shadow.
+// `stains` are [cx, cy, r] tea-water rings, placed by the caller in the piece's margins.
+function paper(x, pts, R, o = {}) {
+  const [x0, y0, x1, y1] = bbox(pts), w = x1 - x0, h = y1 - y0, tone = o.tone || RT.paper;
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 5; x.shadowOffsetX = 1.5; x.shadowOffsetY = 2.5; trace(x, pts, true); x.fillStyle = tone; x.fill(); x.restore();
+  x.save(); trace(x, pts, true); x.clip();
+  x.fillStyle = tone; x.fillRect(x0, y0, w, h);
+  if (o.light) { x.fillStyle = o.light; x.fillRect(x0, y0, w, h); }
+  // fibre grain and foxing: uniform, so a stretched centre stays plain
+  for (let i = 0; i < w * h / 5; i++) { x.fillStyle = R() < 0.5 ? 'rgba(70,45,20,0.10)' : 'rgba(255,248,225,0.10)'; x.fillRect(x0 + R() * w, y0 + R() * h, 0.6 + R() * 1.4, 0.5); }
+  for (let i = 0; i < w * h / 700; i++) { const cx = x0 + R() * w, cy = y0 + R() * h, r = 0.6 + R() * 1.4; x.fillStyle = 'rgba(120,70,30,0.18)'; x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill(); }
+  // mottling: broad faint blotches of age, spread evenly so a stretched middle stays plain
+  for (let i = 0; i < Math.max(4, w * h / 260); i++) { const cx = x0 + R() * w, cy = y0 + R() * h, r = 6 + R() * 18, g = x.createRadialGradient(cx, cy, 0, cx, cy, r); g.addColorStop(0, R() < 0.6 ? 'rgba(110,70,30,0.10)' : 'rgba(255,240,200,0.08)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(cx - r, cy - r, 2 * r, 2 * r); }
+  for (const [cx, cy, r] of o.stains || []) {
+    const g = x.createRadialGradient(cx, cy, r * 0.2, cx, cy, r); g.addColorStop(0, 'rgba(150,100,45,0.10)'); g.addColorStop(0.85, 'rgba(120,75,30,0.22)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r, 0, 2 * P); x.fill();
+    x.strokeStyle = 'rgba(100,60,25,0.35)'; x.lineWidth = 0.8; trace(x, blob(cx, cy, r * 0.88, R, 22, 0.12), true); x.stroke();
+  }
+  // the scorched, handled edge: browner and darker toward it
+  for (const [lw, a] of [[28, 0.07], [16, 0.12], [8, 0.2], [3.6, 0.42], [1.4, 0.85]]) { trace(x, pts, true); x.strokeStyle = `rgba(${lw > 4 ? '85,48,18' : '30,16,8'},${a})`; x.lineWidth = lw; x.stroke(); }
+  x.restore();
+}
+// Soot, grime and blood: only ever placed in a piece's margins by the caller.
+function grime(x, cx, cy, r, a = 0.35, col = '20,14,10') { const g = x.createRadialGradient(cx, cy, 0, cx, cy, r); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`); x.fillStyle = g; x.fillRect(cx - r, cy - r, 2 * r, 2 * r); }
+function burn(x, cx, cy, r, R) {
+  grime(x, cx, cy, r * 2.6, 0.55, '70,34,10');
+  const rim = blob(cx, cy, r * 1.35, R, 20, 0.45); trace(x, rim, true); x.fillStyle = '#1a0e07'; x.fill();
+  const hole = blob(cx, cy, r, R, 18, 0.5); trace(x, hole, true);
+  const g = x.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 0, cx, cy, r); g.addColorStop(0, '#3a3e42'); g.addColorStop(1, '#0e1012'); x.fillStyle = g; x.fill();
+  trace(x, hole, true); x.strokeStyle = 'rgba(200,90,30,0.35)'; x.lineWidth = 0.7; x.stroke();
+}
+// A drop of blood: fresh (red, glossy, a dark rim) or dried (brown, matte, cracked), with a short tail along `dir`.
+function drop(x, cx, cy, r, R, fresh, dir = R() * 2 * P) {
+  const pts = blob(cx, cy, r, R, 16, 0.18); const tx = cx + Math.cos(dir) * r * 1.9, ty = cy + Math.sin(dir) * r * 1.9;
+  x.save(); x.beginPath(); trace(x, pts, true); x.moveTo(cx + Math.cos(dir + 1.2) * r * 0.7, cy + Math.sin(dir + 1.2) * r * 0.7); x.lineTo(tx, ty); x.lineTo(cx + Math.cos(dir - 1.2) * r * 0.7, cy + Math.sin(dir - 1.2) * r * 0.7); x.closePath();
+  const g = x.createRadialGradient(cx - r * 0.3, cy - r * 0.3, 0, cx, cy, r * 1.3);
+  if (fresh) { g.addColorStop(0, '#d8262c'); g.addColorStop(0.7, '#9a0c12'); g.addColorStop(1, '#4a0508'); } else { g.addColorStop(0, '#6e2618'); g.addColorStop(0.75, RT.dried); g.addColorStop(1, RT.driedLo); }
+  x.fillStyle = g; x.fill('nonzero'); x.restore();
+  if (fresh) { x.fillStyle = 'rgba(255,230,230,0.6)'; x.beginPath(); x.ellipse(cx - r * 0.35, cy - r * 0.38, r * 0.28, r * 0.16, -0.6, 0, 2 * P); x.fill(); }
+  else { x.strokeStyle = 'rgba(25,8,4,0.6)'; x.lineWidth = 0.4; for (let i = 0; i < 2; i++) { x.beginPath(); x.moveTo(cx + (R() - 0.5) * r, cy + (R() - 0.5) * r); x.lineTo(cx + (R() - 0.5) * r, cy + (R() - 0.5) * r); x.stroke(); } }
+}
+// Spatter: a drop and its satellites flung along `dir`, smaller and longer as they fly.
+function spatter(x, cx, cy, dir, n, s, R, fresh) {
+  drop(x, cx, cy, s, R, fresh, dir + P);
+  for (let i = 0; i < n; i++) {
+    const d = s * (1.8 + R() * 5), a = dir + (R() - 0.5) * 0.9, px = cx + Math.cos(a) * d, py = cy + Math.sin(a) * d, r = s * (0.18 + R() * 0.4) * (1.2 - d / (s * 8));
+    x.fillStyle = fresh ? '#a8101a' : RT.dried; x.beginPath(); x.ellipse(px, py, Math.max(0.4, r * 1.6), Math.max(0.3, r * 0.8), a, 0, 2 * P); x.fill();
+  }
+}
+// Blood run down from (px, py): a thin trail thickening to a bead at its foot.
+function drip(x, px, py, len, R, fresh) {
+  const col = fresh ? '#9a0c12' : RT.dried, pts = []; for (let i = 0; i <= 10; i++) pts.push([px + (R() - 0.5) * 0.8, py + len * i / 10]);
+  x.save(); x.strokeStyle = col; x.lineCap = 'round'; for (let i = 0; i < 10; i++) { x.lineWidth = 0.8 + i * 0.12; x.beginPath(); x.moveTo(pts[i][0], pts[i][1]); x.lineTo(pts[i + 1][0], pts[i + 1][1]); x.stroke(); } x.restore();
+  drop(x, px, py + len, 1.5, R, fresh, -P / 2);
+}
+// A smear dragged along a path: a low wash and the streaks fingers leave in it.
+function smear(x, pts, w, R, col = RT.dried) {
+  x.save(); x.lineCap = 'round'; x.lineJoin = 'round';
+  trace(x, pts, false); x.strokeStyle = rgba(col, 0.38); x.lineWidth = w; x.stroke();
+  for (let i = 0; i < 4; i++) { const o = (R() - 0.5) * w * 0.8; x.save(); x.translate(o * 0.3, o); trace(x, pts, false); x.strokeStyle = rgba(col, 0.25 + R() * 0.3); x.lineWidth = 0.6 + R() * 1.4; x.stroke(); x.restore(); }
+  x.restore();
+}
+// A fingerprint left in grime or blood: broken concentric ridges.
+function print(x, cx, cy, s, rot, R, col = '40,26,16', a = 0.35) {
+  x.save(); x.translate(cx, cy); x.rotate(rot); x.strokeStyle = `rgba(${col},${a})`; x.lineWidth = 0.55;
+  for (let k = 1; k <= 7; k++) { const rx = s * 0.6 * k / 7, ry = s * k / 7; let a0 = R() * 2 * P; while (a0 < 2 * P + 6) { const a1 = a0 + 0.6 + R() * 1.8; x.beginPath(); x.ellipse(0, 0, rx, ry, 0, a0, a1); x.stroke(); a0 = a1 + 0.2 + R() * 0.5; } }
+  x.restore();
+}
+function rivet(x, px, py, r) {
+  const g = x.createRadialGradient(px - r * 0.4, py - r * 0.45, 0.2, px, py, r); g.addColorStop(0, '#b9c0c6'); g.addColorStop(0.45, '#4d5358'); g.addColorStop(1, '#111315');
+  x.fillStyle = 'rgba(0,0,0,0.6)'; x.beginPath(); x.arc(px + 0.8, py + 1, r, 0, 2 * P); x.fill();
+  x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 2 * P); x.fill();
+}
+// A square nail through the paper, its rust bled down the sheet.
+function nail(x, px, py, r, R) {
+  const g = x.createLinearGradient(px, py + r, px, py + r + 6 + R() * 8); g.addColorStop(0, 'rgba(120,52,20,0.55)'); g.addColorStop(1, 'rgba(120,52,20,0)');
+  x.fillStyle = g; x.fillRect(px - r * 0.5, py, r, r + 10);
+  x.fillStyle = 'rgba(0,0,0,0.55)'; x.fillRect(px - r + 0.8, py - r + 1, 2 * r, 2 * r);
+  const h = x.createLinearGradient(px - r, py - r, px + r, py + r); h.addColorStop(0, '#8a8f93'); h.addColorStop(1, '#25282b'); x.fillStyle = h; x.fillRect(px - r, py - r, 2 * r, 2 * r);
+  x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.5; x.strokeRect(px - r, py - r, 2 * r, 2 * r);
+}
+
+// ---- the hall's boards (owner, 2026-11-07: "More brown wood on the red tithe") -------------------------------------
+// Weathered plank: dark brown oak, its grain running along the board ('h' or 'v'), pores, silvered streaks where the
+// weather has raised the grain, lit from the upper left with its worn edges catching the light. Grain lines run the
+// board's whole length and drift only slowly, so a board stretched along its grain (a 9-slice edge) stays clean.
+function wood(x, pts, R, o = {}) {
+  const [x0, y0, x1, y1] = bbox(pts), w = x1 - x0, h = y1 - y0, H = (o.dir || 'h') === 'h', L = H ? w : h, A = H ? h : w;
+  const along = (p, t0, t1, wob) => { const out = []; for (let i = 0; i <= 12; i++) { const t = t0 + (t1 - t0) * i / 12, q = p + wob * Math.sin(i / 12 * P * (1 + R() * 0.2)) + (R() - 0.5) * 0.25; out.push(H ? [x0 + t, y0 + q] : [x0 + q, y0 + t]); } return out; };
+  x.save(); trace(x, pts, true); x.clip();
+  const g = H ? x.createLinearGradient(0, y0, 0, y1) : x.createLinearGradient(x0, 0, x1, 0);
+  g.addColorStop(0, o.hi || RT.oakHi); g.addColorStop(0.45, o.tone || RT.oak); g.addColorStop(1, o.lo || RT.oakLo); x.fillStyle = g; x.fillRect(x0, y0, w, h);
+  // broad bands of heart and sap wood along the grain
+  for (let i = 0; i < Math.max(3, A * 0.22); i++) { const p = R() * A, t = 1.5 + R() * 6; x.fillStyle = R() < 0.55 ? `rgba(22,11,4,${0.10 + R() * 0.16})` : `rgba(170,118,70,${0.05 + R() * 0.09})`; if (H) x.fillRect(x0, y0 + p, w, t); else x.fillRect(x0 + p, y0, t, h); }
+  // fine grain: long dark lines, a few pale ones, the whole length of the board
+  for (let i = 0; i < A * 1.1; i++) { const p = R() * A; trace(x, along(p, -4, L + 4, (R() - 0.5) * 2.4), false); x.strokeStyle = R() < 0.8 ? `rgba(18,8,3,${0.16 + R() * 0.3})` : `rgba(200,150,100,${0.08 + R() * 0.12})`; x.lineWidth = 0.4 + R() * 0.7; x.stroke(); }
+  // pores and silvered, raised grain
+  for (let i = 0; i < w * h / 14; i++) { const px = x0 + R() * w, py = y0 + R() * h, l = 1.5 + R() * 4; x.fillStyle = R() < 0.7 ? 'rgba(10,5,2,0.4)' : 'rgba(176,164,146,0.13)'; if (H) x.fillRect(px, py, l, 0.6); else x.fillRect(px, py, 0.6, l); }
+  // grime settled toward the foot, as on every board of the hall
+  const gr = x.createLinearGradient(0, y0 + h * 0.4, 0, y1); gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(10,6,3,0.35)'); x.fillStyle = gr; x.fillRect(x0, y0, w, h);
+  x.restore();
+  // worn arrises: bright where the light from the upper left catches them, dark below and right
+  x.save(); trace(x, pts, true); x.clip(); x.translate(1, 1); trace(x, pts, true); x.strokeStyle = 'rgba(214,168,118,0.32)'; x.lineWidth = 1.4; x.stroke(); x.restore();
+  x.save(); trace(x, pts, true); x.clip(); x.translate(-1.2, -1.4); trace(x, pts, true); x.strokeStyle = 'rgba(8,4,2,0.55)'; x.lineWidth = 2; x.stroke(); x.restore();
+  trace(x, pts, true); x.strokeStyle = '#0c0704'; x.lineWidth = 1.1; x.stroke();
+}
+// A board laid as a rectangle: a shortcut for wood() with a per-board tone drawn from the generator, so no two match.
+function board(x, X, Y, W, H, R, dir, o = {}) {
+  const k = (R() - 0.5) * 0.22, sh = (hex) => { const n = parseInt(hex.slice(1), 16), f = (c) => Math.max(0, Math.min(255, Math.round(c * (1 + k)))); return `rgb(${f(n >> 16)},${f((n >> 8) & 255)},${f(n & 255)})`; };
+  wood(x, rect(X, Y, W, H), R, Object.assign({ dir, tone: sh(o.tone || RT.oak), hi: sh(o.hi || RT.oakHi), lo: sh(o.lo || RT.oakLo) }, o.extra || {}));
+}
+// A knot: a dark eye drawn out along the grain, its rings round it and a check split from it.
+function knot(x, cx, cy, r, R, dir = 'h') {
+  const sx = dir === 'h' ? 1.9 : 1, sy = dir === 'h' ? 1 : 1.9;
+  grime(x, cx, cy, r * 2.4, 0.3, '30,14,5');
+  x.strokeStyle = 'rgba(20,9,3,0.45)'; x.lineWidth = 0.6; for (let k = 4; k >= 1; k--) { trace(x, blob(cx, cy, r * (0.6 + k * 0.4), R, 20, 0.12, sx, sy), true); x.stroke(); }
+  const g = x.createRadialGradient(cx - r * 0.2, cy - r * 0.2, 0, cx, cy, r); g.addColorStop(0, '#5a3418'); g.addColorStop(0.6, '#2a1608'); g.addColorStop(1, '#120803');
+  trace(x, blob(cx, cy, r, R, 16, 0.25, sx * 0.8, sy * 0.8), true); x.fillStyle = g; x.fill();
+  x.strokeStyle = 'rgba(8,4,2,0.8)'; x.lineWidth = 0.7; const a = dir === 'h' ? 0 : P / 2; x.beginPath(); x.moveTo(cx + Math.cos(a) * r * 1.2, cy + Math.sin(a) * r * 1.2); x.lineTo(cx + Math.cos(a) * r * (2.6 + R()), cy + Math.sin(a) * r * (2.6 + R()) + (R() - 0.5)); x.stroke();
+}
+// A knife gouge: a V cut, dark in its throat, the fresh pale wood of its lit wall along one side.
+function gouge(x, ax, ay, bx, by, wd = 1.6) {
+  const L = Math.hypot(bx - ax, by - ay) || 1, nx = -(by - ay) / L, ny = (bx - ax) / L;
+  x.save(); x.lineCap = 'round';
+  x.strokeStyle = 'rgba(205,160,110,0.55)'; x.lineWidth = wd * 0.7; x.beginPath(); x.moveTo(ax - nx * wd * 0.6, ay - ny * wd * 0.6); x.lineTo(bx - nx * wd * 0.6, by - ny * wd * 0.6); x.stroke();
+  x.strokeStyle = 'rgba(6,3,1,0.9)'; x.lineWidth = wd; x.beginPath(); x.moveTo(ax, ay); x.quadraticCurveTo((ax + bx) / 2 + nx * 0.6, (ay + by) / 2 + ny * 0.6, bx, by); x.stroke();
+  x.restore();
+}
+// A tally scratched into the board: `n` marks in fives, each five struck through, scored pale into the dark wood.
+function tally(x, X, Y, n, hgt, R, col = 'rgba(214,176,128,0.7)') {
+  x.save(); x.strokeStyle = col; x.lineWidth = 0.9; x.lineCap = 'round';
+  let px = X;
+  for (let i = 0; i < n; i++) {
+    if (i % 5 === 4) { x.beginPath(); x.moveTo(px - 4 * 3.2 - 1.5, Y + hgt * 0.8); x.lineTo(px + 0.5, Y + hgt * 0.15); x.stroke(); px += 4.5; continue; }
+    x.beginPath(); x.moveTo(px + (R() - 0.5) * 0.6, Y + (R() - 0.5)); x.lineTo(px + (R() - 0.5) * 1.2, Y + hgt + (R() - 0.5)); x.stroke(); px += 3.2;
+  }
+  x.restore();
+}
+// A scorch: wood charred black at its heart and checked into small blocks, browned round it.
+function scorch(x, cx, cy, r, R) {
+  grime(x, cx, cy, r * 2.2, 0.55, '40,18,6'); grime(x, cx, cy, r * 1.3, 0.75, '10,6,3');
+  x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.5;
+  for (let i = 0; i < r * 1.4; i++) { const px = cx + (R() - 0.5) * r * 1.6, py = cy + (R() - 0.5) * r * 1.2; x.beginPath(); x.moveTo(px - 2, py); x.lineTo(px + 2, py); x.moveTo(px, py - 1.5); x.lineTo(px, py + 1.5); x.stroke(); }
+  for (let i = 0; i < 5; i++) { x.fillStyle = `rgba(230,110,40,${0.18 + R() * 0.2})`; x.fillRect(cx + (R() - 0.5) * r, cy + (R() - 0.5) * r * 0.8, 0.9, 0.9); }
+}
+// Old blood soaked into the grain: drawn out along it, darkest where it pooled, its edges running down the grain lines.
+function soak(x, cx, cy, r, R, dir = 'h') {
+  const H = dir === 'h';
+  x.save(); x.translate(cx, cy); if (!H) x.rotate(P / 2);
+  const g = x.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, 'rgba(70,10,6,0.6)'); g.addColorStop(0.7, 'rgba(60,10,6,0.32)'); g.addColorStop(1, 'rgba(60,10,6,0)');
+  x.scale(2.2, 0.8); x.fillStyle = g; x.beginPath(); x.arc(0, 0, r, 0, 2 * P); x.fill();
+  x.restore();
+  x.save(); x.translate(cx, cy); if (!H) x.rotate(P / 2);
+  for (let i = 0; i < 9; i++) { const y = (R() - 0.5) * r * 1.1, l = r * (1.2 + R() * 1.6), s = (R() - 0.5) * r; x.strokeStyle = `rgba(80,12,8,${0.25 + R() * 0.3})`; x.lineWidth = 0.5 + R() * 0.9; x.beginPath(); x.moveTo(s - l, y); x.lineTo(s + l, y + (R() - 0.5)); x.stroke(); }
+  x.restore();
+}
+// A nail hole left by an older sheet: a dark square pit with a ring of rust.
+function nailHole(x, px, py, R) { grime(x, px, py + 1.5, 4, 0.4, '110,48,18'); x.fillStyle = '#080402'; x.fillRect(px - 1.1, py - 1.1, 2.2, 2.2); x.fillStyle = 'rgba(220,170,120,0.3)'; x.fillRect(px - 1.1, py + 1.1, 2.2, 0.5); }
+// Strap iron: a flat black-iron band, forged rough and rusted at its edges, riveted through.
+function iron(x, pts, R, rivets = []) {
+  steel(x, pts, R, { hi: '#474b4e', mid: '#26292b', lo: '#0f1011' });
+  x.save(); trace(x, pts, true); x.clip(); for (let i = 0; i < 6; i++) { const [px, py] = pts[Math.floor(R() * pts.length)]; grime(x, px + (R() - 0.5) * 6, py + (R() - 0.5) * 6, 5 + R() * 5, 0.35, '120,52,20'); } x.restore();
+  for (const [px, py, r] of rivets) rivet(x, px, py, r || 2.6);
+}
+// An iron corner strap: an L of strap iron over the joint of two boards, at corner (cx, cy) opening toward (sx, sy).
+function cornerStrap(x, cx, cy, sx, sy, arm, wd, R) {
+  const p = [[0, 0], [arm, 0], [arm, wd], [wd, wd], [wd, arm], [0, arm]].map(([a, b]) => [cx + a * sx, cy + b * sy]);
+  iron(x, p, R, [[cx + (arm - wd * 0.55) * sx, cy + wd * 0.5 * sy, 2.2], [cx + wd * 0.5 * sx, cy + (arm - wd * 0.55) * sy, 2.2], [cx + wd * 0.5 * sx, cy + wd * 0.5 * sy, 2.4]]);
+}
+// A frame of four boards round a rectangle: top and bottom with their grain across, the sides with theirs down, butted at
+// the corners. `t` is the boards' width. A dark plank backs the middle, where the torn sheet lets it show.
+function boardFrame(x, w, h, t, R, o = {}) {
+  board(x, 0.5, 0.5, w - 1, h - 1, R, 'h', { tone: '#2c1b0f', hi: '#3a2414', lo: '#160d06' });
+  board(x, 0.5, 0.5, w - 1, t, R, 'h', o); board(x, 0.5, h - t - 0.5, w - 1, t, R, 'h', o);
+  board(x, 0.5, t, t, h - 2 * t, R, 'v', o); board(x, w - t - 0.5, t, t, h - 2 * t, R, 'v', o);
+}
+
+// ---- trophies (the cutters' blades, the gunners' brass, the teeth of beaten crews) --------------------------------
+// A knife driven through the sheet: handle at (x0, y0), the blade entering the paper at (x1, y1); scale s.
+function knife(x, x0, y0, x1, y1, s, R, o = {}) {
+  const L = Math.hypot(x1 - x0, y1 - y0), a = Math.atan2(y1 - y0, x1 - x0);
+  x.save(); x.translate(x0, y0); x.rotate(a);
+  const hw = 2.6 * s, bw = 3.4 * s, gx = L * 0.46;
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.75)'; x.shadowBlur = 4; x.shadowOffsetX = 2; x.shadowOffsetY = 3;
+  // blade: a straight back, a curved belly, a fuller, bloodied toward the point
+  x.beginPath(); x.moveTo(gx, -bw); x.lineTo(L + 2, -bw * 0.9); x.lineTo(L + 2, bw * 0.4); x.quadraticCurveTo(L * 0.8, bw * 1.3, gx, bw); x.closePath();
+  const bg = x.createLinearGradient(0, -bw, 0, bw); bg.addColorStop(0, '#e1e6ea'); bg.addColorStop(0.45, '#8d959c'); bg.addColorStop(0.55, '#4c5359'); bg.addColorStop(1, '#a9b1b8'); x.fillStyle = bg; x.fill(); x.restore();
+  x.strokeStyle = '#0b0c0d'; x.lineWidth = 0.7; x.stroke();
+  x.strokeStyle = 'rgba(30,34,38,0.7)'; x.lineWidth = 0.6; x.beginPath(); x.moveTo(gx + 3, -bw * 0.3); x.lineTo(L * 0.85, -bw * 0.3); x.stroke();
+  if (o.blood !== false) { x.save(); x.clip(); smear(x, [[L * 0.7, 0], [L + 2, 0.4]], bw * 2.2, R, '#6a1410'); x.restore(); }
+  // where it goes through: a dark slit with the paper lifted round it
+  x.fillStyle = '#050505'; x.fillRect(L, -bw * 1.2, 2, bw * 2.4); x.fillStyle = 'rgba(255,240,210,0.35)'; x.fillRect(L + 2, -bw * 1.1, 0.8, bw * 2.2);
+  // guard, wrapped grip, pommel
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.75)'; x.shadowBlur = 4; x.shadowOffsetX = 2; x.shadowOffsetY = 3;
+  const gg = x.createLinearGradient(0, -bw * 2, 0, bw * 2); gg.addColorStop(0, '#9ba3aa'); gg.addColorStop(1, '#25292c'); x.fillStyle = gg; x.fillRect(gx - 2.2 * s, -bw * 1.9, 2.8 * s, bw * 3.8);
+  // a grip of dark wood scales, worn pale where the hand holds it, pinned with brass
+  const hg = x.createLinearGradient(0, -hw, 0, hw); hg.addColorStop(0, '#8a5e38'); hg.addColorStop(0.45, RT.oak); hg.addColorStop(1, '#170d05'); x.fillStyle = hg; x.beginPath(); x.moveTo(3 * s, -hw * 0.8); x.lineTo(gx - 2 * s, -hw); x.lineTo(gx - 2 * s, hw); x.lineTo(3 * s, hw * 0.8); x.closePath(); x.fill();
+  x.restore();
+  x.strokeStyle = 'rgba(14,7,2,0.6)'; x.lineWidth = 0.4; for (let i = 0; i < 4; i++) { const y = (R() - 0.5) * hw * 1.5; x.beginPath(); x.moveTo(3.5 * s, y); x.lineTo(gx - 2.5 * s, y + (R() - 0.5) * 1.2); x.stroke(); }
+  for (const t of [0.3, 0.72]) { const px = 3 * s + (gx - 5 * s) * t; x.fillStyle = RT.brassHi; x.beginPath(); x.arc(px, 0, 0.9 * s, 0, 2 * P); x.fill(); x.fillStyle = RT.brassLo; x.beginPath(); x.arc(px + 0.25 * s, 0.25 * s, 0.5 * s, 0, 2 * P); x.fill(); }
+  const pg = x.createRadialGradient(1.5 * s, -1 * s, 0.3, 2 * s, 0, 3.4 * s); pg.addColorStop(0, '#c9d0d6'); pg.addColorStop(1, '#1d2023'); x.fillStyle = pg; x.beginPath(); x.arc(2 * s, 0, 3.2 * s, 0, 2 * P); x.fill();
+  x.restore();
+}
+// A hatchet left buried in the boards (the cutters' tradition): an oak haft from its knob at (x0, y0) to the iron head
+// at (x1, y1), the bit sunk into the wood across the haft; scale s.
+function hatchet(x, x0, y0, x1, y1, s, R) {
+  const L = Math.hypot(x1 - x0, y1 - y0), a = Math.atan2(y1 - y0, x1 - x0);
+  x.save(); x.translate(x0, y0); x.rotate(a);
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.75)'; x.shadowBlur = 5; x.shadowOffsetX = 2; x.shadowOffsetY = 3;
+  x.beginPath(); x.moveTo(0, -3.4 * s); x.quadraticCurveTo(L * 0.5, -2.2 * s, L + 2 * s, -2.6 * s); x.lineTo(L + 2 * s, 2.6 * s); x.quadraticCurveTo(L * 0.5, 2.2 * s, 0, 3.4 * s); x.quadraticCurveTo(-2.6 * s, 0, 0, -3.4 * s); x.closePath();
+  const g = x.createLinearGradient(0, -3.4 * s, 0, 3.4 * s); g.addColorStop(0, '#a87648'); g.addColorStop(0.45, '#6a4426'); g.addColorStop(1, '#1e1108'); x.fillStyle = g; x.fill(); x.restore();
+  x.strokeStyle = '#0c0704'; x.lineWidth = 0.8; x.stroke();
+  x.strokeStyle = 'rgba(14,7,2,0.5)'; x.lineWidth = 0.4; for (const y of [-1.6, 0.4, 1.8]) { x.beginPath(); x.moveTo(2 * s, y * s); x.lineTo(L, y * s + (R() - 0.5)); x.stroke(); }
+  // a wrap of cord where the hand grips, darkened with old blood
+  x.fillStyle = '#3a1a10'; x.fillRect(L * 0.12, -3.3 * s, L * 0.2, 6.6 * s); x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.6; for (let t = L * 0.12; t < L * 0.32; t += 2 * s) { x.beginPath(); x.moveTo(t, -3.3 * s); x.lineTo(t + s, 3.3 * s); x.stroke(); }
+  // the head: a bearded iron head round the haft's end, its bit sunk in the board
+  const hd = [[L - 5 * s, -5 * s], [L + 6 * s, -5 * s], [L + 6 * s, 3 * s], [L + 10 * s, 15 * s], [L - 11 * s, 15 * s], [L - 5 * s, 4 * s]];
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.75)'; x.shadowBlur = 4; x.shadowOffsetX = 2; x.shadowOffsetY = 3; trace(x, hd, true); x.fillStyle = '#2a2d30'; x.fill(); x.restore();
+  steel(x, hd, R, { hi: '#80888f', mid: '#3a3f44', lo: '#141618' });
+  x.fillStyle = '#050505'; x.fillRect(L - 12 * s, 14.6 * s, 23 * s, 1.6 * s);
+  x.fillStyle = 'rgba(230,236,240,0.5)'; x.fillRect(L - 9 * s, 12.6 * s, 17 * s, 0.8);
+  x.restore();
+}
+// A trophy tooth, hung by its drilled root: a canine, a molar or a fang, from crews of every kind. (cx, cy) is the hole.
+function tooth(x, cx, cy, s, kind, rot, R) {
+  x.save(); x.translate(cx, cy); x.rotate(rot); x.scale(s, s);
+  x.beginPath();
+  if (kind === 'molar') { x.moveTo(-3, -1); x.lineTo(-2.4, 4); x.lineTo(-4.2, 6); x.quadraticCurveTo(-5.2, 10, -3, 11.5); x.quadraticCurveTo(0, 12.5, 3, 11.5); x.quadraticCurveTo(5.2, 10, 4.2, 6); x.lineTo(2.4, 4); x.lineTo(3, -1); x.quadraticCurveTo(0, -2.6, -3, -1); }
+  else if (kind === 'fang') { x.moveTo(-2.6, -1); x.quadraticCurveTo(-3.6, 6, -1.2, 14); x.quadraticCurveTo(1.6, 9, 2.8, -1); x.quadraticCurveTo(0, -2.4, -2.6, -1); }
+  else { x.moveTo(-2.4, -1); x.quadraticCurveTo(-3.4, 5, -2.2, 8); x.lineTo(0, 13); x.lineTo(2.2, 8); x.quadraticCurveTo(3.4, 5, 2.4, -1); x.quadraticCurveTo(0, -2.4, -2.4, -1); }
+  x.closePath();
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 2.5 / s; x.shadowOffsetX = 1.2; x.shadowOffsetY = 1.8;
+  const g = x.createLinearGradient(-4, 0, 4, 0); g.addColorStop(0, '#f4ead0'); g.addColorStop(0.55, RT.bone); g.addColorStop(1, '#8a7a5c'); x.fillStyle = g; x.fill(); x.restore();
+  x.strokeStyle = '#2a2018'; x.lineWidth = 0.55 / s * 1.4; x.stroke();
+  // the root darker, a crack, a stain
+  x.save(); x.clip(); x.fillStyle = 'rgba(110,80,45,0.4)'; x.fillRect(-6, -3, 12, 4.5); x.strokeStyle = 'rgba(60,40,25,0.7)'; x.lineWidth = 0.35; x.beginPath(); x.moveTo(-0.6 + R(), 3); x.lineTo(0.4, 6.5); x.lineTo(-0.2 + R() * 0.6, 9); x.stroke(); x.restore();
+  x.fillStyle = '#120c08'; x.beginPath(); x.arc(0, 0.6, 0.85, 0, 2 * P); x.fill();
+  x.restore();
+}
+// A string of trophy teeth on a cord sagging from (ax, ay) to (bx, by).
+function teethString(x, ax, ay, bx, by, sag, n, s, R) {
+  const at = (t) => [ax + (bx - ax) * t, ay + (by - ay) * t + Math.sin(t * P) * sag];
+  x.strokeStyle = '#2a1a10'; x.lineWidth = 1.3; x.beginPath(); for (let i = 0; i <= 20; i++) { const [px, py] = at(i / 20); if (i) x.lineTo(px, py); else x.moveTo(px, py); } x.stroke();
+  x.strokeStyle = 'rgba(160,120,80,0.45)'; x.lineWidth = 0.4; x.stroke();
+  const kinds = ['canine', 'molar', 'fang'];
+  for (let i = 0; i < n; i++) { const t = (i + 0.5 + (R() - 0.5) * 0.3) / n, [px, py] = at(t); tooth(x, px, py, s * (0.85 + R() * 0.3), kinds[Math.floor(R() * 3)], (R() - 0.5) * 0.35, R); }
+}
+// A cartridge standing at (cx, base y by), w wide, h tall: 'live' brass with its bullet, 'red' with a painted tip
+// (the warning round), 'spent' an empty dented case.
+function cartridge(x, cx, by, w, h, state, R) {
+  const cw = w / 2, caseTop = by - h * 0.62, neck = by - h * 0.7;
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.6)'; x.shadowBlur = 1.5; x.shadowOffsetX = 0.8; x.shadowOffsetY = 1;
+  if (state !== 'spent') {
+    x.beginPath(); x.moveTo(cx - cw * 0.62, neck + 0.5); x.lineTo(cx - cw * 0.62, by - h * 0.86); x.quadraticCurveTo(cx - cw * 0.5, by - h, cx, by - h); x.quadraticCurveTo(cx + cw * 0.5, by - h, cx + cw * 0.62, by - h * 0.86); x.lineTo(cx + cw * 0.62, neck + 0.5); x.closePath();
+    const bg = x.createLinearGradient(cx - cw, 0, cx + cw, 0); bg.addColorStop(0, '#e9a27a'); bg.addColorStop(0.4, '#b5643e'); bg.addColorStop(1, '#4a2213'); x.fillStyle = bg; x.fill();
+    if (state === 'red') { x.save(); x.clip(); const rg = x.createLinearGradient(cx - cw, 0, cx + cw, 0); rg.addColorStop(0, '#ff5a50'); rg.addColorStop(0.45, RT.fresh); rg.addColorStop(1, RT.freshLo); x.fillStyle = rg; x.fillRect(cx - cw, by - h - 1, w, h * 0.22); x.restore(); }
+  }
+  x.beginPath(); x.moveTo(cx - cw * 0.7, neck); x.lineTo(cx - cw * 0.7, caseTop + 0.6); x.lineTo(cx - cw, caseTop + h * 0.06); x.lineTo(cx - cw, by - 1); x.lineTo(cx + cw, by - 1); x.lineTo(cx + cw, caseTop + h * 0.06); x.lineTo(cx + cw * 0.7, caseTop + 0.6); x.lineTo(cx + cw * 0.7, neck); x.closePath();
+  const g = x.createLinearGradient(cx - cw, 0, cx + cw, 0);
+  if (state === 'spent') { g.addColorStop(0, '#7a6440'); g.addColorStop(0.4, '#4e3d22'); g.addColorStop(1, '#1d160c'); } else { g.addColorStop(0, RT.brassHi); g.addColorStop(0.35, RT.brass); g.addColorStop(1, RT.brassLo); }
+  x.fillStyle = g; x.fill(); x.restore();
+  x.strokeStyle = 'rgba(20,12,4,0.8)'; x.lineWidth = 0.4; x.stroke();
+  x.fillStyle = state === 'spent' ? '#2a2014' : RT.brassLo; x.fillRect(cx - cw, by - 1.6, w, 1.6);
+  if (state === 'spent') { x.fillStyle = '#0a0806'; x.beginPath(); x.ellipse(cx, neck + 0.4, cw * 0.62, 0.8, 0, 0, 2 * P); x.fill(); x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.4; x.beginPath(); x.moveTo(cx - cw * 0.3, by - h * 0.4); x.lineTo(cx + cw * 0.2, by - h * 0.3); x.stroke(); }
+  else { x.fillStyle = 'rgba(255,250,220,0.55)'; x.fillRect(cx - cw * 0.6, caseTop + 2, Math.max(0.5, cw * 0.3), h * 0.45); }
+}
+// Sawteeth along a line from (ax, ay) to (bx, by), pointing to the line's left (dir 1) or right (-1): the trap's bite.
+function saw(x, ax, ay, bx, by, n, depth, dir) {
+  const L = Math.hypot(bx - ax, by - ay), ux = (bx - ax) / L, uy = (by - ay) / L, nx = -uy * dir, ny = ux * dir, t = L / n;
+  x.beginPath(); x.moveTo(ax, ay);
+  for (let i = 0; i < n; i++) { const m = (i + 0.55) * t; x.lineTo(ax + ux * m + nx * depth, ay + uy * m + ny * depth); x.lineTo(ax + ux * (i + 1) * t, ay + uy * (i + 1) * t); }
+  x.closePath();
+  const g = x.createLinearGradient(ax, ay, ax + nx * depth, ay + ny * depth); g.addColorStop(0, '#5a6066'); g.addColorStop(1, '#d9dfe4');
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.6)'; x.shadowBlur = 1.5; x.shadowOffsetY = 1; x.fillStyle = g; x.fill(); x.restore();
+  x.strokeStyle = '#0b0c0d'; x.lineWidth = 0.6; x.stroke();
+}
+
+// ---- the kit ------------------------------------------------------------------------------------------------------
+// A 9-slice piece: a painter with its own generator.
+const piece = (name, size, m, draw, extra) => Object.assign({ size, m, draw: (x, w, h) => draw(x, w, h, RNG(name)) }, extra || {});
+const rect = (X, Y, W, H) => [[X, Y], [X + W, Y], [X + W, Y + H], [X, Y + H]];
+
+// The trap-jaw key (the cutters' tradition): a slip of the sheet-keepers' paper clamped between two steel jaws, hinged at
+// each end on a spring eye, sawteeth biting the paper at both ends. The centre (between the 40 px ends) is plain jaw and
+// plain paper, where the label goes. Hover: the jaws ease open and the paper lifts and brightens. Pressed: the jaws shut
+// on it and blood seeps from every tooth along the bite.
+function trapJaw(state) {
+  return (x, w, h, R) => {
+    const gap = state === 'pressed' ? 1.4 : state === 'hover' ? -1 : 0;   // how far the jaws close past rest, px
+    const top = 10 + gap, bot = h - 10 - gap;
+    // the paper slip, torn at its ends under the hinges
+    const slip = tear([[12, 7], [w - 12, 7], [w - 12, h - 7], [12, h - 7]], true, 1.4, RNG('btn.slip'), 3, 0.03);
+    paper(x, slip, RNG('btn.paper'), { tone: state === 'hover' ? '#d9c597' : state === 'pressed' ? '#b9a272' : '#bea77b', light: state === 'hover' ? 'rgba(255,236,190,0.10)' : null });
+    // old dried stains and grime at the ends only, with a thumbprint where captains slam it
+    const Rs = RNG('btn.stain');
+    x.save(); trace(x, slip, true); x.clip();
+    grime(x, 20, h / 2, 15, 0.5); grime(x, w - 20, h / 2, 15, 0.5);
+    smear(x, [[15, h * 0.6], [24, h * 0.52], [32, h * 0.58]], 4, Rs); print(x, w - 25, h * 0.5, 6, 0.5, Rs, '60,20,12', 0.45); drop(x, 22, h * 0.36, 1.4, Rs, false);
+    if (state === 'pressed') {
+      // blood seeping from the bite along both jaws, pooling at the teeth
+      for (const [y, d] of [[top, 1], [bot, -1]]) { const g = x.createLinearGradient(0, y, 0, y + d * 3); g.addColorStop(0, 'rgba(150,12,18,0.85)'); g.addColorStop(1, 'rgba(150,12,18,0)'); x.fillStyle = g; x.fillRect(0, Math.min(y, y + d * 3), w, 3); }
+      for (const ex of [24, w - 24]) { drip(x, ex, top + 4, 7, Rs, true); drop(x, ex + (ex < w / 2 ? 5 : -5), bot - 4, 1.8, Rs, true, -P / 2); }
+    }
+    x.restore();
+    // the two jaws: plain bars across, toothed and curved up into the hinge at each end
+    const Rj = RNG('btn.jaw');
+    const jaw = (y0, y1, dir) => {
+      const p = [[14, y0], [w - 14, y0], [w - 14, y1], [14, y1]]; steel(x, p, Rj, dir > 0 ? {} : { hi: '#3b4045', mid: '#2a2e32', lo: '#121416' });
+      x.strokeStyle = dir > 0 ? 'rgba(230,236,240,0.55)' : 'rgba(0,0,0,0.7)'; x.lineWidth = 0.8; x.beginPath(); x.moveTo(16, dir > 0 ? y1 - 0.6 : y0 + 0.6); x.lineTo(w - 16, dir > 0 ? y1 - 0.6 : y0 + 0.6); x.stroke();
+    };
+    jaw(1, top, 1); jaw(bot, h - 1, -1);
+    // sawteeth only in the ends, where the jaws bite hardest
+    for (const [a, b] of [[15, 34], [w - 34, w - 15]]) { saw(x, a, top, b, top, 3, 7 + gap * 0.6, 1); saw(x, b, bot, a, bot, 3, 7 + gap * 0.6, 1); }
+    // the trap's stakes: a block of the hall's oak at each end, bound top and bottom with strap iron, the jaws' pivot
+    // pinned through it
+    for (const ex of [8, w - 8]) {
+      const Rk = RNG('btn.stake' + (ex < w / 2 ? 'L' : 'R'));
+      wood(x, F.rrPts(ex - 7, 1.5, 14, h - 3, 3), Rk, { dir: 'v' });
+      for (const y of [4, h - 10]) iron(x, rect(ex - 7.5, y, 15, 6), Rk);
+      rivet(x, ex, h / 2, 3);
+    }
+    if (state === 'hover') { x.fillStyle = 'rgba(255,220,150,0.08)'; x.fillRect(14, top, w - 28, bot - top); }
+  };
+}
+// A tab: a tally stick of the hall's oak, notched at both ends with the counts it has kept. Idle: the bare stick, read in
+// pale ink. Active: a slip of the ledger nailed over it with the dried thumbprint of the captain who chose it, read in
+// black. The notches and nails sit in the 20 px ends; the middle is plain.
+function ledgerTab(active) {
+  return (x, w, h, R) => {
+    const Rw = RNG('tab.wood'), st = tear([[2, 4], [w - 2, 3], [w - 2, h - 4], [2, h - 3]], true, 0.8, RNG('tab.stick'), 4, 0.02);
+    wood(x, st, Rw, { dir: 'h', tone: active ? '#4a301c' : '#3e2716', hi: active ? '#644229' : '#56371f', lo: '#1c1008' });
+    for (const ex of [5, w - 15]) for (let i = 0; i < 3; i++) { const nx = ex + i * 4; trace(x, [[nx, 3], [nx + 1.8, 7], [nx + 3.6, 3]], true); x.fillStyle = '#0b0603'; x.fill(); trace(x, [[nx, h - 3], [nx + 1.8, h - 7], [nx + 3.6, h - 3]], true); x.fill(); }
+    if (active) {
+      const p = tear([[16, 7], [w - 16, 8], [w - 16, h - 8], [w * 0.5, h - 7], [16, h - 8]], true, 1.3, RNG('tab.slip'), 3, 0.05);
+      paper(x, p, RNG('tab.paper'), { tone: '#d4c092' });
+      x.save(); trace(x, p, true); x.clip(); print(x, 22, h / 2 + 2, 5.5, -0.4, R, '90,26,16', 0.55); grime(x, w - 20, h - 10, 9, 0.3); x.restore();
+    } else {
+      x.save(); trace(x, st, true); x.clip(); soak(x, w - 18, h / 2 + 4, 6, R, 'h'); grime(x, 14, h / 2, 10, 0.35); x.restore();
+    }
+    nail(x, 18, h / 2, 2.4, R); nail(x, w - 18, h / 2, 2.4, R);
+  };
+}
+// The bandolier's strap (the gunners' tradition): stitched leather with a buckle and a tip; its middle tiles (--bt-rep).
+function strap(x, w, h, R) {
+  const p = [[1, 2], [w - 1, 2], [w - 1, h - 2], [1, h - 2]];
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 3; x.shadowOffsetY = 1.5; trace(x, p, true); x.fillStyle = RT.leather; x.fill(); x.restore();
+  const g = x.createLinearGradient(0, 2, 0, h - 2); g.addColorStop(0, '#5a3a24'); g.addColorStop(0.5, RT.leather); g.addColorStop(1, '#1e120a'); x.fillStyle = g; x.fillRect(1, 2, w - 2, h - 4);
+  for (let i = 0; i < w * h / 4; i++) { x.fillStyle = R() < 0.5 ? 'rgba(0,0,0,0.18)' : 'rgba(255,220,180,0.06)'; x.fillRect(R() * w, 2 + R() * (h - 4), 0.8, 0.6); }
+  x.strokeStyle = 'rgba(200,170,120,0.5)'; x.lineWidth = 0.7; x.setLineDash([2.5, 1.5]);
+  for (const y of [3.6, h - 3.6]) { x.beginPath(); x.moveTo(2, y); x.lineTo(w - 2, y); x.stroke(); }
+  x.setLineDash([]);
+  // the buckle at the left end, the cut tip at the right, both inside the 16 px ends
+  const b = x.createLinearGradient(0, 0, 0, h); b.addColorStop(0, RT.brassHi); b.addColorStop(1, RT.brassLo);
+  x.strokeStyle = b; x.lineWidth = 2.2; x.strokeRect(3, 1.5, 10, h - 3); x.fillStyle = RT.brassLo; x.fillRect(7.5, 2, 1.6, h - 4);
+  x.fillStyle = '#120a06'; x.beginPath(); x.moveTo(w - 6, 2); x.lineTo(w, 2); x.lineTo(w, h - 2); x.lineTo(w - 6, h - 2); x.lineTo(w - 2, h / 2); x.closePath(); x.fill();
+}
+// A loop of the bandolier: empty (spent), holding a brass round, or a red-tipped round. One seed for all three.
+function loop(state) {
+  return (x, w, h) => {
+    const R = RNG('cell');
+    if (state === 'spent') { x.fillStyle = 'rgba(0,0,0,0.55)'; x.fillRect(w * 0.18, 1, w * 0.64, h * 0.62); cartridge(x, w / 2, h - 3, w * 0.6, h * 0.42, 'spent', R); }
+    else cartridge(x, w / 2, h - 1, w * 0.62, h - 1, state === 'warn' ? 'red' : 'live', R);
+    // the leather loop over the round's waist
+    const ly = h * 0.52, lh = h * 0.24, g = x.createLinearGradient(0, ly, 0, ly + lh); g.addColorStop(0, '#6b4429'); g.addColorStop(1, '#2a180c');
+    x.fillStyle = g; x.fillRect(0, ly, w, lh); x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 0.4; x.strokeRect(0.2, ly, w - 0.4, lh);
+    x.fillStyle = 'rgba(210,180,130,0.45)'; for (const sx of [1.2, w - 1.8]) x.fillRect(sx, ly + 1, 0.6, lh - 2);
+  };
+}
+// A strip: a long bounty sheet nailed across a riveted steel beam; a knife and a burn at one end, trophies at the other.
+function stripPiece(bottom) {
+  return (x, w, h, R) => {
+    // a beam of two planks laid along the strip, butted on a seam, banded with strap iron at both ends
+    const Rb = RNG('strip.wood' + bottom);
+    board(x, 0.5, 0.5, w - 1, h / 2, Rb, 'h'); board(x, 0.5, h / 2 + 0.5, w - 1, h / 2 - 1, Rb, 'h');
+    x.save(); x.beginPath(); x.rect(0, 0, w, h); x.clip();
+    if (bottom) { knot(x, w - 19, h - 30, 2.6, Rb, 'h'); tally(x, 15, 14, 3, 12, Rb); soak(x, w - 60, 4, 6, Rb); gouge(x, 30, h - 4, 60, h - 6, 1.1); } else { knot(x, 19, 36, 2.4, Rb); gouge(x, w - 98, 4, w - 80, 6); scorch(x, w - 19, h - 18, 5, Rb); tally(x, 60, h - 7, 9, 5, Rb); }
+    x.restore();
+    for (const ex of [0.5, w - 11.5]) iron(x, rect(ex, 0.5, 11, h - 1), Rb, [[ex + 5.5, 9, 2.4], [ex + 5.5, h - 9, 2.4]]);
+    const p = tear([[24, 9], [w - 24, 8.5], [w - 24, h - 9], [24, h - 8.5]], true, 1.5, RNG('strip.edge' + bottom), 3, 0.04);
+    paper(x, p, RNG('strip.paper' + bottom), { stains: [[52, h - 22, 20], [w - 60, 22, 16]] });
+    x.save(); trace(x, p, true); x.clip();
+    if (bottom) {
+      burn(x, 36, 22, 6, R); grime(x, 70, h - 14, 22, 0.35); spatter(x, w - 72, h - 22, -0.5, 9, 3.2, R, false); print(x, w - 40, 26, 8, 0.8, R, '50,24,14', 0.4);
+    } else {
+      burn(x, w - 34, h - 22, 5, R); grime(x, w - 70, 16, 20, 0.35); spatter(x, 58, 20, 0.4, 10, 3.4, R, false); drop(x, 30, h - 18, 2.6, R, true);
+      smear(x, [[w - 88, h - 12], [w - 60, h - 15], [w - 30, h - 12]], 5, R);
+    }
+    x.restore();
+    if (bottom) {
+      // three spent rounds standing on the beam at the left: the gunners' count
+      for (let i = 0; i < 3; i++) cartridge(x, 50 + i * 11, h - 8, 7, 26, i === 2 ? 'spent' : 'live', R);
+      knife(x, w - 4, 4, w - 60, h - 24, 1.35, R);
+    } else {
+      knife(x, 2, h - 4, 58, 24, 1.35, R);
+      teethString(x, w - 88, 10, w - 22, 12, 8, 5, 1.2, R);
+      nail(x, w - 88, 10, 2.2, R); nail(x, w - 22, 12, 2.2, R);
+    }
+  };
+}
+
+const kit = {
+  // A panel: a torn, scorched sheet nailed over riveted steel; a knife through its top-left corner, a string of teeth at
+  // its top right, a burn and a smear of dried blood at its foot. The middle is plain paper.
+  'frame.panel': piece('frame.panel', [220, 170], [36, 64, 36, 38], (x, w, h, R) => {
+    // four boards of the hall's oak round the sheet, butted at the corners and bound there with strap iron
+    const Rw = RNG('panel.wood');
+    boardFrame(x, w, h, 19, Rw);
+    // the boards' scars, in the corners only: a knot, gouges, a captain's tally, a scorch and old blood in the grain
+    knot(x, w - 9, h - 30, 2.8, Rw, 'v'); gouge(x, 4, h - 34, 11, h - 26); gouge(x, 6, h - 29, 13, h - 22, 1.2);
+    tally(x, 19, h - 14, 5, 8, Rw); soak(x, w - 42, h - 10, 8, Rw, 'h'); scorch(x, w - 10, 27, 5, Rw); nailHole(x, w - 32, 8, Rw);
+    for (const [cx, cy, sx, sy] of [[0.5, h - 0.5, 1, -1], [w - 0.5, h - 0.5, -1, -1], [w - 0.5, 0.5, -1, 1]]) cornerStrap(x, cx, cy, sx, sy, 24, 8, Rw);
+    const p = tear([[15, 15], [w - 15, 16], [w - 16, h - 15], [w - 46, h - 14], [28, h - 15], [15, h - 28]], true, 2, RNG('panel.edge'), 3, 0.05);
+    paper(x, p, RNG('panel.paper'), { stains: [[w - 34, h - 30, 18], [28, 46, 12]] });
+    x.save(); trace(x, p, true); x.clip();
+    burn(x, 22, h - 22, 5.5, R); grime(x, w - 26, h - 20, 22, 0.4); smear(x, [[w - 58, h - 17], [w - 38, h - 21], [w - 18, h - 26]], 6, R);
+    spatter(x, w - 24, 52, 1.9, 10, 3, R, true); print(x, 22, 64, 7, 0.3, R); drip(x, w - 30, 30, 14, R, false); drip(x, 20, 30, 10, R, true);
+    burn(x, w - 52, h - 16, 3.5, R);
+    x.restore();
+    nail(x, w - 17, h - 17, 2.2, R);
+    knife(x, 1, 1, 33, 31, 1.3, R);
+    teethString(x, w - 60, 9, w - 10, 11, 10, 4, 1.25, R); nail(x, w - 60, 9, 2.4, R); nail(x, w - 10, 11, 2.4, R);
+  }),
+  // A readout well: a scrap of the sheet nailed into a steel recess.
+  'frame.inset': piece('frame.inset', [80, 60], [15, 15, 15, 15], (x, w, h, R) => {
+    // a well cut into the board: its four sides dark oak, a scrap of the sheet nailed into it
+    const Rw = RNG('inset.wood');
+    boardFrame(x, w, h, 7, Rw, { tone: '#3a2415', hi: '#4f3320', lo: '#1a0f07' });
+    x.strokeStyle = 'rgba(0,0,0,0.7)'; x.lineWidth = 1.5; x.strokeRect(6.5, 6.5, w - 13, h - 13);
+    const p = tear([[6, 6], [w - 6, 6], [w - 6, h - 6], [6, h - 6]], true, 1.2, RNG('inset.edge'), 2.5, 0.04);
+    paper(x, p, RNG('inset.paper'), { stains: [[w - 8, h - 8, 7]] });
+    x.save(); trace(x, p, true); x.clip(); grime(x, 7, h - 7, 10, 0.45); drop(x, w - 9, 10, 1.6, R, false); x.restore();
+    for (const [px, py] of [[8, 8], [w - 8, 8], [8, h - 8], [w - 8, h - 8]]) nail(x, px, py, 1.9, R);
+  }),
+  'bar.track': piece('bar.track', [120, 22], [0, 16, 0, 16], strap, { inset: [16, 3] }),
+  'bar.fill': piece('bar.fill', [64, 10], [0, 8, 0, 6], (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, RT.brassHi); g.addColorStop(1, RT.brassLo); x.fillStyle = g; x.fillRect(0, 1, w, h - 2); }),
+  'bar.fill.red': piece('bar.fill.red', [64, 10], [0, 8, 0, 6], (x, w, h) => { const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#ff4a44'); g.addColorStop(1, RT.freshLo); x.fillStyle = g; x.fillRect(0, 1, w, h - 2); }),
+  'bar.cell.off': { size: [10, 16], gap: 1.5, draw: loop('spent') },
+  'bar.cell.on': { size: [10, 16], gap: 1.5, draw: loop('live') },
+  'bar.cell.warn': { size: [10, 16], gap: 1.5, draw: loop('warn') },
+  'button.idle': piece('button.idle', [176, 48], [11, 36, 11, 36], trapJaw('idle')),
+  'button.hover': piece('button.hover', [176, 48], [11, 36, 11, 36], trapJaw('hover')),
+  'button.pressed': piece('button.pressed', [176, 48], [11, 36, 11, 36], trapJaw('pressed')),
+  'tab.idle': piece('tab.idle', [128, 40], [10, 20, 10, 20], ledgerTab(false)),
+  'tab.active': piece('tab.active', [128, 40], [10, 20, 10, 20], ledgerTab(true)),
+  'strip.top': piece('strip.top', [560, 72], [14, 100, 14, 100], stripPiece(false)),
+  'strip.bottom': piece('strip.bottom', [560, 72], [14, 100, 14, 100], stripPiece(true)),
+  // A divider: a lath of the hall's oak nailed along the sheet, a nick cut in it at each end.
+  'divider': piece('divider', [128, 10], [0, 14, 0, 14], (x, w, h, R) => {
+    const Rw = RNG('divider.wood');
+    x.save(); x.shadowColor = 'rgba(0,0,0,0.6)'; x.shadowBlur = 2; x.shadowOffsetY = 1; x.fillStyle = RT.oakLo; x.fillRect(2, 1.5, w - 4, 7); x.restore();
+    wood(x, rect(2, 1.5, w - 4, 7), Rw, { dir: 'h' });
+    for (const nx of [11, w - 13]) { trace(x, [[nx, 1.5], [nx + 1, 4], [nx + 2, 1.5]], true); x.fillStyle = '#0b0603'; x.fill(); }
+    nail(x, 6, h / 2, 2.2, R); nail(x, w - 6, h / 2, 2.2, R);
+  }),
+};
+
+// ---- hero pieces --------------------------------------------------------------------------------------------------
+// A wax seal, burned to close the sheet (the sheet-keepers' mark): dried-blood wax with a tooth pressed into it.
+function seal(x, cx, cy, r, R) {
+  grime(x, cx, cy, r * 1.9, 0.6, '60,26,8');
+  const p = blob(cx, cy, r, R, 22, 0.22);
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.6)'; x.shadowBlur = 3; x.shadowOffsetY = 1.5; trace(x, p, true);
+  const g = x.createRadialGradient(cx - r * 0.3, cy - r * 0.35, 1, cx, cy, r); g.addColorStop(0, '#8c2a1c'); g.addColorStop(0.7, RT.dried); g.addColorStop(1, RT.driedLo); x.fillStyle = g; x.fill(); x.restore();
+  x.strokeStyle = 'rgba(20,6,2,0.6)'; x.lineWidth = 1; x.beginPath(); x.arc(cx, cy, r * 0.7, 0, 2 * P); x.stroke();
+  x.save(); x.translate(cx, cy - r * 0.38); x.scale(r / 15, r / 15);
+  x.fillStyle = 'rgba(25,6,3,0.75)'; x.beginPath(); x.moveTo(-3.6, 0); x.quadraticCurveTo(0, -2, 3.6, 0); x.quadraticCurveTo(4.6, 6, 2.2, 9); x.lineTo(0, 13); x.lineTo(-2.2, 9); x.quadraticCurveTo(-4.6, 6, -3.6, 0); x.fill();
+  x.strokeStyle = 'rgba(200,110,80,0.35)'; x.lineWidth = 0.7; x.stroke(); x.restore();
+  x.fillStyle = 'rgba(255,200,170,0.25)'; x.beginPath(); x.ellipse(cx - r * 0.4, cy - r * 0.45, r * 0.25, r * 0.12, -0.6, 0, 2 * P); x.fill();
+}
+// A trophy molar for the crest, crown up and roots down so it reads as a tooth at any size (a long canine read as a bone
+// at 32 px): a glossy two-cusped crown of enamel over two darker roots, the line between them plain. (cx, cy) is the
+// crown's middle; k its scale.
+function crestTooth(x, cx, cy, k) {
+  x.save(); x.translate(cx, cy); x.scale(k, k);
+  const path = () => { x.beginPath(); x.moveTo(-12, 2); x.bezierCurveTo(-13.5, -8, -9, -14.5, -4.5, -12.5); x.quadraticCurveTo(-2, -10.5, 0, -10.2); x.quadraticCurveTo(2, -10.5, 4.5, -12.5);
+    x.bezierCurveTo(9, -14.5, 13.5, -8, 12, 2); x.quadraticCurveTo(11, 6, 10, 9); x.quadraticCurveTo(8.6, 18, 6, 20); x.quadraticCurveTo(4, 19, 3.4, 10); x.quadraticCurveTo(0, 6.5, -3.4, 10);
+    x.quadraticCurveTo(-4, 19, -6, 20); x.quadraticCurveTo(-8.6, 18, -10, 9); x.quadraticCurveTo(-11, 6, -12, 2); x.closePath(); };
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.8)'; x.shadowBlur = 4 / k; x.shadowOffsetX = 1.2 / k; x.shadowOffsetY = 2 / k; path(); x.fillStyle = '#f2ead2'; x.fill(); x.restore();
+  path(); x.save(); x.clip();
+  const g = x.createLinearGradient(-12, 0, 12, 0); g.addColorStop(0, '#fffaf0'); g.addColorStop(0.5, '#efe4c6'); g.addColorStop(1, '#a8987a'); x.fillStyle = g; x.fillRect(-14, -15, 28, 18);
+  const r = x.createLinearGradient(0, 3, 0, 20); r.addColorStop(0, '#c8a876'); r.addColorStop(1, '#6e5030'); x.fillStyle = r; x.fillRect(-14, 3, 28, 18);
+  x.strokeStyle = 'rgba(80,55,30,0.7)'; x.lineWidth = 0.8; x.beginPath(); x.moveTo(-13, 3.2); x.quadraticCurveTo(0, 5.2, 13, 3.2); x.stroke();
+  x.fillStyle = 'rgba(255,255,255,0.75)'; x.beginPath(); x.ellipse(-6, -7, 2.2, 4.2, 0.3, 0, 2 * P); x.fill();
+  x.fillStyle = 'rgba(90,20,12,0.55)'; x.beginPath(); x.ellipse(5, 15, 2.6, 4, 0, 0, 2 * P); x.fill();
+  x.restore();
+  path(); x.strokeStyle = '#1a0f08'; x.lineWidth = 1.3; x.stroke();
+  x.restore();
+}
+function crestMark(x, w, R) {
+  const c = w / 2;
+  // a roundel of the hall's oak bound in an iron hoop; on it a drop of blood, the tithe; two cutters' blades crossed
+  // behind; a tooth taken in trophy over all
+  const disc = F.arcPts(c, c, 46, 46, 0, 2 * P, 56);
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 5; x.shadowOffsetY = 2; trace(x, disc, true); x.fillStyle = RT.oakLo; x.fill(); x.restore();
+  wood(x, disc, R, { dir: 'v' });
+  x.strokeStyle = '#1b1d1f'; x.lineWidth = 3.4; x.beginPath(); x.arc(c, c, 44.5, 0, 2 * P); x.stroke();
+  x.strokeStyle = 'rgba(190,196,200,0.35)'; x.lineWidth = 0.7; x.beginPath(); x.arc(c, c, 45.5, P * 0.95, P * 1.6); x.stroke();
+  knife(x, 14, 82, 72, 24, 1.15, R, { blood: false }); knife(x, 82, 82, 24, 24, 1.15, R, { blood: false });
+  const d = []; for (let i = 0; i < 48; i++) { const t = i * 2 * P / 48; d.push([c + 29 * Math.sin(t) * Math.sin(t / 2), c + 8 - 33 * Math.cos(t)]); }
+  x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 5; x.shadowOffsetY = 2; trace(x, d, true);
+  const g = x.createRadialGradient(c - 8, c + 2, 2, c, c + 10, 32); g.addColorStop(0, '#d0262c'); g.addColorStop(0.6, '#8a0c12'); g.addColorStop(1, '#3a0406'); x.fillStyle = g; x.fill(); x.restore();
+  trace(x, d, true); x.strokeStyle = '#1a0304'; x.lineWidth = 1.4; x.stroke();
+  x.fillStyle = 'rgba(255,220,220,0.5)'; x.beginPath(); x.ellipse(c - 12, c + 6, 3.4, 7, 0.3, 0, 2 * P); x.fill();
+  crestTooth(x, c, c + 8, 1.15);
+}
+function lamp(col, hi) {
+  return (x, w, h) => {
+    const R = RNG('lamp'), c = w / 2;
+    // a steel trap ring, toothed inward, round a thick lens
+    steel(x, F.arcPts(c, c, 30, 30, 0, 2 * P, 40), R);
+    for (let i = 0; i < 12; i++) { const a = i * P / 6; const p = [[c + Math.cos(a - 0.18) * 24, c + Math.sin(a - 0.18) * 24], [c + Math.cos(a) * 19, c + Math.sin(a) * 19], [c + Math.cos(a + 0.18) * 24, c + Math.sin(a + 0.18) * 24]]; trace(x, p, true); x.fillStyle = '#c3cad0'; x.fill(); x.strokeStyle = '#0b0c0d'; x.lineWidth = 0.5; x.stroke(); }
+    x.save(); x.shadowColor = col; x.shadowBlur = 12; const g = x.createRadialGradient(c - 5, c - 6, 1, c, c, 18); g.addColorStop(0, hi); g.addColorStop(0.55, col); g.addColorStop(1, 'rgba(0,0,0,0.85)'); x.fillStyle = g; x.beginPath(); x.arc(c, c, 18, 0, 2 * P); x.fill(); x.restore();
+    x.fillStyle = 'rgba(255,255,255,0.55)'; x.beginPath(); x.ellipse(c - 6, c - 7, 5, 2.6, -0.6, 0, 2 * P); x.fill();
+    // grime caked on the glass edge and a dried thumb smear on the ring
+    x.save(); x.beginPath(); x.arc(c, c, 18, 0, 2 * P); x.clip(); grime(x, c + 10, c + 12, 14, 0.5); x.restore();
+    for (const a of [0.8, 2.4, 4.0, 5.6]) rivet(x, c + Math.cos(a) * 27, c + Math.sin(a) * 27, 1.8);
+  };
+}
+const hero = {
+  // A bounty sheet with a burned seal nailed to a plank of the hall's oak: the captain's name typed into its field
+  // (64-404 x 10-46). The plank's bare right end carries the knife and the captain's tally.
+  'nameplate': (x, w, h) => {
+    const R = RNG('nameplate'), Rw = RNG('plate.wood');
+    board(x, 0.5, 0.5, w - 1, h - 1, Rw, 'h');
+    knot(x, w - 22, h - 13, 2.6, Rw); tally(x, w - 46, h - 15, 6, 9, Rw); soak(x, w - 30, 8, 6, Rw); gouge(x, w - 48, 6, w - 36, 9, 1.3); nailHole(x, 8, 7, Rw);
+    for (const ex of [0.5]) iron(x, rect(ex, 0.5, 10, h - 1), Rw, [[ex + 5, 8, 2.2], [ex + 5, h - 8, 2.2]]);
+    const p = tear([[13, 5], [w - 70, 4], [w - 50, 6], [w - 51, h - 5], [w * 0.6, h - 4], [13, h - 6]], true, 2, RNG('plate.edge'), 3, 0.05);
+    paper(x, p, RNG('plate.paper'), { stains: [[w - 76, h - 16, 12]] });
+    x.save(); trace(x, p, true); x.clip(); burn(x, w - 60, h - 11, 4, R); grime(x, 34, h - 6, 24, 0.4); spatter(x, w - 88, 12, 0.2, 7, 2.2, R, false);
+    x.strokeStyle = 'rgba(60,40,20,0.25)'; x.lineWidth = 0.6; x.beginPath(); x.moveTo(62, h - 9); x.lineTo(404, h - 9); x.stroke(); x.restore();
+    nail(x, w - 56, 9, 2.2, R); nail(x, w - 57, h - 9, 2.2, R);
+    seal(x, 32, h / 2, 17, R);
+    knife(x, w - 1, 1, w - 30, h / 2 + 4, 1.15, R);
+  },
+  // The helm: a revolver's cylinder (the gunners' tradition) set in a wheel of the hall's oak, its four turned handles
+  // reaching into the corners of a plank door banded with strap iron. Eight chambers, each a round's brass head, ring
+  // the ejector, the stop key; the arrows are stamped live on the brass.
+  'helm.pad': (x, w, h) => {
+    const R = RNG('helm'), Rw = RNG('helm.wood'), c = w / 2;
+    // three planks, grain down, scarred in the corners the wheel leaves bare
+    for (let i = 0; i < 3; i++) board(x, 1 + i * (w - 2) / 3, 1, (w - 2) / 3, h - 2, Rw, 'v');
+    tally(x, 12, 30, 9, 11, Rw); gouge(x, w - 40, 26, w - 18, 40, 1.8); gouge(x, w - 36, 34, w - 20, 46, 1.2); knot(x, w - 26, h - 50, 3.2, Rw, 'v');
+    soak(x, 26, h - 40, 11, Rw, 'v'); scorch(x, w - 30, h - 30, 7, Rw); nailHole(x, 40, 52, Rw); nailHole(x, w - 52, 12, Rw);
+    for (const y of [6, h - 18]) iron(x, rect(1, y, w - 2, 12), Rw, [[16, y + 6], [w / 3 + 14, y + 6], [2 * w / 3 + 14, y + 6], [w - 16, y + 6]]);
+    // the wheel's four handles, turned and worn pale where hands have hauled on them
+    for (let i = 0; i < 4; i++) {
+      const a = -P / 4 + i * P / 2; x.save(); x.translate(c, c); x.rotate(a);
+      x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 5; x.shadowOffsetX = 2; x.shadowOffsetY = 3;
+      x.beginPath(); x.moveTo(140, -8); x.lineTo(160, -6); x.quadraticCurveTo(166, -11, 176, -10); x.quadraticCurveTo(192, -9, 192, 0); x.quadraticCurveTo(192, 9, 176, 10); x.quadraticCurveTo(166, 11, 160, 6); x.lineTo(140, 8); x.closePath();
+      const g = x.createLinearGradient(0, -11, 0, 11); g.addColorStop(0, '#9a6a40'); g.addColorStop(0.4, '#6a4426'); g.addColorStop(1, '#1e1108'); x.fillStyle = g; x.fill(); x.restore();
+      x.strokeStyle = '#0c0704'; x.lineWidth = 1; x.stroke();
+      x.strokeStyle = 'rgba(14,7,2,0.5)'; x.lineWidth = 0.5; for (const y of [-5, -1.5, 3, 6]) { x.beginPath(); x.moveTo(142, y * 0.9); x.lineTo(190, y); x.stroke(); }
+      x.strokeStyle = 'rgba(0,0,0,0.6)'; x.lineWidth = 1.2; for (const t of [160, 170]) { x.beginPath(); x.moveTo(t, -9); x.lineTo(t, 9); x.stroke(); }
+      x.restore();
+    }
+    // the wheel's rim: eight felloes of oak round the cylinder, pinned at their joints, an iron tyre round the outside
+    const rim = F.arcPts(c, c, 148, 148, 0, 2 * P, 72);
+    x.save(); x.shadowColor = 'rgba(0,0,0,0.8)'; x.shadowBlur = 10; x.shadowOffsetX = 3; x.shadowOffsetY = 5; trace(x, rim, true); x.fillStyle = RT.oakLo; x.fill(); x.restore();
+    wood(x, rim, Rw, { dir: 'h', tone: '#5a3a20', hi: '#7a5232', lo: '#24150a' });
+    x.strokeStyle = 'rgba(12,6,2,0.9)'; x.lineWidth = 1.4;
+    for (let i = 0; i < 8; i++) { const a = -P / 2 + (i + 0.5) * P / 4; x.beginPath(); x.moveTo(c + Math.cos(a) * 128, c + Math.sin(a) * 128); x.lineTo(c + Math.cos(a) * 146, c + Math.sin(a) * 146); x.stroke(); rivet(x, c + Math.cos(a + 0.07) * 138, c + Math.sin(a + 0.07) * 138, 2); }
+    x.strokeStyle = '#1b1d1f'; x.lineWidth = 3.5; x.beginPath(); x.arc(c, c, 146.5, 0, 2 * P); x.stroke();
+    x.strokeStyle = 'rgba(190,196,200,0.35)'; x.lineWidth = 0.8; x.beginPath(); x.arc(c, c, 147.5, P * 0.95, P * 1.6); x.stroke();
+    // the cylinder
+    const cyl = []; for (let i = 0; i < 64; i++) { const a = i * 2 * P / 64, f = Math.cos(8 * (a + P / 8)) > 0.92 ? 0.95 : 1; cyl.push([c + Math.cos(a) * 128 * f, c + Math.sin(a) * 128 * f]); }
+    x.save(); x.shadowColor = 'rgba(0,0,0,0.8)'; x.shadowBlur = 8; x.shadowOffsetX = 2; x.shadowOffsetY = 4; trace(x, cyl, true); x.fillStyle = '#2a2e32'; x.fill(); x.restore();
+    steel(x, cyl, RNG('helm.cyl'), { hi: '#5a6168', mid: '#30353a', lo: '#121416' });
+    // flutes between the chambers
+    for (let i = 0; i < 8; i++) { const a = -P / 2 + (i + 0.5) * P / 4; x.save(); x.translate(c + Math.cos(a) * 112, c + Math.sin(a) * 112); x.rotate(a); const g = x.createLinearGradient(0, -6, 0, 6); g.addColorStop(0, '#0d0f11'); g.addColorStop(1, '#5d646b'); x.fillStyle = g; x.beginPath(); x.ellipse(0, 0, 13, 5, 0, 0, 2 * P); x.fill(); x.restore(); }
+    // eight chambers: a round's head in each
+    for (let i = 0; i < 8; i++) {
+      const a = -P / 2 + i * P / 4, px = c + Math.cos(a) * 92, py = c + Math.sin(a) * 92;
+      x.fillStyle = '#060707'; x.beginPath(); x.arc(px, py, 30, 0, 2 * P); x.fill();
+      x.strokeStyle = 'rgba(200,206,212,0.35)'; x.lineWidth = 1; x.beginPath(); x.arc(px, py, 30, P * 0.1, P * 0.9); x.stroke();
+      const g = x.createRadialGradient(px - 8, py - 9, 2, px, py, 27); g.addColorStop(0, RT.brassHi); g.addColorStop(0.55, RT.brass); g.addColorStop(1, RT.brassLo);
+      x.fillStyle = g; x.beginPath(); x.arc(px, py, 26.5, 0, 2 * P); x.fill(); x.strokeStyle = 'rgba(60,40,10,0.9)'; x.lineWidth = 1; x.stroke();
+      x.strokeStyle = 'rgba(80,55,15,0.55)'; x.lineWidth = 0.8; x.beginPath(); x.arc(px, py, 22, 0, 2 * P); x.stroke();
+      // grime in the extractor groove and a dried print on one or two of them
+      x.save(); x.beginPath(); x.arc(px, py, 26.5, 0, 2 * P); x.clip(); grime(x, px + 14, py + 16, 18, 0.35); if (i === 1 || i === 6) print(x, px + 13, py - 12, 7, a, R, '70,22,12', 0.45); x.restore();
+    }
+    // the ejector star and its rod: the stop key, a brass boss in the middle
+    const star = []; for (let i = 0; i < 16; i++) { const a = -P / 2 + i * P / 8, r = i % 2 ? 40 : 50; star.push([c + Math.cos(a) * r, c + Math.sin(a) * r]); }
+    steel(x, star, RNG('helm.star'), { hi: '#8a9198', mid: '#4a5157', lo: '#1a1d20' });
+    const b = x.createRadialGradient(c - 10, c - 12, 3, c, c, 36); b.addColorStop(0, RT.brassHi); b.addColorStop(0.6, RT.brass); b.addColorStop(1, RT.brassLo);
+    x.fillStyle = b; x.beginPath(); x.arc(c, c, 34, 0, 2 * P); x.fill(); x.strokeStyle = 'rgba(40,25,5,0.9)'; x.lineWidth = 1.2; x.stroke();
+    x.save(); x.beginPath(); x.arc(c, c, 34, 0, 2 * P); x.clip(); grime(x, c + 16, c + 20, 22, 0.35); x.restore();
+  },
+  // The systems display: a bounty sheet nailed into a frame of the hall's oak, a blade through three corners and a
+  // hatchet left in the fourth, strap iron at the middle of each long board; its field clear for the ship drawn live.
+  'ssd.bezel': (x, w, h) => {
+    const R = RNG('ssd'), Rw = RNG('ssd.wood');
+    boardFrame(x, w, h, 28, Rw);
+    knot(x, w * 0.3, 12, 3, Rw); knot(x, 13, h * 0.62, 3.2, Rw, 'v'); knot(x, w * 0.66, h - 9, 2.4, Rw); tally(x, w * 0.36, h - 19, 12, 10, Rw); tally(x, w - 19, 48, 4, 9, Rw);
+    gouge(x, w - 18, h * 0.32, w - 8, h * 0.48, 1.6); gouge(x, w - 14, h * 0.36, w - 6, h * 0.46, 1.1); gouge(x, w * 0.14, h - 8, w * 0.27, h - 17, 1.3); gouge(x, 8, 64, 18, 86, 1.4);
+    soak(x, w * 0.8, 13, 10, Rw); soak(x, 14, h * 0.8, 9, Rw, 'v'); scorch(x, 14, h * 0.3, 6, Rw); scorch(x, w * 0.58, 10, 5, Rw); nailHole(x, w * 0.4, h - 12, Rw); nailHole(x, w - 13, h * 0.7, Rw); nailHole(x, w * 0.18, 10, Rw);
+    for (const [px, py, ww, hh] of [[w / 2 - 8, 0.5, 16, 30], [w / 2 - 8, h - 30.5, 16, 30]]) iron(x, rect(px, py, ww, hh), Rw, [[px + 8, py + 6, 2.6], [px + 8, py + hh - 6, 2.6]]);
+    const p = tear([[24, 23], [w * 0.45, 21], [w - 24, 24], [w - 22, h * 0.5], [w - 24, h - 23], [w * 0.55, h - 22], [24, h - 24], [22, h * 0.4]], true, 2.4, RNG('ssd.edge'), 3, 0.05);
+    paper(x, p, RNG('ssd.paper'), { stains: [[76, h - 66, 28], [w - 76, 64, 22]] });
+    x.save(); trace(x, p, true); x.clip();
+    // margins only: the ship is drawn within 110 px of (230, 150)
+    burn(x, w - 64, h - 104, 9, R); burn(x, 56, 82, 5, R); burn(x, w - 96, 46, 3, R); grime(x, 46, h - 54, 32, 0.45); grime(x, w - 38, 46, 28, 0.4);
+    spatter(x, 70, h - 88, -0.5, 16, 4.2, R, false); smear(x, [[w - 34, 74], [w - 38, 112], [w - 32, 150]], 7, R); print(x, w - 66, 110, 9, 0.6, R); print(x, 70, 150, 9, -0.3, R, '80,22,14', 0.45);
+    drop(x, w - 118, 50, 3.2, R, true, P / 2); drip(x, w - 106, 42, 20, R, true); drip(x, 106, h - 72, 14, R, false);
+    // the sheet's ruled frame and its typed header
+    x.strokeStyle = 'rgba(40,24,12,0.45)'; x.lineWidth = 0.8; x.strokeRect(32, 30, w - 64, h - 60);
+    x.fillStyle = 'rgba(30,20,12,0.75)'; x.font = '400 11px "Special Elite"'; x.fillText('TITHE OWED · SHEET 114', 58, 46); x.fillText('PAID IN FULL: NOT YET', 58, h - 38);
+    x.restore();
+    for (const [px, py] of [[w * 0.25, 26], [w * 0.75, 26], [w * 0.25, h - 26], [w * 0.36, h - 26], [26, h * 0.5], [w - 26, h * 0.5]]) nail(x, px, py, 2.3, R);
+    knife(x, 1, 1, 46, 38, 1.4, R); knife(x, w - 1, 1, w - 46, 38, 1.4, R); knife(x, 1, h - 1, 46, h - 38, 1.4, R); hatchet(x, w - 96, h - 62, w - 30, h - 38, 1.3, R);
+  },
+  // A gauge behind cracked, bloodied glass in a riveted steel ring, set in a case of the hall's oak.
+  'dial': (x, w, h) => {
+    const R = RNG('dial'), c = w / 2;
+    // a case of the hall's oak, its corners bound with strap iron, the gauge's steel ring set into it
+    const Rw = RNG('dial.wood');
+    x.save(); x.shadowColor = 'rgba(0,0,0,0.7)'; x.shadowBlur = 5; x.shadowOffsetY = 2; trace(x, F.rrPts(1, 1, w - 2, h - 2, 8), true); x.fillStyle = RT.oakLo; x.fill(); x.restore();
+    wood(x, F.rrPts(1, 1, w - 2, h - 2, 8), Rw, { dir: 'v' });
+    tally(x, 8, h - 15, 4, 7, Rw); knot(x, w - 10, 14, 2, Rw, 'v');
+    for (const [cx, cy, sx, sy] of [[1, 1, 1, 1], [w - 1, 1, -1, 1], [1, h - 1, 1, -1], [w - 1, h - 1, -1, -1]]) cornerStrap(x, cx, cy, sx, sy, 18, 6, Rw);
+    steel(x, F.arcPts(c, c, 53, 53, 0, 2 * P, 48), RNG('dial.ring'), { hi: '#6b737a', mid: '#353a3f', lo: '#121416' });
+    for (let i = 0; i < 8; i++) { const a = i * P / 4 + P / 8; rivet(x, c + Math.cos(a) * 49.5, c + Math.sin(a) * 49.5, 1.8); }
+    const f = x.createRadialGradient(c, c - 8, 4, c, c, 46); f.addColorStop(0, '#2c2620'); f.addColorStop(1, '#0d0b09'); x.fillStyle = f; x.beginPath(); x.arc(c, c, 46, 0, 2 * P); x.fill();
+    x.strokeStyle = 'rgba(200,150,58,0.7)'; x.lineWidth = 1;
+    for (let i = 0; i < 36; i++) { const a = i * P / 18, r0 = i % 3 ? 41 : 37; x.beginPath(); x.moveTo(c + Math.cos(a) * r0, c + Math.sin(a) * r0); x.lineTo(c + Math.cos(a) * 45, c + Math.sin(a) * 45); x.stroke(); }
+    x.strokeStyle = 'rgba(200,150,58,0.25)'; for (const r of [14, 28]) { x.beginPath(); x.arc(c, c, r, 0, 2 * P); x.stroke(); }
+    // the glass: a glint, a star of cracks from one blow at the edge, dried blood caked along the rim
+    x.save(); x.beginPath(); x.arc(c, c, 46, 0, 2 * P); x.clip();
+    const sx = c + 30, sy = c - 30; x.strokeStyle = 'rgba(235,240,245,0.55)'; x.lineWidth = 0.7;
+    for (let i = 0; i < 7; i++) { const a = P * 0.55 + i * 0.22 + (R() - 0.5) * 0.15; let px = sx, py = sy; x.beginPath(); x.moveTo(px, py); for (let k = 0; k < 4; k++) { px += Math.cos(a + (R() - 0.5) * 0.5) * (8 + R() * 10); py += Math.sin(a + (R() - 0.5) * 0.5) * (8 + R() * 10); x.lineTo(px, py); } x.stroke(); }
+    x.strokeStyle = 'rgba(235,240,245,0.35)'; for (const r of [6, 11]) { x.beginPath(); x.arc(sx, sy, r, P * 0.4, P * 1.2); x.stroke(); }
+    smear(x, F.arcPts(c, c, 43, 43, P * 0.65, P * 1.05, 10), 6, R, '#5a120c'); drop(x, c - 30, c + 34, 2.4, R, false);
+    const gl = x.createLinearGradient(c - 40, c - 40, c, c); gl.addColorStop(0, 'rgba(255,255,255,0.16)'); gl.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = gl; x.beginPath(); x.ellipse(c - 14, c - 18, 28, 14, -0.7, 0, 2 * P); x.fill();
+    x.restore();
+    x.strokeStyle = '#08090a'; x.lineWidth = 1.4; x.beginPath(); x.arc(c, c, 46, 0, 2 * P); x.stroke();
+  },
+  'lamp.alert.green': lamp('#5f9a45', '#d4f0a8'), 'lamp.alert.yellow': lamp('#d39a1e', '#fff0b0'), 'lamp.alert.red': lamp(RT.fresh, '#ffb0a8'),
+  'crest': (x, w) => crestMark(x, w, RNG('crest')),
+};
+
+// ---- icons: cut into the sheet with a blade -----------------------------------------------------------------------
+// Each subject is one path, cut in: a pale scored rim where the blade lifted the paper, the dark cut itself, stencil
+// bridges left uncut, and a scratch or two across it. Readable at 20 px; colour for state only.
+function icon(name) {
+  return F.paint(48, 48, (x) => {
+    const R = RNG('icon.' + name);
+    const ops = [];   // [kind, fn]: 's' stroked path, 'f' filled path
+    const S = (fn, lw = 4) => ops.push(['s', fn, lw]), Fi = (fn) => ops.push(['f', fn]);
+    const circ = (cx, cy, r) => (q) => { q.beginPath(); q.arc(cx, cy, r, 0, 2 * P); };
+    const poly = (pts, close = true) => (q) => { q.beginPath(); q.moveTo(pts[0][0], pts[0][1]); for (const p of pts.slice(1)) q.lineTo(p[0], p[1]); if (close) q.closePath(); };
+    ({
+      // a ship's wheel
+      helm: () => { S(circ(24, 24, 13), 4.2); Fi(circ(24, 24, 4.5)); for (let i = 0; i < 8; i++) { const a = i * P / 4, c = Math.cos(a), s = Math.sin(a); S(poly([[24 + c * 4, 24 + s * 4], [24 + c * 21, 24 + s * 21]], false), 3.2); } },
+      // a round leaving the muzzle, bursting ahead
+      fire: () => { Fi(poly([[6, 19], [24, 19], [33, 24], [24, 29], [6, 29]])); for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3 + 0.3; S(poly([[39 + Math.cos(a) * 3, 24 + Math.sin(a) * 3], [39 + Math.cos(a) * 8, 24 + Math.sin(a) * 8]], false), 2.6); } },
+      // six facings round the ship
+      shields: () => { for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; S((q) => { q.beginPath(); q.arc(24, 24, 18, a - P / 6 + 0.17, a + P / 6 - 0.17); }, 4); } Fi(poly([[24, 13], [30, 32], [24, 29], [18, 32]])); },
+      // an emitter throwing a widening beam onto a box
+      tractor: () => { Fi(poly([[4, 19], [12, 19], [12, 29], [4, 29]])); S(poly([[13, 21], [32, 11]], false), 2.4); S(poly([[13, 27], [32, 37]], false), 2.4); Fi(poly([[33, 15], [45, 15], [45, 33], [33, 33]])); },
+      // a figure, solid above the waist, dissolving below
+      transport: () => { Fi(circ(24, 9, 5)); Fi(poly([[15, 16], [33, 16], [31, 27], [17, 27]])); for (let i = 0; i < 3; i++) Fi(poly([[17 + i, 30 + i * 5], [31 - i, 30 + i * 5], [31 - i, 32.5 + i * 5], [17 + i, 32.5 + i * 5]])); },
+      // an atom, three orbits
+      science: () => { for (let i = 0; i < 3; i++) S((q) => { q.beginPath(); q.ellipse(24, 24, 20, 7.5, i * P / 3, 0, 2 * P); }, 2.6); Fi(circ(24, 24, 4.5)); },
+      // a dish on a mast, sending
+      comms: () => { Fi(poly([[10, 22], [24, 36], [20, 40], [6, 26]])); S(poly([[17, 33], [17, 44], [11, 44], [23, 44]], false), 3); S((q) => { q.beginPath(); q.arc(16, 30, 16, -P * 0.5, -P * 0.05); }, 2.4); S((q) => { q.beginPath(); q.arc(16, 30, 24, -P * 0.45, -P * 0.1); }, 2.4); },
+      // a wrench
+      repair: () => { S(poly([[12, 36], [30, 18]], false), 6); S((q) => { q.beginPath(); q.arc(34, 14, 8, P * 0.95, P * 2.45); }, 5); Fi(circ(10, 38, 4.5)); },
+      // a folded chart, the course marked to a cross
+      map: () => { S(poly([[5, 11], [17, 7], [31, 11], [43, 7], [43, 37], [31, 41], [17, 37], [5, 41]]), 3); S(poly([[17, 7], [17, 37]], false), 2); S(poly([[31, 11], [31, 41]], false), 2); S(poly([[10, 33], [20, 26], [28, 29]], false), 2.2); S(poly([[32, 17], [40, 25]], false), 2.6); S(poly([[40, 17], [32, 25]], false), 2.6); },
+      // a gear
+      settings: () => { const o = []; for (let i = 0; i < 16; i++) { const a = i * P / 8, r = i % 2 ? 13 : 19; o.push([24 + Math.cos(a - 0.12) * r, 24 + Math.sin(a - 0.12) * r], [24 + Math.cos(a + 0.12) * r, 24 + Math.sin(a + 0.12) * r]); } Fi(poly(o)); },
+    })[name]();
+    const draw = (lwAdd, col, dx = 0, dy = 0) => {
+      x.save(); x.translate(dx, dy);
+      for (const [k, fn, lw] of ops) { fn(x); if (k === 's') { x.strokeStyle = col; x.lineWidth = lw + lwAdd; x.lineCap = 'butt'; x.lineJoin = 'miter'; x.stroke(); } else { x.fillStyle = col; x.fill(); if (lwAdd) { x.strokeStyle = col; x.lineWidth = lwAdd; x.lineJoin = 'miter'; x.stroke(); } } }
+      x.restore();
+    };
+    draw(3.2, 'rgba(230,214,176,0.92)', 0.6, 0.8);   // the scored rim the blade lifted
+    draw(0, RT.ink);                                  // the cut
+    // stencil bridges and blade scratches, taken out of the cut
+    x.globalCompositeOperation = 'source-atop';
+    x.strokeStyle = 'rgba(120,96,70,0.9)'; x.lineWidth = 0.6;
+    for (let i = 0; i < 3; i++) { const sx = 6 + R() * 36, sy = 6 + R() * 36, a = -0.9 + (R() - 0.5) * 0.4, L = 8 + R() * 12; x.beginPath(); x.moveTo(sx, sy); x.lineTo(sx + Math.cos(a) * L, sy + Math.sin(a) * L); x.stroke(); }
+    x.globalCompositeOperation = 'source-over';
+  });
+}
+
+// ---- the ground behind the column ---------------------------------------------------------------------------------
+// A wall of the hall (CLAUDE.md section 7: no black behind a metallic skin's panels): rough planks stood on end, each its
+// own width and tone, butted with dark gaps, nailed to two cross battens under strap iron, and scarred where the sheets
+// leave it bare: knots, nail holes of sheets long paid, knife gouges, tallies, scorches and old blood in the grain.
+// Drawn once at the column's size (472 x 1080) and handed to the page as the kit's optional `column` image.
+const GROUND = [472, 1080];
+function ground(x, w, h) {
+  const R = RNG('ground');
+  x.fillStyle = '#0c0704'; x.fillRect(0, 0, w, h);
+  const xs = [0]; while (xs[xs.length - 1] < w) xs.push(xs[xs.length - 1] + 66 + R() * 30);
+  for (let i = 0; i + 1 < xs.length; i++) board(x, xs[i] + 1, 0, xs[i + 1] - xs[i] - 2, h, R, 'v', { tone: '#3d2716', hi: '#523520', lo: '#1c1109' });
+  // the battens behind, seen as rows of nail heads and an iron band across the planks
+  for (const y of [h * 0.29, h * 0.71]) {
+    iron(x, rect(0, y - 7, w, 14), R, []);
+    for (let i = 0; i + 1 < xs.length; i++) for (const f of [0.3, 0.7]) nail(x, xs[i] + (xs[i + 1] - xs[i]) * f, y, 2.4, R);
+  }
+  // scars, spread by the seeded generator over the whole wall
+  for (let i = 0; i < 26; i++) nailHole(x, R() * w, R() * h, R);
+  for (let i = 0; i < 9; i++) { const cx = R() * w, cy = R() * h; knot(x, cx, cy, 2.5 + R() * 3, R, 'v'); }
+  for (let i = 0; i < 14; i++) { const cx = R() * w, cy = R() * h, a = R() * P, l = 8 + R() * 22; gouge(x, cx, cy, cx + Math.cos(a) * l, cy + Math.sin(a) * l, 1 + R()); }
+  for (let i = 0; i < 6; i++) tally(x, 10 + R() * (w - 60), 20 + R() * (h - 40), 4 + Math.floor(R() * 12), 8 + R() * 6, R);
+  for (let i = 0; i < 5; i++) scorch(x, R() * w, R() * h, 6 + R() * 10, R);
+  for (let i = 0; i < 6; i++) soak(x, R() * w, R() * h, 8 + R() * 12, R, 'v');
+  // the hall's soot: darker toward the floor and the corners
+  const g = x.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(8,4,2,0.35)'); g.addColorStop(0.2, 'rgba(8,4,2,0)'); g.addColorStop(0.8, 'rgba(8,4,2,0)'); g.addColorStop(1, 'rgba(8,4,2,0.5)'); x.fillStyle = g; x.fillRect(0, 0, w, h);
+  const s = x.createLinearGradient(w - 30, 0, w, 0); s.addColorStop(0, 'rgba(0,0,0,0)'); s.addColorStop(1, 'rgba(0,0,0,0.55)'); x.fillStyle = s; x.fillRect(w - 30, 0, 30, h);
+}
+
+// ---- the skin -----------------------------------------------------------------------------------------------------
+F.register('redtithe', {
+  name: 'Red Tithe', kind: 'Painted in canvas: crusted, bloodied bounty sheets nailed to scarred oak planks, strap iron and knives, trap-jaw keys, a bandolier for every bar', bg: RT.bg, sampleBg: RT.paper,
+  css: { '--s-ink': RT.ink, '--s-dim': '#3b2a1e', '--s-num': '#1c130d', '--s-body': '"Special Elite", monospace', '--btn-ink': '#16100b', '--btn-justify': 'center',
+    // a halo of the slip's own paper behind the stencil: invisible on the slip, it keeps a long label legible where a
+    // narrow key's label runs out over the jaws' teeth and the stakes (the kit sheet's 120 px key)
+    '--btn-shadow': '0 1px 0 rgba(255,240,205,0.35), 0 0 2px #bea77b, 0 0 3px #bea77b, 0 0 5px rgba(190,167,123,0.85)', '--btn-font': '700 17px/1 "Stardos Stencil", sans-serif', '--btn-track': '0.05em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.05s', '--btn-sink': '1.5px',
+    '--tab-font': '400 14px/1 "Special Elite", monospace', '--tab-ink': '#d8c69a', '--tab-ink-on': '#1a120c',
+    '--title-font': '700 19px/1 "Stardos Stencil", sans-serif', '--title-ink': '#6b1810', '--lbl-font': '400 15px/1 "Special Elite", monospace', '--num-font': '400 25px/1 "Special Elite", monospace',
+    // The strips are 72 px; their open band is the sheet inside its torn edge, rows 11-61, so each label stands over its
+    // strap with room to spare; the bandolier's middle tiles, so its stitches keep their pitch at any width.
+    '--stt-pt': '12px', '--stt-pb': '12px', '--stb-pt': '12px', '--stb-pb': '12px', '--strip-lamp': '44px', '--bt-rep': 'round' },
+  accent: RT.brass, warn: RT.fresh,
+  // The frame's top margin carries the knife and the teeth, so the title is stencilled at the head of the sheet itself.
+  title: (t, m) => { t.style.cssText = 'position:relative;justify-self:start;align-self:flex-start;margin-left:2px;letter-spacing:0.12em;'; },
+  // The captain's name is typed into the bounty sheet's field (64-404 x 10-46), clear of the seal and the knife.
+  plateText: { left: 64, top: 12, width: 336, height: 30, font: '400 21px/30px "Special Elite", monospace', color: '#1a120c', sub: 'RED LEDGER · CAPT. HESK VARRO' },
+  helmKeys: 'ring', helmR: 92, shield: [RT.brass, '#b8561c', RT.fresh],
+  fonts: ['700 20px "Stardos Stencil"', '400 20px "Special Elite"'], view: { title: '400 28px "Special Elite"', body: '400 24px "Special Elite"', upper: true, ink: RT.bone, dim: RT.brass },
+  // The column's ground: a wall of the hall's planks, drawn once at the column's size (a JPEG: it is all grain, and a PNG of it runs to megabytes).
+  build: () => Object.assign(F.fromPainters(kit, hero, icon, false), { column: F.paint(GROUND[0], GROUND[1], ground).toDataURL('image/jpeg', 0.88) }),
+  live: {
+    // A chevron stamped into the brass head of each chamber.
+    arrow: (x) => { x.fillStyle = 'rgba(30,18,6,0.9)'; x.beginPath(); x.moveTo(13, 0); x.lineTo(-3, -12); x.lineTo(-3, -5); x.lineTo(-12, -5); x.lineTo(-12, 5); x.lineTo(-3, 5); x.lineTo(-3, 12); x.closePath(); x.fill(); x.strokeStyle = 'rgba(255,230,160,0.45)'; x.lineWidth = 0.8; x.save(); x.translate(0.7, 0.9); x.stroke(); x.restore(); },
+    helmCentre: (x, c) => { x.fillStyle = '#1a1006'; x.font = '700 19px "Stardos Stencil"'; x.textAlign = 'center'; x.fillText('HOLD', c, c + 7); },
+    // The ship drawn in ink on the sheet; shields as heavy strokes in brass, rust and fresh blood by strength.
+    ssd: (x, cx, cy, sh, col) => {
+      for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.strokeStyle = col(sh[i]); x.lineWidth = 7; x.lineCap = 'butt'; x.beginPath(); x.arc(cx, cy, 98, a - P / 6 + 0.1, a + P / 6 - 0.1); x.stroke(); x.strokeStyle = 'rgba(20,12,6,0.6)'; x.lineWidth = 0.8; x.stroke(); }
+      const hull = [[cx, cy - 76], [cx + 10, cy - 46], [cx + 34, cy - 30], [cx + 20, cy - 18], [cx + 22, cy + 14], [cx + 46, cy + 34], [cx + 18, cy + 36], [cx + 12, cy + 62], [cx, cy + 50], [cx - 12, cy + 62], [cx - 18, cy + 36], [cx - 46, cy + 34], [cx - 22, cy + 14], [cx - 20, cy - 18], [cx - 34, cy - 30], [cx - 10, cy - 46]];
+      trace(x, hull, true); x.fillStyle = 'rgba(40,26,14,0.12)'; x.fill(); x.strokeStyle = RT.ink; x.lineWidth = 2.2; x.lineJoin = 'miter'; x.stroke();
+      x.lineWidth = 1; x.beginPath(); x.moveTo(cx, cy - 40); x.lineTo(cx, cy + 40); x.moveTo(cx - 16, cy - 4); x.lineTo(cx + 16, cy - 4); x.stroke();
+      for (const [mx, my] of [[cx, cy - 58], [cx - 32, cy + 28], [cx + 32, cy + 28]]) { x.fillStyle = '#6b1810'; x.beginPath(); x.moveTo(mx, my - 7); x.lineTo(mx + 4, my + 4); x.lineTo(mx, my + 2); x.lineTo(mx - 4, my + 4); x.closePath(); x.fill(); }
+    },
+    // A bone needle on the dark face, contacts as brass pips.
+    dial: (x, c, cts) => {
+      x.strokeStyle = RT.bone; x.lineWidth = 2.4; x.lineCap = 'round'; x.beginPath(); x.moveTo(c - Math.cos(-0.9) * 8, c - Math.sin(-0.9) * 8); x.lineTo(c + Math.cos(-0.9) * 38, c + Math.sin(-0.9) * 38); x.stroke();
+      x.fillStyle = '#3a3e42'; x.beginPath(); x.arc(c, c, 4.5, 0, 2 * P); x.fill();
+      for (const [dx, dy] of cts) { x.fillStyle = RT.brassHi; x.beginPath(); x.moveTo(c + dx * 30, c + dy * 30 - 4); x.lineTo(c + dx * 30 + 3.5, c + dy * 30 + 3); x.lineTo(c + dx * 30 - 3.5, c + dy * 30 + 3); x.closePath(); x.fill(); }
+    },
+    // Toothed steel corners, a trap closing on the target.
+    bracket: (x, bx, by, bw, bh) => {
+      const R = RNG('bracket');
+      for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
+        x.save(); x.translate(px, py); x.scale(sx, sy);
+        steel(x, [[0, 0], [48, 0], [48, 8], [8, 8], [8, 48], [0, 48]], R, { hi: '#9aa2a9', mid: '#565d63', lo: '#202326' });
+        saw(x, 12, 8, 46, 8, 4, 6, -1); saw(x, 8, 46, 8, 12, 4, 6, -1);
+        x.restore();
+      }
+    },
+  },
+  world: ['Every crew boarded pays a tithe in blood; every debt is written on a sheet and nailed to the boards of the hall with a knife until it is paid.',
+    'Raiders of many peoples; a captain\'s standing is counted in trophies taken from others: teeth of beaten crews, spent cartridges, broken blades, and tallies cut into the boards.',
+    'Three traditions: the sheet-keepers\' ledgers and burned seals, the gunners\' bandoliers and brass, the cutters\' blades and traps. They build as they build their halls: oak planks bound with strap iron, steel only where it must bite or fire.',
+    'Scarred boarding hulls with ram prows and grapples, hung with the plates of ships they took.'],
+  shapes: 'Trap-jaw keys on oak stakes, torn bounty sheets nailed to scarred plank boards bound with strap iron, knives and a hatchet in the wood, strings of teeth, a revolver cylinder in an oak wheel, tally-stick tabs, bandolier bars.',
+  light: 'Painted: a hard hall light from the upper left; worn plank edges catch it, gouges, grain and tallies hold shadow, blades and iron glint, deep cast shadows under blades and paper; no glow but the alert lamps.',
+  motion: 'A key\'s jaws snap shut and blood seeps along the bite; a bar loads round by round.',
+  type: '"Stardos Stencil" stencilled titles and keys, "Special Elite" typed readouts.',
+  palette: [['Dried blood', RT.dried, 'Stains, seals, titles', 'The tithe already taken'], ['Fresh blood', RT.fresh, 'Alerts only', 'The tithe being taken now'],
+    ['Old paper', RT.paper, 'Sheets, keys, readout grounds', 'The ledger: every debt written down'], ['Hall oak', RT.oak, 'Boards, frames, stakes, tally sticks, the column', 'The boards every sheet is nailed to: the Tithe\'s hall, where debts are posted and paid'],
+    ['Brass', RT.brass, 'Rounds, ready states', 'Spent cartridges counted as standing'], ['Gun steel', RT.steel, 'Jaws, blades, strap iron', 'What holds the sheet holds the crew']],
 });
 })();
 </script>

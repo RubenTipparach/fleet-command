@@ -17,9 +17,11 @@ import fs from 'node:fs';
 const { chromium } = createRequire(import.meta.url)('playwright');
 const [page_, outDir = '/tmp/console-fit', only] = process.argv.slice(2);
 fs.rmSync(outDir, { recursive: true, force: true }); fs.mkdirSync(outDir, { recursive: true });
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// The 2D canvas stays on the CPU: on the software GPU every toDataURL of a painted piece reads back from swiftshader, and
+// a page of painted skins took over four minutes to load (2026-11-07); WebGL still runs on swiftshader.
+const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-accelerated-2d-canvas'] });
 const page = await browser.newPage({ viewport: { width: 2000, height: 1200 }, deviceScaleFactor: 1 });
-await page.goto('file://' + path.resolve(page_), { timeout: 120000 });
+await page.goto('file://' + path.resolve(page_), { timeout: 240000 });   // the same as tools/mockups/shoot.mjs: a slow machine takes minutes
 await page.waitForFunction(() => window.MOCKUP_READY, null, { timeout: 240000 });
 await page.addStyleTag({ content: '.fit-hide { visibility: hidden !important; } .fit-notext { color: transparent !important; text-shadow: none !important; }' });
 const ids = await page.evaluate(() => [...document.querySelectorAll('#switch button')].map((b) => b.dataset.id));
