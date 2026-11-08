@@ -1,0 +1,27 @@
+{
+ "rule": "G1: growth at least 2 mm clear of every protected rectangle",
+ "clearance_mm": {
+  "dial live-drawing (neighbour)": 12.0,
+  "dial window": 5.39,
+  "nameplate label": 3.81,
+  "nameplate label (neighbour)": 2.5,
+  "panel.ship label": 3.54,
+  "panel.ship label (neighbour)": 2.5,
+  "panel.ship live-drawing (neighbour)": 5.5,
+  "panel.ship window": 3.54,
+  "panel.station label": 4.0,
+  "panel.station label (neighbour)": 2.5,
+  "panel.station live-drawing (neighbour)": 12.0,
+  "panel.station window": 3.54,
+  "panel.weapons label": 3.54,
+  "panel.weapons label (neighbour)": 2.5,
+  "panel.weapons live-drawing (neighbour)": 12.0,
+  "panel.weapons window": 3.54,
+  "strip.bottom bar-cells (neighbour)": 12.0,
+  "strip.bottom window": 3.54,
+  "strip.top bar-cells (neighbour)": 12.0,
+  "strip.top window": 3.54
+ },
+ "min_mm": 2.5,
+ "pass": true
+}

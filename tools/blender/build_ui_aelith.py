@@ -44,11 +44,13 @@ RIM_SPREAD = float(os.environ.get("RIM_SPREAD", 120))  # their spread, deg: wide
 MAIN = (0.8, 60.0)        # the main light on the wells: strength and angular size (deg), a soft upper-left shadow
 
 
-def gold(name):
-    """Satin gold armour: warm, a fine polished grain, a thin clear coat; bright where the rolled edges catch light."""
+def gold(name, rough=0.24):
+    """Satin gold armour: warm, a fine polished grain, a thin clear coat; bright where the rolled edges catch light.
+    rough: the column's backing is rougher (0.5), so a plate the height of the screen does not mirror the softbox as one
+    bright patch, and the band of it the expanded panel tiles stays even."""
     k = NodeKit(name)
     g = k.tex("ShaderNodeTexWave", 900.0, **{"Distortion": 1.5, "Detail": 2.0})
-    k.set(Base_Color=PAL["gold"], Metallic=0.95, Roughness=0.24, Coat_Weight=0.4, Coat_Roughness=0.06)
+    k.set(Base_Color=PAL["gold"], Metallic=0.95, Roughness=rough, Coat_Weight=0.4 if rough < 0.4 else 0.15, Coat_Roughness=0.06)
     k.bump(g.outputs["Fac"], 0.03)
     return k.mat
 
@@ -74,7 +76,8 @@ def piece(name):
         s = SHAPES[name]
         K.roll, K.dz = s["roll"], s["dz"]
         K.pt = min(8.0, 2 * s["roll"] + 2.0)
-        K.m.update(plate=K.mat("gold", lambda: gold("gold")), knob=K.mat("pearl", lambda: pearl("pearl")),
+        plate = K.mat("gold_back", lambda: gold("gold_back", 0.5)) if name == "console.backing" else K.mat("gold", lambda: gold("gold"))
+        K.m.update(plate=plate, knob=K.mat("pearl", lambda: pearl("pearl")),
                    bezel=K.mat("gold_hi", lambda: metal("gold_hi", PAL["gold_hi"], 0.2)),
                    groove=K.mat("wall", lambda: printed("wall", PAL["wall"])),
                    film=K.mat("void", lambda: film_mat("void", col=PAL["void"], shadow=PAL["void_deep"], es=float(os.environ.get("VOID_ES", 0.12)), ao_mm=min(7.0, -s["dz"] * 0.6))))

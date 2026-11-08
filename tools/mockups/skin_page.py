@@ -57,6 +57,18 @@ SKINS = {
         "title": "Red Tithe Battle Console",
         "what": "Mockup 27: the battle console in the Red Tithe skin (OpenSpec change redtithe-battle-console)",
     },
+    "aelith": {
+        "title": "Aelith Battle Console",
+        "what": "Mockup 31: the battle console in the Aelith Conclave skin (OpenSpec change aelith-battle-console)",
+    },
+    "ombrai": {
+        "title": "Ombrai Battle Console",
+        "what": "Mockup 32: the battle console in the Ombrai skin (OpenSpec change ombrai-battle-console)",
+    },
+    "vhorr": {
+        "title": "Vhorr Battle Console",
+        "what": "Mockup 33: the battle console in the Vhorr Brood skin (OpenSpec change vhorr-battle-console)",
+    },
 }
 # Every skin's library, kit and type are inlined in the source page itself (openspec/changes/fleet-skins: the console
 # follows the ship you command, so one page carries every skin); a faction's page differs only in its meta, title and
