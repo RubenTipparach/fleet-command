@@ -158,7 +158,7 @@ public sealed partial class ScriptedCaptain : Node
     // Single, so one shot at a time brings her to strike, and back to Multiple once she has struck.
     private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false, bool take = false)
     {
-        double t0 = B.T, lastChange = B.T, sum = HullSum();
+        double t0 = B.T, lastChange = B.T, lastBoost = B.T, sum = HullSum();
         bool ordered = false, hadTarget = false;
         string? steering = null, commanding = B.Player.Id;
         while (B.Over == null && B.T - t0 < maxS)
@@ -224,6 +224,18 @@ public sealed partial class ScriptedCaptain : Node
                 if (me.Volley == gentle) await Click("volley");
             }
             if (B.WouldFire().Length > 0) Press("fire");
+            // a chase going nowhere (a target held, nothing would fire, no hull changed for 20 s): two boxes from the weapons
+            // to the engines, as a captain short of speed would (Mac playtest 2026-11-08: a Krai corvette at 1200 m/s never
+            // caught a Vos corsair kiting at 1200 m/s)
+            else if (B.TargetOf(me) != null && B.T - lastChange > 20 && B.T - lastBoost > 20 && me.Power["weapons"] > 2
+                     && me.Power["engines"] * B.Tuning.SpeedPerBoxMS < me.Class.SpeedMaxMS)
+            {
+                lastBoost = B.T;
+                int eng = me.Power["engines"] + 2;
+                if (await SetBoxes($"weapons={me.Power["weapons"] - 2}") is { } w1) return w1;
+                await SetBoxes($"engines={eng}");
+                if (_x.State.Station != "helm") await Click("st.helm");
+            }
             await Frames(3);
             double now = HullSum();
             if (Math.Abs(now - sum) > 1e-6) { sum = now; lastChange = B.T; }

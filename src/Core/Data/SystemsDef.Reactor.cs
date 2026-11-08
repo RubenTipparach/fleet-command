@@ -89,6 +89,8 @@ public sealed record WarpMishapDef
 public sealed record WarpDef
 {
     public int Nacelles { get; init; } = 2;
+    /// <summary>The highest jump risk a withdrawal jumps at by itself (the captain may still jump by hand).</summary>
+    public double WithdrawMaxRisk { get; init; } = 0.3;
     public int CoilE { get; init; } = 8;
     public double BankE { get; init; } = 60;
     public double JumpE { get; init; } = 40;
@@ -262,6 +264,7 @@ public sealed partial class SystemsDef
             ChargeK = Non(o, "charge_k", d.ChargeK), PlotS = Pos(o, "plot_s", d.PlotS), CoolantJump = Share(o, "coolant_jump", d.CoolantJump),
             LeakPerS = Non(o, "leak_per_s", d.LeakPerS), QgBlock = Share(o, "qg_block", d.QgBlock), OutS = Pos(o, "out_s", d.OutS),
             OutSpeedMS = Non(o, "out_speed_m_s", d.OutSpeedMS), Risk = risk, Mishap = mis,
+            WithdrawMaxRisk = Share(o, "withdraw_max_risk", d.WithdrawMaxRisk),
         };
         if (w.JumpE > w.BankE) throw new DataError($"{o.Where}.jump_e: at most bank_e ({w.BankE})");
         if (w.CoilE > 10) throw new DataError($"{o.Where}.coil_e: at most 10 (one allocation row)");

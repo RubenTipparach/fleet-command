@@ -1,5 +1,5 @@
 {
-  "_doc": "Battle tuning (openspec/changes/battle-console-engine/design.md section 3), from the battle console mockup (v65). Every number is a placeholder until the combat change. Every distance is ten times the mockup's (owner, 2026-11-06: \"1km -> 10km\"), and ship_frame_x frames each ship at ten times its length_m, so the battle looks as it did: a ship is drawn, and its mounts, ramming and rock strikes are measured, at that framed length.",
+  "_doc": "Battle tuning (openspec/changes/battle-console-engine/design.md section 3), from the battle console mockup (v65). Every number is a placeholder until the combat change. Every distance is ten times the mockup's (owner, 2026-11-06: \"1km -> 10km\"), and ship_frame_x frames each ship at ten times its length_m, so the battle looks as it did: a ship is drawn, and its mounts, ramming and rock strikes are measured, at that framed length. ai_close_after_s: an AI captain whose fire has not landed for that long closes in to half its fighting range, and to half again for every further ai_close_after_s without a hit (an eighth at most), so a ship never kites at a range where its shots are all decoyed, missed or out of reach (Mac playtest 2026-11-08: a Vos corsair circling a Krai corvette at 49 km for the whole battle). stalemate_s: a battle that cannot be withdrawn from (a story or special mission) where no ship has been hurt for that long ends as a stalemate, graded as a withdrawal (a draw).",
   "step_s": 0.0333333333333,
   "speed_per_box_m_s": 300,
   "reverse_max_m_s": 600,
@@ -44,5 +44,7 @@
   "orbit_km": 40,
   "hold_min_km": 10,
   "hold_max_km": 120,
-  "capture_hull_frac": 0.25
+  "capture_hull_frac": 0.25,
+  "ai_close_after_s": 20,
+  "stalemate_s": 180
 }

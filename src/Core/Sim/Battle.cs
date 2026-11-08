@@ -146,6 +146,13 @@ public sealed partial class Battle
     /// it is ready (Battle.Warp), and the battle ends as an escape.</summary>
     public bool Withdrawing { get; private set; }
 
+    /// <summary>The Withdraw key: a withdrawal ordered, or, pressed again while one is under way, called off.</summary>
+    public bool ToggleWithdraw()
+    {
+        if (Withdrawing) { CancelWithdraw(); return true; }
+        return Withdraw();
+    }
+
     /// <summary>The menu's Withdraw (owner, 2026-11-07: "select withdraw from menu, then warp out"): refused on a story or
     /// special mission; otherwise the warp drive is armed and plots a course, and the ship jumps out the moment it can.
     /// Returns false when refused.</summary>
@@ -183,6 +190,7 @@ public sealed partial class Battle
     public void Win() { if (Over == null) { Over = "won"; Say("Tactical", "Objectives complete."); } }
 
     private readonly HashSet<string> _reached = new();
+    private double _lastHurtT;
     /// <summary>The marker beacons reached so far, by id.</summary>
     public IReadOnlyCollection<string> Reached => _reached;
 
@@ -301,6 +309,13 @@ public sealed partial class Battle
         if (goalEnds) return;
         // a damage range never ends: its last ship can be broken up and the range repaired
         if (Scenario.DamageRange || Over != null) return;
+        // a battle that cannot be withdrawn from, where no ship has been hurt for stalemate_s, ends as a stalemate (a draw)
+        if (!Scenario.CanWithdraw && T - _lastHurtT > Tuning.StalemateS && _ships.Any(s => s.Side == 1 && s.Alive && !s.Struck))
+        {
+            Over = "stalemate";
+            Say("Tactical", "Stalemate: neither side can bring the other to battle. Breaking off.");
+            return;
+        }
         if (Scenario.EndsOnObjectives) { if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost"; return; }
         if (!_ships.Any(s => s.Side == 1 && s.Alive && !s.Struck)) { Over = "won"; Say("Tactical", "All hostile ships destroyed."); }
         else if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost";
@@ -438,6 +453,9 @@ public sealed partial class Battle
         Ship t = AiTarget(s, foes, near);   // its target rule (Battle.Fleet.cs)
         s.Target = t.Id;
         double range = Rules.AiRangeKm(s.Range);
+        // a captain whose fire has not landed for a while closes in, half its range for every ai_close_after_s without a
+        // hit (to an eighth): no ship kites at a range where its shots are all decoyed, missed or out of reach
+        range *= Math.Pow(0.5, Math.Min(3, Math.Floor((T - s.LastLandedT) / Tuning.AiCloseAfterS)));
         if (Retreating(s)) Steer(s, "evade", near, range);
         else if (s.Stance == Stance.Hold) Steer(s, "hold", t, range);
         // a lane run (test scenes): straight on at full speed, turning back for another pass once lane_turn_km out
@@ -498,6 +516,8 @@ public sealed partial class Battle
     private void Damage(Ship t, double sx, double sz, Ship? src, double dmg, string kind, double pierce = 0, Shot? by = null)
     {
         if (!t.Alive) return;
+        _lastHurtT = T;
+        if (src != null) src.LastLandedT = T;
         int f = Rules.FacingFrom(t, sx, sz);
         // a surging Krai bow holds bow_shield_x as much; pierce of the hit goes straight through (Rules.Pierced)
         double bowX = f == 0 && t.SurgeS > 0 ? Data.Specials.Charge.BowShieldX : 1;

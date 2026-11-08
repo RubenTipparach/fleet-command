@@ -37,7 +37,7 @@
   }
  },
  "warp": {
-  "_doc": "The energy put into warp is split between the nacelles still working, which charge the banks at charge_k of what they draw times their health. A jump needs jump_e in the banks (of bank_e). An armed drive takes the reactor's free energy, up to coil_e, and gives way first when the systems need more than the output. A course is plotted over plot_s, slowed by damaged sensors, stopped when they are out. Coolant leaks from damaged loops at leak_per_s; a jump spends coolant_jump. Above qg_block a jump needs the safety override. The jump risk is 1 less the product of (1 less each factor's risk), and the jump rolls against that same number. A jump streaks away at out_speed_m_s for out_s.",
+  "_doc": "The energy put into warp is split between the nacelles still working, which charge the banks at charge_k of what they draw times their health. A jump needs jump_e in the banks (of bank_e). An armed drive takes the reactor's free energy, up to coil_e, and gives way first when the systems need more than the output. A course is plotted over plot_s, slowed by damaged sensors, stopped when they are out. Coolant leaks from damaged loops at leak_per_s; a jump spends coolant_jump. Above qg_block a jump needs the safety override. The jump risk is 1 less the product of (1 less each factor's risk), and the jump rolls against that same number. A jump streaks away at out_speed_m_s for out_s. A withdrawal (the menu's Withdraw) jumps by itself only while the risk is at or under withdraw_max_risk; over it, the drive holds and says why, and the captain may still jump by hand from the Warp page or call the withdrawal off with Withdraw again. A withdrawal whose drive can no longer charge (every nacelle wrecked, the banks short) is called off by itself.",
   "nacelles": 2,
   "coil_e": 8,
   "bank_e": 60,
@@ -49,6 +49,7 @@
   "qg_block": 0.5,
   "out_s": 1.2,
   "out_speed_m_s": 60000,
+  "withdraw_max_risk": 0.3,
   "risk": {
    "nacelles": 0.8,
    "nacelle_out": 0.95,

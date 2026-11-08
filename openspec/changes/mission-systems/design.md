@@ -79,6 +79,20 @@ Figures are provisional until each has its own design; every one uses the Petrel
 
 The new contracts weigh 0.4 each, so the patrols (weight 10 of the contracts' 30.2) stay about a third of what is offered.
 
+## Fixes from the first playtest
+
+The Mac session's sweep of every mission type (2026-11-08, `docs/playtests/2026-11-08-mission-types.md`; owner: "yes fix all
+three"):
+
+| Found | Fix | Numbers |
+|---|---|---|
+| A failed jump wrecked both nacelles; the withdrawal waited for a charge that never came, the Withdraw key locked, until the ship died | A withdrawal jumps by itself only at or under a risk limit (over it the drive holds, says why, and the captain may jump by hand); Withdraw pressed again calls it off; a withdrawal whose drive can no longer charge is called off by itself | `warp.withdraw_max_risk` 0.3 (`data/battle/systems/reactor.json`) |
+| A story mission refuses Withdraw, so a fight neither side can win never ends | A battle that cannot be withdrawn from, where no ship has been hurt for a while, ends as a stalemate, graded as a withdrawal (a draw) | `stalemate_s` 180 (`data/battle/tuning.json`) |
+| A Krai corvette never caught a Vos corsair circling at the same 1200 m/s, and no hull changed | An AI captain whose fire has not landed closes in: half its fighting range for every span without a hit, to an eighth; the scripted captain moves two boxes from weapons to engines when a chase goes nowhere | `ai_close_after_s` 20 (`data/battle/tuning.json`) |
+
+The golden seed was re-pinned for the AI rule (`tests/Core.Tests/GoldenSeed.cs`); `tests/Core.Tests/StandoffTests.cs` pins all
+three, the AI rule's test failing with the rule switched off.
+
 ## Open questions
 
 | # | Question | Provisional |
