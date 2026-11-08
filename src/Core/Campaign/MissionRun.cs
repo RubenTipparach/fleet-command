@@ -20,6 +20,8 @@ public static class MissionRun
 {
     /// <summary>A target drone is a light hulk: no shields, this share of its class's hull.</summary>
     public const double DroneHullFrac = 0.3;
+    /// <summary>How far above a planet's surface a group placed at it orbits, m.</summary>
+    public const double OrbitM = 4000;
     public const double FleetSpacingM = 7000, AllyOffsetM = 16000, GroupSpreadM = 8000, EnemyRangeKm = 100, NeutralRangeKm = 50, EnemyArcDeg = 35;
 
     /// <summary>The battle for an offered mission, or null when the mission has none (done on arrival).</summary>
@@ -42,12 +44,23 @@ public static class MissionRun
             CampShip s = fighting[i];
             string id = $"own{s.Id}";
             double x = i == 0 ? 0 : (i % 2 == 1 ? -1 : 1) * FleetSpacingM * ((i + 1) / 2), z = i == 0 ? 0 : 5000;
+            ShipSetup? kit = i == 0 && (b.Cargo.Count > 0 || b.Envoy != null)
+                ? new ShipSetup(null, new Dictionary<string, int>(), b.Cargo, null, b.Envoy?.Eval(sc), null, 0, false, false, new Dictionary<string, int>(), new Dictionary<string, double>(), Array.Empty<double>())
+                : null;
             ships.Add(new ShipStart(id, s.Name, i == 0 ? c.S.Captain : "Captain", c.Data.Hulls[s.Hull].BattleClass, side, 0, x, z, 0, 1200,
-                Stance.Escort, HullFrac: Math.Clamp(s.HullPct / 100, 0.05, 1)));
+                Stance.Escort, HullFrac: Math.Clamp(s.HullPct / 100, 0.05, 1), Setup: kit));
             groups["fleet"].Add(id);
             fleetIds[id] = s.Id;
             labels[id] = (s.Name, null, GroupRole.Ally);
         }
+
+        // the planets, by bearing (clockwise from ahead, which is -z) and range to their centre from the fleet's start
+        var planets = b.Planets.Select(p =>
+        {
+            double rad = p.BearingDeg * Math.PI / 180, r = p.RangeKm * 1000;
+            return new PlanetDef(p.Id, p.Name.Eval(sc), Math.Sin(rad) * r, -Math.Cos(rad) * r, p.RadiusKm * 1000, p.Color, p.Needs)
+                { Kind = p.Kind, Installations = p.Sites, TakesEnvoy = p.TakesEnvoy, Waiting = p.Waiting?.Eval(sc) };
+        }).ToList();
 
         var enemyGroups = b.Groups.Where(x => x.Role == GroupRole.Enemy).ToList();
         int allySeen = 0;
@@ -67,15 +80,19 @@ public static class MissionRun
                 bearing = grp.BearingDeg ?? (k - (n - 1) / 2.0) * EnemyArcDeg;
                 rangeM = (grp.RangeKm ?? EnemyRangeKm) * 1000;
             }
-            var hullIds = c.Data.HullsOf(fac).ToList();
+            var hullIds = c.Data.Factions.ContainsKey(fac) ? c.Data.HullsOf(fac).ToList() : new List<Hull>();
+            string? fixedClass = grp.Hull != null ? MissionGroup.HullClasses[grp.Hull] : null;
+            PlanetDef? orbit = grp.AtPlanet != null ? planets.First(p => p.Id == grp.AtPlanet) : null;
             for (int i = 0; i < count; i++)
             {
                 int tier = grp.Tier != null ? (int)Math.Round(grp.Tier.Num(sc)) : grp.Tag == "flagship" ? 3 : 1 + i % 2;
-                Hull hull = grp.Hull == "freighter" ? c.Data.FreighterOf(fac) : hullIds.Count > 0 ? c.Data.HullOfTier(fac, tier) : c.Data.HullOfTier("vos", 1);
+                string cls = fixedClass ?? (grp.Hull == "freighter" ? c.Data.FreighterOf(fac) : hullIds.Count > 0 ? c.Data.HullOfTier(fac, tier) : c.Data.HullOfTier("vos", 1)).BattleClass;
                 string id = $"{grp.Id}{i + 1}";
-                var names = c.Data.Factions[fac].Names;
-                string name = grp.Tag is "flagship" or "prize" or "rescue" or "decoy" && i == 0 && grp.ShipName != null ? grp.ShipName.Eval(sc)
-                    : names[(list.Count + grp.Id.Length + i) % names.Count];
+                // a faction the campaign has no names for (the fauna) goes by its label
+                var names = c.Data.Factions.TryGetValue(fac, out CampFaction? cf) ? cf.Names : (IReadOnlyList<string>)new[] { label };
+                string name = grp.Tag is "flagship" or "prize" or "rescue" or "decoy" or "quarry" or "scout" && i == 0 && grp.ShipName != null ? grp.ShipName.Eval(sc)
+                    : fixedClass != null && grp.Hull != "monster" ? (count > 1 ? $"{label} {i + 1}" : label)
+                    : names.Count == 1 && count > 1 ? $"{names[0]} {i + 1}" : names[(list.Count + grp.Id.Length + i) % names.Count];
                 double x, z, heading;
                 if (grp.Role == GroupRole.Ally)
                 {
@@ -92,12 +109,28 @@ public static class MissionRun
                     z = -Math.Cos(rad) * rangeM + Math.Sin(rad) * lat;
                     heading = grp.Role == GroupRole.Neutral ? 180 : Geometry.Wrap(Math.Atan2(-x, z)) * 180 / Math.PI;
                 }
+                if (orbit != null)
+                {
+                    // in orbit: round the planet, spread about its near side
+                    double a0 = Math.Atan2(-orbit.XM, orbit.ZM) + (i - (count - 1) / 2.0) * 0.5, rr = orbit.RadiusM + OrbitM;
+                    x = orbit.XM + Math.Sin(a0) * rr;
+                    z = orbit.ZM - Math.Cos(a0) * rr;
+                }
                 // a freighter keeps her course, slow, whichever side she is on: she never closes to fight
-                bool neutral = grp.Role == GroupRole.Neutral, drone = grp.Tag == "drone", freighter = grp.Hull == "freighter";
+                bool neutral = grp.Role == GroupRole.Neutral, drone = grp.Tag == "drone", freighter = grp.Hull == "freighter", still = grp.Fixed;
+                // a scout runs: it keeps its course away from the fleet at full speed and never turns to fight
+                bool scout = grp.Tag == "scout";
+                if (scout) heading = Geometry.Wrap(Math.Atan2(x, -z)) * 180 / Math.PI;
+                ShipSetup? load = grp.Hold.Count > 0
+                    ? new ShipSetup(null, new Dictionary<string, int>(), grp.Hold, null, null, null, 0, false, false, new Dictionary<string, int>(), new Dictionary<string, double>(), Array.Empty<double>())
+                    : null;
                 // a drone (a shakedown's target) stands where it is put, never fires, and is a light hulk with no shields
-                ships.Add(new ShipStart(id, name, label, hull.BattleClass, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading, drone ? 0 : neutral || freighter ? 600 : 1400,
-                    grp.Role == GroupRole.Ally && !freighter ? Stance.Escort : neutral || drone || freighter ? Stance.Hold : Stance.Attack, HoldFire: neutral || drone,
-                    HullFrac: drone ? DroneHullFrac : 1, ShieldsFrac: drone ? 0 : 1, Prize: grp.Tag == "prize" && i == 0));
+                ships.Add(new ShipStart(id, name, label, cls, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading,
+                    drone || still ? 0 : scout ? 2600 : neutral || freighter ? 600 : 1400,
+                    grp.Role == GroupRole.Ally && !freighter && !still ? Stance.Escort : neutral || drone || freighter || still || scout ? Stance.Hold : Stance.Attack,
+                    HoldFire: neutral || drone || scout || grp.Hull == "pod",
+                    HullFrac: drone ? DroneHullFrac : 1, ShieldsFrac: drone || grp.Hull == "pod" ? 0 : 1, Prize: grp.Tag == "prize" && i == 0, Setup: load)
+                    { ArriveS = grp.ArriveS, WakeS = grp.WakeS, Fixed = still, Runs = scout, Truce = grp.Tag == "truce" });
                 list.Add(id);
                 groups[grp.Role == GroupRole.Enemy ? "enemies" : "allies"].Add(id);
                 labels[id] = (label, i == 0 ? grp.Tag : null, grp.Role);
@@ -115,7 +148,7 @@ public static class MissionRun
         }).ToList();
         var scen = new Scenario($"mission_{def.Id}_{m.Id}", b.Name?.Eval(sc) ?? def.Name, side, seed, obj, "Comms",
             intel != "" ? $"Contacts ahead. {obj}" : obj, ships, SkyFor(c.Hex(m.C, m.R)), Markers: markers.Count > 0 ? markers : null)
-            { CanWithdraw = def.CanWithdraw };
+            { CanWithdraw = def.CanWithdraw, Planets = planets.Count > 0 ? planets : null, TimeLimitS = b.TimeLimitS, DeadEngines = b.DeadEngines, ObjectiveEnd = b.EndsOnGoals };
         return new MissionPlan(m, b, scen, groups, fleetIds, labels);
     }
 
@@ -125,6 +158,25 @@ public static class MissionRun
         if (plan == null || battle == null || plan.Battle.Groups.FirstOrDefault(g => g.Hull == "freighter") is not { } grp) return null;
         if (!plan.Groups.TryGetValue(grp.Id, out var ids) || ids.Count == 0 || battle.ShipById(ids[0]) is not { } s) return null;
         return new ShipEnd(s.Id, s.Alive, s.Struck || s.Captured, s.Hull / s.Class.HullHp);
+    }
+
+    // every group's ships as they stand: alive, taken, hull left, and scanned by the player's side
+    private static Dictionary<string, List<ShipEnd>> Ends(MissionPlan plan, Battle battle) =>
+        plan.Groups.ToDictionary(g => g.Key, g => g.Value.Select(id => battle.ShipById(id)!)
+            .Select(s => new ShipEnd(s.Id, s.Alive, s.Struck || s.Captured, s.Hull / s.Class.HullHp) { Scanned = battle.ScannedIds.Contains(s.Id) }).ToList());
+
+    /// <summary>What field operations came to (Battle.Field and Battle.Transport): each planet surveyed, its sites held,
+    /// relieved, the envoy landed, the one waiting picked up; the fleet's cargo; the time limit; who fired first.</summary>
+    public static FieldEnd FieldOf(MissionPlan plan, Battle battle)
+    {
+        var planets = battle.Planets.ToDictionary(p => p.Id, p => new PlanetEnd(p.Scanned, p.Installations.Count(i => i.Secured), p.Installations.Count,
+            p.Relieved || (p.Needs == null), p.EnvoyLanded != null, p.Waiting == null));
+        var cargo = new Dictionary<string, int>();
+        foreach (string id in plan.Groups["fleet"])
+            if (battle.ShipById(id) is { Alive: true } s)
+                foreach (var (k, v) in s.Hold) cargo[k] = cargo.GetValueOrDefault(k) + v;
+        // the envoy or anyone picked up from a planet counts as aboard while a fleet ship carries them
+        return new FieldEnd(planets, cargo, battle.TimeUp, battle.FirstFire, battle.AwayTeams.Count);
     }
 
     /// <summary>The nebula sky a sector's battle is fought under (data/space/skies/).</summary>
@@ -148,8 +200,8 @@ public static class MissionRun
     /// that ends on its objectives: GameFlow wins it once every primary is met).</summary>
     public static Dictionary<string, bool> MetNow(Campaign c, MissionPlan plan, Battle battle)
     {
-        var ends = plan.Groups.ToDictionary(g => g.Key, g => g.Value.Select(id => battle.ShipById(id)!).Select(s => new ShipEnd(s.Id, s.Alive, s.Struck || s.Captured, s.Hull / s.Class.HullHp)).ToList());
-        var sc = new EndScope(c, plan.Mission, ends, "end") { Reached = battle.Reached };
+        var ends = Ends(plan, battle);
+        var sc = new EndScope(c, plan.Mission, ends, "end") { Reached = battle.Reached, Field = FieldOf(plan, battle) };
         return plan.Battle.Objectives.ToDictionary(o => o.Id, o => o.Done.Bool(sc));
     }
 
@@ -161,10 +213,12 @@ public static class MissionRun
         CampRules ru = c.Data.Rules;
         string how = battle != null ? HowOf(battle) : "done";
         var ends = new Dictionary<string, List<ShipEnd>>();
-        if (plan != null && battle != null)
-            foreach (var (gid, ids) in plan.Groups)
-                ends[gid] = ids.Select(id => battle.ShipById(id)!).Select(s => new ShipEnd(s.Id, s.Alive, s.Struck || s.Captured, s.Hull / s.Class.HullHp)).ToList();
-        var sc = new EndScope(c, m, ends, how) { HadBattle = plan != null, Reached = battle?.Reached ?? (IReadOnlyCollection<string>)Array.Empty<string>() };
+        if (plan != null && battle != null) ends = Ends(plan, battle);
+        var sc = new EndScope(c, m, ends, how)
+        {
+            HadBattle = plan != null, Reached = battle?.Reached ?? (IReadOnlyCollection<string>)Array.Empty<string>(),
+            Field = plan != null && battle != null ? FieldOf(plan, battle) : FieldEnd.None,
+        };
         var objs = plan?.Battle.Objectives ?? (IReadOnlyList<MissionObjective>)Array.Empty<MissionObjective>();
         var met = new Dictionary<string, bool>();
         foreach (MissionObjective o in objs) met[o.Id] = (how == "withdraw" && o.ByWithdraw) || (how != "lost" && o.Done.Bool(sc));
@@ -234,6 +288,11 @@ public static class MissionRun
                 // the mission that ends frees its sector for the next one
                 c.S.Missions.Remove(m);
                 c.OfferMission(n.Mission, at, carry);
+            }
+            if (r.Disband && m.Group != null && c.S.Groups.FirstOrDefault(g => g.Name == m.Group) is { } beaten)
+            {
+                c.S.Groups.Remove(beaten);
+                d.Ships.Add((beaten.Name, "broken up"));
             }
             d.Log = r.Log?.Eval(sc);
         }

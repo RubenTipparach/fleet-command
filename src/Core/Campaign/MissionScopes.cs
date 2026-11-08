@@ -112,6 +112,8 @@ public sealed class EndScope : OfferScope
     public string? Grade { get; set; }
     public double Pay { get; set; }
     public bool HadBattle { get; set; } = true;
+    /// <summary>What field operations came to: planets, cargo, the time limit, who fired first.</summary>
+    public FieldEnd Field { get; set; } = FieldEnd.None;
     /// <summary>The marker beacons the fleet reached in the battle.</summary>
     public IReadOnlyCollection<string> Reached { get; set; } = Array.Empty<string>();
 
@@ -127,6 +129,11 @@ public sealed class EndScope : OfferScope
         return n switch
         {
             "how" => _how,
+            "time_up" => B(Field.TimeUp),
+            "we_fired_first" => B(Field.FirstFire == 0),
+            "they_fired_first" => B(Field.FirstFire == 1),
+            "no_shots" => B(Field.FirstFire == null),
+            "teams_down" => (double)Field.TeamsDown,
             "battle" => B(HadBattle),
             "all_primary" => B(Objectives.Where(o => o.Primary).All(Ok)),
             "all_bonus" => B(Objectives.Where(o => !o.Primary).All(Ok) && Objectives.Any(o => !o.Primary)),
@@ -143,6 +150,20 @@ public sealed class EndScope : OfferScope
     {
         if (n == "met") return (double)a.Count(x => Met != null && Met.GetValueOrDefault(Expr.Format(x)));
         if (n == "reached") return a.Count > 0 && Reached.Contains(Expr.Format(a[0])) ? 1.0 : 0.0;
+        if (n == "cargo") return (double)(a.Count > 0 ? Field.Cargo.GetValueOrDefault(Expr.Format(a[0])) : 0);
+        if (Scopes.PlanetCalls.Contains(n))
+        {
+            PlanetEnd p = a.Count > 0 && Field.Planets.TryGetValue(Expr.Format(a[0]), out PlanetEnd? pe) ? pe : PlanetEnd.None;
+            return n switch
+            {
+                "surveyed" => p.Surveyed ? 1.0 : 0.0,
+                "secured" => (double)p.Secured,
+                "sites" => (double)p.Sites,
+                "relieved" => p.Relieved ? 1.0 : 0.0,
+                "envoy_landed" => p.EnvoyLanded ? 1.0 : 0.0,
+                _ => p.PickedUp ? 1.0 : 0.0,
+            };
+        }
         List<ShipEnd> G() => a.Count > 0 && _groups.TryGetValue(Expr.Format(a[0]), out var g) ? g
             : throw new DataError($"{n}(): no group '{(a.Count > 0 ? Expr.Format(a[0]) : "")}' in this battle");
         return n switch
@@ -152,10 +173,29 @@ public sealed class EndScope : OfferScope
             "destroyed" => (double)G().Count(s => !s.Alive),
             "taken" => (double)G().Count(s => s.Alive && s.Taken),
             "hull_min" => G().Where(s => s.Alive).Select(s => s.HullFrac).DefaultIfEmpty(0).Min(),
+            "scanned" => (double)G().Count(s => s.Scanned),
             _ => base.Call(n, a),
         };
     }
 }
 
-/// <summary>One ship as the battle ended: alive or destroyed, taken (a prize that struck), hull left (fraction).</summary>
-public sealed record ShipEnd(string Id, bool Alive, bool Taken, double HullFrac);
+/// <summary>One ship as the battle ended: alive or destroyed, taken (a prize that struck), hull left (fraction), and
+/// whether the player's side finished a scan of it.</summary>
+public sealed record ShipEnd(string Id, bool Alive, bool Taken, double HullFrac)
+{
+    public bool Scanned { get; init; }
+}
+
+/// <summary>A planet as the battle ended: surveyed, its sites held of all its sites, relieved (all it asked for given, or it
+/// asked for nothing), an envoy landed, and the one waiting on it picked up (or no one was).</summary>
+public sealed record PlanetEnd(bool Surveyed, int Secured, int Sites, bool Relieved, bool EnvoyLanded, bool PickedUp)
+{
+    public static readonly PlanetEnd None = new(false, 0, 0, false, false, false);
+}
+
+/// <summary>What field operations came to: each planet by id, the fleet's cargo by item, whether the time limit was reached,
+/// the side that fired first (null: no one fired), and away teams still on a surface.</summary>
+public sealed record FieldEnd(IReadOnlyDictionary<string, PlanetEnd> Planets, IReadOnlyDictionary<string, int> Cargo, bool TimeUp, int? FirstFire, int TeamsDown)
+{
+    public static readonly FieldEnd None = new(new Dictionary<string, PlanetEnd>(), new Dictionary<string, int>(), false, null, 0);
+}

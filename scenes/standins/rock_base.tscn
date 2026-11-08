@@ -1,0 +1,97 @@
+[gd_scene load_steps=7 format=3]
+
+[sub_resource type="SphereMesh" id="lump"]
+radius = 0.5
+height = 1.0
+radial_segments = 14
+rings = 8
+
+[sub_resource type="SphereMesh" id="dome"]
+radius = 0.08
+height = 0.08
+radial_segments = 16
+rings = 6
+is_hemisphere = true
+
+[sub_resource type="CylinderMesh" id="mast"]
+top_radius = 0.008
+bottom_radius = 0.012
+height = 0.16
+radial_segments = 6
+
+[sub_resource type="CylinderMesh" id="dish"]
+top_radius = 0.09
+bottom_radius = 0.02
+height = 0.04
+radial_segments = 18
+
+[sub_resource type="SphereMesh" id="lamp"]
+radius = 0.014
+height = 0.028
+radial_segments = 8
+rings = 4
+
+[sub_resource type="BoxMesh" id="dock"]
+size = Vector3(0.14, 0.05, 0.1)
+
+[node name="RockBase" type="Node3D"]
+
+[node name="Rock0" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.62, 0, 0, 0, 0.42, 0, 0, 0, 0.8, 0, 0, 0)
+mesh = SubResource("lump")
+
+[node name="Rock1" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.3637, 0, -0.21, 0.044, 0.3284, 0.0762, 0.2222, -0.1191, 0.3848, 0.16, -0.04, -0.2)
+mesh = SubResource("lump")
+
+[node name="Rock2" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.4323, 0, 0.1573, 0.0214, 0.3545, -0.0587, -0.1684, 0.0868, 0.4627, -0.18, 0.02, 0.18)
+mesh = SubResource("lump")
+
+[node name="Rock3" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.2185, 0, -0.2605, 0.0906, 0.2538, 0.0761, 0.2083, -0.1268, 0.1748, 0.06, 0.06, 0.32)
+mesh = SubResource("lump")
+
+[node name="Rock4" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.2954, 0, -0.0521, 0.0039, 0.259, 0.0223, 0.0484, -0.0244, 0.2747, -0.08, -0.08, -0.34)
+mesh = SubResource("lump")
+
+[node name="TrimDomeA" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.19, -0.06)
+mesh = SubResource("dome")
+
+[node name="TrimDomeB" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, -0.13, 0.17, 0.12)
+mesh = SubResource("dome")
+
+[node name="TrimDomeC" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.55, 0, 0, 0, 0.55, 0, 0, 0, 0.55, 0.14, 0.15, 0.16)
+mesh = SubResource("dome")
+
+[node name="HullMast" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.26, -0.18)
+mesh = SubResource("mast")
+
+[node name="TrimDish" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.8192, -0.5736, 0, 0.5736, 0.8192, -0.06, 0.35, -0.18)
+mesh = SubResource("dish")
+
+[node name="HullDock" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 0, -0.05)
+mesh = SubResource("dock")
+
+[node name="GlowLamp0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.25, -0.06)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.06, 0.34, -0.18)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.37, 0.02, -0.05)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.13, 0.22, 0.12)
+mesh = SubResource("lamp")

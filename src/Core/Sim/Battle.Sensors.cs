@@ -20,6 +20,7 @@ public sealed partial class Battle
             int free = Math.Max(0, s.Power["sensors"] - s.Ecm - s.Eccm);
             double rate = (sr.ScanBasePerS + sr.ScanPerES * free) * (s.Passive ? sr.PassiveScanX : 1) * s.Sys["sensors"] * (1 + OfficerSkill(s, "science") * sr.OfficerScan);
             s.ScanP = Math.Min(1, s.ScanP + dt * rate);
+            if (s.ScanP >= 1 && s.Side == Player.Side && _scanned.Add(s.ScanId)) Say("Science", $"Scan of the {ShipById(s.ScanId)?.Name} complete.");
         }
     }
 

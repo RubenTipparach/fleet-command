@@ -33,7 +33,9 @@
    "hunt_ff_harpoon",
    "hunt_ff_trident",
    "hunt_ca",
-   "hunt_cv", "kelvane_rv", "kelvane_dd"
+   "hunt_cv",
+   "kelvane_rv",
+   "kelvane_dd"
   ]
  },
  "ai_cloak": {
@@ -96,11 +98,16 @@
    "hunt_ff_harpoon": 10,
    "hunt_ff_trident": 10,
    "hunt_ca": 10,
-   "hunt_cv": 10, "kelvane_ff": 4, "kelvane_dd": 6, "kelvane_rv": 12, "kelvane_bc": 14, "kelvane_cv": 10
+   "hunt_cv": 10,
+   "kelvane_ff": 4,
+   "kelvane_dd": 6,
+   "kelvane_rv": 12,
+   "kelvane_bc": 14,
+   "kelvane_cv": 10
   }
  },
  "deck_plans": {
-  "_doc": "Each class's interior: a deck plan (data/ships/, the Ship Design Bible's rooms) with the posts its teams start at, the rooms boarders go for in turn, and the room marines beamed back form up in. Every Concord and Hunt class uses the Petrel's plan and every Krai class the Krai frigate's until each class has its own (boarding-defence B1); the troop ship, the starbase and the Kelvane's stand-in cruiser use the Petrel's plan too.",
+  "_doc": "Each class's interior: a deck plan (data/ships/, the Ship Design Bible's rooms) with the posts its teams start at, the rooms boarders go for in turn, and the room marines beamed back form up in. Every Concord and Hunt class uses the Petrel's plan and every Krai class the Krai frigate's until each class has its own (boarding-defence B1); the troop ship, the starbase and the Kelvane's stand-in cruiser use the Petrel's plan too. The placeholder stations, the monster and the cargo pod (mission-systems) use the Petrel's plan until each has its own.",
   "plans": {
    "petrel": {
     "file": "ships/concord/petrel_plan.json",
@@ -164,7 +171,13 @@
    "kelvane_ff": "petrel",
    "kelvane_dd": "petrel",
    "kelvane_bc": "petrel",
-   "kelvane_cv": "petrel"
+   "kelvane_cv": "petrel",
+   "yd": "petrel",
+   "ab": "petrel",
+   "op": "petrel",
+   "pb": "petrel",
+   "mon": "petrel",
+   "pod": "petrel"
   }
  }
 }

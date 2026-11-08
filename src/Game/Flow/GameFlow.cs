@@ -320,6 +320,7 @@ public sealed partial class GameFlow : Node
         Msg = $"Turn {Camp.S.Turn}.";
         SelectHex(Sel);
         if (own != null) Arrived();
+        else Hunted();
         Save();
     }
 
@@ -382,6 +383,17 @@ public sealed partial class GameFlow : Node
     private void Arrived()
     {
         if (Camp?.MissionAt(Camp.S.AtC, Camp.S.AtR) is { } m && Camp.S.Active.Contains(m.Id)) OpenBrief(m);
+        Hunted();
+    }
+
+    // hunters in the fleet's sector catch it: their fight's briefing opens (fight, or slip away by moving on)
+    private void Hunted()
+    {
+        if (Camp?.Caught() is { Count: > 0 } caught)
+        {
+            OpenBrief(caught[0]);
+            Msg = $"Caught by the {Camp.HuntersOf(caught[0])?.Name ?? "hunters"}!";
+        }
     }
 
     /// <summary>Starts the briefed mission here: its battle on the console, or done on arrival.</summary>

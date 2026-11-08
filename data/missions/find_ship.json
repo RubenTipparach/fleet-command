@@ -1,0 +1,80 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "find_ship",
+ "name": "Find the ship",
+ "glyph": "#",
+ "type": "Find the ship",
+ "reward_cr": 900,
+ "weight": 0.4,
+ "where": "plain && (own || neutral) && dist_home >= 2",
+ "objective": "Scan the traders and find the one carrying contraband.",
+ "brief": "One of the traders crossing this sector carries {enemy_name} contraband. Scan them, find her, and harm none of the others.",
+ "battle": [
+  {
+   "intel": "Five traders, one of them guilty",
+   "groups": [
+    {
+     "id": "traders",
+     "faction": "neutral",
+     "count": 4,
+     "role": "neutral",
+     "label": "Trader",
+     "hull": "freighter",
+     "hold": {
+      "goods": 10
+     }
+    },
+    {
+     "id": "quarry",
+     "faction": "neutral",
+     "count": 1,
+     "role": "neutral",
+     "label": "Trader",
+     "hull": "freighter",
+     "tag": "quarry",
+     "ship_name": "Quiet Ledger",
+     "hold": {
+      "goods": 20
+     }
+    },
+    {
+     "id": "cover",
+     "faction": "{enemy}",
+     "count": 1,
+     "role": "enemy",
+     "label": "Escort",
+     "range_km": 150,
+     "arrive_s": 120
+    }
+   ],
+   "objectives": [
+    {
+     "id": "found",
+     "text": "Scan the smuggler",
+     "primary": true,
+     "done": "scanned(quarry) >= 1"
+    },
+    {
+     "id": "safe",
+     "text": "Harm none of the traders",
+     "done": "destroyed(traders) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 4
+   },
+   "log": "The smuggler is found."
+  }
+ ]
+}

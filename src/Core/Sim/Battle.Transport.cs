@@ -82,7 +82,10 @@ public sealed partial class Battle
         }
         foreach (PlanetDef p in Scenario.Planets ?? Array.Empty<PlanetDef>())
         {
-            var pl = new Planet { Id = p.Id, Name = p.Name, X = p.XM, Z = p.ZM, RadiusM = p.RadiusM, Color = p.Color, Needs = p.Needs.Count > 0 ? new Dictionary<string, int>(p.Needs) : null };
+            var pl = new Planet { Id = p.Id, Name = p.Name, X = p.XM, Z = p.ZM, RadiusM = p.RadiusM, Color = p.Color, Needs = p.Needs.Count > 0 ? new Dictionary<string, int>(p.Needs) : null,
+                Kind = p.Kind, TakesEnvoy = p.TakesEnvoy, Waiting = p.Waiting };
+            foreach (InstallationDef d in p.Installations)
+                pl.Installations.Add(new Installation { Id = d.Id, Name = d.Name, Kind = d.Kind, LatDeg = d.LatDeg, LonDeg = d.LonDeg, Hostile = d.Hostile, Garrison = d.Garrison, Known = d.Known });
             foreach (string k in CommsDef.Items) pl.Hold[k] = 0;
             _planets.Add(pl);
         }
@@ -504,7 +507,8 @@ public sealed partial class Battle
         if (!InvReach(s, d)) { Say("Transport", d.Km > reach ? $"Out of transporter range: {d.Name} is {d.Km:0.0} km away ({reach:0.0} km)." : "Pads charging."); return; }
         if (what == "vip")
         {
-            if (d.Ship is not { } o) { Say("Transport", "Cannot beam the envoy to a planet here."); return; }
+            if (d.Planet is { } pv) { EnvoyToPlanet(s, pv, dir); return; }
+            if (d.Ship is not { } o) return;
             if (dir > 0) { if (s.Vip == null) return; o.Vip = s.Vip; s.Vip = null; Say("Transport", $"{o.Vip} beamed to {o.Name}."); }
             else { if (o.Vip == null) return; s.Vip = o.Vip; o.Vip = null; Say("Transport", $"{s.Vip} beamed aboard."); }
             UsePad(s);

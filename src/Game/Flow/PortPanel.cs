@@ -34,6 +34,8 @@ public sealed partial class PortPanel : FlowPanel
     };
 
     private const float Top = 72;
+    /// <summary>The grant each tab needs at another faction's port (Campaign.Allows).</summary>
+    private static readonly Dictionary<string, string> GrantOfTab = new() { ["yard"] = "ships", ["outfit"] = "weapons", ["supply"] = "parts", ["crew"] = "officers" };
 
     protected override void DrawPanel()
     {
@@ -42,7 +44,8 @@ public sealed partial class PortPanel : FlowPanel
         DrawRect(new Rect2(0, Top, Size.X, Size.Y - Top), new Color(0, 0, 0, 0.55f));
         Ui.Reg("port.block", new Rect2(0, Top, Size.X, Size.Y - Top));
         bool own = c.IsPort(c.At);
-        var tabs = own ? OwnTabs : MarketTabs;
+        // a friendly faction's port opens the tabs your standing with it has earned, beside its market
+        var tabs = own ? OwnTabs : MarketTabs.Concat(OwnTabs.Where(t => c.Allows(GrantOfTab[t.Id]))).ToArray();
         if (!tabs.Any(t => t.Id == F.Port)) F.Port = tabs[0].Id;
         F.PortShip = Math.Clamp(F.PortShip, 0, c.S.Fleet.Count - 1);
 
@@ -90,15 +93,15 @@ public sealed partial class PortPanel : FlowPanel
                 Text(i == 0 ? $"{hull.Cls} · flagship" : $"{hull.Cls} · {s.Behaviour}", tx, r.Position.Y + 50, 15, C.Lilac, HorizontalAlignment.Left, tww, 600);
                 Bar(tx, r.Position.Y + 56, tww, $"Hull {s.HullPct:0} %", s.HullPct / 100, s.HullPct < 50, s.HullPct >= 100);
                 int cost = c.RepairCost(s);
-                if (own && cost > 0)
+                if (c.Allows("parts") && cost > 0)
                     Button($"pf.repair.{s.Id}", new Rect2(tx, r.End.Y - 34, tww, 28), $"Repair {cost:N0} cr", () => Say(c.Repair(s), $"The {s.Name} is repaired."), dis: cost > c.S.Credits);
             }
             else
             {
-                HitState st = Ui.Reg($"pf.berth.{i}", r, own ? _ => F.Port = "yard" : null);
+                HitState st = Ui.Reg($"pf.berth.{i}", r, c.Allows("ships") ? _ => F.Port = "yard" : null);
                 Kit.Piece(this, "frame.inset", r, st.Hot ? 0.7f : 0.35f);
                 Text("FREE BERTH", r.GetCenter().X, r.GetCenter().Y - 2, 17, C.Lilac, HorizontalAlignment.Center, r.Size.X - 20, 600, 1);
-                if (own) Text("buy a ship at the shipyard", r.GetCenter().X, r.GetCenter().Y + 20, 14, C.Lilac, HorizontalAlignment.Center, r.Size.X - 20, 500);
+                if (c.Allows("ships")) Text("buy a ship at the shipyard", r.GetCenter().X, r.GetCenter().Y + 20, 14, C.Lilac, HorizontalAlignment.Center, r.Size.X - 20, 500);
             }
             y += h + 8;
         }
@@ -148,7 +151,7 @@ public sealed partial class PortPanel : FlowPanel
 
     private void Yard(Campaign.Campaign c, Rect2 b)
     {
-        var hulls = c.Data.HullsOf(c.S.Side).Where(h => h.ForSale).ToList();
+        var hulls = c.Data.HullsOf(c.YardSide).Where(h => h.ForSale).ToList();
         if (F.YardHull == null || hulls.All(h => h.Id != F.YardHull)) F.YardHull = hulls[Math.Min(1, hulls.Count - 1)].Id;
         float lw = Math.Min(520, b.Size.X * 0.46f), ch = Math.Min(118, (b.Size.Y - 8) / hulls.Count - 8);
         float y = b.Position.Y;
@@ -340,7 +343,7 @@ public sealed partial class PortPanel : FlowPanel
         // the store: buy into the stores, sell from them
         Lbl($"Store: {gn.ToLowerInvariant()} systems", cx, cy + 16, cw);
         cy += 26;
-        bool port = c.IsPort(c.At);
+        bool port = c.Allows("weapons");
         foreach (ShipSystem o in options)
         {
             var r = new Rect2(cx, cy, cw, sh);
@@ -383,8 +386,10 @@ public sealed partial class PortPanel : FlowPanel
     {
         CampShip s = c.S.Fleet[F.PortShip];
         Text($"{s.Name.ToUpperInvariant()} · SUPPLIES", b.Position.X, b.Position.Y + 24, 24, C.Sky, HorizontalAlignment.Left, b.Size.X, 700, 1);
+        // a friendly faction's port sells the supplies your standing has earned: repair kits first, the rest later
+        var sold = c.Data.Supplies.Where(u => c.Allows(Campaign.Campaign.GrantOfSupply(u.Id))).ToList();
         float y = b.Position.Y + 48, rh = Math.Min(110, (b.Size.Y - 140) / c.Data.Supplies.Count - 8), x = b.Position.X, w = b.Size.X;
-        foreach (Supply u in c.Data.Supplies)
+        foreach (Supply u in sold)
         {
             var r = new Rect2(x, y, w, rh);
             Kit.Piece(this, "frame.inset", r);
@@ -508,7 +513,13 @@ public sealed partial class PortPanel : FlowPanel
         CampFaction f = c.Data.Factions[buyer];
         Para($"{f.Name} buyers. They pay {(buyer == "vos" ? "less than a shipyard, and dealing with them raises your standing with them" : "a quarter of a ship's price, more for a rival's hull")}.",
             b.Position.X, b.Position.Y + 20, b.Size.X, 18, C.Lilac);
-        float y = b.Position.Y + 60;
+        // what their ports give you at your standing, and the next grant
+        int st = c.Standing(buyer);
+        var grants = c.GrantsOf(buyer);
+        var next = c.Data.Rules.Privileges.FirstOrDefault(p => !grants.Contains(p.Grant));
+        Text($"Standing {st}: " + (grants.Count == 0 ? "they sell you nothing yet" : "they give you " + string.Join(", ", grants))
+            + (next.Grant != null ? $" · {next.Grant} at {next.Standing}" : ""), b.Position.X, b.Position.Y + 52, 17, C.Sky, HorizontalAlignment.Left, b.Size.X, 600);
+        float y = b.Position.Y + 72;
         foreach (CampShip s in c.S.Fleet.ToList())
         {
             var r = new Rect2(b.Position.X, y, b.Size.X, 90);

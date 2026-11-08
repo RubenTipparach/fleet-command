@@ -33,7 +33,7 @@ public sealed partial class StationPanel
         }
         Ship? t = B.TargetOf(s);
         Button("com.hail", new Rect2(x, y, w, 48), "Hail target", B.Hail, dis: t == null, center: false,
-            tip: new Tip(t == null ? "Lock a ship to hail it" : $"Open a channel to {t.Name}"));
+            tip: new Tip(t == null ? "Lock a ship to hail it" : $"Open a channel to {Aiming.ContactName(B, t)}"));
         y += 56;
         Lbl("Fleet orders", x, y + 13);
         y += 20;
