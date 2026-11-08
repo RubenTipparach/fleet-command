@@ -192,6 +192,8 @@ public sealed record Tuning(
     public double AiCloseAfterS { get; init; } = 20;
     /// <summary>Seconds with no ship hurt after which a battle that cannot be withdrawn from ends as a stalemate.</summary>
     public double StalemateS { get; init; } = 180;
+    /// <summary>The most, degrees, an intercept leads its target off the nose.</summary>
+    public double InterceptMaxLeadDeg { get; init; } = 30;
 }
 
 /// <summary>The console's layout in reference pixels (data/console/layout.json).</summary>

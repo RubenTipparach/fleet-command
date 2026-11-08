@@ -227,12 +227,15 @@ public sealed partial class ScriptedCaptain : Node
             // a chase going nowhere (a target held, nothing would fire, no hull changed for 20 s): two boxes from the weapons
             // to the engines, as a captain short of speed would (Mac playtest 2026-11-08: a Krai corvette at 1200 m/s never
             // caught a Vos corsair kiting at 1200 m/s)
-            else if (B.TargetOf(me) != null && B.T - lastChange > 20 && B.T - lastBoost > 20 && me.Power["weapons"] > 2
-                     && me.Power["engines"] * B.Tuning.SpeedPerBoxMS < me.Class.SpeedMaxMS)
+            else if (B.TargetOf(me) != null && B.T - lastChange > 20 && B.T - lastBoost > 20
+                     && me.Power["engines"] * B.Tuning.SpeedPerBoxMS < me.Class.SpeedMaxMS
+                     && (me.Power["weapons"] > 2 || me.Power["shields"] >= 2))
             {
                 lastBoost = B.T;
                 int eng = me.Power["engines"] + 2;
-                if (await SetBoxes($"weapons={me.Power["weapons"] - 2}") is { } w1) return w1;
+                // from the weapons while they keep two boxes, else from the shields (the corvette starts at two weapon boxes)
+                string donor = me.Power["weapons"] > 2 ? "weapons" : "shields";
+                if (await SetBoxes($"{donor}={me.Power[donor] - 2}") is { } w1) return w1;
                 await SetBoxes($"engines={eng}");
                 if (_x.State.Station != "helm") await Click("st.helm");
             }
@@ -391,7 +394,7 @@ public sealed partial class ScriptedCaptain : Node
             await Frames(30);
             await Snap($"battle-{m.Script}");
             string? stalled = await Fight(maxBattleS, take: m.Script == Campaign.Campaign.RaidScript);
-            if (stalled != null || B.Over == null) { how = "withdrew: " + (stalled ?? "out of time"); await Click("menu"); await Click("m.withdraw"); }
+            if (stalled != null || B.Over == null) { how = "withdrew: " + (stalled ?? "out of time"); await Click("menu"); await Click("m.withdraw"); if (_x.State.MenuOpen) await Click("m.resume"); }
             else how = B.Over;
             // how it went, from the battle log: every ship struck or lost, and the prize's lines
             foreach (var l in B.Log.Where(l => !l.Text.StartsWith("Hit on") && (l.Text.Contains("struck") || l.Text.Contains("destroyed.") || l.Text.Contains("meltdown")
