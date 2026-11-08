@@ -687,11 +687,9 @@
             50
           ],
           "decks_m": [
-            7.0,
             3.5,
-            0,
-            -3.5,
-            -7.0
+            0.0,
+            -3.5
           ],
           "stripes_m": [
             60,
@@ -701,7 +699,8 @@
           "pitch_m": 2.2,
           "x_max_m": 17.3,
           "dark_share": 0.2,
-          "_doc": "The Concord line's own window rule and numbers for this class (docs/mockups/concord-hull-concepts.html: decks, live, stripes; countWindows), until its room plan exists"
+          "_doc": "The Concord line's own window rule and numbers for this class (docs/mockups/concord-hull-concepts.html: decks, live, stripes; countWindows), until its room plan exists",
+          "_decks": "Three decks of windows, the top and bottom rows taken off (owner, 2026-11-08: \"way too many windows on the condor\", \"temove top and bottom rows\")"
         }
       ]
     },
