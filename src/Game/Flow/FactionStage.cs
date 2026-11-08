@@ -173,7 +173,8 @@ public sealed partial class FactionStage : Node3D
     {
         Color C(string k) { JsonElement a = e.GetProperty(k); return new Color(a[0].GetSingle(), a[1].GetSingle(), a[2].GetSingle()); }
         float F(string k) => e.GetProperty(k).GetSingle();
-        var mat = new OrmMaterial3D { AlbedoColor = C("tint"), TextureFilter = BaseMaterial3D.TextureFilterEnum.LinearWithMipmapsAnisotropic };
+        // the page's colours are linear (its three.js reads them so); Godot's are sRGB
+        var mat = new OrmMaterial3D { AlbedoColor = C("tint").LinearToSrgb(), TextureFilter = BaseMaterial3D.TextureFilterEnum.LinearWithMipmapsAnisotropic };
         if (e.GetProperty("graph").ValueKind == JsonValueKind.String)
         {
             string g = $"res://assets/textures/materials/{e.GetProperty("graph").GetString()}/";
@@ -191,7 +192,7 @@ public sealed partial class FactionStage : Node3D
         if (F("clearcoat") > 0) { mat.ClearcoatEnabled = true; mat.Clearcoat = F("clearcoat"); mat.ClearcoatRoughness = F("clearcoat_roughness"); }
         if (F("sheen") > 0) { mat.RimEnabled = true; mat.Rim = 0.5f * F("sheen"); mat.RimTint = 0.6f; }
         Color em = C("emissive");
-        if (em.R + em.G + em.B > 0) { mat.EmissionEnabled = true; mat.Emission = em; mat.EmissionEnergyMultiplier = F("emissive_strength"); }
+        if (em.R + em.G + em.B > 0) { mat.EmissionEnabled = true; mat.Emission = em.LinearToSrgb(); mat.EmissionEnergyMultiplier = F("emissive_strength"); }
         return mat;
     }
 
@@ -229,8 +230,8 @@ public sealed partial class FactionStage : Node3D
         return mesh;
     }
 
-    /// <summary>On a screen narrower than 16:9 (a phone in portrait) the camera backs off along its line to the table's
-    /// middle until the three badges fit across it (the page's fitFacCam).</summary>
+    /// <summary>The camera backs off along its line to the table's middle until the badges fit across it (fitW either side
+    /// of the middle; the page's fitFacCam).</summary>
     private void FitCamera(float aspect)
     {
         Vector3 dir = _camAt - _camTarget;

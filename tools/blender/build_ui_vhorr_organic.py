@@ -382,7 +382,7 @@ def build(args):
         bled = [x - bl, y - bl, w + 2 * bl, h + 2 * bl]
         for label, d in f.clearance().items():
             fit[label] = min(d, fit.get(label, 99.0))
-        if args.fit_only:
+        if args.fit_only or args.manifest_only:
             continue
         full = os.path.join(args.out, f"{t['id']}.{t['rest'] or 'idle'}.png")
         times[t["id"]] = round(render(bled, f, full, args.samples), 1)
@@ -397,7 +397,8 @@ def build(args):
                 p = os.path.join(args.out, f"{c}.{state}.png")
                 times[f"{c}.{state}"] = round(render(cs["rect"], fs, p, args.samples), 1)
                 print(f"VHORR {c}.{state} {times[f'{c}.{state}']} s", flush=True)
-    if BACKING and not want and not args.fit_only:   # the column's backing (survey W8), drawn under every panel
+    if BACKING and not want and not args.fit_only and not args.manifest_only and any(s["family"] == "strip" for s in tops):   # the column's backing
+        # (survey W8), drawn under every panel; a layout with no strips has no column
         build_backing(args, BACKING)
     # the manifest of every image present
     for s in slots.values():
@@ -405,15 +406,16 @@ def build(args):
             fn = f"{s['id']}.{state}.png"
             if os.path.exists(os.path.join(args.out, fn)):
                 pieces[f"{s['id']}.{state}"] = {"file": fn, "slot": s["id"], "state": state, "piece": s["piece"], "rect": s["rect"]}
-    portrait = os.path.join(ROOT, "docs", "design", "organic-bible", "portrait-pixels.png")
-    shutil.copyfile(portrait, os.path.join(args.out, "portrait.png"))
-    pieces["portrait"] = {"file": "portrait.png", "slot": "nameplate", "state": "live"}
+    portrait_rect = next((p["rect"] for p in slots["nameplate"]["protected"] if p["kind"] == "portrait-window"), None) if "nameplate" in slots else None
+    if portrait_rect:   # the portrait's live pixels, for a layout whose name plate has a portrait window
+        portrait = os.path.join(ROOT, "docs", "design", "organic-bible", "portrait-pixels.png")
+        shutil.copyfile(portrait, os.path.join(args.out, "portrait.png"))
+        pieces["portrait"] = {"file": "portrait.png", "slot": "nameplate", "state": "live"}
     slot_list = {s["id"]: {"piece": s["piece"], "rect": s["rect"], "states": s["states"], "rest": s["rest"] or "idle",
                            "parent": s["parent"], "bleed": SLOT_BLEED.get(s["id"], BLEED) if s["parent"] is None else 0.0,
                            # the glass a live drawing fills (the ship systems display, the radar), so the page draws to it
                            "live": next((pin(p["rect"]) for p in s["protected"] if p["kind"] == "live-drawing"), None)}
                   for s in slots.values()}
-    portrait_rect = next((p["rect"] for p in slots["nameplate"]["protected"] if p["kind"] == "portrait-window"), None)
     man = {"skin": "vhorr", "kind": "organic", "scale": PX, "layout": args.layout, "size": size,
            "method": "every slot sculpted at its exact pinned size by tools/blender/organic_components.py (no nine-slice); "
                      "a top-level slot's image covers its rectangle grown by its bleed (mm) on every side",
@@ -435,7 +437,8 @@ def build(args):
         json.dump({"rule": "G1: growth at least 2 mm clear of every protected rectangle",
                    "clearance_mm": dict(sorted(fit.items())), "min_mm": min(fit.values()) if fit else None,
                    "pass": all(v >= oc.G1_MM for v in fit.values())}, open(os.path.join(args.out, "fit.json"), "w"), indent=1)
-        json.dump(times, open(os.path.join(args.out, "render-times.json"), "w"), indent=1)
+        if not args.manifest_only:   # a manifest-only run renders nothing, so the times on file stand
+            json.dump(times, open(os.path.join(args.out, "render-times.json"), "w"), indent=1)
     print("VHORR fit", json.dumps(fit), flush=True)
 
 
@@ -573,6 +576,8 @@ def main():
     ap.add_argument("--rest-only", action="store_true", help="only each slot's resting state")
     ap.add_argument("--isolate", action="store_true", help="each slot sculpted alone, no neighbour kept clear (survey pictures)")
     ap.add_argument("--fit-only", action="store_true", help="sculpt every slot and write fit.json (rule G1); no renders")
+    ap.add_argument("--manifest-only", action="store_true", help="sculpt every slot, write fit.json and the manifest of the "
+                    "images already rendered in --out (each slot, and the backing rendered by --backing); no renders")
     ap.add_argument("--styles", default=STYLES_FILE, help="the per-slot styles, key bodies and backing (JSON)")
     ap.add_argument("--backing", default="", help="render only the column's backing in these modes (comma separated: "
                     f"{', '.join(oc.BACKINGS)})")

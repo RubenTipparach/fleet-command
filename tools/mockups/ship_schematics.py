@@ -34,14 +34,16 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SHIPS = ROOT / "assets" / "ships"
 OUT = SHIPS / "schematics"
 SHEET = ROOT / "docs" / "screenshots" / "schematics" / "sheet.png"
-FACTIONS = ("concord", "krai")
+FACTIONS = ("concord", "krai", "ssarith", "kelvane")
 
 SIZE_PX = 1024          # the square canvas of each layer
 MARGIN = 0.06           # fraction of the canvas left clear on each side of the longest extent
 SS = 4                  # supersampling factor for both layers
 WIRE_PX = 1.6           # wire line width in final pixels
 OUTLINE_PX = 2.2        # outline width in final pixels
-HULL_ALPHA = (0.15, 0.55)  # hull alpha from fully shadowed to fully lit
+HULL_ALPHA = (0.1, 0.38)   # hull alpha from fully shadowed to fully lit: see-through, so the hidden edges show
+HIDDEN_ALPHA = 0.4         # the edges the hull hides, seen through it (owner, 2026-11-07: "the schematic should be semi
+                           # transparent", "so I can see more than just the top of ships")
 LIGHT = np.array([-0.35, 1.0, -0.45])  # top light, a little from the bow and port side (glb frame)
 COPLANAR_DEG = 8.0      # two triangles pair into a quad only if their normals are within this angle
 UP_FACING = 0.2         # an edge is drawn only if a face beside it has normal.y at least this (facing up)
@@ -172,6 +174,9 @@ def axes_from_data(meshes, empties) -> dict:
     long_axis = int(np.argmax(ext))
     engines = [v for k, v in empties.items() if k.startswith("engine_")]
     fore = [v for k, v in empties.items() if k in ("deflector", "bridge") or k.startswith("mount_")]
+    # the baked lines (the Ssarith and Kelvane, exported from docs/mockups/lib/baked-fleet.js) name no mounts or bridge:
+    # their engines are measured against the hull's own middle
+    fore = fore or [(allp.max(0) + allp.min(0)) / 2]
     if long_axis != 2 or not engines or not fore:
         raise SystemExit("ship_schematics: cannot find the nose from the data (expected the long axis on Z)")
     # The bow is the end away from the engines: engines' mean Z is greater than the fore fittings' -> bow is -Z.
@@ -439,6 +444,7 @@ def render_ship(meshes, view: View) -> tuple[Image.Image, Image.Image, dict]:
     n = SIZE_PX * SS
     tol = 2.5 * view.m_per_px
     line = np.zeros((n, n), dtype=bool)
+    hidden = np.zeros((n, n), dtype=bool)
     if edges_world:
         E0 = np.array([e[0] for e in edges_world])
         E1 = np.array([e[1] for e in edges_world])
@@ -453,11 +459,13 @@ def render_ship(meshes, view: View) -> tuple[Image.Image, Image.Image, dict]:
         iy = np.clip(np.floor(pts[:, 1]).astype(np.int64), 0, n - 1)
         vis = hts >= zbuf[iy, ix] - tol
         line[iy[vis], ix[vis]] = True
+        hidden[iy[~vis], ix[~vis]] = True
     wire = dilate(line, WIRE_PX * SS / 2)
+    behind = dilate(hidden, WIRE_PX * SS / 2) & ~wire
     edge_of_cover = covered & ~(np.roll(covered, 1, 0) & np.roll(covered, -1, 0) &
                                 np.roll(covered, 1, 1) & np.roll(covered, -1, 1))
     wire |= dilate(edge_of_cover, OUTLINE_PX * SS / 2)
-    wire_alpha = downsample(wire.astype(np.float64))
+    wire_alpha = downsample(np.where(wire, 1.0, np.where(behind, HIDDEN_ALPHA, 0.0)))
     if covered[:SS * 2].any() or covered[-SS * 2:].any() or covered[:, :SS * 2].any() or covered[:, -SS * 2:].any():
         raise SystemExit("ship_schematics: the hull touches the canvas edge")
     counts = {"source_triangles": int(n_src), "quads": n_quads, "triangles": n_tris, "edges_drawn": len(edges_world)}
@@ -557,7 +565,7 @@ def main() -> int:
     manifest = {
         "_doc": "Written by tools/mockups/ship_schematics.py from the ship glbs; do not edit, re-run it. Each ship has "
                 "two layers, pure white RGB with the drawing in alpha: hull (filled, top-lit, low alpha) and wire "
-                "(quad edges seen from above plus the outline, full alpha). Tint the hull with a dark skin colour, "
+                "(quad edges seen from above plus the outline, full alpha; the edges the hull hides at 0.4). Tint the hull with a dark skin colour, "
                 "the wire with a bright one, and lay the wire over the hull. A glb point (x, y, z) in metres falls at "
                 "pixel (origin_px[0] + x / m_per_px, origin_px[1] + z / m_per_px); y (height) is not drawn. A "
                 "schematic is stale when its source glb's sha256 differs.",

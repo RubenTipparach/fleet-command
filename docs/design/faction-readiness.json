@@ -1,0 +1,155 @@
+{
+ "_doc": "The parts of a faction's readiness the repository cannot measure: the owner's approvals and whether its culture is set. Read by tools/factions/readiness.py, which measures everything else from the game's own data and writes docs/design/faction-readiness.html (owner, 2026-11-07: \"It would be nice to have an artifact check off what's been done for a faction\"). Each stage is one of: none, drafted, build (approved for build), game (approved for implementation), retired; each with its mockup number and a short note. culture is set or open, with where it is asked.",
+ "factions": {
+  "concord": {
+   "culture": {
+    "status": "set",
+    "note": "The owner's brief: a federation of species, classic space opera (survey G1)"
+   },
+   "console_mockup": {
+    "stage": "game",
+    "mockup": 2,
+    "note": "Battle console, the Concord skin"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 6,
+    "note": "The Concord line (hull concepts)"
+   },
+   "emblem_mockup": {
+    "stage": "drafted",
+    "mockup": 10,
+    "note": "B-E27, the smooth keyhole"
+   },
+   "weapons": {
+    "status": "own",
+    "note": "The weapons the game was built on, and its two special weapons (mockup 16)"
+   }
+  },
+  "krai": {
+   "culture": {
+    "status": "set",
+    "note": "The Concord's rival warhost; its names and officers are in the game"
+   },
+   "console_mockup": {
+    "stage": "game",
+    "mockup": 8,
+    "note": "Battle console: Krai Warhost"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 7,
+    "note": "Krai Warhost ships"
+   },
+   "emblem_mockup": {
+    "stage": "drafted",
+    "mockup": 14,
+    "note": "KC+, the fang torc"
+   },
+   "weapons": {
+    "status": "own",
+    "note": "Its two special weapons (mockup 16)"
+   }
+  },
+  "ssarith": {
+   "culture": {
+    "status": "open",
+    "note": "Survey H1: the Hunt's culture, before its names, captains, weapons and kit"
+   },
+   "console_mockup": {
+    "stage": "game",
+    "mockup": 15,
+    "note": "Battle console: Ssarith Hunt"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 12,
+    "note": "Ssarith Hunt ships"
+   },
+   "emblem_mockup": {
+    "stage": "drafted",
+    "mockup": 19,
+    "note": "SD, the Bow Rites"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "The Concord's weapons until its culture is set (ssarith-ships-engine 2.3)"
+   }
+  },
+  "kelvane": {
+   "culture": {
+    "status": "open",
+    "note": "Its names, captains, rivals and weapons wait on its culture (surveys I1, I5, I9, I10)"
+   },
+   "console_mockup": {
+    "stage": "game",
+    "mockup": 20,
+    "note": "Battle console: Kelvane Institute"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 23,
+    "note": "Kelvane Institute ships; the plan view to rework (survey I11, kelvane-ship-concepts 3.8)"
+   },
+   "emblem_mockup": {
+    "stage": "drafted",
+    "mockup": 21,
+    "note": "KA, the hydrogen plot"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "The Concord's weapons until its culture is set (kelvane-ships-engine 2.1)"
+   }
+  },
+  "kethran": {
+   "culture": {
+    "status": "open",
+    "note": "A stand-in foe; its skin is drawn (mockup 4)"
+   },
+   "console_mockup": {
+    "stage": "drafted",
+    "mockup": 4,
+    "note": "Console skins: the Kethran Hegemony"
+   },
+   "ships_mockup": {
+    "stage": "none",
+    "mockup": null,
+    "note": "Stand-in hulls only"
+   },
+   "emblem_mockup": {
+    "stage": "drafted",
+    "mockup": 9,
+    "note": "Faction emblems"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "Stand-in"
+   }
+  },
+  "vos": {
+   "culture": {
+    "status": "open",
+    "note": "The pirates; not playable; its skin is drawn (mockup 4)"
+   },
+   "console_mockup": {
+    "stage": "drafted",
+    "mockup": 4,
+    "note": "Console skins: the Vos Syndicate"
+   },
+   "ships_mockup": {
+    "stage": "none",
+    "mockup": null,
+    "note": "A stand-in corsair"
+   },
+   "emblem_mockup": {
+    "stage": "drafted",
+    "mockup": 9,
+    "note": "Faction emblems"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "Stand-in"
+   }
+  }
+ }
+}

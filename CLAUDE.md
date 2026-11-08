@@ -587,10 +587,19 @@ Before claiming anything is done, run what applies:
 | Game stills | `scripts/game-stills.sh` (named stills of the running game under Xvfb, into `docs/screenshots/game/`) |
 | Data | the data validator, once it exists |
 | Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
+| Faction readiness | `python3 tools/factions/readiness.py`, then commit `docs/design/faction-readiness.html` (`run-tests.sh` fails while it is stale; below) |
 | Artifacts | `python3 tools/mockups/artifact_check.py` (every tracker entry's page is committed HTML and its link is recorded, section 4) |
 | Mockup sync | game stills beside the mockup's shots (`tools/compare/side_by_side.py`), looked at, and `docs/design/mockup-sync.md` updated (section 4) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
 
+- **Faction readiness is kept current by whoever touches the game** (owner, 2026-11-07: "It would be nice to have an
+  artifact check off what's been done for a faction", "make sure agents update in Claude md if they touch godot code").
+  `docs/design/faction-readiness.html` checks off, for every faction, its console, emblem, ships, schematics, textures,
+  weapons, scenes, bot runs, campaign, officers and music. `tools/factions/readiness.py` measures most of it from the
+  game's own files; the owner's approvals and culture decisions are in `docs/design/faction-readiness.json`. Any session
+  or agent that changes Godot code, game data or assets (`src/`, `data/`, `assets/`) for a faction re-runs the script,
+  updates the JSON when an approval or a culture decision changed, commits the page with the change, and republishes it
+  with the session's other artifacts. A new kind of faction work gets a new row in the script, not a note somewhere else.
 - **Know what is proven.** Keep implemented, validated and proposed work distinct in docs, PRs and
   replies. A design is not a feature, and a green test is not a visual sign-off.
 - **Every major step ends in something the owner can check**: a mockup link, a playtest video on

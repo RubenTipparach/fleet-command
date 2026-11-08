@@ -73,7 +73,7 @@ public sealed partial class MapHud : FlowPanel
         if (Narrow) return;
         Lbl("Standing with", x, 26, 200, null, HorizontalAlignment.Left, 13);
         float cx = x;
-        foreach (string f in new[] { "concord", "krai", "ssarith", "vos" }.Where(f => f != c.S.Side && c.S.Standing.ContainsKey(f)))
+        foreach (string f in c.Data.Factions.Keys.Where(f => f != "neutral" && f != c.S.Side && c.S.Standing.ContainsKey(f)))
         {
             int st = c.Standing(f);
             string t = $"{c.Data.Factions[f].Short} {(st > 0 ? "+" : "")}{st}";

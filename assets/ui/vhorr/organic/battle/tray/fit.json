@@ -1,0 +1,9 @@
+{
+ "rule": "G1: growth at least 2 mm clear of every protected rectangle",
+ "clearance_mm": {
+  "inset window": 3.54,
+  "key label": 12.0
+ },
+ "min_mm": 3.54,
+ "pass": true
+}

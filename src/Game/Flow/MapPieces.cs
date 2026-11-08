@@ -27,7 +27,7 @@ public static class MapPieces
     /// <summary>The hull tints of the factions' stand-in parts (the mockup's HULL_TINT).</summary>
     public static Color HullTint(string fac) => fac switch
     {
-        "concord" => new Color("#b9c6d6"), "krai" => new Color("#6a6062"), "ssarith" => new Color("#8a9478"), "vos" => new Color("#b39a6e"), _ => new Color("#a0a6ae"),
+        "concord" => new Color("#b9c6d6"), "krai" => new Color("#6a6062"), "ssarith" => new Color("#8a9478"), "kelvane" => new Color("#c9bfa9"), "vos" => new Color("#b39a6e"), _ => new Color("#a0a6ae"),
     };
 
     public static StandardMaterial3D Unlit(Color c, float a = 1) => new()

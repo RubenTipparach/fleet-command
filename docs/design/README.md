@@ -1,5 +1,11 @@
 # Design
 
+## Faction readiness
+
+What each faction has in the game, checked off: `docs/design/faction-readiness.html`, written by
+`tools/factions/readiness.py` from the game's files and `docs/design/faction-readiness.json` (record in
+`docs/artifacts/faction-readiness/`; CLAUDE.md section 12).
+
 ## Survey
 
 Open questions for the owner live in one survey page (CLAUDE.md section 8):

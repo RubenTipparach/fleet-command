@@ -15,5 +15,5 @@
 - [ ] 2.1 The Institute's own weapons and figures, once its culture is set
 - [ ] 2.2 Its ships' names and captains, once its culture is set (survey C4)
 - [ ] 2.3 Every pad filled: the page parks a fighter on all 24 pads, the game one a fighter in the bay (12)
-- [ ] 2.4 The Institute in the campaign
+- [x] 2.4 The Institute in the campaign (owner, 2026-11-07: "Implement kelvane in the game please", "We should have emblem, UI, and spaceships"): its badge on the faction screen (mockup 1 v20, `tools/mockups/export_faction.mjs`, the four badges at a 2.5 m pitch), its territory, home world, depot, fleets and freight route on the map, its five classes as the campaign's tiers, its skin on every campaign screen; its names provisional (survey I10)
 - [ ] 2.5 Whether the Institute cloaks (survey I9): today its cruiser and destroyer do, provisionally
