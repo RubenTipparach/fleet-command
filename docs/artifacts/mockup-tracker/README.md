@@ -141,3 +141,4 @@
 - 2026-11-07, cloud session: version 145, version id `1794054510-aa92`: M1 v22 (star map print, green walls, the fog of war on the chart).
 - 2026-11-07, cloud session: version 146, version id `1794057112-88e5`: M24 the Space Chart added; M1 v23.
 - 2026-11-07, cloud session: version 147, version id `1794092255-faed`: M1 v24 and M24 v2 (the chart on phones).
+- 2026-11-08, cloud session: version 148, version id `1794096332-5c52`: M1 v25 and M24 v3 (the sector panel hides on a phone, a two-row top bar).

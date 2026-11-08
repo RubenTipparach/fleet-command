@@ -16,6 +16,8 @@
   onto the map through mockup 1's `startAt()`
 - [x] 1.9 The chart on phones (owner, 2026-11-07: "Space chart not working on mobile"): the nebula's noise from a seeded lattice
   texture so it compiles on WebGL 1; the sheet at 32 px a unit on a touch screen; `softDraw()` for browsers with no canvas filter
+- [x] 1.10 Panels on a phone (owner, 2026-11-07: "Panels on my phone stuck open, I can't see"): the sector panel's Hide key, a
+  Sector map key to bring it back, the portrait top bar in two rows (mockup 1 v25, mockup 24 v3; the game's sync task `game-flow-engine` 2.11)
 
 ## 2. After the owner's notes
 

@@ -247,6 +247,19 @@ body.strip .mapkeys { display: none; }
   .endturn { bottom: calc(max(12px, env(safe-area-inset-bottom, 0px)) + var(--keys-h, 56px)); }
   .missionlog { left: 8px; right: 8px; width: auto; }
   .menu { top: auto; bottom: 24px; transform: none; }
+  /* the top bar in two rows, not four: the keys, credits, turn and moves; then prestige and the standing chips, unlabelled */
+  .topbar { gap: 4px 8px; }
+  .topbar .stat b { font-size: 10px; letter-spacing: 0.08em; }
+  .topbar .stat span { font-size: 14px; }
+  .topbar .stat.prestige { order: 2; }
+  .topbar .stat.standing { order: 3; align-self: end; }
+  .topbar .stat.standing > b { display: none; }
+}
+.hexhead { gap: 8px; }
+/* On a phone the corner badge sits under the top bar on the left, over the map, not across the bar */
+@media (max-width: 920px), (max-height: 520px) {
+  .badge { top: calc(var(--top-h, 74px) + 2px); right: auto; left: max(8px, env(safe-area-inset-left, 0px)); }
+  .badge .long { display: none; }
 }
 .loadout { display: grid; gap: 12px; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); min-height: 0; align-items: start; }
 .loadout canvas { width: 100%; height: auto; aspect-ratio: 3 / 4; display: block; border-radius: 4px; background: #070b10; }
@@ -284,7 +297,7 @@ body.strip .mapkeys { display: none; }
 <div id="stage"></div>
 <div id="ui"></div>
 <div class="tip" id="tip" hidden></div>
-<div class="badge">Mockup 24 · space chart · <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener" style="color: inherit; pointer-events: auto;">All Fleet Command mockups (the tracker)</a></div>
+<div class="badge"><span class="long">Mockup 24 · space chart · </span><a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener" style="color: inherit; pointer-events: auto;">All Fleet Command mockups (the tracker)</a></div>
 <!-- INLINE data/space/starfield.json -->
 <script type="application/json" data-src="data/space/starfield.json">{"schema":"starcrew.starfield/1","_status":"Built (2026-10-16): openspec/changes/nebula-skies design 5, docs/mockups/nebula-skies.html. Read by tools/space/nebula_skies.py (the classes and colours), the mockup and sc-core::sky (the engine's stars and streaks).","_doc":"The vector stars drawn over a nebula sky, and how they streak (nebula-skies design 5). Each star is a direction at infinity; every frame it is drawn as a line from where it is on screen now back toward where it was tail_s ago, so a turning view smears the stars into short lines (FreeSpace's way: the star's last position kept, a line drawn to it, its length capped and its brightness dimmed as it grows). A star's class sets its brightness range (the sky file holds each star's own) and its head's size at rest; its colour is a tint. streak: tail_s the seconds of turning a tail shows, max_deg the longest tail (angle), min_px the least line drawn (a star at rest is a point), dim_per_deg the brightness lost per degree of tail (FreeSpace 2's 7,800 per unit) and dim_floor the least kept (FreeSpace 2 kept 75 of 255 over black space; 0.5 here so a streak still reads over a bright cloud), tail_fade the tail end's share of the head's opacity, alpha_min and whiten: a star is alpha-blended (FreeSpace's alpha-blended lines) toward its colour mixed whiten of the way to white, at an opacity of alpha_min + (1 - alpha_min) x its brightness, times the dim, cut_deg_s a turn faster than this is a camera cut (no tail that frame), faint_floor the faint hashed stars' brightness while the tail is at its cap (design 5.5: they fade during a fast turn). motes: patrol-mission 11.4's dust round the eye, drawn by the same streak rule from eye-space points, so moving forward fast shows. Colours sRGB 0-1.","_owner":"2026-10-15: \"and drawing stars and simulating motion blur with gl lines\", \"like old school games\", \"freespace 1 did fake motion blur with vector graphics stars\"","classes":[{"name":"faint","share":0.56,"brightness":[0.1,0.28],"size_px":1.0},{"name":"plain","share":0.29,"brightness":[0.28,0.52],"size_px":1.0},{"name":"bright","share":0.12,"brightness":[0.52,0.82],"size_px":2.0},{"name":"brilliant","share":0.03,"brightness":[0.82,1.0],"size_px":3.0}],"colours":[{"name":"blue-white","share":0.16,"srgb":[0.74,0.84,1.0]},{"name":"white","share":0.34,"srgb":[1.0,1.0,1.0]},{"name":"cream","share":0.28,"srgb":[1.0,0.95,0.85]},{"name":"gold","share":0.15,"srgb":[1.0,0.85,0.62]},{"name":"red","share":0.07,"srgb":[1.0,0.7,0.56]}],"streak":{"tail_s":0.025,"max_deg":1.7,"min_px":1.0,"dim_per_deg":0.534,"dim_floor":0.5,"tail_fade":0.45,"alpha_min":0.3,"whiten":0.4,"cut_deg_s":720,"faint_floor":0.3},"motes":{"count":200,"cube_m":300,"tail_s":0.033,"fade_from_m":150,"brightness":0.35}}</script>
 <!-- /INLINE -->
@@ -4141,7 +4154,7 @@ function pick(x, y) {
   selectHex(c, r);
 }
 function selectHex(c, r) {
-  S.sel = { c, r };
+  S.sel = { c, r }; S.hexClosed = false;   // picking a sector opens its panel again
   const p = hexPos(c, r); selRing.position.set(p.x, 0.02, p.z); selRing.visible = true;
   S.path = (c === CAMP.at.c && r === CAMP.at.r) ? null : pathTo({ c, r });
   showPath(S.path);
@@ -4401,11 +4414,11 @@ const SCREENS = {
       key_('Menu', () => go('menu'), 'small'),
       h('div', { class: 'stat cap' }, h('b', { text: 'Captain' }), h('span', { text: CAMP.captain })),
       h('div', { class: 'stat' }, h('b', { text: 'Credits' }), h('span', { class: 'num', text: CAMP.credits.toLocaleString('en-US') })),
-      h('div', { class: 'stat' }, h('b', { text: 'Prestige' }), h('span', { class: 'num', text: CAMP.prestige })),
+      h('div', { class: 'stat prestige' }, h('b', { text: 'Prestige' }), h('span', { class: 'num', text: CAMP.prestige })),
       h('div', { class: 'stat' }, h('b', { text: 'Turn' }), h('span', { class: 'num', text: CAMP.turn })),
       h('div', { class: 'stat' }, h('b', { text: 'Moves' }), h('span', { class: 'num', text: `${CAMP.mp} / ${MOVE_POINTS}` })),
-      key_(`Missions ${CAMP.active.length}`, () => { S.missionsOpen = !S.missionsOpen; render(); }, `small ${S.missionsOpen ? 'on' : ''}`),
-      h('div', { class: 'stat' }, h('b', { text: 'Standing with' }), h('span', { class: 'row', style: 'gap:4px' }, ['concord', 'krai', 'ssarith', 'vos'].filter((f) => f !== CAMP.side).map((f) =>
+      key_(`Missions ${CAMP.active.length}`, () => { S.missionsOpen = !S.missionsOpen; render(); }, `small missionskey ${S.missionsOpen ? 'on' : ''}`),
+      h('div', { class: 'stat standing' }, h('b', { text: 'Standing with' }), h('span', { class: 'row', style: 'gap:4px' }, ['concord', 'krai', 'ssarith', 'vos'].filter((f) => f !== CAMP.side).map((f) =>
         h('span', { class: 'chip', title: `${FACTIONS[f].name}: ${CAMP.standing[f] >= 0 ? 'ports open' : 'ports closed'}` }, h('span', { class: 'fac', style: `background:${FACTIONS[f].color}` }),
           `${FACTIONS[f].short} ${CAMP.standing[f] > 0 ? '+' : ''}${CAMP.standing[f]}`)))),
       h('div', { class: 'fleetchips' }, CAMP.fleet.map((s) => h('span', { class: 'chip', role: 'button', title: 'Go to the fleet', onclick: () => glideTo(CAMP.at.c, CAMP.at.r) }, s.name, h('span', { class: 'bar', style: 'width:44px' }, h('i', { style: `width:${s.hullPct}%;${s.hullPct < 50 ? 'background:var(--warn)' : ''}` }))))));
@@ -4413,8 +4426,11 @@ const SCREENS = {
     const groupsHere = CAMP.groups.filter((g) => g.c === sel.c && g.r === sel.r);
     const missionsHere = CAMP.missions.filter((m) => m.c === sel.c && m.r === sel.r);
     if (fogOf(sel.c, sel.r, visibleSet()) !== 'visible') groupsHere.length = 0;   // fleets show only where seen now
+    // The sector panel can be put away, so a phone sees the map (owner, 2026-11-07, of a phone in portrait: "Panels on my
+    // phone stuck open, I can't see"): Hide closes it, picking a sector or the Sector key opens it again.
     const panel = h('div', { class: 'panel hexpanel' },
-      h('div', { class: 'plate', text: here_ ? 'Your position' : 'Selected sector' }),
+      h('div', { class: 'row hexhead' }, h('div', { class: 'plate', text: here_ ? 'Your position' : 'Selected sector' }), h('span', { class: 'spacer' }),
+        key_('Hide', () => { S.hexClosed = true; render(); }, 'small', { 'aria-label': 'Hide the sector panel' })),
       ...(() => { const vis = visibleSet(), fog = fogOf(sel.c, sel.r, vis), own = shownOwner(sel, vis);
         if (fog === 'unexplored') return [h('h3', { text: 'Unexplored' }), h('p', { class: 'muted', text: 'Never charted. Fly there to see it.' })];
         return [h('h3', { text: sel.planet || sel.station || TERRAIN[sel.terrain].name }),
@@ -4433,10 +4449,11 @@ const SCREENS = {
     const keys = h('div', { class: 'panel mapkeys' },
       key_('+', () => setZoom(Math.max(8, mapCam.position.distanceTo(controls.target) * 0.7)), 'small', { 'aria-label': 'Zoom in' }),
       key_('−', () => setZoom(Math.min(68, mapCam.position.distanceTo(controls.target) * 1.4)), 'small', { 'aria-label': 'Zoom out' }),
-      key_('Fleet', () => centreOn(CAMP.at.c, CAMP.at.r, mapCam.position.distanceTo(controls.target)), 'small'));
+      key_('Fleet', () => centreOn(CAMP.at.c, CAMP.at.r, mapCam.position.distanceTo(controls.target)), 'small'),
+      S.hexClosed && !S.mission ? key_('Sector', () => { S.hexClosed = false; render(); }, 'small', { 'aria-label': 'Show the sector panel' }) : null);
     const out = [top, keys, h('div', { class: 'endturn' }, key_('End turn', endTurnNow, 'go'))];
     if (S.port) out.push(portPanel());
-    else if (!S.mission) out.splice(1, 0, panel);   // a briefing takes the sector panel's place
+    else if (!S.mission && !S.hexClosed) out.splice(1, 0, panel);   // a briefing takes the sector panel's place
     if (S.missionsOpen && !S.port) out.push(missionLog());
     if (S.mission) out.push(briefPanel());
     if (flight) out.push(h('div', { class: 'flying chip', text: `Under way to sector ${CAMP.at.c + 1}-${CAMP.at.r + 1}` }));

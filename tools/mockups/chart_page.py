@@ -35,7 +35,7 @@ def build():
              "     source page and run the script again. -->\n"
              '<meta name="fc-start" content="chart">')
     t = swap(t, '<div class="badge">Mockup 1 · game-flow</div>',
-             '<div class="badge">Mockup 24 · space chart · '
+             '<div class="badge"><span class="long">Mockup 24 · space chart · </span>'
              f'<a href="{TRACKER_URL}" target="_blank" rel="noopener" style="color: inherit; pointer-events: auto;">'
              'All Fleet Command mockups (the tracker)</a></div>')
     return t
