@@ -149,3 +149,5 @@
 - 2026-11-08, cloud session: version 154, version id `1794117974-ada4`: merged onto the live version `1794116455-0531` (M4 v32, battle consoles 25-29 and 31-33 at v2); M1 v28; M24 is the freighters (v16, from PR #54); the Space Chart moved to M34 at v6.
 - Artifact version 157 (2026-11-08, cloud session, version id `1794123176-ab7f`): M30 at v2, M4 at v33; merged onto the live version with another session's edits (M1 v29, M2 v86, M8 v25, M15 v10, M17 v19, M24 Freighters, M34 Space chart v7, M35 Hull texture designs).
 - Artifact version 158 (2026-11-08, cloud session, version id `1794134580-9df8`): M36 Placeholder fleets added.
+- Artifact version 159 (2026-11-08, cloud session, version id `1794141153-189d`): M36 at v2.
+- Artifact version 160 (2026-11-08, cloud session, version id `1794141174-ee48`): the Faction readiness page added to the misc list.
