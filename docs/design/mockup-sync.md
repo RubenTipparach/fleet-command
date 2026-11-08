@@ -131,6 +131,12 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Damage range (game ahead) | The ship mockups' Damage tab (mockups 6 and 7: fire with a click, scenarios, repair); not on the battle console's scene list | Damage range, from both sides: every approved class on the range, weapon keys, click the plating to fire, programs (Battle scars, Lance rake, Bolt burns, Torpedo holes, Missile salvo, Break a part, Core breach), Shields, Slow motion, Repair all (owner, 2026-11-05) | `battle-scenarios` 3.6, 3.7 |
 | The ships in the view | A stand-in Concord block against Kethran and Vos ships (v74, mockup 8 v14) | The approved ships, the Krai against the Concord only (owner: "NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD"); here the mockups are behind the game (sheets 2026-11-04: `docs/screenshots/compare/`) | the mockups' next version |
 
+- **Hit and run's weapon pick, docked, in step (2026-11-08).** Picking Weapons added a full-width row that pushed the pads
+  and control bar past the docked panel (owner: "weapn controls can push stuff off screen", "I went full screen and it still
+  an issue"). In both the mockup and the game the docked pick is now a short pill beside the subsystem keys (which shrink to
+  leave it 80 px), its full name in the tip; expanded keeps its own row. Game: `StationPanel.Transport.cs`; mockup:
+  `stTransport`. Layout and parity tests pass in the game's four skins.
+
 ### Mockup 8 only (the Krai skin)
 
 Parity between the two skins is checked by the engine (`-- --parity-test`, in `scripts/run-tests.sh`): the same controls

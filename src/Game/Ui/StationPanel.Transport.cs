@@ -65,7 +65,7 @@ public sealed partial class StationPanel
         {
             // the target's subsystems as keys, coloured by their status; the picked one ringed in Sky
             string[] subs = Rules.Subsystems;
-            float bs = Math.Min(Big ? 56 : 34, (w - (subs.Length - 1) * 6) / subs.Length);
+            float bs = Math.Min(Big ? 56 : 34, (w - (subs.Length - 1) * 6 - (Big ? 0 : 80)) / subs.Length); // docked, room kept for the weapon pick
             for (int i = 0; i < subs.Length; i++)
             {
                 string key = subs[i];
@@ -85,7 +85,7 @@ public sealed partial class StationPanel
             // weapons never pushes the panel's content past its bottom (owner, 2026-11-08: "weapn controls can push stuff
             // off screen"); expanded, it has its own row.
             float keysW = subs.Length * bs + (subs.Length - 1) * 6, room = w - keysW - 8;
-            bool inline = !Big && room >= 72;
+            bool inline = !Big;
             if (!inline) y += bs + gap;
             if (s.RaidSys == "weapons")
             {
