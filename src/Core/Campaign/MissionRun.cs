@@ -194,7 +194,7 @@ public static class MissionRun
     }
 
     /// <summary>How a battle ended, as the mission files say it: end, withdraw or lost (a jump to warp is an escape: a withdrawal).</summary>
-    public static string HowOf(Battle b) => b.Over switch { "withdrawn" or "jumped" => "withdraw", "lost" => "lost", _ => "end" };
+    public static string HowOf(Battle b) => b.Over switch { "withdrawn" or "jumped" or "stalemate" => "withdraw", "lost" => "lost", _ => "end" };
 
     /// <summary>Each objective's state now, as if the battle ended this moment (the mission strip's ticks, and a battle
     /// that ends on its objectives: GameFlow wins it once every primary is met).</summary>

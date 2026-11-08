@@ -187,6 +187,11 @@ public sealed record Tuning(
     /// ramming contact, the hull a rock strikes), as the reference games draw their ships large against the space between
     /// them (owner, 2026-11-06: "multiply all distance by 10", "1km -> 10km": every distance grew tenfold, the ships did not).</summary>
     public double ShipFrameX { get; init; } = 1;
+    /// <summary>Seconds an AI captain's fire goes without landing before it closes to half its fighting range (half again for each
+    /// further such span, an eighth at most).</summary>
+    public double AiCloseAfterS { get; init; } = 20;
+    /// <summary>Seconds with no ship hurt after which a battle that cannot be withdrawn from ends as a stalemate.</summary>
+    public double StalemateS { get; init; } = 180;
 }
 
 /// <summary>The console's layout in reference pixels (data/console/layout.json).</summary>

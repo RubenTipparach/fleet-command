@@ -486,7 +486,7 @@ public sealed partial class GameFlow : Node
             Plan = null;
             Save();
         }
-        else Last = new Debrief { Mission = b.Scenario.Name, Grade = b.Over == "won" ? "victory" : b.Over is "withdrawn" or "jumped" ? "draw" : "defeat",
+        else Last = new Debrief { Mission = b.Scenario.Name, Grade = b.Over == "won" ? "victory" : b.Over is "withdrawn" or "jumped" or "stalemate" ? "draw" : "defeat",
             Win = b.Over == "won", How = MissionRun.HowOf(b) };
         _ = Show(FlowScreen.Debrief);
     }

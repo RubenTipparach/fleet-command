@@ -302,11 +302,13 @@ public sealed partial class MenuCard : ConsolePanel
             // Withdraw warps the ship out (owner, 2026-11-07: "select withdraw from menu, then warp out"): the drive arms,
             // plots a course and jumps when ready; a story or special mission refuses it
             Battle bt = X.Battle;
-            bool can = bt.Scenario.CanWithdraw, go = bt.Over == null && can && !bt.Withdrawing;
-            string lab = bt.Over != null ? "Battle over" : bt.Withdrawing ? "Withdrawing" : can ? "Withdraw" : "No withdrawal";
-            Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), lab, go ? () => { X.State.MenuOpen = false; bt.Withdraw(); } : null, center: false, dis: !go,
+            // pressed again while withdrawing, it calls the withdrawal off (Mac playtest 2026-11-08: the key locked on a
+            // withdrawal that could never jump)
+            bool can = bt.Scenario.CanWithdraw, go = bt.Over == null && can;
+            string lab = bt.Over != null ? "Battle over" : bt.Withdrawing ? "Call off withdrawal" : can ? "Withdraw" : "No withdrawal";
+            Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), lab, go ? () => { X.State.MenuOpen = false; bt.ToggleWithdraw(); } : null, center: false, dis: !go,
                 tip: new Tip("Withdraw", can
-                    ? new (string, string, Color?)[] { ("Does", "charges the warp drive, plots a course out and jumps when ready", null), ("Grade", "a draw, unless an objective says otherwise", null) }
+                    ? new (string, string, Color?)[] { ("Does", bt.Withdrawing ? "stops waiting to jump; the drive stays charged" : "charges the warp drive, plots a course out and jumps when ready", null), ("Grade", "a draw, unless an objective says otherwise", null) }
                     : new (string, string, Color?)[] { ("Refused", "this mission must be seen through", null) }));
         }
         else Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false);
