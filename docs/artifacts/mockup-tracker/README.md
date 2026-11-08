@@ -137,4 +137,12 @@
 - 2026-11-06, desktop session: version 140, version id `1793945084-5a8d`: M1 v17 (ships slide on the map), over the Kelvane session's v139.
 - 2026-11-06, cloud session (branch `claude/brave-faraday-ilpu2q`): version 141, version id `1793949867-c088`: M1 v18 (the faction screen on a walnut table, stores, crew lists, kept routes, options), over the desktop session's v140.
 - 2026-11-06, cloud session: version 142, version id `1793950629-6aac`: M1 v19 (the faction view fits phones in portrait).
+- 2026-11-07, cloud session (branch `claude/brave-faraday-ilpu2q`): version 144, version id `1794044686-0f02`: M1 v21 (the paper map), merged onto the live version `1793980473-c263` (the desktop session's M1 v20, M2 v86, M8 v25, M15 v10, M20 v4), keeping main's M23.
+- 2026-11-07, cloud session: version 145, version id `1794054510-aa92`: M1 v22 (star map print, green walls, the fog of war on the chart).
+- 2026-11-07, cloud session: version 146, version id `1794057112-88e5`: M24 the Space Chart added; M1 v23.
+- 2026-11-07, cloud session: version 147, version id `1794092255-faed`: M1 v24 and M24 v2 (the chart on phones).
+- 2026-11-08, cloud session: version 148, version id `1794096332-5c52`: M1 v25 and M24 v3 (the sector panel hides on a phone, a two-row top bar).
+- 2026-11-08, cloud session: version 149, version id `1794098613-9364`: M1 v26 and M24 v4 (hand-drawn clouds, storms, planets, suns and rocks; the Space Chart summary).
+- 2026-11-08, cloud session: version 150, version id `1794102613-3191`: M1 v27 and M24 v5 (shader planets, heavier cross-hatching; the Space Chart summary).
 - Artifact versions 151 and 152 (2026-11-08, cloud session, version ids `1794107972-5c0a`, `1794107983-6a0f`; M4 at v31): the battle consoles for the Axiom, Exponent, Red Tithe, Vos, Kethran, Tarsine, Aelith, Ombrai and Vhorr (M25-M33), each behind its own faction card; merged onto the live version with another session's edits (M1 v27, M20 v4, M24 Space chart, whose page is on branch `claude/brave-faraday-ilpu2q`).
+- 2026-11-08, cloud session: version 154, version id `1794117974-ada4`: merged onto the live version `1794116455-0531` (M4 v32, battle consoles 25-29 and 31-33 at v2); M1 v28; M24 is the freighters (v16, from PR #54); the Space Chart moved to M34 at v6.
