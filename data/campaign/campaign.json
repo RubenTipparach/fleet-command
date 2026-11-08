@@ -115,7 +115,8 @@
     "Vernier",
     "Aperture",
     "Quorum"
-   ]
+   ],
+   "freighter": "freighter_kelvane"
   },
   "vos": {
    "name": "Vos Syndicate",
@@ -432,6 +433,15 @@
    "name": "Tally carrier",
    "cls": "Freighter",
    "battle_class": "hunt_fr",
+   "schematic": "",
+   "for_sale": false
+  },
+  "freighter_kelvane": {
+   "side": "neutral",
+   "tier": 1,
+   "name": "Twin ledger",
+   "cls": "Freighter",
+   "battle_class": "kelvane_fr",
    "schematic": "",
    "for_sale": false
   }

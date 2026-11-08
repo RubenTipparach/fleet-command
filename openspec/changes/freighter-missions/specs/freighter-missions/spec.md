@@ -24,6 +24,16 @@ from the fleet. A freighter destroyed or taken SHALL be off her route for `rules
 - **WHEN** a raid ends with the freighter struck and the escorts gone, and the fleet then reaches its home port
 - **THEN** she is in the fleet with her haul, left out of the next battle, and Cash out pays the haul and removes her
 
+### Requirement: A prize strikes rather than burns
+
+A prize SHALL strike when her hull falls to `capture_hull_frac` of its whole or when her core goes critical (her crew gives her
+up rather than melt down with her). Once she strikes, every lock on her SHALL be dropped, and her core SHALL be shut down, so
+she neither heats nor melts down for the rest of the battle.
+
+#### Scenario: Coolant shot away
+- **WHEN** a prize's coolant loops are all destroyed with her hull above the capture line, while the player has her locked
+- **THEN** she strikes, the player's lock on her is dropped, and she is still afloat after twice the meltdown time
+
 ### Requirement: Each faction's freighters are its own approved ship
 
 Missions that field freighters SHALL field the faction's own freighter (its battle class and model), and the campaign map

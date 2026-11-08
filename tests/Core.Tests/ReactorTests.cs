@@ -94,6 +94,24 @@ public class ReactorTests
     }
 
     [Fact]
+    public void A_prize_whose_core_goes_critical_strikes_and_her_shut_down_core_never_melts_down()
+    {
+        // freighter-missions design, "Taken": a raided freighter with her coolant shot away is given up, not lost
+        Battle b = TestData.NewBattle();
+        Ship prize = b.Ships.First(s => s.Side != b.Player.Side);
+        prize.Prize = true;
+        foreach (CoolantLoop l in prize.Reactor.Loops) l.Hp = 0;
+        Assert.True(prize.Hull > prize.Class.HullHp * b.Tuning.CaptureHullFrac);
+        b.Player.Target = prize.Id;
+        Run(b, 1);
+        Assert.True(prize.Struck);
+        Assert.Null(b.Player.Target);   // the lock on her dropped: no one fires into the boarding party
+        Run(b, b.Data.Systems.Reactor.MeltdownS * 2);
+        Assert.True(prize.Alive);
+        Assert.Equal(0, prize.Reactor.Melt);
+    }
+
+    [Fact]
     public void A_core_that_is_safe_again_counts_the_meltdown_back()
     {
         Battle b = TestData.NewBattle();

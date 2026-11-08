@@ -273,13 +273,17 @@ public sealed partial class Battle
         PointDefenceStep();
         CountermeasuresStep(dt);
         ShotsStep(dt);
+        // a prize strikes beaten to her capture line, or with her core gone critical: her crew gives her up rather than burn
+        // with her (freighter-missions design, "Taken"), and the boarding party shuts the core down (ReactorStep)
         foreach (Ship s in _ships)
-            if (s.Prize && s.Alive && !s.Struck && s.Hull <= s.Class.HullHp * Tuning.CaptureHullFrac)
+            if (s.Prize && s.Alive && !s.Struck && (s.Hull <= s.Class.HullHp * Tuning.CaptureHullFrac || s.Reactor.Melt > 0))
             {
                 s.Struck = true;
                 s.VOrder = 0;
                 s.Engaged = false;
                 Say("Security", $"The {s.Name} has struck. Boarding party away: she is ours.");
+                // she is ours: every lock on her is dropped, so no one fires into the boarding party
+                foreach (Ship o in _ships) if (o.Target == s.Id) o.Target = null;
             }
         // a scene's own end, registered by the system whose objective it is (a ship disabled, not destroyed): checked first
         foreach (Func<bool> end in _ends) if (end()) return;

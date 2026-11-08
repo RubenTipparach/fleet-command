@@ -108,6 +108,10 @@
   { "script": "assault", "play": "krai_assault" },
   { "script": "assault", "play": "kelvane_assault" },
   { "script": "assault", "play": "ssarith_assault" },
-  { "script": "campaign", "play": "campaign" }
+  { "script": "campaign", "play": "campaign" },
+  { "script": "freighters-concord", "play": "campaign" },
+  { "script": "freighters-krai", "play": "campaign" },
+  { "script": "freighters-ssarith", "play": "campaign" },
+  { "script": "freighters-kelvane", "play": "campaign" }
  ]
 }

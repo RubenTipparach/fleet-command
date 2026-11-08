@@ -98,6 +98,16 @@ def measure():
                 ("part", f"Playable, {len(drawn)} of {len(hulls)} hulls drawn")
         else:
             r["campaign"] = ("part", "On the map, not playable") if cf else ("todo", "Not in the campaign")
+        # its freighter: the campaign's freighter hull, flown on its approved model, on a route, and played by the bot
+        fh = camp["hulls"].get((cf or {}).get("freighter") or "")
+        fmodel = classes.get(fh["battle_class"], {}).get("model", "") if fh else ""
+        routed = any(rt[0] == f for rt in camp["map"].get("freight_routes", []))
+        played = any(x["script"] == f"freighters-{f}" for x in runs)
+        if not fh or not fmodel.startswith("assets/ships/freighters/"):
+            r["freighter"] = ("todo", "The stand-in freighter")
+        else:
+            got = [w for w, ok in (("on a route", routed), ("a raid, cash out and escort in the bot suite", played)) if ok]
+            r["freighter"] = ("done" if len(got) == 2 else "part", f"The {fh['name']}" + (f", {', '.join(got)}" if got else ", no route"))
         # officers' names and ranks: the Concord's are the default
         r["officers"] = ("done", "The default names (the Concord's)") if f == "concord" else \
             ("done", "Its own names and ranks") if f in officers else ("todo", "The Concord's names")
@@ -124,6 +134,7 @@ ROWS = [  # (key, label, from)
     ("scenes", "Playable as a side", "game"),
     ("bot", "Bot suite runs", "game"),
     ("campaign", "Campaign", "game"),
+    ("freighter", "Freighter and its missions", "game"),
     ("officers", "Officers' names", "game"),
     ("music", "Music", "game"),
 ]
