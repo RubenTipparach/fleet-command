@@ -1,0 +1,9 @@
+{
+ "rule": "G1: growth at least 2 mm clear of every protected rectangle",
+ "clearance_mm": {
+  "panel.expanded label": 4.0,
+  "panel.expanded window": 3.54
+ },
+ "min_mm": 3.54,
+ "pass": true
+}

@@ -7,14 +7,15 @@
 // leather stretched over both, veins and sacs of light under it (rule 2), black smoked glass with a bronze rim in every
 // window, dark key caps with hot rims set into collars of flesh, the crystal heart as the crest; the panels float over the
 // game with nothing behind them (rule 5), and the portrait is live pixels under a fine hex-cell filter (rule 3). The kit's
-// symbol cells and icons are still the version 23 renders (assets/ui/vhorr/). This module loads both and draws the live
-// readouts. Registers itself with the page's skin registry (docs/mockups/skins).
+// symbol cells are still the version 23 renders (assets/ui/vhorr/); its icons are docs/mockups/lib/vhorr.js's. This
+// module loads both and draws the live readouts. Registers itself with the page's skin registry (docs/mockups/skins).
 (function () {
 'use strict';
 const F = window.FCK, P = F.P;
-const VH = { chitin: '#2b1d2a', chitinHi: '#6a4a68', hide: '#5a3424', hideDark: '#2e1814', flesh: '#c4566a', bile: '#a6e34a', bileHot: '#e4ff9a',
-  slime: '#f4f0e0', blood: '#e0342a', pit: '#120a10', ink: '#f3e6d0', dim: '#c9a48c', amber: '#f0b43c',
-  readout: '#b8f27a', keyInk: '#ffd9a0', leather: '#33110f', bone: '#e2d6bb', glass: '#050405', hero: '#b35cff' };
+// The palette, the icons, the live arrow and target bracket and the tendril they are drawn with have one
+// implementation, docs/mockups/lib/vhorr.js (window.FCVhorr, inlined before this module), shared with the battle
+// console; this module keeps the skins page's own tokens, its slot overlay and the readouts only this page draws.
+const H = window.FCVhorr, VH = H.VH, tendril = H.tendril, curl = H.curl;
 
 // ---- organic shape helpers -------------------------------------------------------------------------------------
 // A closed path through points, smoothed by quadratic curves between midpoints (no corners anywhere: nothing is cut).
@@ -73,19 +74,6 @@ function chitin(x, path, R, box, hi = 0.75) {
   for (let i = 0; i < 3; i++) { x.fillStyle = VH.slime; x.beginPath(); x.arc(sx + R() * (x1 - x0) * 0.3, sy + R() * (y1 - y0) * 0.3, 0.6 + R() * 0.9, 0, 2 * P); x.fill(); }
   x.restore();
 }
-// A tendril: a tapered, shaded stroke along a curve, with a wet highlight down its back.
-function tendril(x, pts, w0, w1, col = VH.flesh) {
-  const L = pts.length, left = [], right = [];
-  for (let i = 0; i < L; i++) {
-    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(L - 1, i + 1)], dx = b[0] - a[0], dy = b[1] - a[1], d = Math.hypot(dx, dy) || 1, w = (w0 + (w1 - w0) * i / (L - 1)) / 2;
-    left.push([pts[i][0] - dy / d * w, pts[i][1] + dx / d * w]); right.push([pts[i][0] + dy / d * w, pts[i][1] - dx / d * w]);
-  }
-  x.beginPath(); x.moveTo(left[0][0], left[0][1]); for (const p of left.slice(1)) x.lineTo(p[0], p[1]); for (const p of right.reverse()) x.lineTo(p[0], p[1]); x.closePath();
-  x.fillStyle = col; x.fill(); x.strokeStyle = 'rgba(20,6,8,0.8)'; x.lineWidth = 1; x.stroke();
-  x.strokeStyle = 'rgba(255,240,230,0.45)'; x.lineWidth = 0.9; x.beginPath(); x.moveTo(pts[0][0] - 0.6, pts[0][1] - 0.8);
-  for (let i = 1; i < L - 1; i++) x.lineTo(pts[i][0] - 0.6, pts[i][1] - 0.8); x.stroke();
-}
-function curl(cx, cy, r, a0, turns, dir = 1) { const o = []; for (let i = 0; i <= 18; i++) { const t = i / 18, a = a0 + dir * t * turns * 2 * P; o.push([cx + Math.cos(a) * r * (1 - t * 0.75), cy + Math.sin(a) * r * (1 - t * 0.75)]); } return o; }
 function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
 const RNG = (k) => F.rng(F.hash('vhorr.' + k));
 
@@ -121,7 +109,9 @@ F.register('vhorr', {
   build: () => {
     const d = F.kitData('assets/ui/vhorr/manifest.json'), o = F.kitData('assets/ui/vhorr/organic/manifest.json');
     if (!d || !o) return null;
-    const K = F.fromManifest(d, () => F.paint(48, 48, () => {})), img = {};
+    // the icons are the lib's (the icon guide's subjects in the brood's hand), not the version 23 renders
+    const pieces = Object.fromEntries(Object.entries(d.pieces).filter(([k]) => !k.startsWith('icon.')));
+    const K = F.fromManifest(Object.assign({}, d, { pieces }), (n) => H.icon(n)), img = {};
     for (const [k, p] of Object.entries(o.pieces)) img[k] = p.data;
     K.organic = { slots: o.slots, img, portrait: img.portrait, portraitRect: o.portrait.rect, hex: o.hex, backing: o.backing ? { src: img.backing, rect: o.backing.image_rect } : null };
     for (const id of Object.keys(K.hero)) {   // the hero pieces are sculpted slots too (the lamp's three colours are one slot's states)
@@ -132,8 +122,7 @@ F.register('vhorr', {
     return K;
   },
   live: {
-    // A talon pointing the way.
-    arrow: (x) => { x.fillStyle = VH.slime; x.strokeStyle = '#1a0a0c'; x.lineWidth = 1.4; x.beginPath(); x.moveTo(13, 0); x.quadraticCurveTo(0, -3, -9, -9); x.quadraticCurveTo(-4, 0, -9, 9); x.quadraticCurveTo(0, 3, 13, 0); x.fill(); x.stroke(); },
+    arrow: H.live.arrow,
     // A living hull: carapace segments over glowing flesh, trailing tendrils; shields are membranes.
     ssd: (x, cx, cy, sh, col) => {
       for (let i = 0; i < 6; i++) { const a = -P / 2 + i * P / 3; x.save(); x.shadowColor = col(sh[i]); x.shadowBlur = 10; x.strokeStyle = hexA(col(sh[i]), 0.75); x.lineWidth = 9; x.beginPath(); x.arc(cx, cy, 100, a - P / 6 + 0.1, a + P / 6 - 0.1); x.stroke(); x.restore(); }
@@ -151,13 +140,7 @@ F.register('vhorr', {
         x.save(); x.shadowColor = col; x.shadowBlur = 8; x.fillStyle = col; x.beginPath(); x.arc(c + dx * 32, c + dy * 32, d < 0.56 ? 5 : 4, 0, 2 * P); x.fill(); x.restore();
       }
     },
-    // Four tendrils hooking round the target.
-    bracket: (x, bx, by, bw, bh) => {
-      for (const [px, py, sx, sy] of [[bx, by, 1, 1], [bx + bw, by, -1, 1], [bx, by + bh, 1, -1], [bx + bw, by + bh, -1, -1]]) {
-        x.save(); x.translate(px, py); x.scale(sx, sy); x.shadowColor = VH.bile; x.shadowBlur = 10;
-        tendril(x, [[50, -2], [20, -2], [2, 4], [-2, 22], [6, 44]], 2, 6, VH.bile); tendril(x, curl(52, 6, 8, -P / 2, 0.7, 1), 3, 0.5, VH.bile); x.restore();
-      }
-    },
+    bracket: H.live.bracket,
   },
   world: ['The brood is one body: it grows, consumes and adapts.', 'Its consoles are grown, not built: bone, then muscle, then leather stretched over both.', 'The instruments it holds are hard and crisp: black glass, dark keys with hot rims.', 'It floats over the battle like a living thing; nothing stands behind it.'],
   shapes: 'One sculpted body per slot: a thick rolled lip round every window, a vertebral ridge with horns, muscle lobes, veins under the skin. No raw primitives, no nine-slice.', light: 'A warm key from above and grazing rims on wet ridges; sacs of light glow green through the skin; the crystal heart glows violet.',

@@ -1,0 +1,294 @@
+{
+ "skin": "vhorr",
+ "kind": "organic",
+ "scale": 2,
+ "layout": "battle",
+ "size": [
+  1920,
+  1080
+ ],
+ "method": "every slot sculpted at its exact pinned size by tools/blender/organic_components.py (no nine-slice); a top-level slot's image covers its rectangle grown by its bleed (mm) on every side",
+ "portrait": {
+  "rect": null
+ },
+ "hex": {
+  "pitch_mm": 2.0,
+  "wall": 0.2,
+  "wall_level": 0.45,
+  "dome": 0.1
+ },
+ "slots": {
+  "nameplate": {
+   "piece": "nameplate",
+   "rect": [
+    10,
+    6,
+    356,
+    56
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 16.0,
+   "live": null
+  },
+  "panel.station": {
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    68,
+    468,
+    420
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 16.0,
+   "live": [
+    26,
+    90,
+    428,
+    378
+   ]
+  },
+  "panel.ship": {
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    494,
+    468,
+    276
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 16.0,
+   "live": [
+    26,
+    516,
+    428,
+    234
+   ]
+  },
+  "panel.weapons": {
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    776,
+    468,
+    160
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 34.0,
+   "live": [
+    26,
+    798,
+    428,
+    118
+   ]
+  },
+  "dial": {
+   "piece": "dial",
+   "rect": [
+    6,
+    948,
+    120,
+    120
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 24.0,
+   "live": [
+    16,
+    958,
+    100,
+    100
+   ]
+  },
+  "crest": {
+   "piece": "crest",
+   "rect": [
+    400,
+    972,
+    72,
+    72
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 24.0,
+   "live": null
+  },
+  "strip.top": {
+   "piece": "strip.top",
+   "rect": [
+    480,
+    0,
+    1440,
+    72
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 44.0,
+   "live": null
+  },
+  "strip.bottom": {
+   "piece": "strip.bottom",
+   "rect": [
+    480,
+    1008,
+    1440,
+    72
+   ],
+   "states": [
+    "idle"
+   ],
+   "rest": "idle",
+   "parent": null,
+   "bleed": 36.0,
+   "live": null
+  }
+ },
+ "pieces": {
+  "nameplate.idle": {
+   "file": "nameplate.idle.png",
+   "slot": "nameplate",
+   "state": "idle",
+   "piece": "nameplate",
+   "rect": [
+    10,
+    6,
+    356,
+    56
+   ]
+  },
+  "panel.station.idle": {
+   "file": "panel.station.idle.png",
+   "slot": "panel.station",
+   "state": "idle",
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    68,
+    468,
+    420
+   ]
+  },
+  "panel.ship.idle": {
+   "file": "panel.ship.idle.png",
+   "slot": "panel.ship",
+   "state": "idle",
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    494,
+    468,
+    276
+   ]
+  },
+  "panel.weapons.idle": {
+   "file": "panel.weapons.idle.png",
+   "slot": "panel.weapons",
+   "state": "idle",
+   "piece": "frame.panel",
+   "rect": [
+    6,
+    776,
+    468,
+    160
+   ]
+  },
+  "dial.idle": {
+   "file": "dial.idle.png",
+   "slot": "dial",
+   "state": "idle",
+   "piece": "dial",
+   "rect": [
+    6,
+    948,
+    120,
+    120
+   ]
+  },
+  "crest.idle": {
+   "file": "crest.idle.png",
+   "slot": "crest",
+   "state": "idle",
+   "piece": "crest",
+   "rect": [
+    400,
+    972,
+    72,
+    72
+   ]
+  },
+  "strip.top.idle": {
+   "file": "strip.top.idle.png",
+   "slot": "strip.top",
+   "state": "idle",
+   "piece": "strip.top",
+   "rect": [
+    480,
+    0,
+    1440,
+    72
+   ]
+  },
+  "strip.bottom.idle": {
+   "file": "strip.bottom.idle.png",
+   "slot": "strip.bottom",
+   "state": "idle",
+   "piece": "strip.bottom",
+   "rect": [
+    480,
+    1008,
+    1440,
+    72
+   ]
+  },
+  "backing": {
+   "file": "backing.tissue.png",
+   "slot": "column",
+   "state": "tissue",
+   "rect": [
+    0,
+    0,
+    494.0,
+    1080
+   ]
+  }
+ },
+ "backing": {
+  "mode": "tissue",
+  "rect": [
+   0,
+   0,
+   480,
+   1080
+  ],
+  "image_rect": [
+   0,
+   0,
+   494.0,
+   1080
+  ]
+ }
+}
