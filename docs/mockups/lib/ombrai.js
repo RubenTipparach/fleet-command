@@ -304,9 +304,11 @@ const api = {
     officers: { o1: 'Sela Oun', o2: 'Imre Vash', o3: 'Teiv Anu', o4: 'Lio Sereth', o5: 'Ushe Marn', o6: 'Navi Ost', o7: 'Corrow Ia',
       o8: 'Veth Ilun', o9: 'Ama Isk', o10: 'Pell Onu', o11: 'Rhue Tamsel', o12: 'Isse Varn', o13: 'Olo Kethe' } },
   link: OM.pink,
-  // Labels centred in each key's crescent well, clear of the bite where its moon jewel rests (the well runs 30-140 of
-  // 150, bitten to x 37 by the moon: the open field 40-136); on a tab, in its well (13-107 of 120, round ends 9.5 px).
-  keyCenter: true, keyField: [40, 14], tabField: [18, 18],
+  // Labels centred in each key's crescent well, beside the bite where its moon jewel rests (the well runs 30-140 of
+  // 150, bitten to x 37 by the moon at its middle row: the field 34-138, so a label as long as its key allows may touch
+  // the bite by 2 px, the price of reading "PROXIMITY" on a 95 px key); on a tab, in its well (13-107 of 120), 14 px
+  // from each end, so a long label (OVERLOAD on a 101 px tab) keeps its size and is never trimmed.
+  keyCenter: true, keyField: [34, 12], tabField: [14, 14],
   // A hover name on the wide key in its hover light, pale on it.
   tip: ['button.hover', 'hover'],
   // Icon tabs (the station and ship rails) on the square key: a well in a plum ring, lit from below.
