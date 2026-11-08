@@ -99,9 +99,9 @@ Elders, the ranks Listener, Keeper, Warden and Elder, thirteen officers' names o
 | Check | Result |
 |---|---|
 | Fit rules on `console.backing` | 5 of 5 pass; every other piece's shapes byte-identical |
-| Parity, Aelith page against the Concord's | see tasks 1.5 and the commit message |
-| `console_fit.mjs` on the skins page, the Aelith skin | see tasks 1.5 |
-| `dom_fit.mjs` on the Aelith page | see tasks 1.5 |
+| Parity, Aelith page against the Concord's | 70 shots, 4,087 presses of 396 controls, every press matched |
+| `console_fit.mjs` on the skins page, the Aelith skin | clear (with the Ombrai and the Vhorr) |
+| `dom_fit.mjs` on the Aelith page | PASS, every shot at desktop, phone and portrait |
 | Render time | `console.backing` 131 s at 48 samples on the cloud session's CPU |
 
 ## Open questions

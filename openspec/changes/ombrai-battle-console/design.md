@@ -86,7 +86,9 @@ Watchers, the ranks Glance, Gaze, Watcher and Far-seer, thirteen officers' names
 |---|---|
 | Fit rules on `console.backing` | 5 of 5 pass; every other piece's shapes byte-identical |
 | Render time | `console.backing` 178 s at 48 samples on the cloud session's CPU |
-| Parity, `console_fit.mjs`, `dom_fit.mjs` | see tasks 1.5 and the commit message |
+| Parity, Ombrai page against the Concord's | 70 shots, 4,087 presses of 396 controls, every press matched |
+| `console_fit.mjs` on the skins page, the Ombrai skin | clear |
+| `dom_fit.mjs` on the Ombrai page | PASS, every shot at desktop, phone and portrait |
 
 ## Open questions
 

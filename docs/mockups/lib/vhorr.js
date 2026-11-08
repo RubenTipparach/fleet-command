@@ -228,25 +228,25 @@ function load() {
     kit['frame.inset'] = { size: [180, 100], m: [26, 26, 26, 26], draw: (x, w, h) => x.drawImage(T('inset.idle'), 0, 0, w, h) };
     kit.divider = { size: [160, 10], m: [0, 30, 0, 30], draw: (x, w, h) => x.drawImage(T('divider.idle'), 0, 0, w, h) };
     for (const c of ['green', 'yellow', 'red']) { hero['lamp.alert.' + c] = (x, w, h) => x.drawImage(T(`lamp.alert.yellow.${c}`), 0, 0, w, h); heroSize['lamp.alert.' + c] = [40, 40]; }
-    // the square key in the console's states: at rest, hovered, on (pressed), off (at rest, dimmed), and the cap lit in
-    // the state's colour for whole, damaged and down
-    const sq = { idle: [T('key.square.idle')], hover: [T('key.square.hover')], on: [T('key.square.pressed')], off: [T('key.square.idle'), null, 0.55],
+    // the square key in the console's states: at rest, hovered, off (at rest, dimmed), and the cap lit in the state's colour
+    // for on (the green of life), whole, damaged and down, bright enough that the dark ink of a lit key reads on it
+    const sq = { idle: [T('key.square.idle')], hover: [T('key.square.hover')], on: [T('key.square.pressed'), VH.readout], off: [T('key.square.idle'), null, 0.55],
       ok: [T('key.square.pressed'), VH.will], warn: [T('key.square.pressed'), VH.amber], alert: [T('key.square.pressed'), VH.wound] };
     for (const [st, [im, glow, alpha]] of Object.entries(sq)) {
-      const c = paint(48, 48, (x) => { if (alpha) x.globalAlpha = alpha; x.drawImage(im, 0, 0, 48, 48); x.globalAlpha = 1; if (glow) glowCap(x, 48, 48, glow, 0.6); });
+      const c = paint(48, 48, (x) => { if (alpha) x.globalAlpha = alpha; x.drawImage(im, 0, 0, 48, 48); x.globalAlpha = 1; if (glow) glowCap(x, 48, 48, glow, 0.85); });
       hero['key.' + st] = at(c); heroSize['key.' + st] = [48, 48];
     }
     // the wide key the same way, from the key's sculpt
-    const wk = { idle: [T('key.idle')], hover: [T('key.hover')], on: [T('key.pressed')], off: [T('key.idle'), null, 0.55],
+    const wk = { idle: [T('key.idle')], hover: [T('key.hover')], on: [T('key.pressed'), VH.readout], off: [T('key.idle'), null, 0.55],
       ok: [T('key.pressed'), VH.will], warn: [T('key.pressed'), VH.amber], alert: [T('key.pressed'), VH.wound] };
     for (const [st, [im, glow, alpha]] of Object.entries(wk)) {
-      const c = paint(150, 48, (x) => { if (alpha) x.globalAlpha = alpha; x.drawImage(im, 0, 0, 150, 48); x.globalAlpha = 1; if (glow) glowCap(x, 150, 48, glow, 0.5); });
+      const c = paint(150, 48, (x) => { if (alpha) x.globalAlpha = alpha; x.drawImage(im, 0, 0, 150, 48); x.globalAlpha = 1; if (glow) glowCap(x, 150, 48, glow, 0.8); });
       kit['keyw.' + st] = { size: [150, 48], m: [0, 40, 0, 40], draw: at(c) };
     }
     // the allocation cells: the square key at 32 x 28, lit in the reading's green, blood, or the will's violet
     for (const [id, im, glow, alpha] of [['cell.idle', T('key.square.idle')], ['cell.lit', T('key.square.pressed'), VH.readout], ['cell.warn', T('key.square.pressed'), VH.wound],
       ['cell.accord', T('key.square.pressed'), VH.will], ['cell.locked', T('key.square.idle'), null, 0.35]]) {
-      const c = paint(48, 48, (x) => { if (alpha) x.globalAlpha = alpha; x.drawImage(im, 0, 0, 48, 48); x.globalAlpha = 1; if (glow) glowCap(x, 48, 48, glow, 0.7); });
+      const c = paint(48, 48, (x) => { if (alpha) x.globalAlpha = alpha; x.drawImage(im, 0, 0, 48, 48); x.globalAlpha = 1; if (glow) glowCap(x, 48, 48, glow, 0.85); });
       cells[id] = { size: [32, 28], m: [8, 8, 8, 8], draw: (x, w, h) => x.drawImage(c, 0, 0, w, h) };
     }
     // the title placard: the tab's sculpt drawn 24 px tall (rows 4-36 of 40), its dark cap holding the title
