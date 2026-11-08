@@ -30,6 +30,9 @@ public sealed partial class ConsoleState
     /// <summary>The campaign map is the screen: its menu is the same sheet as the battle's, with Main menu in place of
     /// Restart or Withdraw (owner, 2026-11-06: "menu button in campaign map should be the pause menu").</summary>
     public bool OnMap;
+    /// <summary>A ship's end is still playing in the view (its core breach, then its nova): the battle's end waits for it, so
+    /// the last ship destroyed is seen to go (GameFlow).</summary>
+    public bool ShipsEnding;
 }
 
 public sealed class ConsoleContext

@@ -460,8 +460,12 @@ public sealed partial class GameFlow : Node
         return p.Battle.Objectives.Select(o => new Ui.GoalLine(o.Text.Eval(new OfferScope(c, p.Mission)), o.Primary, met.GetValueOrDefault(o.Id))).ToList();
     }
 
+    /// <summary>The longest a finished battle waits for a ship's end to play before the debrief, seconds.</summary>
+    private const double EndWaitMaxS = 10;
+
     /// <summary>Each frame while a battle plays: a mission whose own fleet is gone is lost; a battle that is over goes to
-    /// the debrief a moment later, so the last hit is seen.</summary>
+    /// the debrief a moment later, so the last hit is seen, and once the last ship's end has played (its breach and nova, up
+    /// to <see cref="EndWaitMaxS"/>), so the battle's finale is not cut off.</summary>
     public override void _Process(double delta)
     {
         // the goals over the view: a mission's, until their X shuts them (Comms shows them again)
@@ -477,7 +481,7 @@ public sealed partial class GameFlow : Node
         }
         if (b.Over == null) return;
         _overT += delta;
-        if (_overT < 2.5) return;
+        if (_overT < 2.5 || (X.State.ShipsEnding && _overT < EndWaitMaxS)) return;
         if (_busy) return;
         if (Running != null && Plan != null && Camp != null)
         {
