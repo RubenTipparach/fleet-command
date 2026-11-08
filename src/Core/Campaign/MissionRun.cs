@@ -130,7 +130,7 @@ public static class MissionRun
                     grp.Role == GroupRole.Ally && !freighter && !still ? Stance.Escort : neutral || drone || freighter || still || scout ? Stance.Hold : Stance.Attack,
                     HoldFire: neutral || drone || scout || grp.Hull == "pod",
                     HullFrac: drone ? DroneHullFrac : 1, ShieldsFrac: drone || grp.Hull == "pod" ? 0 : 1, Prize: grp.Tag == "prize" && i == 0, Setup: load)
-                    { ArriveS = grp.ArriveS, WakeS = grp.WakeS, Fixed = still, Runs = scout });
+                    { ArriveS = grp.ArriveS, WakeS = grp.WakeS, Fixed = still, Runs = scout, Truce = grp.Tag == "truce" });
                 list.Add(id);
                 groups[grp.Role == GroupRole.Enemy ? "enemies" : "allies"].Add(id);
                 labels[id] = (label, i == 0 ? grp.Tag : null, grp.Role);
@@ -288,6 +288,11 @@ public static class MissionRun
                 // the mission that ends frees its sector for the next one
                 c.S.Missions.Remove(m);
                 c.OfferMission(n.Mission, at, carry);
+            }
+            if (r.Disband && m.Group != null && c.S.Groups.FirstOrDefault(g => g.Name == m.Group) is { } beaten)
+            {
+                c.S.Groups.Remove(beaten);
+                d.Ships.Add((beaten.Name, "broken up"));
             }
             d.Log = r.Log?.Eval(sc);
         }

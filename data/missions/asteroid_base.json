@@ -1,0 +1,60 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "asteroid_base",
+ "name": "Asteroid base assault",
+ "glyph": "Q",
+ "type": "Asteroid base assault",
+ "reward_cr": 1300,
+ "weight": 0.4,
+ "where": "asteroids && hostile",
+ "objective": "Dig the base out of the rocks and destroy it.",
+ "brief": "The {sector_owner_name} have cut a base into a rock in this field. Its guns are buried and its patrol knows the rocks. Destroy the base.",
+ "battle": [
+  {
+   "intel": "A base in the rocks",
+   "groups": [
+    {
+     "id": "base",
+     "faction": "{sector_owner}",
+     "count": 1,
+     "role": "enemy",
+     "label": "Asteroid base",
+     "hull": "asteroid_base",
+     "range_km": 80
+    },
+    {
+     "id": "patrol",
+     "faction": "{sector_owner}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Rock patrol",
+     "range_km": 40
+    }
+   ],
+   "objectives": [
+    {
+     "id": "base",
+     "text": "Destroy the asteroid base",
+     "primary": true,
+     "done": "alive(base) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{sector_owner}": -10,
+    "{side}": 5
+   },
+   "log": "The rock base is broken open."
+  }
+ ]
+}

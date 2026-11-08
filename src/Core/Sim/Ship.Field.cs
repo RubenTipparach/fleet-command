@@ -16,6 +16,8 @@ public sealed partial class Ship
     public bool Fixed;
     /// <summary>A runner: holds its course at full speed, no orders, no fire.</summary>
     public bool Runs;
+    /// <summary>Under a truce until the player's side fires first.</summary>
+    public bool Truce;
     /// <summary>What it is asked to do once it arrives or wakes.</summary>
     public Stance WakeStance;
     public bool WakeHoldFire;

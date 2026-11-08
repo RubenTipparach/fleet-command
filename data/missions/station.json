@@ -1,30 +1,48 @@
 {
- "_doc": "Mission file (openspec/changes/mission-scripting; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
  "id": "station",
  "name": "Enemy station assault",
  "glyph": "S",
  "type": "Base assault",
- "reward_cr": 1200,
+ "reward_cr": 1400,
  "where": "station != '' && hostile",
- "objective": "Destroy the station's guard squadron.",
- "brief": "{sector_station} anchors the {sector_owner_name} line here. Its guard squadron is the first wall: destroy it. (The station itself joins the battle once stations are built.)",
+ "objective": "Break {sector_station}'s shields and destroy it.",
+ "brief": "{sector_station} anchors the {sector_owner_name} line here. Its guns cover every approach and its guard squadron patrols the sphere. Destroy the station; the guard may run once it falls.",
  "battle": [
   {
+   "intel": "A station and its guard",
    "groups": [
+    {
+     "id": "base",
+     "faction": "{sector_owner}",
+     "count": 1,
+     "role": "enemy",
+     "label": "{sector_station}",
+     "hull": "station",
+     "range_km": 70,
+     "tag": "flagship",
+     "ship_name": "{sector_station}"
+    },
     {
      "id": "guard",
      "faction": "{sector_owner}",
-     "count": "strength + 1",
+     "count": "strength",
      "role": "enemy",
-     "label": "Station guard"
+     "label": "Station guard",
+     "range_km": 40
     }
    ],
    "objectives": [
     {
-     "id": "win",
-     "text": "Destroy the guard squadron",
+     "id": "base",
+     "text": "Destroy {sector_station}",
      "primary": true,
-     "done": "alive(enemies) == 0"
+     "done": "alive(base) == 0"
+    },
+    {
+     "id": "guard",
+     "text": "Destroy the guard squadron",
+     "done": "alive(guard) == 0"
     },
     {
      "id": "intact",
@@ -40,8 +58,9 @@
    "credits": "pay",
    "standing": {
     "{sector_owner}": -10,
-    "{side}": 5
-   }
+    "{side}": 6
+   },
+   "log": "{sector_station} destroyed."
   }
  ]
 }

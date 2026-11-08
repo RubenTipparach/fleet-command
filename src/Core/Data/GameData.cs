@@ -106,6 +106,8 @@ public sealed record ShipStart(string Id, string Name, string Captain, string Cl
     public bool Fixed { get; init; }
     /// <summary>A runner (an enemy scout making for home): it holds its course at full speed and never turns to fight.</summary>
     public bool Runs { get; init; }
+    /// <summary>Under a truce: it holds its fire and its place until the player's side fires first, then fights.</summary>
+    public bool Truce { get; init; }
 }
 
 /// <summary>A ship's craft and mines in a scenario, each null for its class's loadout; the fighters' first mission.</summary>

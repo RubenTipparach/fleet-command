@@ -1,0 +1,72 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "extraction",
+ "name": "Extraction",
+ "glyph": "<",
+ "type": "Extraction",
+ "reward_cr": 900,
+ "weight": 0.4,
+ "where": "planet != '' && (hostile || neutral)",
+ "objective": "Beam Dr. Hale's team up from {sector_planet} and get clear.",
+ "brief": "A research team led by Dr. Hale is stranded on {sector_planet}. Get within transporter range and beam them up before {enemy_name} ships arrive.",
+ "battle": [
+  {
+   "intel": "Ships on the way",
+   "planets": [
+    {
+     "id": "world",
+     "name": "{sector_planet}",
+     "kind": "lava",
+     "bearing_deg": -10,
+     "range_km": 80,
+     "radius_km": 11,
+     "waiting": "Dr. Hale",
+     "sites": [
+      {
+       "id": "camp",
+       "name": "Research camp",
+       "kind": "lab",
+       "lat_deg": 5,
+       "lon_deg": 15,
+       "known": true
+      }
+     ]
+    }
+   ],
+   "groups": [
+    {
+     "id": "hunters",
+     "faction": "{enemy}",
+     "count": "strength",
+     "role": "enemy",
+     "label": "Hunters",
+     "range_km": 120,
+     "arrive_s": 60
+    }
+   ],
+   "objectives": [
+    {
+     "id": "up",
+     "text": "Beam up Dr. Hale",
+     "primary": true,
+     "done": "picked_up('world')"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 5
+   },
+   "log": "Dr. Hale's team is aboard."
+  }
+ ]
+}

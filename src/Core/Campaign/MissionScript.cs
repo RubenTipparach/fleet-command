@@ -91,7 +91,11 @@ public sealed record NextMission(string Mission, string At, IReadOnlyDictionary<
 /// Haul (a faction) brings the battle's freighter into the fleet with her cargo, worth HaulCr credits when she is cashed out at
 /// a port (Campaign.CashOut).</summary>
 public sealed record MissionOutcome(Expr? When, Expr? Credits, Expr? Prestige, IReadOnlyDictionary<Template, Expr> Standing, Template? Prize,
-    IReadOnlyList<NextMission> Next, Template? Log, Template? Haul = null, Expr? HaulCr = null);
+    IReadOnlyList<NextMission> Next, Template? Log, Template? Haul = null, Expr? HaulCr = null)
+{
+    /// <summary>The faction fleet this mission follows is broken up and leaves the map (hunters beaten).</summary>
+    public bool Disband { get; init; }
+}
 
 /// <summary>A grading rule: when it holds, the grade.</summary>
 public sealed record GradeRule(Expr When, string Grade);
@@ -114,6 +118,9 @@ public sealed record MissionScript(
     /// and gone at the end of the turn, when she moves on (owner, 2026-11-07: "no mision flag needed. Just whenever you are
     /// on the same tile as freighter, you get a mission option").</summary>
     public bool Encounter { get; init; }
+    /// <summary>An event: never offered at random, only by the campaign itself (hunters catching the fleet, Campaign.Caught),
+    /// and gone at the end of the turn; it may be withdrawn from.</summary>
+    public bool Event { get; init; }
 }
 
 /// <summary>Reads mission files. Each is checked against the names its scopes provide (Scopes below).</summary>
@@ -122,7 +129,7 @@ public static class MissionLoader
     /// <summary>The five grades, worst to best.</summary>
     public static readonly string[] GradeIds = { "crushing", "defeat", "draw", "victory", "outstanding" };
     private static readonly string[] Roles = { "enemy", "ally", "neutral" };
-    private static readonly string[] Tags = { "flagship", "prize", "rescue", "decoy", "drone", "quarry", "scout" };
+    private static readonly string[] Tags = { "flagship", "prize", "rescue", "decoy", "drone", "quarry", "scout", "truce" };
     private static readonly string[] Places = { "where", "home", "here", "fleet" };
 
     /// <summary>Loads every mission; <paramref name="files"/> are paths relative to data/, <paramref name="read"/> returns text.</summary>
@@ -150,7 +157,7 @@ public static class MissionLoader
         // a contract may be withdrawn from; a story or special mission is seen through (owner, 2026-11-07: "some missions
         // withdraw is not possible (main story or special missions), general missions is fine to withdrawl")
         string kind = o.Str("kind", "contract");
-        if (kind is not ("contract" or "story" or "special" or "encounter")) throw new DataError($"{file}.kind: 'contract', 'story', 'special' or 'encounter', not '{kind}'");
+        if (kind is not ("contract" or "story" or "special" or "encounter" or "event")) throw new DataError($"{file}.kind: 'contract', 'story', 'special', 'encounter' or 'event', not '{kind}'");
         string glyph = o.Str("glyph");
         if (glyph.Length != 1) throw new DataError($"{file}.glyph: one character");
         double reward = o.Num("reward_cr");
@@ -218,7 +225,7 @@ public static class MissionLoader
             foreach (StrictJson r in o.ObjList("result")) results.Add(Outcome(r, offerVars.Concat(Scopes.Grade).Concat(Scopes.Result)));
 
         var m = new MissionScript(id, o.Str("name"), glyph, kind == "story", o.Str("type", ""), reward, turns, where, setup, brief, objective,
-            needs, battles, grades, results, follow, file) { CanWithdraw = kind is "contract" or "encounter", Weight = weight, Encounter = kind == "encounter" };
+            needs, battles, grades, results, follow, file) { CanWithdraw = kind is "contract" or "encounter" or "event", Weight = weight, Encounter = kind == "encounter", Event = kind == "event" };
         if (m.Encounter && !battles.Any(b => b.Groups.Any(g => g.Hull == "freighter")))
             throw new DataError($"{file}.battle: an encounter is fought round the freighter met, so a group needs hull 'freighter'");
         o.Done();
@@ -392,8 +399,9 @@ public static class MissionLoader
                 next.Add(new NextMission(n.Str("mission"), at, data));
                 n.Done();
             }
+        bool disband = r.Bool("disband", false);
         r.Done();
-        return new MissionOutcome(when, credits, prestige, standing, prize, next, log, haul, haulCr);
+        return new MissionOutcome(when, credits, prestige, standing, prize, next, log, haul, haulCr) { Disband = disband };
     }
 
     private static MissionText Text(StrictJson o, string key, IEnumerable<string> vars)

@@ -50,6 +50,7 @@ public sealed partial class Battle
             Ship s = _ships[i];
             s.Fixed = d.Fixed;
             s.Runs = d.Runs;
+            if (d.Truce) { s.Truce = true; s.WakeStance = Stance.Attack; s.WakeHoldFire = false; s.HoldFire = true; s.Stance = Stance.Hold; }
             if (d.Fixed) { s.V = 0; s.VOrder = 0; }
             if (d.WakeS > 0)
             {
@@ -173,6 +174,13 @@ public sealed partial class Battle
                 Say("Science", $"The {s.Name} is powering up!");
             }
         }
+        // a truce holds until someone fires
+        if (_firstFire != null)
+            foreach (Ship s in _ships.Where(o => o.Truce && o.Alive))
+            {
+                s.Truce = false; s.Stance = s.WakeStance; s.HoldFire = s.WakeHoldFire;
+                Say("Comms", _firstFire == Player.Side ? $"The {s.Name}: you broke the truce!" : $"The {s.Name} joins the fight.");
+            }
         PlanetScanStep(dt);
         AwayStep(dt);
         if (Scenario.TimeLimitS > 0 && T >= Scenario.TimeLimitS && Over == null)
