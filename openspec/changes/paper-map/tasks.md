@@ -21,6 +21,9 @@
 - [x] 1.11 The drawn pieces (owner, 2026-11-08: "hand drawn billboard puffs of cloud", "very pirate and very space"):
   `docs/mockups/lib/drawn.js` (ink, wash, hatching; clouds, storms, planets, suns, rocks, the compass rose), billboards on the
   chart, hand-lettered names, rhumb lines (mockup 1 v26, mockup 24 v4)
+- [x] 1.12 The planets drawn live by our planet shader (`docs/mockups/lib/planet-shader.js`, after Francisco Cidade's CC0 Pixel
+  Planet: six kinds, spinning, clouds, caps, rings, finer pixels, cross-hatched night sides), and the clouds, rocks and sun
+  cross-hatched in three zones (owner, 2026-11-08: "More cross hatch", "less pixelated") (mockup 1 v27, mockup 24 v5)
 
 ## 2. After the owner's notes
 

@@ -143,3 +143,4 @@
 - 2026-11-07, cloud session: version 147, version id `1794092255-faed`: M1 v24 and M24 v2 (the chart on phones).
 - 2026-11-08, cloud session: version 148, version id `1794096332-5c52`: M1 v25 and M24 v3 (the sector panel hides on a phone, a two-row top bar).
 - 2026-11-08, cloud session: version 149, version id `1794098613-9364`: M1 v26 and M24 v4 (hand-drawn clouds, storms, planets, suns and rocks; the Space Chart summary).
+- 2026-11-08, cloud session: version 150, version id `1794102613-3191`: M1 v27 and M24 v5 (shader planets, heavier cross-hatching; the Space Chart summary).

@@ -89,7 +89,8 @@
 - [ ] 2.10 The map as a printed paper chart on a walnut table in a carpeted, papered room (mockup 1 v21, change `paper-map`;
   owner, 2026-11-07: "make the space background a crusty print on old piece of paper with hexagon grid drawn on it"): the
   game keeps the glass board until the owner asks for the paper map in the game; with it, the drawn pieces of mockup 1 v26
-  (clouds, storms, planets, suns, rocks, names, compass rose: `docs/mockups/lib/drawn.js`)
+  (clouds, storms, suns, rocks, names, compass rose: `docs/mockups/lib/drawn.js`) and the planet shader of v27
+  (`docs/mockups/lib/planet-shader.js`, a port to a Godot canvas shader)
 - [ ] 2.10 Mockup 1: sync to the game's 2026-11-06 changes: the goals' close key and their list in Comms (a battle opens on Comms), the campaign map's Menu opening the pause menu, the debrief on black
 - [ ] 2.11 Mockup 1 v25: the sector panel's Hide key, with a Sector key among the map keys to bring it back and picking a
   sector opening it again; on a phone in portrait the top bar in two rows (credits, turn, moves and Missions, then prestige

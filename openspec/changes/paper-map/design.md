@@ -60,10 +60,10 @@ stations stay as models (the owner, the same day: "The ships as their original m
 |---|---|---|
 | Ink | Sepia (`#2a1b10`), the pen's line wobbling on a smooth seeded wave (never jitter), swelling and thinning with pressure, tapered at open ends, a faint second pass where it bled | Every outline |
 | Wash | Watercolour: an even coat, blooms of thicker and thinner paint, the paper's grain lifting through, pigment pooled darker at the edge | Every fill |
-| Light | From the upper left, as the lamp: shadowed sides (lower right) washed darker and hatched | Every piece |
+| Light | From the upper left, as the lamp. Tone is built by the pen in three zones deeper into the shadow (lower right): single lines through the mid-tone, crossed in the shadow, a third set in the deepest part (owner, 2026-11-08: "More cross hatch for space terrain stuff") | Every piece |
 | Nebula cloud | A cartoon cumulus: crowns heaped at the back, a row of puffs in front overlapping them, each puff its own washed disc with its shadow crescent hatched and its edge inked, then a heavy silhouette and a flat base. The cloud's main colour low, its accent on the crowns. Three drawings per cloud, shared by its sectors | A billboard at the back of each nebula sector, 2.0-2.45 units wide, and in three sectors of five a smaller one in front, so a cloud of sectors reads as a bank |
 | Storm | The same cloud in slate, hatched heavier, a forked yellow bolt out of its base | One cloud in three (by its id); a look only, no rule changes |
-| Planet | A disc washed in the world's hue, curved bands, the night side washed dark and cross-hatched, a lit patch left bare, a ring in its holder's colour (back half behind the disc, front half over) | A billboard, 1.67 units wide for a home world |
+| Planet | Drawn live by a shader (`docs/mockups/lib/planet-shader.js`, below): a turning world of its kind, its light in five flat bands, the night side cross-hatched band by band, coastlines and limb inked, a ring in its holder's colour | A camera-facing quad, the disc 1.15 units across for a home world |
 | Sun | A disc in warm wash with a darker rim and curls of churn, sixteen rays alternating a straight spike and a wavy flame | A billboard 2.0 units wide, with its warm point light kept |
 | Asteroid | A lumpy outline, grey-brown wash, a crater or two, the dark side hatched; twelve drawings shared by every belt | Half as many rocks as the 3D belt, each a small billboard |
 | Compass rose | Two rings with ticks, sixteen points (cardinals long, half and quarter points shorter), each point half washed red and half bare, a fleur at north | Printed on a patch of bare paper in the lower left of the print |
@@ -76,6 +76,28 @@ under the fog of war as the 3D ones did (`fogKey`). The space look (`?look=space
 
 Taken from the reference games: nothing. The look is a sea chart's (compass roses, rhumb lines, inked and washed vignettes),
 which is a tradition of map making, not anyone's artwork.
+
+### The planet shader (`docs/mockups/lib/planet-shader.js`)
+
+The owner, 2026-11-08, of Francisco Cidade's Pixel Planet Godot shader (https://store.godotengine.org/asset/fcidade/pixel-planet-godot-shader/,
+CC0 1.0, inspired by Deep-Fold's Pixel Planet Generator): "use this to draw our planets in space ... but maybe less pixelated. More
+cross hatching". Its source is a store download, not public, so this is our own code with its features, the asset named as the
+inspiration in the file's header:
+
+| Feature (the asset's) | Ours |
+|---|---|
+| A procedural world on one quad, no textures | The same, in three.js r147: a quad that always faces the camera, its foot at its origin |
+| Six kinds: terran (seas, land, clouds), desert (dunes), ice, lava (dark rock, glowing rivers), gas giant (bands), moon (craters) | The same six, each with its own four-step palette |
+| `pixels` across the planet (64 by default) | 220: still cut into cells, fine enough to read as drawn, not pixel art |
+| `shade_steps` of flat light | Five bands, from the upper left as the lamp |
+| Dithered shadow | Cross-hatching in sepia ink instead: a set of lines at 45 degrees from the second band, crossed at -45 from the third, horizontal from the fourth, vertical in the deepest |
+| Clouds turning twice as fast as the ground, throwing shadows | The same |
+| Polar caps, axis tilt, rings, atmosphere glow | The same; the ring in the holder's colour, its far half behind the disc, hatched where the planet's shadow falls; the atmosphere a thin washed rim on the lit side |
+| | Coastlines, gas bands' edges and crater rims inked; the limb inked heavy with a wandering pen |
+
+The noise is value noise over a 256 by 256 lattice of Mulberry32 numbers, read with the two-channel trick (one 2D lookup, two
+layers of 3D noise), so there is no trigonometric hash (CLAUDE.md section 10) and it runs on WebGL 1. Each world is a few
+hundred pixels of fragment work a frame; ten on the chart cost about what one textured sphere did.
 
 ## The sheet in 3D (`paperMesh`)
 
@@ -97,3 +119,4 @@ the page as WebP. The nebula is rendered once per chart at half the chart's size
 | 3 | Nebulae as printed washes only, or also their 3D clouds over the paper? | Answered 2026-11-08: drawn billboard clouds over the printed washes |
 | 4 | Do storms do anything (a move cost, damage), or are they a look? | A look only, until the owner asks |
 | 5 | Should the stations and ships be drawn too? | No: the owner likes the ships as models; stations stay models with them |
+| 6 | Which kind of world is each planet? | Provisional, a look only, set in the page (`PLANET_KIND`): Halcyon and Calder terran, Meridian and Selene ice, Aster and Tessaly gas giants, Vahr and Ouro desert, Kesh Prime lava, Sabine a moon. Into `data/campaign/campaign.json` when the game draws them |
