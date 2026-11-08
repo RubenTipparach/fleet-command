@@ -21,6 +21,8 @@ public sealed class GameActions
     public Action? OnQuit;
     /// <summary>Set by the game flow: saves and goes back to the main menu (the campaign map's menu).</summary>
     public Action? OnMainMenu;
+    /// <summary>Set by the composition root: the planet view on the selected planet, or back to the ship (BattleView).</summary>
+    public Action? OnPlanetView;
 
     public GameActions(Func<ConsoleContext> ctx) { _ctx = ctx; }
 
@@ -34,7 +36,7 @@ public sealed class GameActions
         ["helm_port_45"] = () => B.Turn(-45), ["helm_starboard_45"] = () => B.Turn(45),
         ["speed_up"] = () => B.SpeedStep(1), ["speed_down"] = () => B.SpeedStep(-1), ["all_stop"] = () => B.AllStop(),
         ["fire"] = () => B.Fire(), ["next_target"] = () => B.NextTarget(), ["toggle_volley"] = () => B.ToggleVolley(),
-        ["pause"] = Pause, ["back"] = Back, ["toggle_fullscreen"] = Fullscreen,
+        ["planet_view"] = PlanetView, ["pause"] = Pause, ["back"] = Back, ["toggle_fullscreen"] = Fullscreen,
         ["command_1"] = () => Command(1), ["command_2"] = () => Command(2), ["command_3"] = () => Command(3),
         ["command_4"] = () => Command(4), ["command_5"] = () => Command(5), ["command_6"] = () => Command(6),
         ["command_7"] = () => Command(7), ["command_8"] = () => Command(8), ["command_9"] = () => Command(9),
@@ -47,6 +49,9 @@ public sealed class GameActions
         Ship[] fleet = B.Fleet();
         if (n >= 1 && n <= fleet.Length) B.TakeCommand(fleet[n - 1].Id);
     }
+
+    /// <summary>G, or the view's Planet view key: the camera to the selected planet and down to it, or back to the ship.</summary>
+    public void PlanetView() => OnPlanetView?.Invoke();
 
     public void Station(string id) => S.Station = id;
     public void ShipPage(string id) => S.ShipPage = id;

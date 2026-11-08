@@ -1,0 +1,86 @@
+[gd_scene load_steps=8 format=3]
+
+[sub_resource type="CylinderMesh" id="plinth"]
+top_radius = 0.3
+bottom_radius = 0.38
+height = 0.14
+radial_segments = 8
+
+[sub_resource type="TorusMesh" id="ring"]
+inner_radius = 0.27
+outer_radius = 0.31
+rings = 24
+ring_segments = 6
+
+[sub_resource type="BoxMesh" id="turret"]
+size = Vector3(0.3, 0.13, 0.3)
+
+[sub_resource type="CylinderMesh" id="barrel"]
+top_radius = 0.022
+bottom_radius = 0.03
+height = 0.5
+radial_segments = 10
+
+[sub_resource type="CylinderMesh" id="muzzle"]
+top_radius = 0.034
+bottom_radius = 0.034
+height = 0.05
+radial_segments = 10
+
+[sub_resource type="CylinderMesh" id="dish"]
+top_radius = 0.06
+bottom_radius = 0.015
+height = 0.03
+radial_segments = 14
+
+[sub_resource type="SphereMesh" id="lamp"]
+radius = 0.014
+height = 0.028
+radial_segments = 8
+rings = 4
+
+[node name="Battery" type="Node3D"]
+
+[node name="HullPlinth" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0.08)
+mesh = SubResource("plinth")
+
+[node name="TrimRing" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.02, 0.08)
+mesh = SubResource("ring")
+
+[node name="HullTurret" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.04, 0.08)
+mesh = SubResource("turret")
+
+[node name="TrimBarrelL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.1045, -0.9945, 0, 0.9945, 0.1045, -0.07, 0.06, -0.24)
+mesh = SubResource("barrel")
+
+[node name="HullMuzzleL" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.1045, -0.9945, 0, 0.9945, 0.1045, -0.07, 0.085, -0.48)
+mesh = SubResource("muzzle")
+
+[node name="TrimBarrelR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.1045, -0.9945, 0, 0.9945, 0.1045, 0.07, 0.06, -0.24)
+mesh = SubResource("barrel")
+
+[node name="HullMuzzleR" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.1045, -0.9945, 0, 0.9945, 0.1045, 0.07, 0.085, -0.48)
+mesh = SubResource("muzzle")
+
+[node name="TrimDish" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.866, 0.5, 0, -0.5, 0.866, 0.1, 0.15, 0.18)
+mesh = SubResource("dish")
+
+[node name="GlowLamp0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 0.12, 0.2)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.34, -0.06, 0.08)
+mesh = SubResource("lamp")
+
+[node name="GlowLamp2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.34, -0.06, 0.08)
+mesh = SubResource("lamp")

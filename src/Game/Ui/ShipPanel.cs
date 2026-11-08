@@ -198,7 +198,7 @@ public static class SystemsDisplay
             double? cd = Rules.CooldownS(m);
             var rows = new List<(string, string, Color?)> { ("Health", $"{Math.Round(m.Hp * 100)} %", null), ("Status", st.ToString(), sc), ("Arming", m.State.ToString(), null) };
             if (cd is { } secs) rows.Add(("Ready in", Rules.FormatCooldown(secs) + " s", null));
-            if (own && t != null) rows.Add(("To hit " + t.Name, $"{Math.Round(bt.Rules.HitChance(s, m, t) * 100)} %", null));
+            if (own && t != null) rows.Add(("To hit " + Aiming.ContactName(bt, t), $"{Math.Round(bt.Rules.HitChance(s, m, t) * 100)} %", null));
             if (own && !m.Weapon.IsPointDefence) rows.Add(("Aims", m.Weapon.Precise ? "Precise" : "By arc", null));
             Ship? pinned = own ? bt.PinTarget(m) : null;
             if (pinned != null) rows.Add(("Pinned", m.Pin!.Aim == "hull" ? pinned.Name : $"{pinned.Name} · {Strike.Name(m.Pin.Aim, pinned)}", null));
