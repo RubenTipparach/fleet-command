@@ -62,3 +62,6 @@
 - 2026-11-07, cloud session: version 16, version id `1794091931-65fc`. The Concord ships back on the original light
   arrangement (a flood every 30 m; the owner: "too many lights ... go back to the way lights were arramged originally"),
   their textures unchanged; all five rebaked.
+- 2026-11-08, cloud session: version 17, version id `1794098228-274b`. Windows and hangars lit warm yellow from inside (the
+  owner: "Windows/interiors need to be a warm emissive yellow on the interior so they stand out more"): the rooms' light
+  warm yellow, brighter, and a warm glow filling each lit pane (`docs/mockups/lib/baked-hull.js`).
