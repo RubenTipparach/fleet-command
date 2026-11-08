@@ -65,3 +65,5 @@
 - 2026-11-08, cloud session: version 17, version id `1794098228-274b`. Windows and hangars lit warm yellow from inside (the
   owner: "Windows/interiors need to be a warm emissive yellow on the interior so they stand out more"): the rooms' light
   warm yellow, brighter, and a warm glow filling each lit pane (`docs/mockups/lib/baked-hull.js`).
+- 2026-11-08, cloud session: version 18, version id `1794102257-2ee3`. The window light softened to a warm white (the
+  owner: "it looks strongly tinted rather than just yellowish lighting"): the rooms keep their own colours, a smaller glow.

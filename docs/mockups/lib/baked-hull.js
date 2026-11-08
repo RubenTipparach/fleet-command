@@ -119,9 +119,10 @@ vec3 paneColour(){
   vec3 eu = normalize(vU), ev = normalize(vV), en = normalize(vN), V = normalize(vObj - vCamObj);
   float kk = floor(vKind + 0.5); bool lit = kk >= 8.0; int k = int(lit ? kk - 8.0 : kk);   // rounded: an interpolated 8.0 can read 7.9999
   vec2 hs = vHalf, d2 = vQ - clamp(vQ, -hs, hs); float out_ = length(d2);
-  // a lit room is a warm yellow, so the windows stand out against the hull (owner, 2026-11-08: "Windows/interiors need to be
-  // a warm emissive yellow on the interior so they stand out more"); a workshop a little more amber, a hold a little dimmer
-  vec3 L = !lit ? vec3(0.02, 0.016, 0.01) : k == 2 ? vec3(1.0, 0.68, 0.3) : k == 3 ? vec3(0.8, 0.62, 0.36) : vec3(1.0, 0.8, 0.42);
+  // a lit room is lit warm white, so the windows stand out against the hull (owner, 2026-11-08: "Windows/interiors need to be
+  // a warm emissive yellow on the interior so they stand out more", then "it looks strongly tinted rather than just
+  // yellowish lighting"): the room keeps its own colours under a yellowish light; a workshop warmer, a hold dimmer
+  vec3 L = !lit ? vec3(0.02, 0.016, 0.01) : k == 2 ? vec3(1.0, 0.86, 0.66) : k == 3 ? vec3(0.82, 0.76, 0.64) : vec3(1.0, 0.9, 0.74);
   if (out_ > 0.0) {   // the frame: a bevel rising from the glass, lit from above, a dark seam where it meets the hull
     vec2 dir = d2 / out_; vec3 nf = normalize(en*0.75 + (eu*dir.x + ev*dir.y)*0.65);
     float key = max(dot(nf, normalize(vec3(-0.25, 1.0, 0.35))), 0.0);
@@ -138,10 +139,10 @@ vec3 paneColour(){
   vec3 D = normalize(vec3(dot(V, ru), dot(V, rv), dot(V, rn)) + vec3(1e-4)); if (D.z <= 0.0) D.z = 1e-3;
   vec3 q = vec3(dot(Pp, ru), dot(Pp, rv), dot(Pp, rn) + zext);
   vec2 mouth = 2.0*vec2(abs(dot(eu, ru))*hs.x + abs(dot(ev, ru))*hs.y, abs(dot(eu, rv))*hs.x + abs(dot(ev, rv))*hs.y);  // the mouth, level
-  vec3 room = k == 4 ? hangarBehind(q, D, floor(vC*0.3), mouth, lit ? vec3(1.0, 0.82, 0.5) : L)
+  vec3 room = k == 4 ? hangarBehind(q, D, floor(vC*0.3), mouth, lit ? vec3(1.0, 0.9, 0.74) : L)
                      : roomBehind(q, D, floor(vC*0.6), k == 1 ? 1 : k == 2 ? 2 : k == 3 ? 1 : 0, L);
   float fres = pow(1.0 - clamp(-dot(V, en), 0.0, 1.0), 4.0);             // the glass: a faint sky in it at a glancing look
-  vec3 glow = lit ? L*0.55*uLive : vec3(0.0);   // the room's warm light filling the glass, so a lit window reads yellow from afar
+  vec3 glow = lit ? L*0.22*uLive : vec3(0.0);   // the room's warm light filling the glass, so a lit window reads yellow from afar
   return (room*uRoomK*uLive + glow)*(1.0 - 0.5*fres) + vec3(0.05, 0.07, 0.06)*fres*uFrameK;
 }`;
 // One mesh of quads for a ship's panes; dmgU: the ship's damage uniforms, so a hole or a burn takes its panes with it.
