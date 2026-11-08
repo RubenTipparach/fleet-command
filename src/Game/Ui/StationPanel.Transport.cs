@@ -80,26 +80,32 @@ public sealed partial class StationPanel
                 float ik = Sk.RenderedKeys ? 0.21f : 0.15f;
                 Kit.Icon(this, key, r.Grow(-bs * ik), KeyFace.Ink(Kit, fill, true));
             }
-            y += bs + gap;
             // weapons: which one (owner: "need a drop down or something to pick from weapons"): a pill showing the pick,
-            // its list opening over the queue
+            // its list opening over the queue. Docked, the pill sits in the room left of the subsystem row, so picking
+            // weapons never pushes the panel's content past its bottom (owner, 2026-11-08: "weapn controls can push stuff
+            // off screen"); expanded, it has its own row.
+            float keysW = subs.Length * bs + (subs.Length - 1) * 6, room = w - keysW - 8;
+            bool inline = !Big && room >= 72;
+            if (!inline) y += bs + gap;
             if (s.RaidSys == "weapons")
             {
-                float ph = Big ? 40 : 30;
+                float ph = inline ? bs : Big ? 40 : 30, px = inline ? x + keysW + 8 : x, pw = inline ? room : w;
                 Mount? m = t != null && s.RaidMount is { } mi && mi < t.Mounts.Count ? t.Mounts[mi] : null;
-                var r = new Rect2(x, y, w, ph);
-                HitState st = Ui.Reg("tr.wpick", r, _ => X.State.RaidMountOpen = !X.State.RaidMountOpen, null, new Tip("Pick the weapon to raid"));
+                string full = m != null ? $"{m.Label} · {m.Weapon.Name} · {Pct(Math.Clamp(m.Hp, 0, 1))}" : "Weapons control (any weapon)";
+                var r = new Rect2(px, y, pw, ph);
+                HitState st = Ui.Reg("tr.wpick", r, _ => X.State.RaidMountOpen = !X.State.RaidMountOpen, null, new Tip(inline ? full : "Pick the weapon to raid"));
                 Color wf = st.Hot || X.State.RaidMountOpen ? C.Sky : C.Signal, ink = KeyFace.Ink(Kit, wf);
                 KeyFace.Draw(Kit, this, r, ph / 2, wf);
-                string lab = m != null ? $"{m.Label} · {m.Weapon.Name} · {Pct(Math.Clamp(m.Hp, 0, 1))}" : "Weapons control (any weapon)";
-                Text(lab, x + 16, y + ph * 0.68f, Big ? 20 : 16, ink, HorizontalAlignment.Left, w - 48);
-                float ax = x + w - 20, ay = y + ph / 2;
+                string lab = inline ? (m != null ? $"{m.Label} · {Pct(Math.Clamp(m.Hp, 0, 1))}" : "Any") : full;
+                Text(lab, px + (inline ? 12 : 16), y + ph * 0.66f, Big ? 20 : 16, ink, HorizontalAlignment.Left, pw - (inline ? 34 : 48));
+                float ax = px + pw - (inline ? 14 : 20), ay = y + ph / 2;
                 Pen.FillAbs(this, X.State.RaidMountOpen
                     ? new[] { new Vector2(ax - 6, ay + 3), new Vector2(ax + 6, ay + 3), new Vector2(ax, ay - 4) }
                     : new[] { new Vector2(ax - 6, ay - 3), new Vector2(ax + 6, ay - 3), new Vector2(ax, ay + 4) }, ink);
                 pick = new Rect2(x, y + ph + 4, w, b.End.Y - (y + ph + 4) - 4);
-                y += ph + gap;
+                if (!inline) y += ph + gap;
             }
+            if (inline) y += bs + gap;
         }
         // the role keys (Hit and run: Shoot and Bomb share their row)
         string[] roles = Battle.QueueRoles[mode];
