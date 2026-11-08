@@ -467,8 +467,11 @@ The `playtest` and `obs-record` skills are the method (Crab Breeze 9, Mining Mik
   the contact sheet** before calling a take done.
 - **Upload every take to Google Drive at full resolution** (owner, 2026-11-04: "upload google drive at full
   resolution, mp4 encoded"): an H.264 MP4 at the take's own resolution, never scaled down, into
-  `G:/My Drive/dungeon-crawler-2026/` (the folder the owner's other games use), named
-  `fleet-command-<YYYY-MM-DD>-<what>.mp4`, confirm it with the Google Drive connector, and give the owner the link.
+  `G:/My Drive/dungeon-crawler-2026/fleet-command/<faction>/` (the folder the owner's other games use, sorted by game and
+  then by the side the take plays: `concord/`, `krai/`, a new faction's own folder, or `all-factions/` for a take of no one
+  side; owner, 2026-11-08: "sort the fleet command videos into folders and in the fleet command folder sort them by
+  faction"), named `fleet-command-<YYYY-MM-DD>-<what>.mp4`, confirm it with the Google Drive connector, and give the owner
+  the link.
 - **One game per device**, and **a desktop run is checked every five minutes** while it plays
   (Mining Mike).
 - **Share the machine with the other sessions** (owner, 2026-11-04: "theres two claude sessions running on this machine,
