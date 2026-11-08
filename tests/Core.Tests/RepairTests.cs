@@ -116,7 +116,7 @@ public class RepairTests
     [Fact]
     public void The_escape_scene_starts_with_the_battles_damage_from_both_sides()
     {
-        foreach (string id in new[] { "concord_escape", "krai_escape", "kelvane_escape" })
+        foreach (string id in new[] { "concord_escape", "krai_escape", "kelvane_escape", "ssarith_escape" })
         {
             var b = new Battle(TestData.Data, TestData.Data.ScenarioById(id));
             Ship s = b.Player;

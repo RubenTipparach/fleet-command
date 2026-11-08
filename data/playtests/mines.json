@@ -1,5 +1,5 @@
 {
- "_doc": "The scripted captain's Mines scene (the battle console mockup's scene_mines_laid): open the ship panel's Craft page, beam two mines a kilometre ahead into the two lanes with Place mine and a click in the view, the cool-down between them, then wait for the lane runners. Played from every side (concord_mines, krai_mines, kelvane_mines).",
+ "_doc": "The scripted captain's Mines scene (the battle console mockup's scene_mines_laid): open the ship panel's Craft page, beam two mines a kilometre ahead into the two lanes with Place mine and a click in the view, the cool-down between them, then wait for the lane runners. Played from every side (concord_mines, krai_mines, kelvane_mines, ssarith_mines).",
  "beats": [
   { "do": "wait_ready" },
   { "do": "pick_scene" },

@@ -12,6 +12,9 @@ DOTNET="$(scripts/install-dotnet.sh 2>/dev/null)"
 GODOT="$(scripts/install-godot.sh 2>/dev/null)"
 export DOTNET_ROOT="$(dirname "$DOTNET")" PATH="$(dirname "$DOTNET"):$PATH" DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
 
+echo "== faction readiness page is what the game says (docs/design/faction-readiness.html, CLAUDE.md section 12)"
+python3 tools/factions/readiness.py --check
+
 echo "== headless tests (FleetCommand.Core)"
 "$DOTNET" test tests/Core.Tests -v q --nologo
 

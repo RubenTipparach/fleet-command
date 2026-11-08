@@ -1,5 +1,5 @@
 {
- "_doc": "Written by tools/mockups/ship_schematics.py from the ship glbs; do not edit, re-run it. Each ship has two layers, pure white RGB with the drawing in alpha: hull (filled, top-lit, low alpha) and wire (quad edges seen from above plus the outline, full alpha). Tint the hull with a dark skin colour, the wire with a bright one, and lay the wire over the hull. A glb point (x, y, z) in metres falls at pixel (origin_px[0] + x / m_per_px, origin_px[1] + z / m_per_px); y (height) is not drawn. A schematic is stale when its source glb's sha256 differs.",
+ "_doc": "Written by tools/mockups/ship_schematics.py from the ship glbs; do not edit, re-run it. Each ship has two layers, pure white RGB with the drawing in alpha: hull (filled, top-lit, low alpha) and wire (quad edges seen from above plus the outline, full alpha; the edges the hull hides at 0.4). Tint the hull with a dark skin colour, the wire with a bright one, and lay the wire over the hull. A glb point (x, y, z) in metres falls at pixel (origin_px[0] + x / m_per_px, origin_px[1] + z / m_per_px); y (height) is not drawn. A schematic is stale when its source glb's sha256 differs.",
  "conventions": {
   "view": "orthographic, looking straight down -Y (from above)",
   "image_x": "+X (starboard to the right)",
@@ -12,7 +12,7 @@
   "pixel_origin": "top-left corner of the image; pixel centres at +0.5",
   "centre": "the centre of the hull's top-down bounding box is the centre of the canvas",
   "margin": 0.06,
-  "layers": "white RGB, alpha carries the drawing; hull alpha 0.15-0.55, wire alpha up to 1"
+  "layers": "white RGB, alpha carries the drawing; hull alpha 0.10-0.38, wire alpha up to 1"
  },
  "ships": [
   {
@@ -174,7 +174,7 @@
    "edges_drawn": 2022,
    "source": {
     "glb": "assets/ships/concord/albatross.glb",
-    "sha256": "9e228cd504f1e56d65ee34beed75ae5ce4446b5aa106dd3ba481eae99bfa8d91"
+    "sha256": "d34249241a84d576ccd9dbb81afdfca0116015cf4c856388255d96efe5ab0dab"
    }
   },
   {
@@ -228,7 +228,7 @@
    "edges_drawn": 1492,
    "source": {
     "glb": "assets/ships/concord/pelican.glb",
-    "sha256": "eaef18ea3f4a66ae01a06bd1a2a59d1d12e2e79f52795cca290f017bc17e8bf1"
+    "sha256": "ab1a347b21c55f923f48a909dbe9c486b54bbc97f2512d3ce9fefdd2007d8ffd"
    }
   },
   {
@@ -337,6 +337,330 @@
    "source": {
     "glb": "assets/ships/krai/dreadnought.glb",
     "sha256": "7cfccede0f655418b72cd6cc024f2e979bc8b6f9d09afb4c609b27aabcdd2b12"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "hooded_lance",
+   "hull": "ssarith/hooded_lance.hull.png",
+   "wire": "ssarith/hooded_lance.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.12207,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 52.0,
+    "length_z": 110.0
+   },
+   "source_triangles": 394,
+   "quads": 171,
+   "triangles": 52,
+   "edges_drawn": 277,
+   "source": {
+    "glb": "assets/ships/ssarith/hooded_lance.glb",
+    "sha256": "6e4aa37c7954bac1a67d0081324d29ba2cfc192f8960c781e89b3fc3a75cf3ef"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "forked_prow",
+   "hull": "ssarith/forked_prow.hull.png",
+   "wire": "ssarith/forked_prow.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.12207,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 18.4,
+    "length_z": 110.0
+   },
+   "source_triangles": 374,
+   "quads": 167,
+   "triangles": 40,
+   "edges_drawn": 269,
+   "source": {
+    "glb": "assets/ships/ssarith/forked_prow.glb",
+    "sha256": "3eb9bc5621ea231cd3497f4994b2d6fea8ac4efe634f8972302b38846963bde4"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "harpoon",
+   "hull": "ssarith/harpoon.hull.png",
+   "wire": "ssarith/harpoon.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.128729,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 34.0,
+    "length_z": 116.0
+   },
+   "source_triangles": 294,
+   "quads": 125,
+   "triangles": 44,
+   "edges_drawn": 232,
+   "source": {
+    "glb": "assets/ships/ssarith/harpoon.glb",
+    "sha256": "5d008f53393ebcec297a6e5a81768fa69272109b9aea48fbfd84062bcbce68fe"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "trident",
+   "hull": "ssarith/trident.hull.png",
+   "wire": "ssarith/trident.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.12429,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 30.032,
+    "length_z": 112.0
+   },
+   "source_triangles": 454,
+   "quads": 197,
+   "triangles": 60,
+   "edges_drawn": 376,
+   "source": {
+    "glb": "assets/ships/ssarith/trident.glb",
+    "sha256": "b95467199cfd8880587485dd2500560dd9cc99f9865ee8643635962a3b10bbbd"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "cruiser",
+   "hull": "ssarith/cruiser.hull.png",
+   "wire": "ssarith/cruiser.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.16646,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 60.0,
+    "length_z": 150.0
+   },
+   "source_triangles": 456,
+   "quads": 195,
+   "triangles": 66,
+   "edges_drawn": 363,
+   "source": {
+    "glb": "assets/ships/ssarith/cruiser.glb",
+    "sha256": "0b4b424585ef585f1531712d2fa08a0948cbccd0dcb2286c1e2e036ad9b21457"
+   }
+  },
+  {
+   "faction": "ssarith",
+   "id": "carrier",
+   "hull": "ssarith/carrier.hull.png",
+   "wire": "ssarith/carrier.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.186435,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 68.2,
+    "length_z": 168.0
+   },
+   "source_triangles": 380,
+   "quads": 173,
+   "triangles": 34,
+   "edges_drawn": 283,
+   "source": {
+    "glb": "assets/ships/ssarith/carrier.glb",
+    "sha256": "957462f310bc5577816fe24b586b632d5159be6d2a1450dd30cae5c0742a390e"
+   }
+  },
+  {
+   "faction": "kelvane",
+   "id": "kelvane_frigate",
+   "hull": "kelvane/kelvane_frigate.hull.png",
+   "wire": "kelvane/kelvane_frigate.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.139826,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 24.0,
+    "length_z": 126.0
+   },
+   "source_triangles": 656,
+   "quads": 311,
+   "triangles": 34,
+   "edges_drawn": 474,
+   "source": {
+    "glb": "assets/ships/kelvane/kelvane_frigate.glb",
+    "sha256": "5afdb79c1912835a1e35db885cddafbb55ae10acf6d623ceba78a87febb79f42"
+   }
+  },
+  {
+   "faction": "kelvane",
+   "id": "kelvane_destroyer",
+   "hull": "kelvane/kelvane_destroyer.hull.png",
+   "wire": "kelvane/kelvane_destroyer.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.150923,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 47.45,
+    "length_z": 136.0
+   },
+   "source_triangles": 1516,
+   "quads": 734,
+   "triangles": 48,
+   "edges_drawn": 772,
+   "source": {
+    "glb": "assets/ships/kelvane/kelvane_destroyer.glb",
+    "sha256": "f81dd1e9a39417b95b6bc8232fdec80919912eefb5e2414451a718e892cf7e5b"
+   }
+  },
+  {
+   "faction": "kelvane",
+   "id": "kelvane_cruiser",
+   "hull": "kelvane/kelvane_cruiser.hull.png",
+   "wire": "kelvane/kelvane_cruiser.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.184215,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 26.0,
+    "length_z": 166.0
+   },
+   "source_triangles": 1884,
+   "quads": 914,
+   "triangles": 56,
+   "edges_drawn": 1144,
+   "source": {
+    "glb": "assets/ships/kelvane/kelvane_cruiser.glb",
+    "sha256": "3036ad50d49298dabcfab0ab43dbba12eb6b93848d0bc80601fbfb943c577970"
+   }
+  },
+  {
+   "faction": "kelvane",
+   "id": "kelvane_battlecruiser",
+   "hull": "kelvane/kelvane_battlecruiser.hull.png",
+   "wire": "kelvane/kelvane_battlecruiser.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.217507,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 49.13,
+    "length_z": 196.0
+   },
+   "source_triangles": 2808,
+   "quads": 1364,
+   "triangles": 80,
+   "edges_drawn": 1687,
+   "source": {
+    "glb": "assets/ships/kelvane/kelvane_battlecruiser.glb",
+    "sha256": "89d6768ba45258e89e04eeb65836d8cbfb72dcff4977a9fe1bdac8fd3e9092b8"
+   }
+  },
+  {
+   "faction": "kelvane",
+   "id": "kelvane_carrier",
+   "hull": "kelvane/kelvane_carrier.hull.png",
+   "wire": "kelvane/kelvane_carrier.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.237482,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 51.626,
+    "length_z": 214.0
+   },
+   "source_triangles": 2596,
+   "quads": 1243,
+   "triangles": 110,
+   "edges_drawn": 1352,
+   "source": {
+    "glb": "assets/ships/kelvane/kelvane_carrier.glb",
+    "sha256": "9633fe702df914e210b66f2acf280b1b8abe75311c3df2556c537220fe24292d"
+   }
+  },
+  {
+   "faction": "kelvane",
+   "id": "kelvane_fighter",
+   "hull": "kelvane/kelvane_fighter.hull.png",
+   "wire": "kelvane/kelvane_fighter.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.015536,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 5.6,
+    "length_z": 14.0
+   },
+   "source_triangles": 745,
+   "quads": 345,
+   "triangles": 55,
+   "edges_drawn": 483,
+   "source": {
+    "glb": "assets/ships/kelvane/kelvane_fighter.glb",
+    "sha256": "c75883fc2825694d4e5678beba97bd5564eb0a7b5315b567c9a073f7ffcb1cd5"
    }
   }
  ]

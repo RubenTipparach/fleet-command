@@ -30,6 +30,7 @@ public static class Prewarm
     private static readonly string[] Textures =
     {
         "res://assets/scenes/faction/table.glb", "res://assets/scenes/faction/concord.glb", "res://assets/scenes/faction/krai.glb", "res://assets/scenes/faction/ssarith.glb",
+        "res://assets/scenes/faction/kelvane.glb",
     };
 
     /// <summary>Loads and warms everything; <paramref name="report"/> gets the progress (0 to 1) and the step's name.</summary>

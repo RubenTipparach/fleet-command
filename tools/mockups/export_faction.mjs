@@ -16,6 +16,8 @@
 //   table_wood, table_under   the table_wood Material Maker maps (assets/textures/materials/table_wood/), on the glb's own
 //                             uvs (one tile to TABLE.woodM metres); table_under is the same wood darkened
 //   holo_field                the Concord badge's holographic field (a shader in the page): src/Game/Flow/holo_field.gdshader
+//   <faction>_painted_<n>     a badge material on a map the page paints itself (the Institute's orbital): exported with its
+//                             maps inside the glb, and drawn as imported
 // Every other material is exported as the page has it (colours, Material Maker maps up to 1024 px, clearcoat).
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -69,7 +71,12 @@ async function exportInPage() {
       if (named.has(m)) return named.get(m);
       let r;
       if (m.isShaderMaterial) r = new THREE.MeshStandardMaterial({ name: 'holo_field', color: 0x0a1030, roughness: 0.5 });
-      else {
+      else if (m.map && m.map.isCanvasTexture) {
+        // a map the badge paints itself (the Institute's orbital, from its grid): the material goes into the glb with its
+        // maps, and the game keeps it as imported (it is in no badge_materials entry)
+        r = new THREE.MeshStandardMaterial({ name: `${s.fac}_painted_${n++}`, map: m.map, emissive: m.emissive, emissiveMap: m.emissiveMap, emissiveIntensity: m.emissiveIntensity,
+          metalness: m.metalness, roughness: m.roughness, side: m.side });
+      } else {
         const name = `${s.fac}_${n++}`, graph = m.map ? graphOf.get(m.map.image.src) : null;
         if (m.map && !graph) throw new Error('export_faction: a map from no known graph on ' + s.fac);
         r = new THREE.MeshStandardMaterial({ name, color: m.color, metalness: graph ? 1 : m.metalness, roughness: graph ? 1 : m.roughness, emissive: m.emissive, emissiveIntensity: m.emissiveIntensity,
@@ -119,6 +126,7 @@ async function exportInPage() {
     badge_materials: out.materials,
     materials: { table_wood: 'the table_wood maps (assets/textures/materials/table_wood/), clearcoat 0.35 at roughness 0.28', table_under: 'the same wood times (0.55, 0.5, 0.46)',
       holo_field: 'the Concord badge\'s field: src/Game/Flow/holo_field.gdshader, a port of emblem-builds.js concord() holo',
+      painted: '<faction>_painted_<n>: a badge material on a map the page paints (the Institute orbital), its maps inside the glb, drawn as imported',
       badge: 'each other badge material is named in badge_materials: on a graph, its maps (assets/textures/materials/<graph>/: albedo tinted by tint, normal, ORM) at uv_scale per glb uv unit, metalness and roughness 1 times the ORM; otherwise its own colour, metalness and roughness' },
   };
   return out;
