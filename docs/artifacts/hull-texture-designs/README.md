@@ -72,3 +72,9 @@
 - 2026-11-08, cloud session: renumbered mockup 35 on merging main (the freighters took mockup 24, the battle consoles 25-33
   and the space chart 34); the link is unchanged. The lines above say mockup 24 as it was then.
 - 2026-11-08, cloud session: version 20, version id `1794119731-c3e5`. The page reads mockup 35.
+- 2026-11-08, cloud session: version 21, version id `1794134765-6d64`. Windows on the Swift (12), Albatross (86), Condor
+  (288) and Pelican (50) by the Concord line's own rule and numbers (the owner: "missing windows on albatross"); the Krai
+  models' own nacelle studs, rails and ribs hidden ("what the hell are these random cubes on krai ships?"); the rooms'
+  fine patterns fading with distance ("z fighting in windows here": aliasing).
+- 2026-11-08, cloud session: version 22, version id `1794139084-f64b`. The Condor down to three decks of windows, 160 (the
+  owner: "way too many windows on the condor", "temove top and bottom rows").

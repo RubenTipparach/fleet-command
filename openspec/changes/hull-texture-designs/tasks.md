@@ -20,6 +20,7 @@
 - [x] 1.5c Every class of both lines on its line's first design (owner, 2026-11-07: "start developing for the rest of the
       fleet. Both krai and concord"): the Swift, Albatross, Condor and Pelican on C1, the Krai corvette, cruiser and
       dreadnought on K1, each from its own model (mockup 35 v13-v15)
+- [x] 1.5c2 Windows on the Swift, Albatross, Condor and Pelican by the Concord line's own rule (window_rows_line), mockup 35 v21
 - [ ] 1.5d Room plans for the Swift, Albatross, Condor and Pelican, so their windows come from their rooms as the Petrel's
 - [ ] 1.5e The large ships (the Condor, Pelican, Krai cruiser and dreadnought) at 4096 px, as the page's size allows
 - [ ] 1.6 C2-C5 and K2-K5 on the Institute's method, once the owner has seen C1 and K1
