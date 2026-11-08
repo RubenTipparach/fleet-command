@@ -29,9 +29,10 @@
 | `key.*` (48 x 48) | the helm pad's top-left tablet in its iron (`helm.pad.png`, 148 x 148 image px from (54, 50)) | the light behind the dirt: dim at rest, half lit on hover, full gold engaged and whole, a tired amber damaged, ember down, all but dark off |
 | `keyw.*` (144 x 48, margins 0, 30, 0, 30) | the rendered tablet key (`button.idle`) | the same lights |
 | `bar.cell.ok` | the lit window (`bar.cell.on`) | whole is the backlight itself |
-| `cell.*` (32 x 28) | drawn: a little arched window in corroded iron, fine caked dust over the glass | dark glass, gold for power out, a verdigris-tinged light for power in use, ember, dark when locked |
-| `plate.title` (140 x 24) | drawn: a lintel of corroded iron, a worn gold inlay along its foot, a rivet at each end | |
-| `console.backing` (480 x 1080) | drawn: one corroded iron plate, riveted round its edge and along two seams, rust running from every rivet, a worn gold rule down each side | |
+| `cell.*` (32 x 28) | rendered (version 2, D7): a little arched window in a block of iron, the same dirt on its glass in every state | dark glass, gold for power out, a verdigris-tinged light for power in use, ember, a dark slot when locked |
+| `plate.title` (140 x 24) | rendered (version 2, D7): a lintel of iron, its ends chipped, a worn gold inlay along its foot, a rivet at each end | |
+| `console.backing` (480 x 1080) | rendered (version 2, D7): one plate of worked iron, riveted down both edges, two forge seams pressed across it | |
+| `console.column` (480 x 1080) | rendered (version 2, D7): one plate of worked iron, the three docked panels formed into it as framed wells | |
 | `nameplate` | the rendered name plate, its window's light multiplied down | |
 
 The state is a multiply of the light over the render's own lit glass, clipped to the glass (measured on the render: the
@@ -88,6 +89,51 @@ ink) the cut is a faint glint instead of a shadow. The skins page draws its ten 
 
 The strips are drawn at their rendered 72 px; the content, laid out for 56 px, moves down 8 px into the beam's channel of
 grimy glass (rows 13-59, measured on mockup 4).
+
+### D7. Version 2: worked iron, nothing stretched (2026-11-08)
+
+The owner, 2026-11-08, of the console's left column: "tarsine background is terrible, it should be like a metal texture,
+but here it just looks like sludge stretched out", and "we really need to bring the tarsine up to current ui standards".
+
+**What was wrong, measured on the version 1 page** (`battle`, `weapons_expanded`, 1920 x 1080):
+
+| Piece | Rendered | Drawn | Stretch of the centre |
+|---|---|---|---|
+| `frame.panel`, a frame of dark glass with caked dirt (noise) and a lamp's spot in its well | 160 x 120, margins 34 (centre 92 x 52) | the Helm 468 x 420; the expanded panel 1268 x 1040 | 4.3 x 6.8 (Helm), 13.0 x 18.7 (expanded) |
+| `strip.top`, `strip.bottom` | 512 x 72, margins 100 (centre 312) | 1440 x 72 | 4.0 in x |
+| `frame.inset`, dirt noise and a lamp in its glass | 64 x 48, margins 14 (centre 36 x 20) | up to 260 x 120 | up to 6.4 x 4.6 |
+| `console.backing`, `plate.title`, `cell.*` | painted on a canvas: a brown gradient under radial rust blobs | | the "sludge" between the panels and in the title lintels |
+
+A 9-slice centre is stretched, so every noise feature in it was smeared into the blotches and streaks the owner saw: the
+dirt's 20 mm patches became 87 by 135 px smears on the Helm and 260 by 374 px on the expanded panel. None of it read as
+metal: the frame's wells held glass, and the backing was a painted gradient.
+
+**The fix, after the Krai's and the Kelvane's kits** (the current standard):
+
+- **The panel's face is iron.** A frame's well holds a floor of worked iron, not glass: dark wrought iron, its grain (the
+  slag fibres of wrought iron, drawn out along the plate when it was rolled) showing as fine long streaks, shallow hammer
+  facets catching the light, a slow drift of tone, soot pooled at the foot of the lip with rust in its corners, faint
+  damp run down the face. Darker and calmer than the frame round it, so the readouts' bone and gold read on it. The same
+  worked surface is the frame's iron, the keys', the tabs' and every plate's: one `worked()` in the generator, with the
+  edges rubbed bright, soot and rust where the plate's own occlusion says grime collects, and only a few small rust
+  blooms. The grime the owner asked to keep is kept, in the crevices and under the rivets, not as a stain across a plate.
+- **The column is one rendered plate** (`console.column`, 480 x 1080, the Krai's standard): the three docked panels are
+  framed wells formed into it at their exact rectangles, their stepped capitals and rivets the frame's own, the iron
+  running unbroken between them as a 30 px divider that the next panel's title lintel sits on. The page draws it whole
+  and draws no frame for those three panels, so nothing in the column is stretched.
+- **Pieces drawn large are rendered at the size they are drawn**: `frame.panel` at the expanded panel's 1268 x 1040
+  (the docked radar row draws it smaller, which only shrinks it), the strips at 1440 px; a phone's wider expanded panel
+  stretches it at most 1.2 times.
+- **Every other nine-sliced piece folds its texture coordinates** (`nine_co()`): each band the page stretches is folded
+  to one line, so the texture is constant across it and its far margin carries on from the near one with no seam. A
+  stretched band of a key, an inset, a tab, a cell or the title lintel then shows no smear at any width. An inset is
+  clean dark smoked glass with its dirt only in a 7 px band along its rim and no lamp spot to smear.
+- **The backing, the title lintel and the cells are rendered** with the rest of the kit (owner, of the Krai, 2026-11-03:
+  "you didn't render the stitching elements in blender"); the canvas `backing()`, `lintel()` and `cellPaint()` are gone
+  from `lib/tarsine.js`. The backing's band (x 100-390, y 40-1040), laid side by side and mirrored behind an expanded
+  panel, is plain iron whose grain runs across, so the seams run on and the mirror shows no break.
+
+The palette's roles, the keys, the tabs' glass, the icons and the type are unchanged.
 
 ## Measurements
 
