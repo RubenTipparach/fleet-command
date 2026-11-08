@@ -11,6 +11,9 @@
 // The camera is the player's (CLAUDE.md section 8): drag pans, the wheel and the +/- keys zoom, its angle is fixed (owner,
 // 2026-10-30: the map must not turn); it moves on its own only when the player asks (the Fleet key, a mission in the log).
 // It draws campaign state and holds no rules: everything it shows is read from Campaign (src/Core/Campaign).
+// Since 2026-11-08 the map is the paper chart (ChartRoom; owner: "implement space chart in game, it looks great!"): a printed
+// star chart on a table, its nebulae, suns and belts drawn by hand, its planets drawn by planet.gdshader, its names in ink.
+// The glass board above stays as the space look (Paper = false), as the mockup keeps it behind ?look=space.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +41,10 @@ public sealed partial class CampaignMap : Node3D
     private string _fogKey = "";
     private readonly Dictionary<string, Piece> _fleets = new();
     private float _time;
+    /// <summary>The map's look: the paper chart on its table (true), or the glass board over the nebula (false).</summary>
+    public static bool Paper = true;
+    private ChartRoom? _chart;
+    private readonly List<ShaderMaterial> _planets = new();
     private (Vector3 From, Vector3 To, float T)? _camGlide;
 
     /// <summary>A piece that flies: its node, its model (turned as it flies), the points it flies through, its heading at the end.</summary>
@@ -89,6 +96,37 @@ public sealed partial class CampaignMap : Node3D
         Name = "CampaignMap";
         _cam = new Camera3D { Fov = 42, Near = 0.1f, Far = 4000, Current = true };
         AddChild(_cam);
+        MapPieces.Ink = Paper;
+        if (Paper)
+        {
+            AddChild(new WorldEnvironment { Environment = ChartRoom.Environment() });
+            _chart = new ChartRoom();
+            AddChild(_chart);
+            _chart.Init(c, FacColor, NebulaRegions());
+        }
+        else InitSpace();
+        _board = new Node3D { Name = "Board" };
+        _routes = new Node3D { Name = "Routes" };
+        _pieces = new Node3D { Name = "Pieces" };
+        _path = new Node3D { Name = "Path" };
+        AddChild(_board);
+        AddChild(_routes);
+        AddChild(_pieces);
+        AddChild(_path);
+        if (!Paper) BuildStars();
+        _ring = MapPieces.HexRing(0.82f, 0.95f, new Color("#ffb547"));
+        _hover = MapPieces.HexRing(0.9f, 0.95f, new Color(1, 1, 1, 0.45f));
+        ((StandardMaterial3D)_hover.MaterialOverride).Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
+        AddChild(_ring);
+        AddChild(_hover);
+        _ring.Visible = _hover.Visible = false;
+        Rebuild();
+        CentreOn(c.S.AtC, c.S.AtR);
+    }
+
+    // the space look's sky, light and nebula backdrop
+    private void InitSpace()
+    {
         // the quiet nebula's panorama lights the board and the pieces and is what the glass reflects (the mockup's sky probe)
         var skyMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/View/nebula_sky.gdshader") };
         skyMat.SetShaderParameter("panorama", GD.Load<Texture2D>("res://assets/skies/quiet.jpg"));
@@ -106,23 +144,6 @@ public sealed partial class CampaignMap : Node3D
         sun.LookAtFromPosition(new Vector3(10, 20, 6), Vector3.Zero, Vector3.Up);
         _sky = NebulaSky.Load("quiet");
         AddChild(_sky);
-        _board = new Node3D { Name = "Board" };
-        _routes = new Node3D { Name = "Routes" };
-        _pieces = new Node3D { Name = "Pieces" };
-        _path = new Node3D { Name = "Path" };
-        AddChild(_board);
-        AddChild(_routes);
-        AddChild(_pieces);
-        AddChild(_path);
-        BuildStars();
-        _ring = MapPieces.HexRing(0.82f, 0.95f, new Color("#ffb547"));
-        _hover = MapPieces.HexRing(0.9f, 0.95f, new Color(1, 1, 1, 0.45f));
-        ((StandardMaterial3D)_hover.MaterialOverride).Transparency = BaseMaterial3D.TransparencyEnum.Alpha;
-        AddChild(_ring);
-        AddChild(_hover);
-        _ring.Visible = _hover.Visible = false;
-        Rebuild();
-        CentreOn(c.S.AtC, c.S.AtR);
     }
 
     public void CentreOn(int c, int r) { _camGlide = null; Target = HexPos(c, r); }
@@ -150,6 +171,7 @@ public sealed partial class CampaignMap : Node3D
         bool far = Dist > FarDist;
         foreach (Label3D l in _labels) if (IsInstanceValid(l)) l.Visible = !far;
         foreach (Node3D s in _spin) if (IsInstanceValid(s)) s.RotateY(dt * 0.15f);
+        foreach (ShaderMaterial pm in _planets) pm.SetShaderParameter("time_s", _time);   // the drawn worlds turn
         SortPuffs();
         StepFlights(dt);
     }
@@ -244,31 +266,35 @@ public sealed partial class CampaignMap : Node3D
 
     // ---- The board (built once per campaign) --------------------------------------------------------------------------
 
-    /// <summary>Each connected run of nebula sectors is one cloud: a main colour and an accent far enough from it (the
-    /// mockup's nebulaRegions and nebulaAccent, with its random numbers).</summary>
-    private Dictionary<(int, int), (Color Main, Color Accent)> NebulaRegions()
+    /// <summary>Each connected run of nebula sectors is one cloud: a main colour (its index in the palette) and an accent far
+    /// enough from it, and the cloud's number in the order found (the mockup's nebulaRegions and nebulaAccent, with its
+    /// random numbers).</summary>
+    public Dictionary<(int, int), (Color Main, Color Accent, int MainIdx, int Id)> NebulaRegions()
     {
         var tints = Palette.Select(h => new Color(h)).ToList();
-        var region = new Dictionary<(int, int), (Color, Color)>();
+        var region = new Dictionary<(int, int), (Color, Color, int, int)>();
         var R = new Mulberry32(97);
+        int id = 0;
         foreach (Sector h in _c.S.Sectors)
         {
             if (h.Terrain != "nebula" || region.ContainsKey((h.C, h.R))) continue;
-            Color main = tints[(int)Math.Floor(R.Next() * tints.Count)];
+            int mi = (int)Math.Floor(R.Next() * tints.Count);
+            Color main = tints[mi];
             var far = tints.Where(t => Mathf.Sqrt((t.R - main.R) * (t.R - main.R) + (t.G - main.G) * (t.G - main.G) + (t.B - main.B) * (t.B - main.B)) > 0.28f).ToList();
             Color accent = far[(int)Math.Floor(R.Next() * far.Count)];
             var stack = new Stack<Sector>();
             stack.Push(h);
-            region[(h.C, h.R)] = (main, accent);
+            region[(h.C, h.R)] = (main, accent, mi, id);
             while (stack.Count > 0)
             {
                 Sector q = stack.Pop();
                 foreach (var (nc, nr) in HexGrid.Neighbours(q.C, q.R, _c.S.Cols, _c.S.Rows))
                 {
                     Sector n = _c.Hex(nc, nr);
-                    if (n.Terrain == "nebula" && !region.ContainsKey((nc, nr))) { region[(nc, nr)] = (main, accent); stack.Push(n); }
+                    if (n.Terrain == "nebula" && !region.ContainsKey((nc, nr))) { region[(nc, nr)] = (main, accent, mi, id); stack.Push(n); }
                 }
             }
+            id++;
         }
         return region;
     }
@@ -284,12 +310,20 @@ public sealed partial class CampaignMap : Node3D
         foreach (Node n in _board.GetChildren()) { _board.RemoveChild(n); n.QueueFree(); }
         _puffList.Clear();
         _spin.Clear();
+        _planets.Clear();
         _labels.RemoveAll(l => !IsInstanceValid(l) || !l.IsInsideTree());
         BuildBoard();
     }
 
     private void BuildBoard()
     {
+        if (_chart != null)
+        {
+            // the paper chart: the sheet redraws its holders and fog, the drawn pieces hide in the uncharted
+            _chart.Update(_vis);
+            BuildPorts();
+            return;
+        }
         var regions = NebulaRegions();
         // dark glass hexes, each a faint wash of its holder's colour; ports brighter and warmer (owner, 2026-10-30: "tiles with
         // planets or stations should be a different color")
@@ -330,7 +364,7 @@ public sealed partial class CampaignMap : Node3D
             {
                 // a cloud in depth: puffs at several heights, big and dim low, smaller and brighter on top, the accent rising
                 var R = new Mulberry32((uint)(h.C * 17 + h.R * 5));
-                var (main, accent) = regions[(h.C, h.R)];
+                var (main, accent, _, _) = regions[(h.C, h.R)];
                 for (int k = 0; k < 14; k++)
                 {
                     double y = 0.12 + R.Next() * 0.85, r = 0.32 + R.Next() * 0.32 - y * 0.12, v = 0.75 + R.Next() * 0.4;
@@ -470,7 +504,18 @@ public sealed partial class CampaignMap : Node3D
             string fac = h.KnownOwner;
             Color col = FacColor(fac);
             var g = new Node3D { Name = h.PortName ?? "Port" };
-            if (h.Planet != null)
+            if (h.Planet != null && Paper)
+            {
+                // a drawn world on a hexagon flight stand in its holder's colour (owner, 2026-11-08: "give planets those
+                // hexagon standees as well"), the disc on the post's top (the page's makeStandee planet)
+                const float size = 1.15f, post = 0.42f * size, disc = 0.5f * size;
+                g.AddChild(MapPieces.FlightStand(col, post, size, false));
+                var (planet, mat) = ChartRoom.Planet(h.Planet, col, disc);
+                planet.Position = new Vector3(0, 0.06f + post + 0.02f - disc / 2 * 0.55f, 0);
+                g.AddChild(planet);
+                _planets.Add(mat);
+            }
+            else if (h.Planet != null)
             {
                 int hue = PlanetHue.TryGetValue(h.Planet, out int hh) ? hh : 200;
                 Node3D pl = MapPieces.PlanetPiece(hue, col, 1.15f);
@@ -903,5 +948,7 @@ public sealed partial class CampaignMap : Node3D
         yield return MapPieces.PoleMetal;
         yield return MapPieces.Rock;
         yield return new StandardMaterial3D { AlbedoTexture = MapPieces.Planet(200), Roughness = 0.9f };
+        yield return new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/Flow/chart_sheet.gdshader") };
+        yield return new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/Flow/planet.gdshader") };
     }
 }

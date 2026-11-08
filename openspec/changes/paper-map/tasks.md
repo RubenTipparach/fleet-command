@@ -31,7 +31,17 @@
   hexagon flight stands (owner, 2026-11-08: "2x cross hatch density", "nebula and asteroid drawings dont need to appear as part of
   map texture", "give planets those hexagon standees as well") (mockup 1 v29, mockup 34 v7)
 
+- [x] 1.15 The lamp dimmer and the room darker, so the chart reads more dramatic (owner, 2026-11-08: "tone down lighting to
+  make it a bit more dramatic"): hemisphere 0.12, sun 0.08, the spot 1.25 with a 0.55 penumbra, sconces 0.45 (mockup 1 v30,
+  mockup 34 v8)
+
 ## 2. After the owner's notes
 
-- [ ] 2.1 Fold in the owner's notes
-- [ ] 2.2 The game's map in the paper look (`game-flow-engine` 2.10), when the owner asks for it
+- [x] 2.1 Fold in the owner's notes
+- [x] 2.2 The game's map in the paper look (`game-flow-engine` 2.10) (owner, 2026-11-08: "implement space chart in game, it looks
+  great!"): `tools/mockups/export_chart.mjs` exports the page's still sheet layers, the room and the sheet as glbs with their
+  Material Maker graphs named, the bank of drawn pieces and a manifest into `assets/scenes/chart/`; `ChartRoom.cs` builds the
+  room, the lamps, the sheet (`chart_sheet.gdshader`: the holders' outlines and the fog drawn live on it) and stands the drawn
+  pieces on the game's own sectors by the page's rules; `planet.gdshader` is the planet shader's port; the names hand-lettered in
+  IM Fell English SC (OFL). `ChartTests` checks the bank against the game's palette
+- [ ] 2.3 Phones: the sheet's base layer at 2048 px and the table's shadow baked (the game loads the 2,800 px sheet everywhere today)

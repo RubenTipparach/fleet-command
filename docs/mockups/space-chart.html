@@ -1305,7 +1305,7 @@ return { makeSpace, parallaxStars, shipModel, loadShips, nebulaMesh };
     m.frustumCulled = false;
     return m;
   }
-  window.FCPlanet = { material, billboard, KINDS };
+  window.FCPlanet = { material, billboard, KINDS, lattice: latticeTex };
 })();
 </script>
 <!-- /INLINE -->
@@ -3634,6 +3634,22 @@ function cloudShadow() {
   g.restore();
   return { canvas: c, foot: 1 };
 }
+// A cloud's drawing from the bank: the palette's colour `mi` as the main, its accent picked by the colour alone, variant v of
+// three, a cloud or a storm. The game stands the same drawings on its own nebulae (tools/mockups/export_chart.mjs writes the
+// whole bank; src/Game/Flow/ChartRoom.cs places them by this page's rules).
+function cloudDrawing(kind, mi, v) {
+  const main = NEBULA_TINTS[mi];
+  return drawnTex(`${kind}:${mi}:${v}`, () => FCDrawn.cloud({ px: 256, main, accent: nebulaAccent(main, rng(strSeed('accent:' + mi))),
+    seed: mi * 31 + v * 7 + 1 + (kind === 'storm' ? 1000 : 0), storm: kind === 'storm' }));
+}
+// Every drawing the chart can use, for the export: the clouds and storms of every palette colour, the suns, the rocks, the
+// cloud's shadow.
+function chartBank() {
+  for (let mi = 0; mi < NEBULA_TINTS.length; mi++) for (let v = 0; v < 3; v++) for (const kind of ['cloud', 'storm']) cloudDrawing(kind, mi, v);
+  for (let k = 0; k < 3; k++) drawnTex('sun:' + k, () => FCDrawn.sun({ px: 320, seed: 11 + k }));
+  for (let rv = 0; rv < 12; rv++) drawnTex('rock:' + rv, () => FCDrawn.rock({ px: 96, seed: 40 + rv }));
+  drawnTex('cloud-shadow', () => cloudShadow());
+}
 function drawnSprite(d, width) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: d.tex, color: 0xe8e0d2, alphaTest: 0.08 }));
   s.center.set(0.5, 1 - d.foot); s.scale.set(width, width / d.aspect, 1);
@@ -3906,7 +3922,7 @@ function buildMap() {
     if (h.terrain === 'star' && paper) {
       // a drawn sun standing on the chart, and its warm light on the pieces round it
       const d = drawnTex('sun:' + (h.c * 7 + h.r) % 3, () => FCDrawn.sun({ px: 320, seed: 11 + (h.c * 7 + h.r) % 3 }));
-      const s = drawnSprite(d, 2.0); s.position.set(p.x, 0.02, p.z - 0.15); s.userData.fogKey = [h.c, h.r]; mapRoot.add(s);
+      const s = drawnSprite(d, 2.0); s.position.set(p.x, 0.02, p.z - 0.15); s.userData.fogKey = [h.c, h.r]; s.userData.drawn = 'sun:' + (h.c * 7 + h.r) % 3; mapRoot.add(s);
       const l = new THREE.PointLight(0xffc26a, 0.8, 3.0); l.position.set(p.x, 0.6, p.z); l.userData.fogKey = [h.c, h.r]; mapRoot.add(l);
     } else if (h.terrain === 'star') {
       const s = new THREE.Mesh(new THREE.SphereGeometry(0.42, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffd27a })); s.position.set(p.x, 0.5, p.z); s.userData.fogKey = [h.c, h.r]; mapRoot.add(s);
@@ -3914,19 +3930,19 @@ function buildMap() {
       const l = new THREE.PointLight(0xffc26a, 1.2, 3.5); l.position.copy(s.position); l.userData.fogKey = [h.c, h.r]; mapRoot.add(l);
     }
     if (h.terrain === 'nebula' && paper) {
-      // a drawn puff of cloud at the back of the sector, in its cloud's colours; one cloud in three is a storm. Each cloud
-      // has three drawings, shared by its sectors.
+      // a drawn puff of cloud at the back of the sector, in its cloud's main colour; one cloud in three is a storm. The
+      // drawings are a bank, three for each palette colour and kind (cloudDrawing), so the game draws the same from its map
       const R = rng(h.c * 17 + h.r * 5), reg = regions[key(h.c, h.r)], v = Math.floor(R() * 3);
-      const d = drawnTex(`cloud:${reg.id}:${v}`, () => FCDrawn.cloud({ px: 256, main: reg.tint, accent: reg.accent, seed: reg.id * 31 + v * 7 + 1, storm: reg.id % 3 === 2 }));
-      const s = drawnSprite(d, 1.2 + R() * 0.3); s.position.set(p.x + (R() - 0.5) * 0.4, 0.06, p.z - 0.25 + (R() - 0.5) * 0.2); s.userData.fogKey = [h.c, h.r]; mapRoot.add(s);
+      const kind = reg.id % 3 === 2 ? 'storm' : 'cloud', mi = NEBULA_TINTS.indexOf(reg.tint), d = cloudDrawing(kind, mi, v);
+      const s = drawnSprite(d, 1.2 + R() * 0.3); s.position.set(p.x + (R() - 0.5) * 0.4, 0.06, p.z - 0.25 + (R() - 0.5) * 0.2); s.userData.fogKey = [h.c, h.r]; s.userData.drawn = `${kind}:${mi}:${v}`; mapRoot.add(s);
       // its shadow on the chart over the sector it hangs in (owner, 2026-11-08: "cast a shadow over the area of the map which
       // they occupy"): a soft hatched patch lying on the paper, above the folds' highest ridge
       const shTex = drawnTex('cloud-shadow', () => cloudShadow());
       const sh = new THREE.Mesh(new THREE.PlaneGeometry(1.75, 1.55), new THREE.MeshBasicMaterial({ map: shTex.tex, transparent: true, depthWrite: false }));
-      sh.rotation.x = -Math.PI / 2; sh.position.set(p.x + (R() - 0.5) * 0.15, 0.033, p.z + 0.05); sh.renderOrder = 1; sh.userData.fogKey = [h.c, h.r]; mapRoot.add(sh);
+      sh.rotation.x = -Math.PI / 2; sh.position.set(p.x + (R() - 0.5) * 0.15, 0.033, p.z + 0.05); sh.renderOrder = 1; sh.userData.fogKey = [h.c, h.r]; sh.userData.drawn = 'cloud-shadow'; mapRoot.add(sh);
       // a second, smaller puff in front, offset, in the same cloud's other drawing, so a cloud of sectors reads as a bank
-      if (R() < 0.6) { const v2 = (v + 1) % 3, d2 = drawnTex(`cloud:${reg.id}:${v2}`, () => FCDrawn.cloud({ px: 256, main: reg.tint, accent: reg.accent, seed: reg.id * 31 + v2 * 7 + 1, storm: reg.id % 3 === 2 }));
-        const s2 = drawnSprite(d2, 0.75 + R() * 0.2); s2.position.set(p.x + (R() < 0.5 ? -1 : 1) * (0.3 + R() * 0.15), 0.06, p.z + 0.12 + R() * 0.15); s2.userData.fogKey = [h.c, h.r]; mapRoot.add(s2); }
+      if (R() < 0.6) { const v2 = (v + 1) % 3, d2 = cloudDrawing(kind, mi, v2);
+        const s2 = drawnSprite(d2, 0.75 + R() * 0.2); s2.position.set(p.x + (R() < 0.5 ? -1 : 1) * (0.3 + R() * 0.15), 0.06, p.z + 0.12 + R() * 0.15); s2.userData.fogKey = [h.c, h.r]; s2.userData.drawn = `${kind}:${mi}:${v2}`; mapRoot.add(s2); }
     }
     if (h.terrain === 'nebula' && !paper) {
       // A cloud in depth: puffs at several heights, big and dim low, smaller and brighter on top.
@@ -3946,7 +3962,7 @@ function buildMap() {
         const u = (R() - 0.5) * 1.1, off = (R() - 0.5) * 0.28, rr = rad + off;
         const big = 0.025 + R() * (0.07 - Math.abs(off) * 0.15), rv = Math.floor(R() * 12);
         if (paper && k % 2) continue;   // the drawn belt: half as many rocks, each drawn
-        const a = paper ? drawnSprite(drawnTex('rock:' + rv, () => FCDrawn.rock({ px: 96, seed: 40 + rv })), big * 5.5)
+        const a = paper ? Object.assign(drawnSprite(drawnTex('rock:' + rv, () => FCDrawn.rock({ px: 96, seed: 40 + rv })), big * 5.5), { userData: { drawn: 'rock:' + rv } })
           : new THREE.Mesh(new THREE.DodecahedronGeometry(big), rockMat);
         a.position.set(cx + Math.cos(a0 + u) * rr, paper ? 0.03 + R() * 0.06 : 0.1 + R() * 0.18, cz + Math.sin(a0 + u) * rr);
         if (Math.hypot(a.position.x - p.x, a.position.z - p.z) > HEX_R * 0.85) continue;
@@ -4012,7 +4028,12 @@ function sheetBounds() {
 // title; then what years did to this one sheet: folds rubbed pale, coffee rings and water stains, foxing, the edge torn
 // and tearing into the border, a corner gone, browned and crusted along the edge. Seeded, so a campaign's chart is the same
 // every time it is drawn. Returns { canvas, outline } (the torn outline in sheet units, for the curl).
-function paperSheet(regions) {
+// `only` draws one layer alone, for the game's export (tools/mockups/export_chart.mjs): 'base' (the paper, the print, its stars,
+// every hex's number and printed sun), 'screen' (the ink worn pale), 'over' (rhumb lines, compass, title, scale bar, folds)
+// or 'mul' (the frame, stains, foxing and the browned edge), each on a clear sheet; the game draws what changes in play
+// (the holders' washes, the grid, the fog) between them. With no `only` the page draws them all, in this order.
+function paperSheet(regions, only = null) {
+  const L = (k) => !only || only === k;
   const { print, sheet } = sheetBounds(), P = MAP_LOOK.px, W = Math.round((sheet[2] - sheet[0]) * P), H = Math.round((sheet[3] - sheet[1]) * P);
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const g = cv.getContext('2d'), R = rng(strSeed(CAMP.side + ':chart'));
@@ -4039,34 +4060,41 @@ function paperSheet(regions) {
   });
   const tornPath = () => { g.beginPath(); outline.forEach(([x, z], i) => (i ? g.lineTo(X(x), Y(z)) : g.moveTo(X(x), Y(z)))); g.closePath(); };
   const draw = () => {
+    const R = rng(strSeed(CAMP.side + ':wear'));   // its own seed each draw, so the stains stay put when the fog redraws
     g.clearRect(0, 0, W, H);
     g.save(); tornPath(); g.clip();
     // 2. the paper: the graph's maps, a tile to 0.25 m
-    if (PAPER_IMG.complete && PAPER_IMG.naturalWidth) {
+    if (!L('base')) {} else if (PAPER_IMG.complete && PAPER_IMG.naturalWidth) {
       const pat = g.createPattern(PAPER_IMG, 'repeat'); pat.setTransform(new DOMMatrix().scale((0.25 / MAP_LOOK.unitM) * P / PAPER_IMG.naturalWidth));
       g.fillStyle = pat;
     } else g.fillStyle = '#d9c7a1';
-    g.fillRect(0, 0, W, H);
-    // the border kept white, the print under it aged a little warmer
-    g.fillStyle = 'rgba(252, 248, 236, 0.62)'; g.fillRect(0, 0, W, H);
+    if (L('base')) {
+      g.fillRect(0, 0, W, H);
+      // the border kept white, the print under it aged a little warmer
+      g.fillStyle = 'rgba(252, 248, 236, 0.62)'; g.fillRect(0, 0, W, H);
+    }
     // 3. the print, inside its frame: a printed star map (owner, 2026-11-07: "The main map should be like 2d printed star map.
     // With a cool nebula background"): night-blue ink with a nebula across the sheet and its stars, the paper's grain
     // through it, then the hexes and their holders' colours printed over in bright inks
     const pw = U(print[2] - print[0]), ph = U(print[3] - print[1]), px0 = X(print[0]), py0 = Y(print[1]);
     g.save(); g.beginPath(); g.rect(px0, py0, pw, ph); g.clip();
     g.globalCompositeOperation = 'source-over'; g.imageSmoothingQuality = 'high';
-    g.drawImage(nebulaPrint(Math.round(pw / 2), Math.round(ph / 2), strSeed(CAMP.side + ':nebula')), px0, py0, pw, ph);
-    printStars(g, px0, py0, pw, ph, rng(strSeed(CAMP.side + ':stars')));
+    if (L('base')) {
+      g.drawImage(nebulaPrint(Math.round(pw / 2), Math.round(ph / 2), strSeed(CAMP.side + ':nebula')), px0, py0, pw, ph);
+      printStars(g, px0, py0, pw, ph, rng(strSeed(CAMP.side + ':stars')));
+    }
     // the paper's grain and colour through the ink: a print on old stock, not a screen
-    if (PAPER_IMG.complete && PAPER_IMG.naturalWidth) {
+    if (L('base') && PAPER_IMG.complete && PAPER_IMG.naturalWidth) {
       const pat = g.createPattern(PAPER_IMG, 'repeat'); pat.setTransform(new DOMMatrix().scale((0.25 / MAP_LOOK.unitM) * P / PAPER_IMG.naturalWidth));
       g.globalCompositeOperation = 'overlay'; g.globalAlpha = 0.3; g.fillStyle = pat; g.fillRect(px0, py0, pw, ph); g.globalAlpha = 1;
     }
     const vis = visibleSet(), fog = (h) => fogOf(h.c, h.r, vis);
     const hexes = Object.values(CAMP.hexes).filter((h) => fog(h) !== 'unexplored'), ink = (hex, k, a) => { const c = new THREE.Color(hex).lerp(new THREE.Color(0xffffff), k); return `rgba(${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)},${a})`; };
+    // the base layer carries every sector's printed sun and number; the fog the game lays over it hides the uncharted
+    const all = only === 'base' ? Object.values(CAMP.hexes) : hexes;
     g.globalCompositeOperation = 'screen';
-    for (const h of hexes) { const o = shownOwner(h, vis); if (o !== 'neutral') { hexPath(h, 0.98); g.fillStyle = ink(FACTIONS[o].color, 0, 0.06); g.fill(); } }
-    for (const h of hexes) {
+    if (L('dyn')) for (const h of hexes) { const o = shownOwner(h, vis); if (o !== 'neutral') { hexPath(h, 0.98); g.fillStyle = ink(FACTIONS[o].color, 0, 0.06); g.fill(); } }
+    if (L('base')) for (const h of all) {
       const p = hexPos(h.c, h.r), RR = rng(h.c * 131 + h.r * 7 + 5);
       // nebulae and asteroid belts are not printed: their drawn billboards stand on the chart instead (owner, 2026-11-08:
       // "nebula and asteroid drawings dont need to appear as part of map texture")
@@ -4081,7 +4109,7 @@ function paperSheet(regions) {
     // the grid: every hex outlined in its holder's colour (unclaimed space in a pale ink), a heavier rule inside each hex
     // along every edge where the holder changes; a revealed hex in the holder it had when last seen
     const byCentre = {}; for (const h of hexes) { const p = hexPos(h.c, h.r); byCentre[`${p.x.toFixed(2)},${p.z.toFixed(2)}`] = h; }
-    for (const h of hexes) {
+    if (L('dyn')) for (const h of hexes) {
       const o = shownOwner(h, vis), dim = fog(h) === 'revealed' ? 0.55 : 1;
       hexPath(h, 0.97);
       if (o === 'neutral') { g.strokeStyle = `rgba(214, 206, 188, ${0.3 * dim})`; g.lineWidth = U(0.02); }
@@ -4099,7 +4127,7 @@ function paperSheet(regions) {
     }
     // each hex's number, column then row, in the top of the hex
     g.fillStyle = 'rgba(232, 222, 200, 0.5)'; g.font = `${U(0.17)}px Georgia, "Times New Roman", serif`; g.textAlign = 'center';
-    for (const h of hexes) { const p = hexPos(h.c, h.r); g.fillText(`${String(h.c + 1).padStart(2, '0')}${String(h.r + 1).padStart(2, '0')}`, X(p.x), Y(p.z - 0.62)); }
+    if (L('base')) for (const h of all) { const p = hexPos(h.c, h.r); g.fillText(`${String(h.c + 1).padStart(2, '0')}${String(h.r + 1).padStart(2, '0')}`, X(p.x), Y(p.z - 0.62)); }
     // the fog, one mask over the print (owner, 2026-11-07: "Fog of war border should be smoother"): flat black ink over the
     // unexplored, the charted sectors cut out of it a little wide, revealed sectors under a lighter veil, the whole mask
     // drawn at a quarter size and blurred, so the black melts into the charted space instead of stepping along hex edges
@@ -4111,16 +4139,16 @@ function paperSheet(regions) {
     for (const h of hexes) { fhex(h, 1.08); f.fill(); }
     f.globalCompositeOperation = 'source-over'; f.fillStyle = 'rgba(0, 0, 0, 0.45)';
     for (const h of hexes) if (fog(h) === 'revealed') { fhex(h, 1.0); f.fill(); }
-    g.globalCompositeOperation = 'source-over'; softDraw(g, fm, px0, py0, fm.width * MQ, fm.height * MQ, U(0.28));
+    g.globalCompositeOperation = 'source-over'; if (L('dyn')) softDraw(g, fm, px0, py0, fm.width * MQ, fm.height * MQ, U(0.28));
     // the ink worn: the paper showing through in pale patches and specks where it rubbed off
     g.globalCompositeOperation = 'screen';
     for (let k = 0; k < 40; k++) { const x = X(print[0] + R() * (print[2] - print[0])), y = Y(print[1] + R() * (print[3] - print[1])), r = U(0.8 + R() * 2.5);
-      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, `rgba(150, 132, 104, ${0.08 + R() * 0.14})`); gr.addColorStop(1, 'rgba(150, 132, 104, 0)'); g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r); }
-    for (let k = 0; k < 1400; k++) { g.fillStyle = `rgba(190, 170, 140, ${0.25 + R() * 0.35})`; g.fillRect(X(print[0] + R() * (print[2] - print[0])), Y(print[1] + R() * (print[3] - print[1])), 1 + R() * 2.5, 1 + R() * 2.5); }
+      const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, `rgba(150, 132, 104, ${0.08 + R() * 0.14})`); gr.addColorStop(1, 'rgba(150, 132, 104, 0)'); g.fillStyle = gr; if (L('screen')) g.fillRect(x - r, y - r, 2 * r, 2 * r); }
+    for (let k = 0; k < 1400; k++) { g.fillStyle = `rgba(190, 170, 140, ${0.25 + R() * 0.35})`; const x = X(print[0] + R() * (print[2] - print[0])), y = Y(print[1] + R() * (print[3] - print[1])), s = 1 + R() * 2.5; if (L('screen')) g.fillRect(x, y, s, s); }
     g.restore();
     // 3b. the navigator's furniture (owner, 2026-11-08: "very pirate and very space"): rhumb lines fanning across the chart
     // from two hubs, as on an old sea chart, and a compass rose drawn on a patch of bare paper in the lower left
-    {
+    if (L('over')) {
       const hubs = [[print[0] + 4.2, print[3] - 4.2, 32], [print[2] - 7, print[1] + 6, 16]], len = Math.hypot(print[2] - print[0], print[3] - print[1]);
       g.save(); g.beginPath(); g.rect(px0, py0, pw, ph); g.clip();
       for (const [hx, hz, n] of hubs) for (let k = 0; k < n; k++) {
@@ -4136,9 +4164,12 @@ function paperSheet(regions) {
     }
     // 4. the frame (a double rule) and the title in the border
     g.globalCompositeOperation = 'multiply'; g.strokeStyle = 'rgba(70, 48, 30, 0.9)';
-    g.lineWidth = U(0.06); g.strokeRect(X(print[0]), Y(print[1]), U(print[2] - print[0]), U(print[3] - print[1]));
-    g.lineWidth = U(0.02); g.strokeRect(X(print[0] - 0.22), Y(print[1] - 0.22), U(print[2] - print[0] + 0.44), U(print[3] - print[1] + 0.44));
+    if (L('mul')) {
+      g.lineWidth = U(0.06); g.strokeRect(X(print[0]), Y(print[1]), U(print[2] - print[0]), U(print[3] - print[1]));
+      g.lineWidth = U(0.02); g.strokeRect(X(print[0] - 0.22), Y(print[1] - 0.22), U(print[2] - print[0] + 0.44), U(print[3] - print[1] + 0.44));
+    }
     g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(64, 44, 28, 0.88)'; g.textAlign = 'center';
+    if (L('over')) {
     g.font = `${U(0.66)}px "IM Fell English SC", Georgia, serif`;
     const tx = X((print[0] + print[2]) / 2), ty = Y(print[3] + MAP_LOOK.border * 0.62);
     g.fillText('A  CHART  OF  THE  MARCHES', tx, ty);
@@ -4149,9 +4180,10 @@ function paperSheet(regions) {
     for (let k = 0; k < 5; k++) { g.fillStyle = k % 2 ? 'rgba(250, 244, 230, 1)' : 'rgba(64, 44, 28, 0.85)'; g.fillRect(sx + k * sw, sy, sw, U(0.1)); }
     g.strokeStyle = 'rgba(64, 44, 28, 0.85)'; g.lineWidth = U(0.015); g.strokeRect(sx, sy, 5 * sw, U(0.1));
     g.font = `${U(0.18)}px Georgia, serif`; g.fillStyle = 'rgba(64, 44, 28, 0.85)'; g.fillText('five sectors', sx + 2.5 * sw, sy + U(0.36));
+    }
     // 5. what years did: the folds, rubbed pale with a shadow along them; coffee rings, water stains and foxing
     const folds = [[0.25, 'x'], [0.5, 'x'], [0.75, 'x'], [0.5, 'z']];
-    for (const [f, ax] of folds) {
+    if (L('over')) for (const [f, ax] of folds) {
       const pos = ax === 'x' ? X(sheet[0] + f * (sheet[2] - sheet[0])) : Y(sheet[1] + f * (sheet[3] - sheet[1]));
       const line = (w, col, off = 0) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); if (ax === 'x') { g.moveTo(pos + off, 0); g.lineTo(pos + off, H); } else { g.moveTo(0, pos + off); g.lineTo(W, pos + off); } g.stroke(); };
       g.filter = `blur(${U(0.06)}px)`; line(U(0.2), 'rgba(250, 246, 232, 0.1)'); g.filter = 'none';
@@ -4160,25 +4192,25 @@ function paperSheet(regions) {
     g.globalCompositeOperation = 'multiply';
     for (let k = 0; k < 2; k++) {
       const x = X(print[0] + 4 + R() * (print[2] - print[0] - 8)), y = Y(print[1] + 4 + R() * (print[3] - print[1] - 8)), r = U(1.3 + R() * 0.9);
-      g.fillStyle = 'rgba(196, 160, 112, 0.18)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
-      for (let j = 0; j < 4; j++) { g.strokeStyle = `rgba(140, 92, 44, ${0.18 + R() * 0.15})`; g.lineWidth = U(0.04 + R() * 0.06); g.beginPath(); g.arc(x + U((R() - 0.5) * 0.08), y + U((R() - 0.5) * 0.08), r * (0.97 + R() * 0.05), R() * 6, R() * 6 + 4 + R() * 2.3); g.stroke(); }
+      g.fillStyle = 'rgba(196, 160, 112, 0.18)'; g.beginPath(); g.arc(x, y, r, 0, 7); if (L('mul')) g.fill();
+      for (let j = 0; j < 4; j++) { g.strokeStyle = `rgba(140, 92, 44, ${0.18 + R() * 0.15})`; g.lineWidth = U(0.04 + R() * 0.06); g.beginPath(); g.arc(x + U((R() - 0.5) * 0.08), y + U((R() - 0.5) * 0.08), r * (0.97 + R() * 0.05), R() * 6, R() * 6 + 4 + R() * 2.3); if (L('mul')) g.stroke(); }
     }
     for (let k = 0; k < 5; k++) {
       const x = X(sheet[0] + R() * (sheet[2] - sheet[0])), y = Y(sheet[1] + R() * (sheet[3] - sheet[1])), r = U(1.5 + R() * 3);
       const gr = g.createRadialGradient(x, y, r * 0.55, x, y, r); gr.addColorStop(0, 'rgba(210, 180, 130, 0.0)'); gr.addColorStop(0.85, 'rgba(176, 136, 84, 0.22)'); gr.addColorStop(1, 'rgba(176, 136, 84, 0)');
-      g.fillStyle = gr; g.beginPath(); g.ellipse(x, y, r, r * (0.6 + R() * 0.4), R() * 3, 0, 7); g.fill();
+      g.fillStyle = gr; g.beginPath(); g.ellipse(x, y, r, r * (0.6 + R() * 0.4), R() * 3, 0, 7); if (L('mul')) g.fill();
     }
     // foxing, thickest toward the edges
     for (let k = 0; k < 700; k++) {
       const e = Math.pow(R(), 2.5) * 3.5, side = Math.floor(R() * 4), u = R();
       const x = side === 0 ? sheet[0] + e : side === 1 ? sheet[2] - e : sheet[0] + u * (sheet[2] - sheet[0]);
       const z = side === 2 ? sheet[1] + e : side === 3 ? sheet[3] - e : sheet[1] + u * (sheet[3] - sheet[1]);
-      g.fillStyle = `rgba(150, 96, 48, ${0.15 + R() * 0.4})`; g.beginPath(); g.arc(X(x), Y(z), U(0.015 + R() * 0.05), 0, 7); g.fill();
+      g.fillStyle = `rgba(150, 96, 48, ${0.15 + R() * 0.4})`; g.beginPath(); g.arc(X(x), Y(z), U(0.015 + R() * 0.05), 0, 7); if (L('mul')) g.fill();
     }
     // 6. the edge: browned in toward the border, crusted dark right at the tear
     g.globalCompositeOperation = 'multiply';
-    tornPath(); g.filter = `blur(${U(0.35)}px)`; g.strokeStyle = 'rgba(176, 128, 70, 0.75)'; g.lineWidth = U(1.2); g.stroke();
-    g.filter = `blur(${U(0.05)}px)`; g.strokeStyle = 'rgba(96, 62, 30, 0.8)'; g.lineWidth = U(0.12); g.stroke(); g.filter = 'none';
+    if (L('mul')) { tornPath(); g.filter = `blur(${U(0.35)}px)`; g.strokeStyle = 'rgba(176, 128, 70, 0.75)'; g.lineWidth = U(1.2); g.stroke();
+    g.filter = `blur(${U(0.05)}px)`; g.strokeStyle = 'rgba(96, 62, 30, 0.8)'; g.lineWidth = U(0.12); g.stroke(); g.filter = 'none'; }
     g.restore();
     g.globalCompositeOperation = 'source-over';
   };
@@ -4345,16 +4377,17 @@ function buildRoom(regions) {
     // a brass sconce at the middle of the wall, 1.9 m up, washing the plaster with a warm light
     const sconce = new THREE.Mesh(new THREE.SphereGeometry(0.05 * u, 16, 10), new THREE.MeshStandardMaterial({ color: 0xffe2b0, emissive: 0xffc070, emissiveIntensity: 2.2 }));
     place(sconce, 1.9 * u, 0.12 * u);
-    const glow = new THREE.PointLight(0xffc98a, 0.9, 3.2 * u, 1.6); glow.position.copy(sconce.position); add(glow);
+    const glow = new THREE.PointLight(0xffc98a, 0.45, 2.6 * u, 1.8); glow.position.copy(sconce.position); add(glow);
     const post = woodPiece(0.14, L.wallH / u, 0.14, 0.5);                                         // a post in the corner
     post.position.set(cx + (k & 1 ? 1 : -1) * (L.room - 0.07 * u), floorY + L.wallH / 2, cz + (k & 2 ? 1 : -1) * (L.room - 0.07 * u)); add(post);
   }
-  // the light: a warm lamp over the table, a dim warm fill from the room
+  // the light: a warm lamp over the table, its pool on the chart and the room falling away into shadow round it (owner,
+  // 2026-11-08: "tone down lighting to make it a bit more dramatic"); a faint warm fill from the room
   mapScene.background = new THREE.Color(0x2a100c);
-  mapHemi.color.set(0xfff0dc); mapHemi.groundColor.set(0x6a1d18); mapHemi.intensity = 0.38;
-  mapSun.color.set(0xffe2b8); mapSun.intensity = 0.25;
+  mapHemi.color.set(0xfff0dc); mapHemi.groundColor.set(0x6a1d18); mapHemi.intensity = 0.12;
+  mapSun.color.set(0xffe2b8); mapSun.intensity = 0.08;
   rockMat.color.set(0x4e4034);   // the belts' rocks as dark pebbles on the chart, not glaring under the lamp
-  const lamp = new THREE.SpotLight(0xffdcae, 0.85, 0, 0.62, 0.65, 0); lamp.position.set(cx, 1.6 * u, cz + 0.4 * u); lamp.target.position.set(cx, 0, cz);
+  const lamp = new THREE.SpotLight(0xffdcae, 1.25, 0, 0.5, 0.55, 0); lamp.position.set(cx, 1.6 * u, cz + 0.4 * u); lamp.target.position.set(cx, 0, cz);
   lamp.castShadow = true; lamp.shadow.mapSize.set(2048, 2048); lamp.shadow.bias = -0.0005; lamp.shadow.normalBias = 0.03; lamp.shadow.camera.near = 10; lamp.shadow.camera.far = 80;
   add(lamp); add(lamp.target);
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -5915,6 +5948,8 @@ function missionAt(id, prep) {
   return m;
 }
 window.MOCKUP_SCENE = mapScene;
+// for the game's export of the paper chart (tools/mockups/export_chart.mjs)
+window.FC_CHART = { DATA, chartBank, NEBULA_TINTS, paperSheet, nebulaRegions, sheetBounds, DRAWN, MAP_LOOK, mapRoot, mapHemi: () => mapHemi, mapSun: () => mapSun, PLANET_KIND, CAMP: () => CAMP };
 
 render();
 resize();

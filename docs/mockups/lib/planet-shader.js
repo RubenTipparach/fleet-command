@@ -197,5 +197,5 @@
     m.frustumCulled = false;
     return m;
   }
-  window.FCPlanet = { material, billboard, KINDS };
+  window.FCPlanet = { material, billboard, KINDS, lattice: latticeTex };
 })();

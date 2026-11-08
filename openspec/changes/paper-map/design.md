@@ -110,11 +110,30 @@ Four 1024 px maps for the carpet and the green wall each (albedo, normal, ORM, s
 the page as WebP. The nebula is rendered once per chart at half the chart's size (1,300 by 1,120 px), a few milliseconds. The drawn pieces are about fifty small canvases (clouds 256 by 200 px, planets 256 px, suns 320 px, rocks 96 px), about 10 MB of texture memory, drawn once. The chart is one 2,800 by 2,440 canvas texture (27 MB of texture memory) and one shadowed spot light (a
 2048 px map): fine on a desktop; in the game on phones it would be a 2048 px texture and a baked table shadow.
 
+## In the game
+
+The page stays the one design (CLAUDE.md section 4). `tools/mockups/export_chart.mjs` loads mockup 1 headless and writes
+`assets/scenes/chart/`:
+
+| File | What |
+|---|---|
+| `sheet_base.png`, `sheet_screen.png`, `sheet_over.png`, `sheet_mul.png` | `paperSheet` drawn layer by layer: the paper, print, stars, numbers and suns; the worn ink (screen); rhumb lines, compass, title and folds (over); frame, stains, foxing and the browned edge (multiply). 56 px a unit |
+| `room.glb`, `paper.glb` | `buildRoom` and `paperMesh`, each textured material a named stand-in; `manifest.json` gives each name its Material Maker graph, tiling, tint and finish, and `GraphMaterial.Make` builds it from the graph's committed maps, so the maps have one copy |
+| `drawn/*.png` | The bank of drawn pieces (`chartBank`): a cloud and a storm in three variants for each of the palette's 23 colours, three suns, twelve rocks, the cloud's shadow |
+| `manifest.json` | The sheet's bounds, the lights (three.js r147 units; the game scales them by 2.4 by eye against the shots), each drawing's foot and aspect, the planets' kinds and palettes |
+
+The page's map is built from its own random terrain and the game's from its star systems, so placements cannot be exported:
+`ChartRoom.BuildDrawn` stands the bank's drawings on the game's own sectors by the page's rules, ported with the same Mulberry32
+numbers drawn in the same order (a cloud by its region's palette index, one region in three a storm; a sun on each star with
+its warm light; half a belt of rocks across each asteroid sector). What changes in play is drawn live by
+`chart_sheet.gdshader` over the still layers: each charted hex's wash, outline and the heavier rule where the holder changes,
+and the fog from a mask the CPU blurs once a turn (8 px a unit, two box passes) so a phone does no blur per pixel.
+
 ## Open questions
 
 | # | Question | Provisional |
 |---|---|---|
-| 1 | Paper map in the game, or the mockup only for now? | The mockup only until the owner asks (sync task `game-flow-engine` 2.10) |
+| 1 | Paper map in the game, or the mockup only for now? | Answered 2026-11-08: in the game ("implement space chart in game, it looks great!"); the glass board stays in the code behind `CampaignMap.Paper = false` |
 | 2 | Keep the space board as an option (a setting), or retire it? | Kept in the page behind `?look=space` |
 | 3 | Nebulae as printed washes only, or also their 3D clouds over the paper? | Answered 2026-11-08: drawn billboard clouds over the printed washes |
 | 4 | Do storms do anything (a move cost, damage), or are they a look? | A look only, until the owner asks |
