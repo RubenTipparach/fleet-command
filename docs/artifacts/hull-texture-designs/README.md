@@ -67,3 +67,5 @@
   warm yellow, brighter, and a warm glow filling each lit pane (`docs/mockups/lib/baked-hull.js`).
 - 2026-11-08, cloud session: version 18, version id `1794102257-2ee3`. The window light softened to a warm white (the
   owner: "it looks strongly tinted rather than just yellowish lighting"): the rooms keep their own colours, a smaller glow.
+- 2026-11-08, cloud session: version 19, version id `1794112570-ed25`. The hangar bays lit near-neutral, with no warm glow
+  over their mouths (the owner: "hanger bay doesnt ned that much tint"); the windows keep their soft warm light.
