@@ -29,7 +29,11 @@
 - [x] 4.2 A battle that cannot be withdrawn from ends as a stalemate when no ship is hurt for `stalemate_s`
 - [x] 4.3 AI captains close in when their fire has not landed; the scripted captain powers its engines for a chase
 - [x] 4.4 Regression tests (`StandoffTests`), the golden seed re-pinned
-- [ ] 4.5 The Mac session re-runs its sweep on these fixes
+- [x] 4.5 The Mac session re-runs its sweep on these fixes (withdraw and stalemate fixed; a lone corsair still stalled)
+- [x] 4.6 Intercept leads at most `intercept_max_lead_deg` off the target; the scripted captain closes the menu after a refused
+  Withdraw and boosts engines from the shields too
+- [x] 4.7 The Mac session re-runs the lone-corsair missions (capture, first_blood, scout, relief) from the Krai side: none
+  stalls (capture and first_blood won outstanding; scout and relief fought and lost, the hardest opposition against one ship)
 
 ## 5. Records
 

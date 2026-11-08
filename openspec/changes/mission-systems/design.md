@@ -90,6 +90,13 @@ three"):
 | A story mission refuses Withdraw, so a fight neither side can win never ends | A battle that cannot be withdrawn from, where no ship has been hurt for a while, ends as a stalemate, graded as a withdrawal (a draw) | `stalemate_s` 180 (`data/battle/tuning.json`) |
 | A Krai corvette never caught a Vos corsair circling at the same 1200 m/s, and no hull changed | An AI captain whose fire has not landed closes in: half its fighting range for every span without a hit, to an eighth; the scripted captain moves two boxes from weapons to engines when a chase goes nowhere | `ai_close_after_s` 20 (`data/battle/tuning.json`) |
 
+The Mac session's rerun (2026-11-08, `docs/playtests/2026-11-08-mission-fixes.md`) found the first two fixed and the third
+half done: three corsairs now close and fight, but a lone corsair still stalled. Measured in the game, the corvette's two
+disruptors were ready and in range, only out of arc: Intercept led a target crossing at its own speed about 45 degrees off the
+nose, past the corvette's 70 degree arcs. Intercept now leads at most `intercept_max_lead_deg` (30) off the target. The
+scripted captain's engine boost also takes from the shields when the weapons have only two boxes, and it closes the menu
+after a refused Withdraw (the game does not step the battle while the menu is open, so the stalemate never came).
+
 The golden seed was re-pinned for the AI rule (`tests/Core.Tests/GoldenSeed.cs`); `tests/Core.Tests/StandoffTests.cs` pins all
 three, the AI rule's test failing with the rule switched off.
 
