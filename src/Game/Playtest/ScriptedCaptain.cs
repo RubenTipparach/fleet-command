@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out" };
+          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -141,6 +141,7 @@ public sealed partial class ScriptedCaptain : Node
             // the freighters' beats (ScriptedCaptain.Freighters.cs)
             case "meet": return await Meet(b.Arg, b.Seconds > 0 ? b.Seconds : 600);
             case "cash_out": return await CashOut();
+            case "offer": return await OfferBeat(b.Arg);
             default: return $"no beat '{b.Do}'";
         }
     }
