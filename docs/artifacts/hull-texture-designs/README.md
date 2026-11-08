@@ -71,3 +71,4 @@
   over their mouths (the owner: "hanger bay doesnt ned that much tint"); the windows keep their soft warm light.
 - 2026-11-08, cloud session: renumbered mockup 35 on merging main (the freighters took mockup 24, the battle consoles 25-33
   and the space chart 34); the link is unchanged. The lines above say mockup 24 as it was then.
+- 2026-11-08, cloud session: version 20, version id `1794119731-c3e5`. The page reads mockup 35.
