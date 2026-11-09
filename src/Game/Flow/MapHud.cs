@@ -26,6 +26,7 @@ public sealed partial class MapHud : FlowPanel
         if (c == null) return;
         TopBar(c);
         Keys(c);
+        Search(c);
         // the port is its own panel over the map (PortPanel.cs); a briefing takes the sector panel's place
         if (F.Port == null && F.Brief != null) Briefing(c, F.Brief);
         if (F.Port == null && F.Brief == null) SectorPanel(c, (F.Sel ?? (c.S.AtC, c.S.AtR)).C, (F.Sel ?? (c.S.AtC, c.S.AtR)).R);
@@ -138,6 +139,85 @@ public sealed partial class MapHud : FlowPanel
         Button("keys.fleet", new Rect2(kx + 164, y, box.End.X - Sk.Pad.R - 4 - (kx + 164), 42), "Fleet", () => { F.SelectHex((c.S.AtC, c.S.AtR)); MapOf()?.CentreOnFleet(); }, tip: new Tip("Go to your fleet"));
         Button("top.end", new Rect2(Size.X - 196, Size.Y - 66, 180, 50), "End turn", F.EndTurn, on: true,
             tip: new Tip("End turn", new (string, string, Color?)[] { ("Then", "the factions move, missions change", null) }));
+    }
+
+    // the search box over the map keys (owner, 2026-11-09: "add a search box to find ships"): it finds every ship the chart
+    // shows by any part of its name (CampaignMap.ShipsShown), and a pick (or Enter for the first) glides the view there and
+    // picks its sector, which shows its name
+    private LineEdit? _search;
+    private Color _searchInk;
+    private const int SearchMax = 6;
+
+    private void Search(Campaign.Campaign c)
+    {
+        _search ??= MakeSearch();
+        bool on = F.Port == null;
+        _search.Visible = on;
+        if (!on) return;
+        var box = new Rect2(14, Size.Y - 84 - 58, 330, 50);
+        Ui.Reg("map.search", box, _ => _search.GrabFocus());
+        Kit.Piece(this, "frame.panel", box);
+        _search.Position = box.Position + new Vector2(Sk.Pad.L + 4, 6);
+        _search.Size = new Vector2(box.Size.X - Sk.Pad.L - Sk.Pad.R - 8, box.Size.Y - 12);
+        if (_searchInk != C.Text)
+        {
+            _searchInk = C.Text;
+            var (font, size) = X.Fonts.Get(17, 600);
+            _search.AddThemeFontOverride("font", font);
+            _search.AddThemeFontSizeOverride("font_size", size);
+            _search.AddThemeColorOverride("font_color", C.Text);
+            _search.AddThemeColorOverride("font_placeholder_color", new Color(C.Lilac, 0.8f));
+            _search.AddThemeColorOverride("caret_color", C.Sky);
+            _search.AddThemeColorOverride("selection_color", new Color(C.Sky, 0.35f));
+        }
+        var found = Found(c);
+        if (found.Count == 0)
+        {
+            if (_search.Text.Trim().Length > 0) Text("No ship by that name", box.Position.X + 16, box.Position.Y - 14, 15, C.Lilac, HorizontalAlignment.Left, box.Size.X - 20, 600);
+            return;
+        }
+        const float Row = 40;
+        var list = new Rect2(box.Position.X, box.Position.Y - 8 - found.Count * Row - 12, box.Size.X, found.Count * Row + 12);
+        Ui.Reg("map.found", list);
+        Shapes.RoundRect(this, list, new Color(Sk.R.Sheet, 0.96f), 12);
+        float y = list.Position.Y + 6;
+        foreach (var (name, fac, hc, hr) in found)
+        {
+            var row = new Rect2(list.Position.X + 6, y, list.Size.X - 12, Row - 4);
+            HitState hs = Ui.Reg($"map.found.{name}", row, _ => Go(hc, hr));
+            if (hs.Hot) Shapes.RoundRect(this, row, new Color(Sk.R.Plate, 0.95f), 8);
+            DrawRect(new Rect2(row.Position.X + 10, row.Position.Y + 13, 10, 10), FacColor(fac));
+            Text(name, row.Position.X + 30, row.Position.Y + 24, 17, C.Text, HorizontalAlignment.Left, row.Size.X - 140, 600);
+            Text(fac == c.S.Side ? "Your fleet" : FacName(fac), row.End.X - 10, row.Position.Y + 24, 14, C.Lilac, HorizontalAlignment.Right, 110, 600);
+            y += Row;
+        }
+    }
+
+    private LineEdit MakeSearch()
+    {
+        var e = new LineEdit { Name = "Search", PlaceholderText = "Find a ship", ClearButtonEnabled = true, CaretBlink = true, SelectAllOnFocus = true };
+        foreach (string st in new[] { "normal", "focus", "read_only" }) e.AddThemeStyleboxOverride(st, new StyleBoxEmpty());
+        e.TextSubmitted += _ => { if (Camp is { } c && Found(c) is { Count: > 0 } f) Go(f[0].C, f[0].R); };
+        AddChild(e);
+        return e;
+    }
+
+    // the ships whose names hold what is typed, nearest the start of the name first
+    private List<(string Name, string Fac, int C, int R)> Found(Campaign.Campaign c)
+    {
+        string q = _search?.Text.Trim() ?? "";
+        if (q.Length == 0 || MapOf()?.Map is not { } map) return new();
+        return map.ShipsShown.Where(s => s.Name.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(s => s.Name.IndexOf(q, StringComparison.OrdinalIgnoreCase)).ThenBy(s => s.Name, StringComparer.Ordinal).Take(SearchMax).ToList();
+    }
+
+    private void Go(int hc, int hr)
+    {
+        MapOf()?.Map?.GlideTo(hc, hr);
+        F.SelectHex((hc, hr));
+        if (_search == null) return;
+        _search.Text = "";
+        _search.ReleaseFocus();
     }
 
     /// <summary>Every faction you can hold a standing with, in the data's order.</summary>

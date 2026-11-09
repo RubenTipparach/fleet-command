@@ -123,6 +123,7 @@ to the game's 2026-11-06 changes":
 | Station and planet assaults | fight the base | fight its guard squadron (no stations or planets in the battle yet) | `mission-scripting` 2.3 |
 | Freighters on the map (2026-11-07) | the `freighterModel` placeholder (a spine and three pods), your own freighters only | each faction's approved freighter (mockup 24) with her containers, your own always and anyone's where your ships see (`CampaignMap.ShipModel`, `Cargo`) | `freighter-missions` 3.1 |
 | Freighter encounters (2026-11-07) | none: meeting a freighter does nothing | Escort or Raid on a shared sector, a freighter taken carried with her cargo, Cash out at a port (`MapHud.SectorPanel`, `Campaign.Meet`, `CashOut`) | `freighter-missions` 3.2 |
+| Star chart reading (2026-11-09) | every ship's name always under its stand; a planet's disc above its post's top | the game ahead of the page: a ship's name (fleets and freighters) shows only while its sector is hovered or picked; a search box over the map keys finds any ship the chart shows by part of its name and glides there; the planet's disc rests on its post (both, the page's `makeStandee` and `lib/planet-shader.js` `uSink`; playtest `chart-search`) | sync: draw the names and the search box on the page (mockup 1 v32) |
 | Repair kits (2026-11-07) | the supply "Spare parts", never used | "Repair kits", Use a kit on the sector panel mends 25 % of the most damaged hull | `field-repair` 1.4 |
 
 ### Mockup 2 and 8 (one console, two skins)
@@ -131,6 +132,7 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 
 | Where | Mockup | Game | Task |
 |---|---|---|---|
+| Ships that overlap (2026-11-09) | hulls pass through one another | the game ahead of the page: a smaller ship (or of one length, the later in the battle's order, never the ship you command) is drawn clear above a ship it overlaps, easing up and down over 0.6 s, its shots, bracket and hull bars with it (`BattleView.Stack.cs`; playtest `stacking`) | sync: the same rule on the page (mockup 2 v86) and every faction page |
 | Stations | Tactical, point defence, science, comms, repair, transport, fleet | All built (2026-11-06): Tactical (aim keys, contacts, pins, the expanded grid), Point defence (modes, own power), Science (scan, ECM, ECCM, cloak, sweep), Comms (hail, fleet orders, the event log), Repair (the crews' queue by drag and drop), Transport (capture, hit and run, cargo, mines, security), Fleet (stances, rules, retreat, take command) | none: in step; smaller gaps below |
 | Ship pages | Sensors, tractor (the contest), craft | All built: Sensors, Tractor (Hold and Break, grip, rounds, tether), Craft (fighters, barrage, shuttle) | none: in step |
 | Power | Reactor and Warp modes, the warp key on the speed slider | Built: the Reactor mode (coils, loops, heat), the Warp mode (banks, plot, risk), the warp key arming, plotting and jumping | none: in step |

@@ -1,0 +1,25 @@
+{
+ "_doc": "The scripted captain reads the star chart (owner, 2026-11-09: \"remove ship names, show only if I hover over it or target it\", \"add a search box to find ships\", \"planets should be on the stand not floating above it\"): a new Concord campaign's chart with no ship names, the search box with what it finds, then the fleet's sector picked so its name shows. It saves to user://campaign-playtest-concord.json, never over the player's campaign. In a window, snap saves stills into docs/screenshots/game/chart-search/.",
+ "flow": true,
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "wait_screen", "arg": "menu", "s": 120},
+  {"do": "hold", "s": 2},
+  {"do": "click", "arg": "menu.campaign"},
+  {"do": "wait_screen", "arg": "factions"},
+  {"do": "click", "arg": "fac.concord"},
+  {"do": "click", "arg": "fac.concord.new"},
+  {"do": "wait_screen", "arg": "map", "s": 120},
+  {"do": "hold", "s": 4},
+  {"do": "wheel", "arg": "in", "s": 4},
+  {"do": "hold", "s": 2},
+  {"do": "snap", "arg": "no_names"},
+  {"do": "click", "arg": "map.search"},
+  {"do": "type", "arg": "e"},
+  {"do": "hold", "s": 1},
+  {"do": "snap", "arg": "search"},
+  {"do": "click", "arg": "keys.fleet"},
+  {"do": "hold", "s": 2},
+  {"do": "snap", "arg": "picked"}
+ ]
+}

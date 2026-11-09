@@ -118,6 +118,8 @@
   { "script": "standing-concord", "play": "campaign" },
   { "script": "standing-krai", "play": "campaign" },
   { "script": "standings", "play": "campaign" },
+  { "script": "chart-search", "play": "campaign" },
+  { "script": "stacking", "play": "concord_battle" },
   { "script": "weapons", "play": "weapon_lance" },
   { "script": "weapons", "play": "weapon_disruptor" },
   { "script": "weapons", "play": "weapon_torpedo" },

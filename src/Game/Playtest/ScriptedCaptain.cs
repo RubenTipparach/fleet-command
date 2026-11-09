@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer", "loiter", "port", "fire" };
+          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer", "loiter", "port", "fire", "type" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -125,6 +125,12 @@ public sealed partial class ScriptedCaptain : Node
             case "pin_grid": return await PinGrid();
             case "fleet_wingman": return await FleetWingman();
             case "snap": return await Snap(b.Arg);
+            // types into the box that has the keyboard (the star chart's search box), as keys would
+            case "type":
+                if (GetViewport().GuiGetFocusOwner() is not LineEdit le) return "no text box has the keyboard";
+                le.InsertTextAtCaret(b.Arg);
+                await Frames(3);
+                return null;
             case "wait_screen": return await WaitScreen(b.Arg, b.Seconds > 0 ? b.Seconds : 60);
             case "end_turn": return await EndTurn();
             case "move": return await Move((int)Math.Max(1, b.Seconds));

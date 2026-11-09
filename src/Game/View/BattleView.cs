@@ -108,7 +108,7 @@ public sealed partial class BattleView : Node3D
         _sun = sun;
         _cam = new Camera3D { Name = "Camera", Current = true };
         AddChild(_cam);
-        _shots = new ShotView { Name = "Shots" };
+        _shots = new ShotView { Name = "Shots", Lift = LiftOf };
         AddChild(_shots);
         Rebuild();
     }
@@ -123,6 +123,8 @@ public sealed partial class BattleView : Node3D
         _parked.Clear();
         _cargo.Clear();
         _shields.Clear();
+        _extent.Clear();
+        _lift.Clear();
         _hitSeq = _x.Battle.Hits.Count > 0 ? _x.Battle.Hits[^1].Seq : 0;
         // the scenario's own nebula sky (each scene its own: data/battle/scenarios.json "sky")
         if (_sky == null || _sky.Name != "Sky_" + _x.Battle.Scenario.Sky)
@@ -139,6 +141,7 @@ public sealed partial class BattleView : Node3D
             model.Name = s.Id;
             AddChild(model);
             _models[s.Id] = model;
+            Measure(s, model);   // before its shield shell joins it
             var shell = new ShieldShell((float)(s.Class.FrameM / MPerU));   // every ship's (owner, 2026-11-04: "add shield display to all ships")
             model.AddChild(shell);
             _shields[s.Id] = shell;
@@ -231,11 +234,12 @@ public sealed partial class BattleView : Node3D
         // the mockup's other systems in 3D (transporter beams, tractor beams, mines, craft, cloaks), each in BattleView.<Package>.cs
         double sdt = _x.State.Paused || _x.State.MenuOpen ? 0 : dt;
         SyncComms(b, sdt); SyncTractor(b, sdt); SyncReactor(b, sdt); SyncCloak(b, sdt); SyncTactical(b, sdt);
+        Stack(b, sdt);
         foreach (Ship s in b.Ships)
         {
             if (!_models.TryGetValue(s.Id, out Node3D? m)) continue;
             m.Visible = !s.Jumped && (s.Alive || _damage.ContainsKey(s.Id)) && (!s.Alive || b.Detected(b.Player, s));   // an approved ship stays to come apart; a stand-in just goes; a ship gone to warp is gone; a cloaked ship unseen is not drawn
-            m.Position = new Vector3((float)(s.X / MPerU), 0, (float)(s.Z / MPerU));
+            m.Position = new Vector3((float)(s.X / MPerU), LiftOf(s.Id), (float)(s.Z / MPerU));
             m.Rotation = new Vector3(0, -(float)s.H, 0);
             bool broken = !s.Alive || (_damage.TryGetValue(s.Id, out ShipDamage? dm) && dm.Broken);
             if (_parked.TryGetValue(s.Id, out ParkedCraft? pc)) pc.Show(s.Fighters, broken);
@@ -249,7 +253,7 @@ public sealed partial class BattleView : Node3D
         Ship f = tv ?? p;
         Planet? pv = ViewedPlanet();
         if (PlanetView && pv == null) { PlanetView = false; StartGlide(_shipDist); }   // the planet is gone with its battle
-        var want = pv != null ? PlanetCentre(pv) : new Vector3((float)(f.X / MPerU), 0, (float)(f.Z / MPerU));
+        var want = pv != null ? PlanetCentre(pv) : new Vector3((float)(f.X / MPerU), LiftOf(f.Id), (float)(f.Z / MPerU));
         if (!_focusSet) { _focus = want; _focusSet = true; }
         _glideT = Math.Min(GlideS, _glideT + (float)dt);
         float k = _glideT / GlideS, e = k * k * (3 - 2 * k);   // eased in and out

@@ -1,0 +1,14 @@
+{
+ "_doc": "The scripted captain watches ships pass over one another (owner, 2026-11-09: \"in SFC smaller ships would change their height and fly above larger ships so that ships wouldnt clip inside of each other\"): a battle with wingmen, the fleets let close while stills are taken, then fought out. A smaller ship (or of two the same length, the one later in the battle's order, never the ship you command) is drawn clear above a ship it overlaps (BattleView.Stack). In a window, snap saves stills into docs/screenshots/game/stacking/.",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "hold", "s": 15 },
+  { "do": "snap", "arg": "close_15s" },
+  { "do": "hold", "s": 15 },
+  { "do": "snap", "arg": "close_30s" },
+  { "do": "hold", "s": 15 },
+  { "do": "snap", "arg": "close_45s" },
+  { "do": "fight", "s": 600 }
+ ]
+}

@@ -24,6 +24,17 @@ public sealed partial class ShotView : Node3D
         TrailWU = 0.45f, TrailS = 2.4f, TrailEveryS = 1 / 30f, BeadU = 1.4f, BeadEveryS = 0.012f, BeadLifeS = 0.4f, MissOffsetU = 0.6f, FlareU = 0.6f, DecoyU = 0.5f, DecoyLenU = 0.14f,
         ChorusWU = 0.55f, JoinWU = 0.2f, SlugWU = 0.6f, SlugLenU = 1.3f, QuellU = 1.8f, ChargeBowU = 1.3f, ChargeDriveU = 1.6f;
     private const float Y = 0.05f;
+
+    /// <summary>How high a ship is drawn above the battle's plane, scene units (BattleView's stacking: a smaller ship over a
+    /// larger one it overlaps), so a shot leaves and strikes the ship where it is drawn.</summary>
+    public Func<string?, float> Lift = _ => 0;
+    private Vector3 Up(string? id) => new(0, Lift(id), 0);
+    // a shot in flight: lifted between its firer's height and its target's, by how far along it is
+    private Vector3 UpAlong(Shot sh, Vector3 s0, Vector3 t0, Vector3 p)
+    {
+        float len = s0.DistanceTo(t0), f = len > 1e-4f ? Math.Clamp(s0.DistanceTo(p) / len, 0, 1) : 1;
+        return new Vector3(0, Mathf.Lerp(Lift(sh.From), Lift(sh.To), f), 0);
+    }
     private const int BeadN = 48, TrailN = 80;
 
     private static Shader? _beamSh, _flareSh, _beadSh;
@@ -124,7 +135,7 @@ public sealed partial class ShotView : Node3D
             if (sh.Kind == "beam")
             {
                 var (sx, sz, tx, tz) = b.Ends(sh);
-                Vector3 a = At(sx, sz), e = At(tx, tz);
+                Vector3 a = At(sx, sz) + Up(sh.From), e = At(tx, tz) + Up(sh.To);
                 if (!sh.Hit && !sh.Intercept && sh.To != null) { Vector3 d = (e - a).Normalized(); e += new Vector3(-d.Z, 0, d.X) * MissOffsetU; }
                 Beam(a, e, sh.Intercept ? PdWU : BeamWU, sh.Intercept ? 2 : 0, col, Math.Clamp((float)sh.Life * 6, 0, 1), now);
             }
@@ -132,17 +143,19 @@ public sealed partial class ShotView : Node3D
             {
                 // the chorus lance: its beam from the deflector to the target, and each joining lance into it, a third of the way
                 var (sx, sz, tx, tz) = b.Ends(sh);
-                Vector3 a = At(sx, sz), e = At(tx, tz), focus = a.Lerp(e, 0.35f);
+                Vector3 a = At(sx, sz) + Up(sh.From), e = At(tx, tz) + Up(sh.To), focus = a.Lerp(e, 0.35f);
                 int n = sh.Joined?.Count ?? 0;
                 float k = Math.Clamp((float)sh.Life / 0.35f, 0, 1);
                 Beam(a, e, ChorusWU * (1 + 0.22f * n), 3, col, k, now, new Color(b.Data.Specials.Chorus.StrandColor), 2 + n);
                 foreach (var (id, mi) in sh.Joined ?? new())
-                    if (b.ShipById(id) is { Alive: true } o && mi < o.Mounts.Count) { var (jx, jz) = Battle.MountWorld(o, o.Mounts[mi]); Beam(At(jx, jz), focus, JoinWU, 0, new Color(o.Mounts[mi].Weapon.Color), k, now); }
+                    if (b.ShipById(id) is { Alive: true } o && mi < o.Mounts.Count) { var (jx, jz) = Battle.MountWorld(o, o.Mounts[mi]); Beam(At(jx, jz) + Up(id), focus, JoinWU, 0, new Color(o.Mounts[mi].Weapon.Color), k, now); }
             }
             else if (sh.Kind is "bolt" or "slug")
             {
                 var (sx, sz, tx, tz) = b.Ends(sh);
                 Vector3 s0 = At(sx, sz), t0 = At(tx, tz), head = Drawn(sh, share);
+                head += UpAlong(sh, s0, t0, head);
+                s0 += Up(sh.From); t0 += Up(sh.To);
                 bool slug = sh.Kind == "slug";
                 float len = Math.Max(1e-4f, s0.DistanceTo(t0)), k = Math.Min(1, (slug ? SlugLenU : BoltLenU) / len);
                 Beam(head - (t0 - s0) * k, head, slug ? SlugWU : BoltWU, 1, col, slug ? 1.8f : 1.4f, now);
@@ -152,6 +165,7 @@ public sealed partial class ShotView : Node3D
                 // torpedoes and the quell (half torpedo, half missile) fly under the six-armed star and drop beads
                 bool torpedo = sh.Kind is "torpedo" or "quell";
                 Vector3 p = Drawn(sh, share);
+                if (sh.To != null) { var (sx, sz, tx, tz) = b.Ends(sh); p += UpAlong(sh, At(sx, sz), At(tx, tz), p); }
                 Flare(p, sh.Kind == "quell" ? QuellU : torpedo ? TorpedoU : MissileU, torpedo ? 1 : 2, col, torpedo ? 1.1f : 1.5f, now);
                 if (sh.Kind == "quell") Flare(p, QuellU * 0.45f, 2, col, 0.9f, now);   // and the missile's ball of drive light
                 if (!_trails.TryGetValue(sh, out Trail? tr)) _trails[sh] = tr = NewTrail(!torpedo, col);
@@ -166,8 +180,8 @@ public sealed partial class ShotView : Node3D
             var f = Geometry.Forward(s.H);
             double half = s.Class.FrameM / 2;
             float k = (float)Math.Clamp(s.SurgeS / b.Data.Specials.Charge.SurgeS, 0, 1);
-            Flare(At(s.X + f.X * half, s.Z + f.Z * half), ChargeBowU, 0, new Color(b.Data.Specials.Charge.Color), 1.4f + 0.6f * k, now);
-            Flare(At(s.X - f.X * half, s.Z - f.Z * half), ChargeDriveU, 2, new Color("#ff8a2a"), 1.2f + 0.8f * k, now);
+            Flare(At(s.X + f.X * half, s.Z + f.Z * half) + Up(s.Id), ChargeBowU, 0, new Color(b.Data.Specials.Charge.Color), 1.4f + 0.6f * k, now);
+            Flare(At(s.X - f.X * half, s.Z - f.Z * half) + Up(s.Id), ChargeDriveU, 2, new Color("#ff8a2a"), 1.2f + 0.8f * k, now);
         }
         // countermeasures: burning flares, and a decoy shuttle under its pulsing beacon (Battle.Lures)
         foreach (Lure l in b.Lures)
