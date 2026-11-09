@@ -273,7 +273,8 @@ public sealed partial class FactionScreen : FlowPanel
         }
     }
 
-    private static Texture2D? Tex(string id)
+    /// <summary>A faction's emblem picture, loaded once (the map's standing icons use it too).</summary>
+    internal static Texture2D? Tex(string id)
     {
         if (!EmblemTex.TryGetValue(id, out Texture2D? t)) EmblemTex[id] = t = Emblem.TryGetValue(id, out string? path) ? GD.Load<Texture2D>(path) : null;
         return t;

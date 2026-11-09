@@ -226,7 +226,11 @@ public sealed class Campaign
     public int Standing(string fac) => S.Standing.TryGetValue(fac, out int v) ? v : 0;
 
     public bool Own(Sector h) => h.Owner == S.Side;
-    public bool Hostile(Sector h) => h.Owner != S.Side && h.Owner != "neutral" && (Standing(h.Owner) < 0 || h.Owner == Rival || h.Owner == "vos");
+    public bool Hostile(Sector h) => HostileTo(h.Owner);
+    /// <summary>A faction you are at odds with: below 0 in standing, your rival, or the pirates.</summary>
+    public bool HostileTo(string fac) => fac != S.Side && fac != "neutral" && (Standing(fac) < 0 || fac == Rival || fac == "vos");
+    /// <summary>A faction you are on good terms with: above 0 in standing and not hostile.</summary>
+    public bool FriendlyTo(string fac) => fac != S.Side && fac != "neutral" && Standing(fac) > 0 && !HostileTo(fac);
     /// <summary>Your own port: shipyard, outfitter and recruiting.</summary>
     public bool IsPort(Sector h) => h.IsPort && h.Owner == S.Side;
     /// <summary>Another faction's port that deals with you (selling only) while your standing with it is 0 or above.</summary>

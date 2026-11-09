@@ -1,0 +1,22 @@
+{
+ "_doc": "The scripted captain opens the campaign map's standings (owner, 2026-11-09: \"standing just show friends and enemies, with logos, and not full names. If I hover over icons then show the name\", \"If I click on the standings button I can see the status of all standings\"): a new Concord campaign, the top bar with its Friends and Enemies emblems, the Standings key opening the sheet of every faction's standing, the Missions key closing it, and an emblem opening it again. It saves to user://campaign-playtest-concord.json, never over the player's campaign. In a window, snap saves stills into docs/screenshots/game/standings/.",
+ "flow": true,
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "wait_screen", "arg": "menu", "s": 120},
+  {"do": "click", "arg": "menu.campaign"},
+  {"do": "wait_screen", "arg": "factions"},
+  {"do": "click", "arg": "fac.concord"},
+  {"do": "click", "arg": "fac.concord.new"},
+  {"do": "wait_screen", "arg": "map", "s": 120},
+  {"do": "hold", "s": 2},
+  {"do": "snap", "arg": "top-bar"},
+  {"do": "click", "arg": "top.standing"},
+  {"do": "hold", "s": 1},
+  {"do": "snap", "arg": "sheet"},
+  {"do": "click", "arg": "top.missions"},
+  {"do": "click", "arg": "top.enemy.krai"},
+  {"do": "hold", "s": 1},
+  {"do": "snap", "arg": "from-emblem"}
+ ]
+}
