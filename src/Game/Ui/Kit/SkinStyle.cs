@@ -59,6 +59,9 @@ public sealed record SkinStyle
 {
     public required Roles R { get; init; }
     public required TypeSet Type { get; init; }
+    /// <summary>The cue a console key plays when pressed (data/audio/cues.json): part of the skin's design language (survey
+    /// U6: a skin changes pictures, colours, type and button sounds). Required, so a skin without one does not build.</summary>
+    public required string KeySound { get; init; }
     /// <summary>The ink that reads on a drawn fill (the mockup's ink(fill)).</summary>
     public required Func<Color, Color> InkOn { get; init; }
     public required KeyInk KeyInk { get; init; }

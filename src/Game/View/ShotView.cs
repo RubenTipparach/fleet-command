@@ -21,10 +21,10 @@ public sealed partial class ShotView : Node3D
 {
     /// <summary>The looks' sizes, scene units and seconds (the battle console mockup's SHOT_FX, v77).</summary>
     public const float BeamWU = 0.34f, PdWU = 0.2f, BoltWU = 0.45f, BoltLenU = 1.0f, TorpedoU = 2.2f, MissileU = 0.7f, MissileLenU = 0.22f,
-        TrailWU = 0.3f, TrailS = 0.8f, BeadU = 1.4f, BeadEveryS = 0.012f, BeadLifeS = 0.4f, MissOffsetU = 0.6f, FlareU = 0.6f, DecoyU = 0.5f, DecoyLenU = 0.14f,
+        TrailWU = 0.45f, TrailS = 2.4f, TrailEveryS = 1 / 30f, BeadU = 1.4f, BeadEveryS = 0.012f, BeadLifeS = 0.4f, MissOffsetU = 0.6f, FlareU = 0.6f, DecoyU = 0.5f, DecoyLenU = 0.14f,
         ChorusWU = 0.55f, JoinWU = 0.2f, SlugWU = 0.6f, SlugLenU = 1.3f, QuellU = 1.8f, ChargeBowU = 1.3f, ChargeDriveU = 1.6f;
     private const float Y = 0.05f;
-    private const int BeadN = 48, TrailN = 40;
+    private const int BeadN = 48, TrailN = 80;
 
     private static Shader? _beamSh, _flareSh, _beadSh;
     private static ArrayMesh? _strip;
@@ -264,8 +264,11 @@ public sealed partial class ShotView : Node3D
         tr.LastSeen = now;
         if (tr.Missile)
         {
-            if (tr.Points.Count == 0 || tr.Points[^1].P.DistanceSquaredTo(p) > 1e-8f) tr.Points.Add((p, now));
-            if (tr.Points.Count > TrailN) tr.Points.RemoveAt(0);
+            // a point every TrailEveryS of battle time, the newest moved along with the missile in between, so the tail's length
+            // is TrailS of flight at any frame rate or speed of play (owner, 2026-11-06: "your missiles don't have much of a tail")
+            if (tr.Points.Count < 2 || now - tr.Points[^2].T >= TrailEveryS) tr.Points.Add((p, now));
+            else tr.Points[^1] = (p, now);
+            while (tr.Points.Count > TrailN || (tr.Points.Count > 2 && now - tr.Points[0].T > TrailS)) tr.Points.RemoveAt(0);
             if (tr.Node.GetNodeOrNull<MeshInstance3D>("Body") is { } body && tr.Points.Count >= 2)
             {
                 Vector3 d = p - tr.Points[^2].P;

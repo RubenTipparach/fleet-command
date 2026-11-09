@@ -1,0 +1,18 @@
+{
+  "_doc": "The sounds the game plays (openspec/changes/sound-effects, design section 3): per cue its file (a committed OGG under assets/audio, built by tools/audio/render_sfx.sh), the bus it plays on (Master, Music or Effects, set by the Options sheet's boxes: src/Game/Ui/AudioSettings.cs) and its level in dB at that bus. The console keys first (owner, 2026-11-07: \"Console keys - this should be implemented in the game\"): each skin names its key cue in its style (src/Game/Ui/Kit/*Kit.cs, SkinStyle.KeySound); and the bridge bed under a battle (owner, 2026-11-07: \"use amb_bridge_brown\", \"put in game now\"; src/Game/Ui/ConsoleSounds.cs).",
+  "ui_chirp": {
+    "file": "assets/audio/sfx/ui_chirp.ogg",
+    "bus": "Effects",
+    "volume_db": -4
+  },
+  "ui_clunk": {
+    "file": "assets/audio/sfx/ui_clunk.ogg",
+    "bus": "Effects",
+    "volume_db": -4
+  },
+  "amb_bridge": {
+    "file": "assets/audio/ambience/amb_bridge.ogg",
+    "bus": "Effects",
+    "volume_db": -3
+  }
+}

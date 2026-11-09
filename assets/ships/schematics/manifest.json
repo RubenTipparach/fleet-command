@@ -664,6 +664,114 @@
    }
   },
   {
+   "faction": "freighters",
+   "id": "freighter_concord",
+   "hull": "freighters/freighter_concord.hull.png",
+   "wire": "freighters/freighter_concord.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.332919,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 44.0,
+    "length_z": 300.0
+   },
+   "source_triangles": 684,
+   "quads": 325,
+   "triangles": 34,
+   "edges_drawn": 321,
+   "source": {
+    "glb": "assets/ships/freighters/freighter_concord.glb",
+    "sha256": "7cdfca2e285294b88866e43356f3ba45424b2757715ae1dd335280f75fd1f45b"
+   }
+  },
+  {
+   "faction": "freighters",
+   "id": "freighter_krai",
+   "hull": "freighters/freighter_krai.hull.png",
+   "wire": "freighters/freighter_krai.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.355114,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 38.8,
+    "length_z": 320.0
+   },
+   "source_triangles": 468,
+   "quads": 210,
+   "triangles": 48,
+   "edges_drawn": 292,
+   "source": {
+    "glb": "assets/ships/freighters/freighter_krai.glb",
+    "sha256": "9e31d31ca30539f219fe0bc25fd2ca2a820f55d773d5c2c1bb82d82a3cf05974"
+   }
+  },
+  {
+   "faction": "freighters",
+   "id": "freighter_ssarith",
+   "hull": "freighters/freighter_ssarith.hull.png",
+   "wire": "freighters/freighter_ssarith.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.377308,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 52.0,
+    "length_z": 340.0
+   },
+   "source_triangles": 1680,
+   "quads": 813,
+   "triangles": 54,
+   "edges_drawn": 456,
+   "source": {
+    "glb": "assets/ships/freighters/freighter_ssarith.glb",
+    "sha256": "b502b618423e81707d36af8860abaf733ec18fc26bc5f726ce7736f791e2fe31"
+   }
+  },
+  {
+   "faction": "freighters",
+   "id": "freighter_kelvane",
+   "hull": "freighters/freighter_kelvane.hull.png",
+   "wire": "freighters/freighter_kelvane.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.304066,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 80.0,
+    "length_z": 274.0
+   },
+   "source_triangles": 930,
+   "quads": 446,
+   "triangles": 38,
+   "edges_drawn": 330,
+   "source": {
+    "glb": "assets/ships/freighters/freighter_kelvane.glb",
+    "sha256": "f71754e7e4aef74df15ec6d4c6b60e607b9ed30352dd77d184d54055b096da97"
+   }
+  },
+  {
    "faction": "axiom",
    "id": "axiom_ff",
    "hull": "axiom/axiom_ff.hull.png",

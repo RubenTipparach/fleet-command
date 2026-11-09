@@ -116,6 +116,14 @@
   { "script": "freighters-kelvane", "play": "campaign" },
   { "script": "paper-chart", "play": "campaign" },
   { "script": "standing-concord", "play": "campaign" },
-  { "script": "standing-krai", "play": "campaign" }
+  { "script": "standing-krai", "play": "campaign" },
+  { "script": "weapons", "play": "weapon_lance" },
+  { "script": "weapons", "play": "weapon_disruptor" },
+  { "script": "weapons", "play": "weapon_torpedo" },
+  { "script": "weapons", "play": "weapon_missile" },
+  { "script": "weapons", "play": "weapon_pd" },
+  { "script": "weapons", "play": "weapon_chorus" },
+  { "script": "weapons", "play": "weapon_quell" },
+  { "script": "weapons", "play": "weapon_forge" }
  ]
 }

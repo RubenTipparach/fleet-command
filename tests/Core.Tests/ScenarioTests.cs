@@ -18,6 +18,9 @@ public class ScenarioTests
     private static Scenario Load(string json) =>
         DataLoader.LoadScenario(StrictJson.Parse(json, "data/battle/scenarios.json"), TestData.Data.Classes, TestData.Data.Factions);
 
+    /// <summary>A weapons test scene: one weapon armed, at a quarter speed.</summary>
+    private static bool IsWeaponScene(Scenario s) => s.Id.StartsWith("weapon_");
+
     private const string Ships =
         "\"ships\": [{\"id\": \"a\", \"name\": \"A\", \"captain\": \"C\", \"class\": \"ff\", \"faction\": \"concord\", \"side\": 0, \"x_m\": 0, \"z_m\": 0, \"heading_deg\": 0, \"speed_m_s\": 0},"
         + " {\"id\": \"b\", \"name\": \"B\", \"captain\": \"C\", \"class\": \"krai_ff\", \"faction\": \"krai\", \"side\": 1, \"x_m\": 0, \"z_m\": -50000, \"heading_deg\": 180, \"speed_m_s\": 0 STAND}]";
@@ -38,7 +41,8 @@ public class ScenarioTests
             // a test scene with a goal (a delivery, a ship in distress) may have no enemy at all
             if (s.Goal == null) Assert.Contains(s.Ships, o => o.Side == 1);
         }
-        Assert.Equal(sides["concord"].Select(s => s.Name), sides["krai"].Select(s => s.Name));
+        // a weapon scene (weapon_*) is fielded by the side that has the weapon: the Chorus by the Concord, the Forge by the Krai
+        Assert.Equal(sides["concord"].Where(s => !IsWeaponScene(s)).Select(s => s.Name), sides["krai"].Where(s => !IsWeaponScene(s)).Select(s => s.Name));
     }
 
     [Fact]
@@ -71,7 +75,7 @@ public class ScenarioTests
         foreach (string name in new[] { "Battle", "Duel", "Arming", "Allied fleet", "Four races" }) Assert.Contains(hunt, s => s.Name == name);
         // and every general scene the Concord plays, bar its own line as the foe (owner, 2026-11-07: "Ensure spaceships for
         // ssarith are also implemented")
-        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && s.Name is not ("The Hunt" or "Hunt wrecks")))
+        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && !IsWeaponScene(s) && s.Name is not ("The Hunt" or "Hunt wrecks")))
             Assert.Contains(hunt, s => s.Name == c.Name);
         // its ships are its own line's, its freighter (the Tally carrier, mockup 24) among them, but its depot in Relief, the
         // mockups' station, as every side's is
@@ -89,7 +93,7 @@ public class ScenarioTests
         foreach (string name in new[] { "Battle", "Duel", "Arming", "Four races" }) Assert.Contains(own, s => s.Name == name);
         // and every general scene the Concord plays, bar the allied fleet (its three races are the Concord, Krai and Ssarith;
         // the Institute joins them in Four races) (owner, 2026-11-07: "test all kelvan general mission scenarios")
-        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && s.Name is not ("Allied fleet" or "The Institute" or "Institute wrecks")))
+        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && !IsWeaponScene(s) && s.Name is not ("Allied fleet" or "The Institute" or "Institute wrecks")))
             Assert.Contains(own, s => s.Name == c.Name);
         foreach (string side in new[] { "concord", "krai" })
             foreach (string name in new[] { "The Institute", "Institute wrecks" })
@@ -239,7 +243,12 @@ public class ScenarioTests
             Assert.True(File.Exists(Path.Combine(root, "data", "space", "skies", s.Sky + ".json")), $"{s.Id}: no sky data/space/skies/{s.Sky}.json");
             Assert.True(File.Exists(Path.Combine(root, "assets", "skies", s.Sky + ".jpg")), $"{s.Id}: no panorama assets/skies/{s.Sky}.jpg (tools/space/sky_panorama.py)");
         }
-        var shared = TestData.Data.Scenarios.GroupBy(s => s.Sky).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+        // the weapon scenes share one sky, so every weapon is seen against the same backdrop, and no other scenario has it
+        var others = TestData.Data.Scenarios.Where(s => !IsWeaponScene(s)).ToList();
+        var shared = others.GroupBy(s => s.Sky).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+        string[] weaponSkies = TestData.Data.Scenarios.Where(IsWeaponScene).Select(s => s.Sky).Distinct().ToArray();
+        Assert.Single(weaponSkies);
+        Assert.DoesNotContain(others, s => s.Sky == weaponSkies[0]);
         Assert.True(shared.Length == 0, $"skies used by more than one scenario: {string.Join(", ", shared)}");
     }
 
@@ -251,4 +260,52 @@ public class ScenarioTests
                 foreach (MountDef m in st.ExtraMounts ?? Array.Empty<MountDef>())
                     Assert.True(TestData.Data.Weapons.ContainsKey(m.Weapon), $"{sc.Id}/{st.Id}: no weapon '{m.Weapon}'");
     }
+
+    [Fact]
+    public void A_weapon_scene_arms_only_its_weapon_and_plays_at_a_quarter_speed()
+    {
+        Scenario sc = TestData.Data.Scenarios.First(s => s.Id == "weapon_disruptor");
+        Assert.Equal(0.25, sc.TimeScale);
+        var b = new Battle(TestData.Data, sc);
+        Assert.All(b.Player.Mounts, m => Assert.Equal(m.Weapon.Id == "disruptor" ? Arming.Normal : Arming.Offline, m.State));
+        Assert.Contains(b.Player.Mounts, m => m.Weapon.Id == "disruptor");
+        Assert.All(b.Player.Mounts.Where(m => m.State == Arming.Offline), m => Assert.Equal(0, m.Charge));
+    }
+
+    [Fact]
+    public void A_ship_armed_with_a_weapon_it_has_no_mount_for_or_a_scene_slowed_to_nothing_is_a_data_error()
+    {
+        Assert.Throws<DataError>(() => Load(One(stand: ", \"arm_only\": [\"chorus\"]")));
+        Assert.Throws<DataError>(() => Load(One().Replace("\"seed\": 1,", "\"seed\": 1, \"time_scale\": 0,")));
+        Assert.Equal(1, Load(One()).TimeScale);
+    }
+
+    [Fact]
+    public void In_every_weapon_scene_its_weapon_fires_and_lands_within_25_s()
+    {
+        // the captain's weapons script fires for 25 battle seconds (data/playtests/weapons.json), from where the ship stands
+        foreach (Scenario sc in TestData.Data.Scenarios.Where(IsWeaponScene))
+        {
+            var b = new Battle(TestData.Data, sc);
+            Ship foe = b.EnemiesOf(b.Player).First();
+            double hull0 = foe.Hull, shields0 = foe.Shields.Sum();
+            b.Lock(foe.Id);
+            for (int i = 0; i < 25 * 30; i++) { if (b.WouldFire().Length > 0) b.Fire(); b.Step(); }
+            if (sc.Id == "weapon_pd") Assert.True(b.Player.Intercepts > 0, "weapon_pd: point defence stopped nothing");
+            else Assert.True(foe.Hull < hull0 || foe.Shields.Sum() < shields0 || foe.Mounts.Any(m => m.StunS > 0) || b.Log.Any(l => l.Text.Contains("quell", StringComparison.OrdinalIgnoreCase)),
+                $"{sc.Id}: the {foe.Name} took nothing");
+        }
+    }
+
+    [Fact]
+    public void Every_class_with_a_model_has_a_schematic_of_that_model()
+    {
+        // owner, 2026-11-06: "Alot of wire frame schematic rendering are missing for alien ships" (tools/mockups/ship_schematics.py)
+        string root = Path.GetDirectoryName(TestData.DataDir)!;
+        using var doc = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "assets", "ships", "schematics", "manifest.json")));
+        var have = doc.RootElement.GetProperty("ships").EnumerateArray().Select(e => e.GetProperty("source").GetProperty("glb").GetString()).ToHashSet();
+        foreach (ShipClass c in TestData.Data.Classes.Values.Where(c => c.Model != null))
+            Assert.True(have.Contains(c.Model), $"{c.Id}: no schematic of {c.Model}; run tools/mockups/ship_schematics.py");
+    }
 }
+

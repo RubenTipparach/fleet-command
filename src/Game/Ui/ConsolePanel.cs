@@ -42,6 +42,7 @@ public abstract partial class ConsolePanel : Control, IControlSource
         Name = region.ToString();
         ClipContents = true;
         MouseFilter = MouseFilterEnum.Stop;
+        Ui.Pressed = () => X.Sounds.Key(X.Kit.Style.KeySound);
     }
 
     public override void _Process(double delta) => QueueRedraw();

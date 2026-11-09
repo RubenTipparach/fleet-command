@@ -64,6 +64,7 @@ public sealed class ConcordKit : IKit
         {
             R = new Roles(Ink: black, InkDis: new Color("#2a3a7a"), Night: new Color("#0d1430"), Ghost: new Color("#3a4a80"),
                 Mute: new Color("#3a4152"), Plate: black, Title: c.Sky, Sheet: new Color("#070b1c")),
+            KeySound = "ui_chirp", // the Concord's soft chirp (console-skins design, the Sound row: "Soft chirps")
             Type = new TypeSet(Antonio, Antonio, (size, weight) => new Face(false, size, weight)),
             InkOn = _ => black,
             KeyInk = new KeyInk(black, black, black, black, c.Text),

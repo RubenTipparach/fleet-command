@@ -3,6 +3,7 @@
   "oga/sci-fi-sound-effects-library": {
     "licence": "CC-BY 3.0",
     "owner": "owner, 2026-11-07, sending the link for the bridge ambience: \"https://opengameart.org/content/sci-fi-sound-effects-library space ambience right here\"",
-    "attribution": "Little Robot Sound Factory, www.littlerobotsoundfactory.com"
+    "attribution": "Little Robot Sound Factory, www.littlerobotsoundfactory.com",
+    "status": "not in use since 2026-11-07 (owner: \"delete amb_bridge, use amb_bridge_brown\"); kept so the pack can be fetched again if a cue returns to it"
   }
 }

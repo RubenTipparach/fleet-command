@@ -391,7 +391,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         Grid(1, "v.range.next", "Next ship", B.NextTarget, false, "Lock the next ship on the range");
     }
 
-    private const float SceneX = 110, SceneW = 230, SceneRowH = 38, SceneHeadH = 26;
+    private const float SceneX = 110, SceneW = 230, SceneRowH = 38, SceneHeadH = 26, SceneRows = 16;
 
     // The scene selector (the battle console mockup's, owner 2026-11-02: "I would like a scene selector"): a pill naming the
     // scenario in play, with an arrow; a click opens the list. The objective sits under it while the list is shut.
@@ -429,7 +429,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         var types = _x.Data.Scenarios.GroupBy(s => s.Name).Select(g => (Name: g.Key, Sides: g.ToList())).ToList();
         _sceneType ??= B.Scenario.Name;
         float lx = SceneX, ly = 48, rowH = SceneRowH, sideW = 200;
-        float h = Math.Min(types.Count * rowH, Size.Y - ly - 120);
+        // whole rows, at most SceneRows of them, the rest scrolled: the rows shown never hang on the view's height, which
+        // differs a little from skin to skin
+        float h = Math.Min(types.Count, Math.Clamp(MathF.Floor((Size.Y - ly - 120) / rowH), 1, SceneRows)) * rowH;
         _sceneList = new Rect2(lx, ly, SceneW, h);
         float max = Math.Max(0, types.Count * rowH - h);
         _sceneScroll = Math.Clamp(_sceneScroll, 0, max);

@@ -37,6 +37,7 @@ public sealed partial class BattleView : Node3D
     private readonly Dictionary<string, ShipDamage> _damage = new();
     private readonly Dictionary<string, ParkedCraft> _parked = new();   // a carrier's craft on its pads
     private readonly Dictionary<string, Cargo> _cargo = new();   // a freighter's containers
+    private float _standInEnd;   // seconds a stand-in's nova still has to be seen
     private readonly Dictionary<string, ShieldShell> _shields = new();
     private long _hitSeq;
     private NebulaSky? _sky;
@@ -282,9 +283,16 @@ public sealed partial class BattleView : Node3D
             _hitSeq = e.Seq;
             if (_damage.TryGetValue(e.ShipId, out ShipDamage? d)) d.OnHit(e);
             else if (_models.TryGetValue(e.ShipId, out Node3D? m))
-                Fx.Fireball(this, m.GlobalPosition, e.HullDamage > 0 ? 0.12f : 0.06f, Vector3.Up);
+            {
+                // a stand-in has no pieces to break, but it ends as every ship does (it is gone the frame after)
+                if (e.Destroyed && b.ShipById(e.ShipId) is { } dead) { Fx.ShipEnd(this, m.GlobalPosition, (float)(dead.Class.FrameM / MPerU)); _standInEnd = ShipDamage.NovaSeenS; }
+                else if (e.HullDamage > 0) Fx.Fireball(this, m.GlobalPosition, Fx.Readable(this, m.GlobalPosition, 0.12f), Vector3.Up);
+                else Fx.ShieldFlare(this, m.GlobalPosition, Fx.Readable(this, m.GlobalPosition, 0.06f, Fx.ShieldMinShare), Vector3.Up);
+            }
         }
         foreach (ShipDamage d in _damage.Values) d.Step((float)dt);
+        _standInEnd = Math.Max(0, _standInEnd - (float)dt);
+        _x.State.ShipsEnding = _standInEnd > 0 || _damage.Values.Any(d => d.Ending);
     }
 
     // A perspective frustum whose centre lands on the ship's point in the view rectangle (ship_screen_y down the view).

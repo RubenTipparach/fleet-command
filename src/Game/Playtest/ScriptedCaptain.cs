@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer", "loiter", "port" };
+          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer", "loiter", "port", "fire" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -144,6 +144,8 @@ public sealed partial class ScriptedCaptain : Node
             case "offer": return await OfferBeat(b.Arg);
             case "loiter": return await Loiter(b.Seconds > 0 ? (int)b.Seconds : 10);
             case "port": return await PortBeat(b.Arg);
+            // a weapons test scene: fire on the locked target for s seconds, from where the ship stands (no helm order)
+            case "fire": return await Fight(b.Seconds > 0 ? b.Seconds : 30, steer: false);
             default: return $"no beat '{b.Do}'";
         }
     }
@@ -155,8 +157,8 @@ public sealed partial class ScriptedCaptain : Node
     // station's Aim at keys, at the first of them whose key is not yet lit Disabled or Destroyed on the locked target. With
     // sweep, against cloaked ships: with none in sight, the Science station's Sweep. With take, a captain out to take a prize
     // (a raid's freighter) rather than destroy her: with her hull under half, the weapons panel's Multiple key turned to
-    // Single, so one shot at a time brings her to strike, and back to Multiple once she has struck.
-    private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false, bool take = false)
+    // Single, so one shot at a time brings her to strike, and back to Multiple once she has struck. Without steer, it gives no helm order.
+    private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false, bool take = false, bool steer = true)
     {
         double t0 = B.T, lastChange = B.T, lastBoost = B.T, sum = HullSum();
         double closest = double.MaxValue;
@@ -204,7 +206,7 @@ public sealed partial class ScriptedCaptain : Node
             // A helm order lapses when its target dies and the next is locked by itself, so an order given before is checked
             // again, not remembered (bot suite 2026-11-08: kelvane_hunt flew on free heading past the Hunt carrier)
             if (ordered && !(me.Engaged && me.Manoeuvre == "intercept")) ordered = false;
-            if (!ordered && B.TargetOf(me) != null)
+            if (steer && !ordered && B.TargetOf(me) != null)
             {
                 if (me.Engaged && me.Manoeuvre == "intercept") ordered = true;
                 else
