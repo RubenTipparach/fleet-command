@@ -242,3 +242,10 @@ outline). It is already on the Kelvane crest in brass wire, the name plates and 
 (`openspec/changes/kelvane-battle-console`, D9, on `claude/brave-faraday-ilpu2q`). Still to do in this thread: the emblem
 guide's Kelvane section and the gallery's badge, built from the same lines.
 
+**On the guide** (owner, 2026-11-06: "prep logo for merge", then "yup you got it, on the emblem, background red, shape green",
+"the red background should be like a satin texture"): KID, the eigen plot, is the Kelvane section's pick, drawn from the
+console thread's one geometry (`tools/mockups/kelvane_emblem.py` and `assets/ui/kelvane/emblem.json`, brought onto this branch
+byte for byte, so the two branches merge clean): the coarse wires and the silhouette inside a ring of champagne metal, the
+field red satin (a diagonal sheen), the plot green, its silhouette a deeper green than its wires. Still to do: the 3D badge
+(a satin red material) and the gallery's entry.
+
