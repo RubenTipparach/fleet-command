@@ -147,6 +147,11 @@ public static class Fx
         Flash(parent, at, lightRangeU, 5f, lightS);
     }
 
+    /// <summary>A ship's end sized to its length in scene units: twice the first size (owner, 2026-11-04: "2x nova side"),
+    /// growing slower than the ship so a dreadnought's does not white out the whole view. Every ship's end, an approved
+    /// ship's core breach and a stand-in's, is this one.</summary>
+    public static void ShipEnd(Node parent, Vector3 at, float lengthU) => Nova(parent, at, 1.8f * Mathf.Pow(lengthU, 0.7f));
+
     /// <summary>A ship's end, its core breaching (owner, 2026-11-04: "aww theres no big super nova", "center is white
     /// with pink edges, and a blue ring glowing outward", "I really want it to have this exact look and colors, and the
     /// debris should have trails of flame"): a star of white light with pink edges (novastar.gdshader), a flat disc of
