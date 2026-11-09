@@ -324,7 +324,7 @@
      "protected": [
       {
        "kind": "label",
-       "what": "Sskarr · Matriarch Vhaal",
+       "what": "Sskarr \u00b7 Matriarch Vhaal",
        "rect": [
         82,
         20.5,
@@ -631,11 +631,21 @@
       },
       {
        "kind": "child-slot",
-       "what": "key.fire",
+       "what": "key.auto",
        "rect": [
         40,
         688,
-        192,
+        82,
+        48
+       ]
+      },
+      {
+       "kind": "child-slot",
+       "what": "key.fire",
+       "rect": [
+        126,
+        688,
+        78.5,
         48
        ]
       },
@@ -643,9 +653,9 @@
        "kind": "child-slot",
        "what": "key.multiple",
        "rect": [
-        240,
+        209,
         688,
-        192,
+        223,
         48
        ]
       },
@@ -683,13 +693,37 @@
      "sculpt": "frame.panel 460x174"
     },
     {
-     "id": "key.fire",
-     "piece": "button.hover",
+     "id": "key.auto",
+     "piece": "button.idle",
      "kind": "nine",
      "rect": [
       40,
       688,
-      192,
+      82,
+      48
+     ],
+     "protected": [
+      {
+       "kind": "key-label",
+       "what": "Auto",
+       "rect": [
+        67.5,
+        706,
+        27,
+        13
+       ]
+      }
+     ],
+     "sculpt": "button 82x48"
+    },
+    {
+     "id": "key.fire",
+     "piece": "button.hover",
+     "kind": "nine",
+     "rect": [
+      126,
+      688,
+      78.5,
       48
      ],
      "protected": [
@@ -697,23 +731,23 @@
        "kind": "key-label",
        "what": "Fire",
        "rect": [
-        118,
-        703,
-        36,
-        20
+        154,
+        706,
+        23.5,
+        13
        ]
       }
      ],
-     "sculpt": "button 192x48"
+     "sculpt": "button 78.5x48"
     },
     {
      "id": "key.multiple",
      "piece": "button.idle",
      "kind": "nine",
      "rect": [
-      240,
+      209,
       688,
-      192,
+      223,
       48
      ],
      "protected": [
@@ -721,14 +755,14 @@
        "kind": "key-label",
        "what": "Multiple",
        "rect": [
-        299.5,
-        703,
-        73.5,
-        20
+        296.5,
+        706,
+        47.5,
+        13
        ]
       }
      ],
-     "sculpt": "button 192x48"
+     "sculpt": "button 223x48"
     },
     {
      "id": "tab.offline",
@@ -839,7 +873,7 @@
      "protected": [
       {
        "kind": "label",
-       "what": "Contacts · 3 hostile",
+       "what": "Contacts \u00b7 3 hostile",
        "rect": [
         150,
         919.5,
@@ -1078,17 +1112,40 @@
    "count": 1
   },
   {
-   "key": "button 192x48",
+   "key": "button 82x48",
    "piece": "button",
    "size": [
-    192,
+    82,
     48
    ],
    "slots": [
-    "key.fire",
+    "key.auto"
+   ],
+   "count": 1
+  },
+  {
+   "key": "button 78.5x48",
+   "piece": "button",
+   "size": [
+    78.5,
+    48
+   ],
+   "slots": [
+    "key.fire"
+   ],
+   "count": 1
+  },
+  {
+   "key": "button 223x48",
+   "piece": "button",
+   "size": [
+    223,
+    48
+   ],
+   "slots": [
     "key.multiple"
    ],
-   "count": 2
+   "count": 1
   },
   {
    "key": "tab 126.5x40",

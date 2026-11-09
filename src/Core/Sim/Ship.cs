@@ -72,6 +72,9 @@ public sealed partial class Ship
     public bool Struck;
     /// <summary>Multiple fire: Fire looses every selected ready mount; off, one at a time.</summary>
     public bool Volley = true;
+    /// <summary>Auto fire: every selected, armed mount fires on its own as soon as it is ready, in arc and in range of its
+    /// target, as if the captain pressed Fire on Multiple (Battle.AutoFireStep).</summary>
+    public bool AutoFire;
     public int Ecm;
     public Stance Stance = Stance.Attack;
     public double ThinkT;

@@ -49,12 +49,19 @@ await page.waitForTimeout(1500);
 
 const data = await page.evaluate(({ HELM_PAD_PX, HELM_CENTRE, KEY_FACE_PX, HELM_KEYS, PLATE_LEFT, GLASS_INSET }) => {
   const con = document.getElementById('console');
+  // Measure the layout, not the last sculpt: the page pins every sculpted slot to its sculpt's rectangle (organicPin), so
+  // a slot whose layout changed (a key added beside it) would be measured at its old size. Unpin the stretchable slots
+  // (a hero piece keeps the size the page gives it), then measure.
+  for (const e of con.querySelectorAll('[data-slot]:not(.hero)')) { e.style.removeProperty('width'); e.style.removeProperty('height'); e.style.flex = ''; }
+  for (const t of con.querySelectorAll('.k-track')) { const b = t.parentElement; b.style.flex = ''; b.style.width = ''; }
   const s = +(/scale\(([\d.]+)\)/.exec(con.style.transform) || [0, 1])[1];
   const r0 = con.getBoundingClientRect();
   const q = (v) => Math.round(v * 2) / 2;
   const rel = (r) => [q((r.left - r0.left) / s), q((r.top - r0.top) / s), q(r.width / s), q(r.height / s)];
   const man = JSON.parse(document.querySelector('script[data-src="assets/ui/vhorr/manifest.json"]').textContent).pieces;
-  const heroId = (e) => { const im = e.querySelector(':scope > img'); return im ? Object.keys(man).find((k) => man[k].data === im.src) || 'hero' : 'hero'; };
+  // a hero piece by its image in the blockout's placeholder kit, else by the slot the page names it (once the sculpted kit
+  // is in, its images are not the placeholders')
+  const heroId = (e) => { const im = e.querySelector(':scope > img'); return (im && Object.keys(man).find((k) => man[k].data === im.src)) || e.dataset.slot || 'hero'; };
   // Which kit piece an element shows, from its classes (as the page's own pieceOf reads them).
   const pieceOf = (e) => { const c = e.classList;
     if (c.contains('k-panel')) return 'frame.panel'; if (c.contains('k-inset')) return 'frame.inset'; if (c.contains('k-track')) return 'bar.track';

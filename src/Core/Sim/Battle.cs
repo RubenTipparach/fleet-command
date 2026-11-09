@@ -276,6 +276,7 @@ public sealed partial class Battle
         }
         Ship p = Player;
         if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
+        AutoFireStep();
         FieldPreMove(dt);
         foreach (Ship s in _ships) if (s.Alive && !s.Absent && !s.Fixed) Move(s, dt);
         ChargeStep(dt);

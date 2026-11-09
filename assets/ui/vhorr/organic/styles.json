@@ -8,6 +8,6 @@
   "dial": "wrap", "inset.contacts": "wrap", "crest": "wrap",
   "nameplate": "plain"
  },
- "key_body": {"key.engage": "larva", "key.stop": "larva", "key.fire": "larva", "key.multiple": "larva"},
+ "key_body": {"key.engage": "larva", "key.stop": "larva", "key.auto": "larva", "key.fire": "larva", "key.multiple": "larva"},
  "backing": "tissue"
 }

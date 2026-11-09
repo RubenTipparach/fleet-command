@@ -295,12 +295,30 @@
    "bleed": 34.0,
    "live": null
   },
-  "key.fire": {
-   "piece": "button.hover",
+  "key.auto": {
+   "piece": "button.idle",
    "rect": [
     40,
     688,
-    192,
+    82,
+    48
+   ],
+   "states": [
+    "idle",
+    "hover",
+    "pressed"
+   ],
+   "rest": "idle",
+   "parent": "panel.weapons",
+   "bleed": 0.0,
+   "live": null
+  },
+  "key.fire": {
+   "piece": "button.hover",
+   "rect": [
+    126,
+    688,
+    79,
     48
    ],
    "states": [
@@ -316,9 +334,9 @@
   "key.multiple": {
    "piece": "button.idle",
    "rect": [
-    240,
+    209,
     688,
-    192,
+    223,
     48
    ],
    "states": [
@@ -701,15 +719,51 @@
     174
    ]
   },
+  "key.auto.idle": {
+   "file": "key.auto.idle.png",
+   "slot": "key.auto",
+   "state": "idle",
+   "piece": "button.idle",
+   "rect": [
+    40,
+    688,
+    82,
+    48
+   ]
+  },
+  "key.auto.hover": {
+   "file": "key.auto.hover.png",
+   "slot": "key.auto",
+   "state": "hover",
+   "piece": "button.idle",
+   "rect": [
+    40,
+    688,
+    82,
+    48
+   ]
+  },
+  "key.auto.pressed": {
+   "file": "key.auto.pressed.png",
+   "slot": "key.auto",
+   "state": "pressed",
+   "piece": "button.idle",
+   "rect": [
+    40,
+    688,
+    82,
+    48
+   ]
+  },
   "key.fire.idle": {
    "file": "key.fire.idle.png",
    "slot": "key.fire",
    "state": "idle",
    "piece": "button.hover",
    "rect": [
-    40,
+    126,
     688,
-    192,
+    79,
     48
    ]
   },
@@ -719,9 +773,9 @@
    "state": "hover",
    "piece": "button.hover",
    "rect": [
-    40,
+    126,
     688,
-    192,
+    79,
     48
    ]
   },
@@ -731,9 +785,9 @@
    "state": "pressed",
    "piece": "button.hover",
    "rect": [
-    40,
+    126,
     688,
-    192,
+    79,
     48
    ]
   },
@@ -743,9 +797,9 @@
    "state": "idle",
    "piece": "button.idle",
    "rect": [
-    240,
+    209,
     688,
-    192,
+    223,
     48
    ]
   },
@@ -755,9 +809,9 @@
    "state": "hover",
    "piece": "button.idle",
    "rect": [
-    240,
+    209,
     688,
-    192,
+    223,
     48
    ]
   },
@@ -767,9 +821,9 @@
    "state": "pressed",
    "piece": "button.idle",
    "rect": [
-    240,
+    209,
     688,
-    192,
+    223,
     48
    ]
   },

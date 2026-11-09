@@ -27,7 +27,7 @@ public sealed partial class PlatePanel : ConsolePanel
     }
 }
 
-/// <summary>Fire, Multiple or Single, and the arming state of the selected mounts. Expanded (owner, 2026-11-02: "show
+/// <summary>Auto and Fire, Multiple or Single, and the arming state of the selected mounts. Expanded (owner, 2026-11-02: "show
 /// weapons as they are on the ship in the expanded menu, then when you hover over them and click on them, detail menu
 /// appears on the lower half. Also add a fire button underneath each weapon"): groups to select, the systems display
 /// with a Fire key under each mount, and the picked mount's details.</summary>
@@ -44,7 +44,12 @@ public sealed partial class WeaponsPanel : ConsolePanel
         Mount[] sel = s.Mounts.Where(m => m.Selected && !m.Weapon.IsPointDefence).ToArray();
         string cur = sel.Length > 0 && sel.All(m => m.State == sel[0].State) ? sel[0].State.ToString().ToLowerInvariant() : "";
         float w1 = (b.Size.X - 6) * 0.62f, x0 = b.Position.X, y0 = b.Position.Y;
-        Button("fire", new Rect2(x0, y0, w1, 48), $"Fire · {B.WouldFire().Length}", () => B.Fire(), center: false,
+        // the Fire key in two (owner, 2026-11-08: "Fire button should be divided into two sections. Auto and Fire"): Auto, a
+        // toggle that fires every selected armed weapon as it bears, then Fire
+        float wa = (w1 - 6) * 0.4f;
+        Button("auto", new Rect2(x0, y0, wa, 48), "Auto", () => B.ToggleAutoFire(), s.AutoFire, center: true,
+            tip: new Tip(s.AutoFire ? "Auto fire on: every selected weapon fires as it bears (R)" : "Auto fire: fire every selected weapon as it bears (R)"));
+        Button("fire", new Rect2(x0 + wa + 6, y0, w1 - wa - 6, 48), $"Fire · {B.WouldFire().Length}", () => B.Fire(), center: false,
             tip: new Tip(t == null ? "Fire: lock a target first" : $"Fire the selected weapons at {Aiming.ContactName(B, t)} (F)"));
         Button("volley", new Rect2(x0 + w1 + 6, y0, b.Size.X - w1 - 6, 48), s.Volley ? "Multiple" : "Single", () => B.ToggleVolley(), s.Volley, center: false,
             tip: new Tip(s.Volley ? "Multiple: every ready weapon fires (M)" : "Single: one weapon per press (M)"));

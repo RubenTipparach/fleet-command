@@ -1,0 +1,11 @@
+{
+ "_doc": "Auto fire (openspec/changes/auto-fire): lock the nearest enemy, press Auto on the weapons panel, order Intercept, and never press Fire; the battle must be won by auto fire alone.",
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "pick_scene"},
+  {"do": "press", "arg": "next_target"},
+  {"do": "click", "arg": "auto"},
+  {"do": "helm", "arg": "int"},
+  {"do": "until_over", "s": 600}
+ ]
+}
