@@ -6,10 +6,13 @@ nothing of its own: it runs the kit's own code (tools/blender/build_ui_vhorr_org
 tools/blender/organic_components.py) on one slot, the weapons panel (a frame in style "wrap", two larva keys and three
 wart tabs), keeps each layer of the height field as its own mesh, and screenshots Blender's window after each stage:
 the blockout, bone, muscle, skin, veins and sacs, the material masks, the node tree, the lights and camera, the Cycles
-viewport and the final render. Run with Blender's interface (not --background):
+viewport and the final render. With --nodes it shows instead what each node of the anatomy material does: each step's
+output wired to an Emission viewer, seen through the camera, above that node framed close in the Shader Editor (owner,
+2026-11-01: "I want to see what nodes do"). Run with Blender's interface (not --background):
 
     /Applications/Blender.app/Contents/MacOS/Blender --factory-startup -p 0 0 1728 1080 \\
         --python tools/blender/brood_process_shots.py -- --out docs/screenshots/blender/brood-process
+    ... -- --nodes --out docs/screenshots/blender/brood-nodes
 
 Units: 1 mm is 1 CSS px of the 1920 x 1080 console (as in the kit's generator); Blender's y runs up.
 """
@@ -465,6 +468,125 @@ STAGES = [("01-blockout", s01_blockout, 2.0), ("02-bone", s02_bone, 2.5), ("03-m
           ("11-final-render", s10_render, 2.0)]
 
 
+# ------------------------------------------------------------------------------------------------- nodes mode (--nodes)
+# What each node of the anatomy material does: each step's output wired to an Emission viewer (the panel above shows
+# exactly that node's result through the camera) with the node and its inputs framed close in the Shader Editor below.
+def mat_tree():
+    return bpy.data.objects["6 sculpt"].active_material.node_tree
+
+
+def src(sock):
+    """The output socket feeding an input socket."""
+    return sock.links[0].from_socket
+
+
+def chain():
+    """The base colour's chain of mixes, from the Principled BSDF back to the leather ramp (organic_study.anatomy adds
+    them in the order muscle, veins, bone, crease grime, dried fluid, light sacs, depth shadow)."""
+    nt = mat_tree()
+    b = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    out, n = [], src(b.inputs["Base Color"]).node
+    while n.type == "MIX":
+        out.append(n)
+        n = src(n.inputs[6]).node
+    return out, n   # mixes (last added first) and the ramp
+
+
+def view_socket(sock):
+    """Wire sock into an Emission viewer feeding the Material Output (None: the Principled BSDF again)."""
+    nt = mat_tree()
+    out = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL")
+    v = nt.nodes.get("viewer") or nt.nodes.new("ShaderNodeEmission")
+    v.name = v.label = "viewer"
+    v.location = (out.location.x, out.location.y + 220.0)
+    for lk in list(out.inputs["Surface"].links):
+        nt.links.remove(lk)
+    if sock is None:
+        b = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+        nt.links.new(b.outputs["BSDF"], out.inputs["Surface"])
+        return
+    for lk in list(v.inputs["Color"].links):
+        nt.links.remove(lk)
+    nt.links.new(sock, v.inputs["Color"])
+    nt.links.new(v.outputs["Emission"], out.inputs["Surface"])
+
+
+def focus_nodes():
+    names = STATE.get("focus_names", [])
+    low = STATE.get("nodes")
+    if low is None or not names:
+        return
+    nt = mat_tree()
+    for n in nt.nodes:   # frame the node itself, then step back so its neighbours show: near enough to read
+        n.select = n.name == names[0]
+    nt.nodes.active = nt.nodes.get(names[0])
+    low.spaces.active.show_region_ui = False
+    reg = next(r for r in low.regions if r.type == "WINDOW")
+    with bpy.context.temp_override(window=win(), screen=win().screen, area=low, region=reg):
+        bpy.ops.node.view_selected()
+        for _ in range(STATE.get("zoom_out", 2)):
+            bpy.ops.view2d.zoom_out()
+
+
+def node_stage(get):
+    """A stage showing one node: get() returns (output socket to view or None, the node to frame)."""
+    def fn():
+        sock, node = get()
+        view_socket(sock)
+        names = [node.name] + [lk.from_node.name for i in node.inputs for lk in i.links]
+        STATE["focus_names"] = names
+        STATE["focus"] = True
+        shading("MATERIAL")
+        look(top=True)
+    return fn
+
+
+def n_setup():
+    s01_blockout()
+    sculpt()
+    s07_nodes()
+    look(top=True)
+
+
+def find(kind, pick=min, key=None):
+    ns = [n for n in mat_tree().nodes if n.type == kind]
+    return pick(ns, key=key) if key else ns[0]
+
+
+def sep_m1():
+    return next(n for n in mat_tree().nodes if n.type == "SEPARATE_COLOR"
+                and src(n.inputs[0]).node.attribute_name == "m1")
+
+
+def bsdf():
+    return find("BSDF_PRINCIPLED")
+
+
+NODE_STAGES = [
+    ("n00-overview", n_setup, 3.0),
+    ("n01-mask-bone", node_stage(lambda: (sep_m1().outputs[0], sep_m1())), 6.0),
+    ("n02-mask-muscle", node_stage(lambda: (sep_m1().outputs[1], sep_m1())), 6.0),
+    ("n03-mask-vein", node_stage(lambda: (sep_m1().outputs[2], sep_m1())), 6.0),
+    ("n04-ambient-occlusion", node_stage(lambda: (find("AMBIENT_OCCLUSION").outputs["AO"], find("AMBIENT_OCCLUSION"))), 3.0),
+    ("n05-blotch-noise", node_stage(lambda: (find("TEX_NOISE", key=lambda n: n.inputs["Scale"].default_value).outputs["Fac"],
+                                             find("TEX_NOISE", key=lambda n: n.inputs["Scale"].default_value))), 6.0),
+    ("n06-leather-ramp", node_stage(lambda: (chain()[1].outputs["Color"], chain()[1])), 6.0),
+    ("n07-muscle-mix", node_stage(lambda: (chain()[0][-1].outputs[2], chain()[0][-1])), 6.0),
+    ("n08-vein-mix", node_stage(lambda: (chain()[0][-2].outputs[2], chain()[0][-2])), 6.0),
+    ("n09-bone-mix", node_stage(lambda: (chain()[0][-3].outputs[2], chain()[0][-3])), 6.0),
+    ("n10-crease-grime-mix", node_stage(lambda: (chain()[0][-4].outputs[2], chain()[0][-4])), 6.0),
+    ("n11-dried-fluid-mix", node_stage(lambda: (chain()[0][-5].outputs[2], chain()[0][-5])), 6.0),
+    ("n12-light-sac-mix", node_stage(lambda: (chain()[0][-6].outputs[2], chain()[0][-6])), 6.0),
+    ("n13-depth-shadow-mix", node_stage(lambda: (chain()[0][0].outputs[2], chain()[0][0])), 6.0),
+    ("n14-wetness", node_stage(lambda: (src(bsdf().inputs["Coat Weight"]), src(bsdf().inputs["Coat Weight"]).node)), 6.0),
+    ("n15-bump-height", node_stage(lambda: (src(find("BUMP").inputs["Height"]), find("BUMP"))), 6.0),
+    ("n16-sac-glow", node_stage(lambda: (src(bsdf().inputs["Emission Strength"]), src(bsdf().inputs["Emission Strength"]).node)), 6.0),
+    ("n17-final", node_stage(lambda: (None, bsdf())), 3.0),
+]
+if "--nodes" in ARGV:
+    STAGES = NODE_STAGES
+
+
 def shoot(name, keep=True):
     p = os.path.join(OUT, f"{name}.png") if keep else os.path.join(bpy.app.tempdir, "drop.png")
     with bpy.context.temp_override(window=win(), screen=win().screen):
@@ -484,6 +606,15 @@ def driver():
             frame_nodes()
             STATE["pending"] = name
             STATE["reframe"] = True
+            return 1.0
+        if STATE.pop("focus", False):
+            focus_nodes()
+            STATE["pending"] = name
+            STATE["refocus"] = True
+            return 1.0
+        if STATE.pop("refocus", False):
+            focus_nodes()   # again, once the editor has its size (each pass frames afresh)
+            STATE["pending"] = name
             return 1.0
         if STATE.pop("frame_close", False):
             frame_close()
