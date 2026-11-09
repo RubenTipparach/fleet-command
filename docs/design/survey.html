@@ -466,6 +466,22 @@ const SECTIONS = [
       { id: 'CR7', q: 'Should rank unlock bigger hulls at your shipyard?', options: ['Later, as its own change', 'Yes, in this change'], rec: 0,
         why: 'Keeps this change to difficulty; buying is the standing rules\' job today.' },
     ] },
+  { tag: 'DW', name: 'Damage and reactor warnings (change damage-warnings, mockup 2)',
+    lead: 'Your asks (2026-11-09): a ship low on hull on fire, smoking, shedding pieces, with a flashing Low Hull Integrity bar, and a warning when the reactor destabilizes. Drafted in the battle console (shots low_hull, reactor_unstable, damage_warnings) and every faction page; no game code until you approve it.',
+    qs: [
+      { id: 'DW1', q: 'Thresholds: smoke under 50 % hull; fire, sparks and glowing scraps under 35 %; all of it twice as heavy under 20 %; the warning under 35 %?', options: ['As drafted', 'Later: fire under 25 %, the warning under 25 %', 'Earlier: smoke from 75 %'], rec: 0,
+        why: '35 % is where the hull bar already turns red, so the two agree.' },
+      { id: 'DW2', q: 'Which ships burn and smoke?', options: ['Every ship, yours and the enemy\'s, so a burning target reads as nearly dead', 'Only yours'], rec: 0,
+        why: 'Seeing a target burn tells you to finish it.' },
+      { id: 'DW3', q: 'A sound when a warning comes on?', options: ['The red alert cue once as each warning comes on, never repeating', 'A repeating klaxon while it is on', 'No sound'], rec: 0,
+        why: 'Once is noticed; a loop would drown the battle.' },
+      { id: 'DW4', q: 'You said "opt to have": an Options switch for the effects?', options: ['Damage effects: Full or Reduced (a quarter of the fire, sparks and scraps), Full by default; the warnings always show', 'On or Off', 'No switch'], rec: 0,
+        why: 'Reduced keeps the cue on a slow phone; the warnings are information, never switched off.' },
+      { id: 'DW5', q: 'Tapping a warning opens: Damage control for low hull, the Reactor page for the reactor?', options: ['Yes', 'Tapping does nothing'], rec: 0,
+        why: 'The warning takes you to the fix.' },
+      { id: 'DW6', q: 'When the reactor starts cooling back to safe, the warning reads "Reactor cooling, safe in N s" in amber until it is safe?', options: ['Yes', 'Clear it as soon as it starts cooling'], rec: 0,
+        why: 'You see that your fix is working and how long until you are clear.' },
+    ] },
 ];
 
 const DECIDED = [

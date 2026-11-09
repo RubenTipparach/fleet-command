@@ -7729,14 +7729,18 @@ function notice(title, text, col) { W.notice = { title, text, col, t: W.t }; }
 // The reactor, every step: coils drift while confinement is damaged; heat comes from the output and from
 // misalignment; coolant carries it off in proportion to the core temperature; coolant offline or the core at its
 // limit counts toward a meltdown, and cooling down again counts back.
+// The core counting toward a meltdown: coolant offline or the core at its limit. Counting back, it runs at
+// MELT_RECOVER_X the speed. The step and the Reactor unstable warning both read these (one rule).
+const MELT_RECOVER_X = 0.5;
+const reactorCritical = (s) => cooling(s) <= 0.01 || s.reactor.temp >= REACTOR.critical_pct;
 function reactorStep(s) {
   const rx = s.reactor, Rr = W.rand.reactor, rated = CLASSES[s.cls].reactor_e;
   if (rx.conf < 1) for (let i = 0; i < rx.coils.length; i++) rx.coils[i] = clamp(rx.coils[i] + (Rr() - 0.5) * 2 * REACTOR.drift_per_s * (1 - officerSkill(s, 'power') * OFFICER.drift) * (1 - rx.conf) * DT * 10, -1, 1);
   const mis = rx.coils.reduce((a, o) => a + Math.abs(o), 0) / rx.coils.length;
   const heatIn = REACTOR.heat_full_pct_s * output(s) / rated + REACTOR.heat_misalign_pct_s * mis;
   rx.temp = Math.max(REACTOR.temp_floor_pct, rx.temp + (heatIn - REACTOR.cool_per_flow * cooling(s) * rx.temp) * DT);
-  const critical = cooling(s) <= 0.01 || rx.temp >= REACTOR.critical_pct;
-  rx.melt = critical ? rx.melt + DT : Math.max(0, rx.melt - DT * 0.5);
+  const critical = reactorCritical(s);
+  rx.melt = critical ? rx.melt + DT : Math.max(0, rx.melt - DT * MELT_RECOVER_X);
   if (s === W.player && critical && !rx.warned) { rx.warned = true; say('Engineering', cooling(s) <= 0.01 ? 'Coolant offline. The core will melt down.' : 'Core temperature critical.'); }
   if (!critical && rx.melt === 0) rx.warned = false;
   if (rx.melt >= REACTOR.meltdown_s) meltdown(s);
@@ -8790,7 +8794,7 @@ function uiTop(r) {
   { const f = s.hull / CLASSES[s.cls].hull; stripMeter('top', x, y, h, f, `Hull integrity ${pct(clamp(f, 0, 1))}`); }
   const cx = x + 96, cw = w - 192, cy = y + STT.dy + (44 - 35) / 2, fixed = 70 + 100 + 80, gap = 22, rest = cw - fixed - gap * 5, u = rest / 3.2;
   let xx = cx;
-  bar(xx, cy, u, 'Hull integrity', s.hull / CLASSES[s.cls].hull, s.hull / CLASSES[s.cls].hull < 0.35); xx += u + gap;
+  { const f = s.hull / CLASSES[s.cls].hull; bar(xx, cy, u, f < LOW_HULL.warn_below ? 'Low hull integrity' : 'Hull integrity', f, f < LOW_HULL.warn_below); } xx += u + gap;
   LBL('Weapon capacitor', xx, cy + 13, u * 1.2); cellRow('cap', xx, cy + 19, u * 1.2, 16, 14, s.cap / CLASSES[s.cls].capacitor_e * 14, null, null); xx += u * 1.2 + gap;
   const t = tgt(s); bar(xx, cy, u, t ? `Target hull · ${t.name}` : 'Target hull', t ? t.hull / CLASSES[t.cls].hull : 0, true); xx += u + gap;
   NUM(mmss(W.t), xx + 70, cy + 30, 0, CC.sky, 'right'); xx += 70 + gap;
@@ -10587,6 +10591,71 @@ function explosionsStep(dt) {
   }
   for (let i = EXPLOSIONS.length - 1; i >= 0; i--) if (EXPLOSIONS[i].done) EXPLOSIONS.splice(i, 1);
 }
+// A ship in trouble shows it (owner, 2026-11-09: "If your ship is low health it should be on fire, smoking, particles
+// falling off and a bar that flashes Low Hull Integrity"; openspec/changes/damage-warnings): below smoke_below of its hull
+// a ship trails smoke from its worst-hit places; below fire_below those places burn, throw sparks and shed glowing scraps
+// of hull that tumble away; below heavy_below all of it at heavy_x the rate, from one more place. Every ship, yours and
+// theirs. The places are fixed on the hull for each ship (seeded by its id), the smoke and scraps left behind in space, so
+// a moving ship draws a trail. One pool of particles (LOW_HULL.max), the oldest reused first: a phone's budget.
+const LOW_HULL = { smoke_below: 0.5, fire_below: 0.35, heavy_below: 0.2, heavy_x: 2, places: 2, smoke_per_s: 5, fire_per_s: 22, sparks_per_s: 7,
+  scraps_per_s: 1.4, smoke_s: 3.2, fire_s: 0.6, spark_s: 0.7, scrap_s: 5, max: 240 };
+const lowFx = new THREE.Group(); scene.add(lowFx);
+const LOW_POOL = [], LOW_SRC = new Map();
+const scrapGeo = new THREE.BoxGeometry(1, 0.35, 0.7), scrapMat = new THREE.MeshStandardMaterial({ color: 0x55565c, roughness: 0.6, metalness: 0.5, emissive: 0xff5a10, emissiveIntensity: 0.9 });
+// a ship's burning places, along and across its hull as shares of its length, the first the worst
+function lowPlaces(s) {
+  let p = LOW_SRC.get(s.id);
+  if (!p) { const R = rng([...s.id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7));
+    p = { R, acc: {}, sized: false, len: CLASSES[s.cls].len_m / M_PER_U, top: 0.1, at: Array.from({ length: LOW_HULL.places + 1 }, () => [(R() - 0.5) * 0.6, (R() - 0.5) * 0.22]) }; LOW_SRC.set(s.id, p); }
+  // its size as drawn (the model, not the class figure): the length along the deck, and the deck's height
+  const o = MODELS.get(s.id);
+  if (!p.sized && o) { const bb = new THREE.Box3().setFromObject(o.m); if (!bb.isEmpty()) { const sz = bb.getSize(new THREE.Vector3()); p.len = Math.max(sz.x, sz.z); p.top = bb.max.y; p.sized = true; } }
+  return p;
+}
+function lowTake(kind) {
+  let o = LOW_POOL.find((q) => q.dead && q.kind === kind);
+  if (!o && LOW_POOL.length < LOW_HULL.max) {
+    const obj = kind === 'scrap' ? new THREE.Mesh(scrapGeo, scrapMat.clone()) : new THREE.Sprite(new THREE.SpriteMaterial({ map: kind === 'smoke' ? cloudTex : glowTex, depthWrite: false, transparent: true,
+      blending: kind === 'spark' ? THREE.AdditiveBlending : THREE.NormalBlending, toneMapped: false, depthTest: kind !== 'fire' }));
+    if (kind === 'fire') obj.renderOrder = 2;
+    o = { kind, obj }; lowFx.add(obj); LOW_POOL.push(o);
+  }
+  if (!o) { o = LOW_POOL.filter((q) => q.kind === kind).sort((a, b) => b.t / b.life - a.t / a.life)[0]; if (!o) return null; }
+  o.dead = false; o.t = 0; o.obj.visible = true; return o;
+}
+function lowHullStep(dt) {
+  const L = LOW_HULL;
+  for (const s of W.ships) {
+    if (!s.alive || dt <= 0) continue;
+    const f = s.hull / CLASSES[s.cls].hull; if (f >= L.smoke_below) continue;
+    const pl = lowPlaces(s), R = pl.R, len = pl.len, fw = fwd(s.h), rt = [-fw[1], fw[0]], heavy = f < L.heavy_below, k = heavy ? L.heavy_x : 1;
+    const vx = fw[0] * s.v / M_PER_U, vz = fw[1] * s.v / M_PER_U, n = heavy ? pl.at.length : f < L.fire_below ? L.places : 1;
+    const emit = (kind, rate, make) => { pl.acc[kind] = (pl.acc[kind] || 0) + rate * k * dt; while (pl.acc[kind] >= 1) { pl.acc[kind] -= 1; const [a, c] = pl.at[Math.floor(R() * n)];
+      const o = lowTake(kind); if (!o) return; o.x = s.x + fw[0] * a * len + rt[0] * c * len; o.y = pl.top * 1.02; o.z = s.z + fw[1] * a * len + rt[1] * c * len; make(o, len, vx, vz, R); } };
+    emit('smoke', L.smoke_per_s * (f < L.fire_below ? 1.6 : 1), (o, len, vx, vz, R) => { const a = R() * 2 * P, sp = 0.12 * len;
+      Object.assign(o, { life: L.smoke_s * (0.7 + R() * 0.6), vx: vx * 0.25 + Math.cos(a) * sp, vy: 0.08 * len, vz: vz * 0.25 + Math.sin(a) * sp, s0: 0.12 * len, s1: (0.4 + R() * 0.25) * len, a0: 0.5, spin: (R() - 0.5) * 0.8 });
+      o.obj.material.color.setHex(f < L.fire_below ? 0x3c3836 : 0x7a7a80); o.obj.material.rotation = R() * 6.28; });
+    if (f >= L.fire_below) continue;
+    emit('fire', L.fire_per_s, (o, len, vx, vz, R) => { const a = R() * 2 * P; Object.assign(o, { life: L.fire_s * (0.6 + R() * 0.8), vx: vx * 0.9 + Math.cos(a) * 0.06 * len, vy: 0.08 * len, vz: vz * 0.9 + Math.sin(a) * 0.06 * len, s0: (0.13 + R() * 0.09) * len, s1: 0.04 * len, a0: 0.95, spin: 0 });
+      o.obj.material.color.setHex(R() < 0.35 ? 0xffd040 : R() < 0.7 ? 0xff7010 : 0xe03a08); });
+    emit('spark', L.sparks_per_s, (o, len, vx, vz, R) => { const a = R() * 2 * P, sp = (0.6 + R() * 1.4) * len;
+      Object.assign(o, { life: L.spark_s * (0.5 + R()), vx: vx + Math.cos(a) * sp, vy: (R() - 0.2) * 0.5 * len, vz: vz + Math.sin(a) * sp, s0: 0.05 * len, s1: 0.015 * len, a0: 1, spin: 0 });
+      o.obj.material.color.setHex(0xffd890); });
+    emit('scrap', L.scraps_per_s, (o, len, vx, vz, R) => { const a = R() * 2 * P, sp = (0.08 + R() * 0.2) * len, sz = (0.025 + R() * 0.035) * len;
+      Object.assign(o, { life: L.scrap_s * (0.7 + R() * 0.6), vx: vx * 0.6 + Math.cos(a) * sp, vy: -0.03 * len, vz: vz * 0.6 + Math.sin(a) * sp, s0: sz, s1: sz, a0: 1, w: [(R() - 0.5) * 6, (R() - 0.5) * 6, (R() - 0.5) * 6] });
+      o.obj.scale.set(sz, sz, sz); o.obj.material.emissiveIntensity = 1; });
+  }
+  for (const o of LOW_POOL) {
+    if (o.dead) continue; o.t += dt; const u = o.t / o.life; if (u >= 1) { o.dead = true; o.obj.visible = false; continue; }
+    o.x += o.vx * dt; o.y += o.vy * dt; o.z += o.vz * dt; o.obj.position.set(o.x, o.y, o.z);
+    if (o.kind === 'scrap') { o.obj.rotation.x += o.w[0] * dt; o.obj.rotation.y += o.w[1] * dt; o.obj.rotation.z += o.w[2] * dt; o.obj.material.emissiveIntensity = Math.max(0, 1 - u * 1.6); continue; }
+    o.obj.scale.setScalar(o.s0 + (o.s1 - o.s0) * (o.kind === 'smoke' ? Math.sqrt(u) : u));
+    o.obj.material.opacity = o.a0 * (o.kind === 'smoke' ? Math.min(1, u * 6) * (1 - u) : 1 - u * u);
+    if (o.spin) o.obj.material.rotation += o.spin * dt;
+  }
+}
+// After a scene change, nothing burns on from the last one.
+function lowHullClear() { for (const o of LOW_POOL) { o.dead = true; o.obj.visible = false; } LOW_SRC.clear(); }
 // The transporter effect (owner, 2026-11-03: "there should be some shader + vfx for transporting stuff"): at each end of a
 // beam, a column of light on the plane, filled with twinkling motes that climb it (a shader: hashed cells blinking in
 // time, scrolled upward), a bright band sweeping up as it materialises, a ring spreading on the plane and a flash, over
@@ -10666,7 +10735,8 @@ const SHOT_POOL = {};
 // as the page's other looks are, until the game's version moves them to data). This page has no bloom pass: the range
 // shows the full look.
 const WFX = window.FCWeaponFX(THREE, { scene, hazeScene: new THREE.Scene(), camera, renderer, SFX: null, rand: rng(4242) });
-const SHOT_FX = { beam_w_u: 0.34, pd_w_u: 0.2, bolt_w_u: 0.45, bolt_len_u: 1.0, torpedo_u: 2.2, missile_u: 0.7, missile_len_u: 0.22, trail_w_u: 0.2, missile_trail_w_u: 0.3, trail_s: 0.8, bead_u: 1.4, bead_s: 0.012, bead_life_s: 0.4 };
+const SHOT_FX = { beam_w_u: 0.34, pd_w_u: 0.2, bolt_w_u: 0.45, bolt_len_u: 1.0, torpedo_u: 2.2, missile_u: 0.7, missile_len_u: 0.22, trail_w_u: 0.2, missile_trail_w_u: 0.45, missile_trail_s: 2.4, missile_trail_n: 80, missile_trail_every_s: 1 / 30, trail_s: 0.8, bead_u: 1.4, bead_s: 0.012, bead_life_s: 0.4, shield_flash_white: 0.7, shield_flash_boost: 2.5 };
+const _white = new THREE.Color(1, 1, 1);   // a shield hit flares its facing toward white (owner, 2026-11-06: "missing shield reaction when weapon impacts")
 const FX_POOL = { lance: [], tracer: [], bolt: [], six: [], ball: [], dart: [] }, TRAILS = new Map(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
 function takeFx(kind, used) {
   const pool = FX_POOL[kind]; let o = pool[used[kind]];
@@ -10694,8 +10764,8 @@ function shotFx(dt) {
         if (L > 1e-4) { sh.px = sh.x; sh.pz = sh.z; } }
       // a missile's tail is one ribbon; a torpedo's is a trail of separate beads (owner: "torpedo should have like discrete
       // trail instead of a long streak")
-      let tr = TRAILS.get(sh); if (!tr) { tr = sh.kind === 'torpedo' ? WFX.beads({ n: 40, size: SHOT_FX.bead_u, life: SHOT_FX.bead_life_s, every_s: SHOT_FX.bead_s, color: sh.color }) : WFX.trail({ n: 40, width: SHOT_FX.missile_trail_w_u, life: SHOT_FX.trail_s, color: sh.color, color2: 0x2a3f80 }); TRAILS.set(sh, tr); }
-      tr.push(_a.set(sh.x, 0.05, sh.z), now); tr.last = now; live.add(sh);
+      let tr = TRAILS.get(sh); if (!tr) { tr = sh.kind === 'torpedo' ? WFX.beads({ n: 40, size: SHOT_FX.bead_u, life: SHOT_FX.bead_life_s, every_s: SHOT_FX.bead_s, color: sh.color }) : WFX.trail({ n: SHOT_FX.missile_trail_n, width: SHOT_FX.missile_trail_w_u, life: SHOT_FX.missile_trail_s, color: sh.color, color2: 0x2a3f80 }); TRAILS.set(sh, tr); }
+      if (sh.kind === 'torpedo' || !(now - (tr.pushed ?? -1e9) < SHOT_FX.missile_trail_every_s)) { tr.push(_a.set(sh.x, 0.05, sh.z), now); tr.pushed = now; } tr.last = now; live.add(sh);
     }
   }
   for (const r of FX_POOL.lance.slice(used.lance)) r.u.uIntensity.value = 0;
@@ -10704,7 +10774,7 @@ function shotFx(dt) {
   for (const k of ['six', 'ball']) for (const f of FX_POOL[k].slice(used[k])) f.u.uI.value = 0;
   for (const d of FX_POOL.dart.slice(used.dart)) d.group.visible = false;
   // a trail outlives its shot until it has faded where it flew
-  for (const [sh, tr] of TRAILS) if (!live.has(sh) && now - tr.last > SHOT_FX.trail_s) { tr.remove(); TRAILS.delete(sh); }
+  for (const [sh, tr] of TRAILS) if (!live.has(sh) && now - tr.last > (sh.kind === 'torpedo' ? SHOT_FX.trail_s : SHOT_FX.missile_trail_s)) { tr.remove(); TRAILS.delete(sh); }
   WFX.step(dt);
 }
 // The rocks (owner, 2026-11-02: "asteroid meshes need work!"): each rock's surface is pushed in and out by one smooth
@@ -10751,7 +10821,7 @@ function syncScene(dt) {
     cloakLook(o, s);
     o.g.position.set(s.x, 0, s.z); o.g.rotation.y = P - s.h;
     const show = showShields; // every ship shows its shields (owner, 2026-11-04: "add shield display to all ships as well")
-    o.sh.children.forEach((face, i) => { const nl = shieldLayers(s, i), col = shieldCol(s, i); face.children.forEach((m, l) => { m.material.opacity = Math.min(1, (show && l < nl ? 0.8 : 0) + (l === 0 ? s.flash[i] * 0.9 : 0)); m.material.color.set(col); }); });
+    o.sh.children.forEach((face, i) => { const nl = shieldLayers(s, i), col = shieldCol(s, i); face.children.forEach((m, l) => { const fl = s.flash[i], k = 1 + SHOT_FX.shield_flash_boost * fl; m.material.opacity = Math.min(1, (show && l < nl ? 0.8 : 0) + (l === 0 ? fl : show && l < nl ? fl * 0.5 : 0)); m.material.color.set(col).lerp(_white, SHOT_FX.shield_flash_white * fl).multiplyScalar(k); }); });
   }
   // Shots: beams as glowing cylinders, projectiles as glow sprites, each kind from its own pool, so an object is never
   // thrown away and rebuilt because the slot it sat in changed kind (that churn made the view stutter with mines out).
@@ -10768,7 +10838,7 @@ function syncScene(dt) {
   for (const c of W.craft) { const sp = take('glow'); sp.position.set(c.x, 0.1, c.z); sp.scale.setScalar(0.35); sp.material.color.setHex(0x9fd0ff); }
   for (const mn of W.mines) { const sp = take('glow'); sp.position.set(mn.x, 0, mn.z); sp.scale.setScalar(0.5); sp.material.color.setHex(mn.arm > 0 ? 0x806020 : 0xffb030); }
   for (const kind of Object.keys(SHOT_POOL)) for (let i = used[kind] || 0; i < SHOT_POOL[kind].length; i++) SHOT_POOL[kind][i].obj.visible = false;
-  explosionsStep(dt); beamsStep(dt); streamsStep(dt);
+  explosionsStep(dt); lowHullStep(dt); beamsStep(dt); streamsStep(dt);
   for (const b of booms) { b.t += dt; const k = b.t / 1.4; b.sp.scale.setScalar(b.size * (1 + k * 4)); b.sp.material.opacity = Math.max(0, 1 - k); if (k >= 1) { scene.remove(b.sp); b.done = true; } }
   for (let i = booms.length - 1; i >= 0; i--) if (booms[i].done) booms.splice(i, 1);
 }
@@ -11035,6 +11105,50 @@ function hitSheet(vx, vy, vw, vh) {
   }
   if (onBlock === false && t && aim !== 'hull') LBL(`${aimName(aim)} is not on the block from here: manoeuvre to another facing`, lx + 16, ly + lh - 14, lw - 32, CC.caution, 'left', 13);
 }
+// The console's warnings (owner, 2026-11-09: "a bar that flashes Low Hull Integrity", then "I think the reactor
+// destabilizing also needs a warning as well"; openspec/changes/damage-warnings): one component, a band at the top of the
+// live view between the scene list and the Target box, side by side when there is room and stacked when not, each in the
+// skin's own inset frame and alert colour, flashing (lit, then dark with its colour round it: readable in both halves).
+// Low hull integrity below LOW_HULL.warn_below of the hull (the same share that turns the hull bar red). Reactor
+// unstable while the core counts toward its meltdown, with the seconds left from the same count the step runs, flashing
+// faster under fast_below_s; once it counts back it reads Reactor cooling in Caution until it is safe. A tap opens the
+// page that deals with it: Damage control, or the Reactor page.
+const WARN = { period_s: 1, fast_period_s: 0.4, fast_below_s: 10, lit_share: 0.6, band_w: 380, band_h: 38 };
+LOW_HULL.warn_below = 0.35;
+function warnings(s) {
+  const out = [], f = s.hull / CLASSES[s.cls].hull, rx = s.reactor;
+  if (s.alive && f < LOW_HULL.warn_below) out.push({ id: 'hull', title: 'Low hull integrity', value: pct(clamp(f, 0, 1)), col: CC.alert, open: () => { station = 'repair'; } });
+  if (s.alive && rx.melt > 0) {
+    const crit = reactorCritical(s), left = crit ? REACTOR.meltdown_s - rx.melt : rx.melt / MELT_RECOVER_X;
+    out.push(crit ? { id: 'reactor', title: 'Reactor unstable', value: `Meltdown ${Math.ceil(left)} s`, col: CC.alert, fast: left < WARN.fast_below_s, open: () => { station = 'power'; powerMode = 'reactor'; } }
+      : { id: 'reactor', title: 'Reactor cooling', value: `Safe in ${Math.ceil(left)} s`, col: CC.caution, open: () => { station = 'power'; powerMode = 'reactor'; } });
+  }
+  return out;
+}
+function warnBands(vx, vy, vw, top) {
+  const list = warnings(W.player); if (!list.length) return 0;
+  const now = performance.now() / 1000, x0 = vx + (expanded ? 14 : 352), x1 = vx + vw - (expanded ? 14 : showTargetCam && tgt(W.player) ? insetRect()[2] + 32 : 14), span = x1 - x0;
+  const side = list.length > 1 && span >= 2 * 300 + 8, w = Math.min(WARN.band_w, side ? (span - 8) / 2 : span), h = WARN.band_h;
+  const total = side ? list.length * w + (list.length - 1) * 8 : w; let bx = x0 + (span - total) / 2, by = vy + top;
+  for (const wn of list) {
+    const per = wn.fast ? WARN.fast_period_s : WARN.period_s, lit = frozen || (now % per) / per < WARN.lit_share;
+    hit(`warn.${wn.id}`, bx, by, w, h, { click: wn.open, tip: { title: wn.title, rows: [[wn.id === 'hull' ? 'Hull' : 'Core', wn.value, wn.col], ['Tap', wn.id === 'hull' ? 'Damage control' : 'Reactor page']] } });
+    g.fillStyle = '#000'; g.fillRect(bx + 2, by + 2, w - 4, h - 4);
+    // the frame first, then the lit face inside it (a skin's inset may glaze its middle, which would dim the face)
+    nine('frame.inset', bx, by, w, h);
+    if (lit) { g.fillStyle = wn.col; RR(g, bx + 6, by + 6, w - 12, h - 12, 5); g.fill(); }
+    // lit, the ink with more contrast on the skin's alert colour (a deep red takes white)
+    const lum = (() => { const c = new THREE.Color(wn.col); return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b; })();
+    const ink = lit ? (lum < 0.3 ? '#ffffff' : '#000000') : wn.col, cy = by + h / 2;
+    // the warning sign: a triangle with a bar and a dot
+    g.fillStyle = ink; g.beginPath(); g.moveTo(bx + 24, cy - 10); g.lineTo(bx + 36, cy + 10); g.lineTo(bx + 12, cy + 10); g.closePath(); g.fill();
+    g.fillStyle = lit ? wn.col : '#000'; g.fillRect(bx + 22.8, cy - 3, 2.4, 7); g.fillRect(bx + 22.8, cy + 5.5, 2.4, 2.4);
+    text(wn.title.toUpperCase(), bx + 46, cy + 7, '700 20px Antonio', ink, 'left', w - 160, '1.5px');
+    text(wn.value.toUpperCase(), bx + w - 14, cy + 7, '700 20px Antonio', ink, 'right', 120, '0.5px');
+    if (side) bx += w + 8; else by += h + 6;
+  }
+  return side ? h + 6 : list.length * (h + 6);
+}
 function uiView() {
   const [vx, vy, vw, vh] = VIEW, s = W.player, t = tgt(s);
   // a marker under the pointer reacts (owner, 2026-11-03: "make target boxes react to my mouse hovering over them, slight
@@ -11075,7 +11189,8 @@ function uiView() {
   if (s.alive) { const v = new THREE.Vector3(s.x, 0, s.z).project(camera); if (v.z < 1) hullBar((v.x + 1) / 2 * vw, (1 - v.y) / 2 * vh + 74, s); }
   helmArc(vw, vh, s);
   g.restore();
-  if (expanded) { LBL('Live · tap to return', vx + vw / 2, vy + 28, 0, CC.sky, 'center', 18); return; }
+  if (expanded) { LBL('Live · tap to return', vx + vw / 2, vy + 28, 0, CC.sky, 'center', 18); warnBands(vx, vy, vw, 44); return; }
+  const warnH = warnBands(vx, vy, vw, 12);
   // no Shield view key (owner, 2026-11-03: "Re move shield view toggle"): the 3D shield display is always shown
   button('v.target', vx + 14, vy + 12, 90, 30, 'Target', () => { showTargetCam = !showTargetCam; }, { sel: () => showTargetCam, center: true });
   // The scene selector (owner, 2026-11-02: "I would like a scene selector"): the scene in play, and a list to pick from.
@@ -11086,7 +11201,7 @@ function uiView() {
     g.font = FNT('700 17px Antonio'); g.fillText(SCENES[sceneId].name.toUpperCase(), sx + 62, vy + 33);
     g.beginPath(); const ax = sx + sw - 20, ay = vy + 27; if (sceneOpen) { g.moveTo(ax - 6, ay + 3); g.lineTo(ax + 6, ay + 3); g.lineTo(ax, ay - 4); } else { g.moveTo(ax - 6, ay - 3); g.lineTo(ax + 6, ay - 3); g.lineTo(ax, ay + 4); } g.closePath(); g.fill();
     const ob = SCENES[sceneId].objective; if (ob && !sceneOpen) rich(vx + 14, vy + 64, [[W.objDone ? 'COMPLETE · ' : 'OBJECTIVE · ', W.objDone ? CC.accord : CC.lilac], [ob.toUpperCase(), W.objDone ? CC.accord : CC.text]], '600 16px Antonio', vw * 0.62); }
-  if (W.notice && W.t - W.notice.t < NOTICE.notice_s) { const n = W.notice, nw = Math.min(620, vw - 60), nx = vx + (vw - nw) / 2, ny = vy + 120;
+  if (W.notice && W.t - W.notice.t < NOTICE.notice_s) { const n = W.notice, nw = Math.min(620, vw - 60), nx = vx + (vw - nw) / 2, ny = vy + 120 + warnH;
     g.font = FNT('600 20px Antonio'); const words = n.text.toUpperCase().split(' '), lines = []; let cur = '';
     for (const wd of words) { const tr = cur ? cur + ' ' + wd : wd; if (g.measureText(tr).width > nw - 40 && cur) { lines.push(cur); cur = wd; } else cur = tr; } if (cur) lines.push(cur);
     const nh = 60 + lines.length * 26; g.fillStyle = 'rgba(0,0,0,0.88)'; RR(g, nx, ny, nw, nh, 12); g.fill(); g.strokeStyle = n.col; g.lineWidth = 3; g.stroke();
@@ -11275,7 +11390,7 @@ function frame(now) {
 const queueParty = () => { for (const r of ['marines', 'marines', 'marines', 'medics', 'marines', 'marines', 'marines', 'marines', 'marines', 'hackers', 'engineers', 'pilots', 'engineers', 'pilots']) A.queueRole('capture', r); };
 function scripted(steps, then, sc = 'battle') {
   // each shot from a clean console: no explosion, scene list, log or hover left over from the shot before
-  explosionsStep(60); sceneOpen = false; logOpen = false; HOT = null; hitInfo = null; DRAG = null; repDrag = null;
+  explosionsStep(60); lowHullClear(); sceneOpen = false; logOpen = false; HOT = null; hitInfo = null; DRAG = null; repDrag = null;
   frozen = true; expanded = null; powerMode = 'alloc'; station = 'helm'; shipTab = 'ssd'; menuOpen = false; showShields = true; showTargetCam = true; lastFollow = null; placingMine = false; trTab = 'hit'; invDest = null; Object.assign(qPage, { capture: 0, hit: 0 }); secSel = 'T1'; secMode = 'walk'; secYaw = 1.15;
   newWorld(sc); W.player.target = SCENES[sc].target; camLock = false; camTargetView = false; focus = sc === 'battle' ? 'ashkar' : SCENES[sc].target; fleetPick = sc === 'battle' ? 'tallis' : 'resolute';
   for (const o of MODELS.values()) scene.remove(o.g); MODELS.clear();
@@ -11297,6 +11412,18 @@ function tractorScene() {
   const s = W.player, t = tgt(s), f = 2 / distKm(s, t); t.x = s.x + (t.x - s.x) * f; t.z = s.z + (t.z - s.z) * f;
   s.power.weapons = Math.max(0, s.power.weapons - 5); s.power.tractor = 5; A.tractorHold();
   for (let i = 0; i < Math.round((TRACTOR.powerup_s + 13.5) / DT); i++) step();
+}
+// A battle gone badly: your hull at share, the target's a third, three seconds of fire, smoke and scraps run on.
+function lowHullScene(share) {
+  const s = W.player, t = tgt(s); s.hull = CLASSES[s.cls].hull * share; if (t) t.hull = CLASSES[t.cls].hull * 0.3; syncScene(0);
+  for (let i = 0; i < Math.round(3 / DT); i++) { step(); s.hull = Math.min(s.hull, CLASSES[s.cls].hull * share); lowHullStep(DT); }
+}
+// The coolant loops shot away: the core counts toward its meltdown for sec seconds (then, a hull share as well).
+function reactorScene(sec, then) {
+  const s = W.player, cut = () => { for (const l of s.reactor.loops) l.hp = 0; }; station = 'power'; powerMode = 'reactor';
+  // held cut: the repair crews would otherwise patch a loop within the count
+  for (let i = 0; i < Math.round((sec - (then ? 3 : 0)) / DT); i++) { cut(); step(); }
+  if (then) { const st = step; step = () => { cut(); st(); }; try { then(); } finally { step = st; } }
 }
 function damagedSystems() { const s = W.player; s.mounts[1].hp = 0.6; s.mounts[2].hp = 0.2; s.mounts[5].hp = 0; s.mounts[6].state = 'offline'; s.sys.sensors = 0.6; s.sys.engines = 0.25; }
 window.MOCKUP_SHOTS = {
@@ -11361,6 +11488,11 @@ window.MOCKUP_SHOTS = {
   shields_expanded: () => scripted(600, () => { shipTab = 'shields'; expanded = 'ship'; W.player.reinforce = 0; }),
   shields_tip: () => { scripted(600, () => { shipTab = 'shields'; const sh = W.player.shields; sh[0] = 12; sh[1] = 22; sh[4] = 6; W.player.reinforce = 0; }); HOT = 'shx.1'; },
   ssd_tip: () => { scripted(600, () => { damagedSystems(); }); HOT = 'ssd.sys.engines'; },
+  // damage warnings (openspec/changes/damage-warnings): your ship at a quarter of its hull and the target at a third, both
+  // burning, the Low hull integrity band lit; the reactor counting down with its coolant loops shot away; both at once
+  low_hull: () => scripted(600, () => lowHullScene(0.25)),
+  reactor_unstable: () => scripted(600, () => reactorScene(13)),
+  damage_warnings: () => scripted(600, () => { reactorScene(13, () => lowHullScene(0.22)); }),
   battle: () => scripted(600),
   // the explosion, frozen at a given age (seconds), the Vorrak destroyed in front of the camera
   explosion: () => { scripted(600, () => { const s = W.player, v = ship('vorrak'); s.h = 0; s.hOrder = 0; v.x = s.x + 3; v.z = s.z - 26; v.hull = 0; v.alive = false; boom(v); }); explosionsStep(0.7); },
