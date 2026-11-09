@@ -188,8 +188,9 @@ public sealed partial class FactionScreen : FlowPanel
     };
     private static readonly Dictionary<string, Texture2D?> EmblemTex = new();
     /// <summary>The window in real pixels: the flow is drawn on a 1500 x 1080 canvas stretched to the window, so a phone is
-    /// told by its pixels, not the canvas's.</summary>
-    private static Vector2 Physical => DisplayServer.WindowGetSize();
+    /// told by its pixels, not the canvas's. A headless run has no real window (Godot reports 64 x 64 for it and for the
+    /// root viewport), so it takes the canvas's own size: the desktop layout, which the scripted captain plays.</summary>
+    private Vector2 Physical => DisplayServer.GetName() == "headless" ? Size : DisplayServer.WindowGetSize();
     /// <summary>Canvas units per real pixel.</summary>
     private float PerPx => Size.X / Math.Max(1, Physical.X);
     /// <summary>A phone's screen: the badges are too small to tap, so the grid of keys picks (the page's narrow query,
