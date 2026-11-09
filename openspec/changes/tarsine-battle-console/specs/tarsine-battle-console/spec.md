@@ -23,9 +23,26 @@ state, and only the backlight behind the glass SHALL change with the state.
 
 ### Requirement: The Remnant's column stands on iron
 
-In the Tarsine skin, the battle console's column and an expanded panel SHALL be drawn over a corroded iron backing
-plate, never over black.
+In the Tarsine skin, the battle console's column and an expanded panel SHALL be drawn over a riveted iron backing
+plate of worked iron (rendered in Blender, not painted), never over black.
 
 #### Scenario: The column
 - **WHEN** the console wears the Tarsine skin with no panel expanded
 - **THEN** the space between the column's panels shows the riveted iron plate
+
+### Requirement: The Remnant's panel faces are worked iron, never a stretched texture
+
+In the Tarsine skin, the face of every battle console panel SHALL be worked iron rendered in Blender (grain, hammer
+facets, a sheen, soot and rust in its crevices), never a pane of glass or a painted smear. The pieces the console draws
+large (the column with its three docked panels, its backing, the expanded panel's frame and the strips) SHALL be
+rendered at the size the console draws them at the 1920 x 1080 reference, and every other nine-sliced piece SHALL carry
+no texture in a band the console stretches.
+
+#### Scenario: An expanded panel
+- **WHEN** the Weapons panel is expanded on a 1920 x 1080 screen
+- **THEN** its frame is drawn from a render of 1268 x 1040 reference px, at one image px per reference px times the
+  render scale, and its face shows the iron's grain at its rendered size
+
+#### Scenario: The docked column
+- **WHEN** the console wears the Tarsine skin with no panel expanded
+- **THEN** the column and its three panels are one rendered plate of 480 x 1080 reference px, drawn whole

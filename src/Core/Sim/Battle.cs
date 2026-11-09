@@ -409,7 +409,12 @@ public sealed partial class Battle
             {
                 double tti = Geometry.Dist(s.X, s.Z, t.X, t.Z) / Math.Max(1000, Math.Abs(s.V));
                 var f = Geometry.Forward(t.H);
-                s.HOrder = Geometry.HeadingTo(s.X, s.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
+                double lead = Geometry.HeadingTo(s.X, s.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
+                // the lead never puts the target more than intercept_max_lead_deg off the nose, so the forward arcs keep it
+                // (Mac playtest 2026-11-08: leading a circling corsair 50 km out left it outside a Krai corvette's 70 degree
+                // arcs, and neither ship fired)
+                double off = Geometry.Wrap(lead - toT), max = Tuning.InterceptMaxLeadDeg * Geometry.Deg;
+                s.HOrder = Geometry.Wrap(toT + Math.Clamp(off, -max, max));
                 break;
             }
             case "trail":

@@ -67,6 +67,10 @@ stalemate, graded as a withdrawal, once no ship has been hurt for `stalemate_s`.
 - **WHEN** no ship is hurt for `stalemate_s` in a story mission's battle
 - **THEN** the battle ends as a stalemate, graded a draw
 
+#### Scenario: An intercept keeps its target in arc
+- **WHEN** a ship intercepts a target crossing at its own speed
+- **THEN** its ordered heading is never more than `intercept_max_lead_deg` off the target
+
 #### Scenario: A kiting raider
 - **WHEN** a corsair's fire lands on nothing for two minutes
 - **THEN** it has closed to within 20 km of its target

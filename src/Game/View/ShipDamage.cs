@@ -113,6 +113,9 @@ public sealed class ShipDamage
                     if (ShipSkin.IsHull(sm.Shader)) Sample(mi, i);   // the windows and bays take the hull's damage, but shots land on the plating
                 }
         });
+        // a placeholder hull (mockup 36) has no hull shader: shots land on its plain surfaces, so it still takes fireballs
+        if (_skin.Count == 0)
+            Walk(_ship, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) Sample(mi, i); });
         _centre = _skin.Count > 0 ? _skin.Aggregate(Vector3.Zero, (a, s) => a + s.P) / _skin.Count : Vector3.Zero;
         foreach (JsonElement b in brk.GetProperty("bodies").EnumerateArray())
             if (Find(b.GetProperty("node").GetString()!) is { } node)

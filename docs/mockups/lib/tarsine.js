@@ -7,8 +7,9 @@
 // (assets/ui/tarsine/manifest.json, tools/blender/build_ui_tarsine.py from tools/mockups/tarsine_shapes.py) with the few
 // pieces only the console draws composed here from that render: the square key is the helm pad's own arched tablet, the
 // wide key the rendered tablet key, each with the same caked dirt in every state and only the backlight changing (the
-// Remnant's rule, design.md version 17); the allocation cells, the title lintel and the iron plate behind the column are
-// drawn in the kit's materials.
+// Remnant's rule, design.md version 17). The column, its ground, the title lintel and the allocation cells are rendered
+// with the rest of the kit (version 2, owner, 2026-11-08: "tarsine background is terrible, it should be like a metal
+// texture, but here it just looks like sludge stretched out").
 // It exposes the same fields as docs/mockups/lib/concord.js and lib/kelvane.js, so the battle console swaps one for another
 // and changes no rule and no layout. Needs docs/mockups/lib/kitdraw.js inlined first. Our own design: no other game's
 // names, shapes, glyphs or art.
@@ -191,15 +192,16 @@ const live = {
 
 // ---- The kit ------------------------------------------------------------------------------------------------------
 // Every piece of the skins page's kit is rendered in Blender and comes from the inlined manifest; load() decodes them once.
-// The battle console's own pieces are composed here from that render and drawn in its materials:
+// Most of the battle console's own pieces are rendered too (console.column, console.backing, plate.title, cell.*: the
+// manifest's pieces, read as they come); the keys are composed here from the render:
 //  - key.*: the helm pad's top-left tablet in its iron (helm.pad.png, 148 x 148 image px from (54, 50)); its caked glass
 //    keeps the same dirt in every state and only the backlight behind it changes: dim at rest, half lit on hover, full
 //    gold engaged and whole, a tired amber damaged, ember down, all but dark off;
 //  - keyw.*: the rendered tablet key (button.idle) lit the same way; bar.cell.ok: the lit window's light in the same gold;
-//  - cell.*: a little arched window in corroded iron, lit gold for power out and a verdigris-tinged light for power in
-//    use; plate.title: a lintel of iron with a worn gold inlay;
-//  - console.backing: one plate of corroded iron, riveted, rust running from its rivets (CLAUDE.md section 7: no black
-//    behind a metallic skin's panels).
+//  - console.column: one plate of worked iron with the three docked panels formed into it as framed wells, their floors
+//    the panel faces, rendered whole at 480 x 1080 (the Krai's standard), so the column's panels draw no frame of their
+//    own and nothing in them is stretched; console.backing: the same iron, plain, riveted at its edges, behind an
+//    expanded panel (CLAUDE.md section 7: no black behind a metallic skin's panels).
 const MANIFEST = 'assets/ui/tarsine/manifest.json';
 const IMG = {}, kit = {}, hero = {}, heroSize = {}, cells = {}, barCells = {};
 // the glass of the tablet (crop px) and of the tablet key (button.idle, reference px of 140 x 52): x0, y0, x1, y1, top and
@@ -211,35 +213,6 @@ function glass(x, g, kx, ky) { const [a, b, c, d, rt, rb] = g; x.beginPath(); x.
 function backlit(x, g, kx, ky, state) { if (!BACK[state]) return; x.save(); glass(x, g, kx, ky); x.clip(); x.globalCompositeOperation = 'multiply'; x.fillStyle = BACK[state]; x.fillRect(0, 0, 1000, 1000); x.restore(); }
 function keyPaint(state) { return (x, w, h) => { x.drawImage(IMG['helm.pad'], 54, 50, 148, 148, 0, 0, w, h); backlit(x, GLASS, w / 148, h / 148, state); }; }
 function keywPaint(state) { return (x, w, h) => { x.drawImage(IMG['button.idle'], 0, 0, w, h); backlit(x, WGLASS, w / 140, h / 52, state); }; }
-function cellPaint(back, locked) {
-  return (x, w, h) => {
-    const R = RNG('cell');
-    iron(x, () => { x.beginPath(); x.roundRect(0.5, 0.5, w - 1, h - 1, 3); }, [0, 0, w, h], R, { rustEvery: 300 });
-    x.beginPath(); x.roundRect(6, 5, w - 12, h - 9, [7, 7, 2, 2]);
-    if (locked) { x.fillStyle = '#0a0806'; x.fill(); x.strokeStyle = hexA(TA.gold, 0.5); x.lineWidth = 1; x.stroke(); return; }
-    const g = x.createLinearGradient(0, 5, 0, h - 4); g.addColorStop(0, back === TA.glass ? '#2a2218' : '#f4e6b0'); g.addColorStop(0.45, back); g.addColorStop(1, back === TA.glass ? '#0c0a08' : '#5a4a2a');
-    x.fillStyle = g; x.fill();
-    // the same fine caked dust over the glass in every state (specks only: the cell's middle stretches)
-    x.save(); x.clip(); const D = RNG('cell.dust'); for (let i = 0; i < 40; i++) { x.fillStyle = `rgba(40,28,14,${0.2 + D() * 0.3})`; x.fillRect(6 + D() * (w - 12), 5 + D() * (h - 9), 0.6, 0.6); } x.restore();
-    x.strokeStyle = TA.gold; x.lineWidth = 1; x.stroke();
-  };
-}
-// The title lintel: a bar of corroded iron with a worn gold inlay along its foot and a rivet at each end.
-function lintel(x, w, h) {
-  const R = RNG('lintel');
-  iron(x, () => { x.beginPath(); x.moveTo(5, 0.5); x.lineTo(w - 5, 0.5); x.lineTo(w - 0.5, 5); x.lineTo(w - 0.5, h - 0.5); x.lineTo(0.5, h - 0.5); x.lineTo(0.5, 5); x.closePath(); }, [0, 0, w, h], R, { top: '#3a322a', bottom: '#1a1612', rustEvery: 500 });
-  x.fillStyle = hexA(TA.gold, 0.8); x.fillRect(4, h - 3.5, w - 8, 1.5);
-  rivet(x, 6, h / 2 - 1, 2.4, R); rivet(x, w - 6, h / 2 - 1, 2.4, R);
-}
-// The ground behind the column: one plate of corroded iron, riveted round its edge and along two seams, rust running down
-// from every rivet, soot pooled at its foot, a worn gold rule down each side.
-function backing(x, w, h) {
-  const R = RNG('backing');
-  iron(x, () => { x.beginPath(); x.rect(0, 0, w, h); }, [0, 0, w, h], R, { top: '#3a3029', bottom: '#1c1713', rustEvery: 1400 });
-  for (const yy of [356, 712]) { x.fillStyle = 'rgba(8,6,4,0.75)'; x.fillRect(0, yy, w, 2); x.fillStyle = 'rgba(200,170,130,0.18)'; x.fillRect(0, yy + 2, w, 1); }
-  for (const xx of [9, w - 11]) { x.fillStyle = hexA(TA.gold, 0.55); x.fillRect(xx, 20, 2, h - 40); }
-  for (const yy of [16, 340, 372, 696, 728, h - 18]) for (let xx = 24; xx < w - 10; xx += 64) rivet(x, xx + (R() - 0.5) * 2, yy, 3.4, R);
-}
 let loading = null;
 function load() {
   if (loading) return loading;
@@ -256,17 +229,12 @@ function load() {
     // the ok symbol: the lit window as it is (whole is the backlight itself), so the whole bar reads as the fire burning
     if (barCells['bar.cell.on']) barCells['bar.cell.ok'] = barCells['bar.cell.on'];
     for (const s of Object.keys(BACK)) { hero['key.' + s] = keyPaint(s); heroSize['key.' + s] = [48, 48]; kit['keyw.' + s] = { size: [144, 48], m: [0, 30, 0, 30], draw: keywPaint(s) }; }
-    hero['console.backing'] = backing; heroSize['console.backing'] = [480, 1080];
     // the name plate with its lamps turned low: the same render and the same caked dirt, the window's light dimmed so the
     // captain's name reads in pale carved letters (the skins page sets pale letters outlined dark on the lit window; the
     // console draws its text plain)
     hero.nameplate = (x, w, h) => { x.drawImage(IMG.nameplate, 0, 0, w, h); x.save(); x.beginPath(); x.roundRect(36 * w / 460, 10 * h / 56, 390 * w / 460, 36 * h / 56, 4); x.clip();
       x.globalCompositeOperation = 'multiply'; x.fillStyle = '#4a3c28'; x.fillRect(0, 0, w, h); x.restore(); };
     kit['bar.fill.accord'] = kit['bar.fill'];
-    Object.assign(cells, { 'cell.idle': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(TA.glass) }, 'cell.lit': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(TA.light) },
-      'cell.warn': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(CC.alert) }, 'cell.accord': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint('#a9b98a') },
-      'cell.locked': { size: [32, 28], m: [10, 10, 10, 10], draw: cellPaint(null, true) },
-      'plate.title': { size: [140, 24], m: [0, 18, 0, 18], draw: lintel } });
   });
   return loading;
 }

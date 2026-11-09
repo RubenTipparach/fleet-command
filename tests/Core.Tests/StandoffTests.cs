@@ -136,4 +136,40 @@ public sealed class StandoffTests
         }
         Assert.True(nearest < 20, $"the corsair stayed {nearest:0} km out");
     }
+
+    [Fact]
+    public void An_intercept_keeps_a_lone_circling_corsair_inside_the_forward_arcs()
+    {
+        // the second sweep's stall, flown as the scripted captain flies it: a Krai corvette at its starting 1200 m/s on
+        // Intercept against a lone Vos corsair circling at the same speed; the lead put the corsair outside its 70 degree
+        // disruptor arcs, and nothing fired
+        var (_, _, plan, b) = Fly("first_blood", "krai");
+        Ship me = b.Player, vos = b.ShipById(plan.Groups["raider"][0])!;
+        b.Lock(vos.Id);
+        b.HelmOrder("intercept");
+        double hulls = me.Hull + vos.Hull;
+        bool inArc = false;
+        for (int i = 0; i < Math.Round(150 / b.Tuning.StepS) && b.Over == null; i++)
+        {
+            if (b.WouldFire().Length > 0) { inArc = true; b.Fire(); }
+            b.Step();
+        }
+        Assert.True(inArc, $"no mount ever had the corsair in its arc; {Rules.DistKm(me, vos):0} km apart at {b.T:0} s");
+        Assert.True(me.Hull + vos.Hull < hulls, "no hull changed");
+    }
+
+    [Fact]
+    public void An_intercept_never_leads_a_crossing_target_out_of_the_forward_arcs()
+    {
+        // the geometry of the stall: a corsair 50 km ahead crossing at the corvette's own speed; an uncapped lead points the
+        // nose about 45 degrees off it, outside the corvette's 70 degree disruptor arcs
+        var (_, _, plan, b) = Fly("first_blood", "krai");
+        Ship me = b.Player, vos = b.ShipById(plan.Groups["raider"][0])!;
+        vos.X = me.X; vos.Z = me.Z - 50_000; vos.H = Math.PI / 2; vos.HOrder = vos.H; vos.V = me.V; vos.VOrder = me.V;
+        b.Lock(vos.Id);
+        b.HelmOrder("intercept");
+        b.Step();
+        double toT = Geometry.HeadingTo(me.X, me.Z, vos.X, vos.Z), off = Math.Abs(Geometry.Wrap(me.HOrder - toT)) / Geometry.Deg;
+        Assert.True(off <= b.Tuning.InterceptMaxLeadDeg + 0.5, $"the intercept leads {off:0} degrees off the corsair");
+    }
 }

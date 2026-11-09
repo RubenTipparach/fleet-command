@@ -113,7 +113,7 @@ async function exportInPage() {
   const s0 = FAC.slots[0];
   out.manifest = {
     table: { ...F.TABLE },
-    slots: FAC.slots.map((s) => ({ faction: s.fac, x: r6(s.root.position.x), badge_scale: r6(s.badge.scale.x), badge_tilt_rad: r6(s.badge.rotation.x),
+    slots: FAC.slots.map((s) => ({ faction: s.fac, x: r6(s.root.position.x), z: r6(s.root.position.z), badge_scale: r6(s.badge.scale.x), badge_tilt_rad: r6(s.badge.rotation.x),
       lamp: { position: v3(s.lamp.position), target: v3(s.lamp.target.position) } })),
     lamp: { colour: '#' + s0.lamp.color.getHexString(), angle_rad: r6(s0.lamp.angle), penumbra: s0.lamp.penumbra, decay: s0.lamp.decay, range_m: s0.lamp.distance,
       intensity: 'idle 0.25, plus 6.5 times its level: 1 on the picked faction, 0.55 under the pointer (stepFaction)' },

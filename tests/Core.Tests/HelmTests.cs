@@ -38,13 +38,15 @@ public class HelmTests
         b.Lock("vorrak");
         b.HelmOrder("intercept");
         Assert.True(b.Player.Engaged);
-        // intercept steers for where the target will be when we arrive, not where it is (positions before the step)
+        // intercept steers for where the target will be when we arrive, not where it is (positions before the step), but
+        // never more than intercept_max_lead_deg off the target, so the forward arcs keep it
         Ship me = b.Player, t = b.ShipById("vorrak")!;
         double tti = Geometry.Dist(me.X, me.Z, t.X, t.Z) / Math.Max(1000, Math.Abs(me.V));
         var f = Geometry.Forward(t.H);
-        double lead = Geometry.HeadingTo(me.X, me.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
+        double toT = Geometry.HeadingTo(me.X, me.Z, t.X, t.Z), lead = Geometry.HeadingTo(me.X, me.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
+        double max = b.Tuning.InterceptMaxLeadDeg * Geometry.Deg, want = toT + Math.Clamp(Geometry.Wrap(lead - toT), -max, max);
         b.Step();
-        Assert.True(Math.Abs(Geometry.Wrap(me.HOrder - lead)) < 0.02);
+        Assert.True(Math.Abs(Geometry.Wrap(me.HOrder - want)) < 0.02, $"HOrder {me.HOrder / Geometry.Deg:0.0} want {want / Geometry.Deg:0.0} toT {toT / Geometry.Deg:0.0} lead {lead / Geometry.Deg:0.0}");
         b.HelmOrder("intercept");
         Assert.False(b.Player.Engaged);
     }

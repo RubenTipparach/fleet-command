@@ -108,18 +108,18 @@
    },
    "console_mockup": {
     "stage": "drafted",
-    "mockup": 4,
-    "note": "Console skins: the Kethran Hegemony"
+    "mockup": 29,
+    "note": "Battle console: Kethran Hegemony"
    },
    "ships_mockup": {
-    "stage": "none",
-    "mockup": null,
-    "note": "Stand-in hulls only"
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
    },
    "emblem_mockup": {
-    "stage": "drafted",
-    "mockup": 9,
-    "note": "Faction emblems"
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder emblem, on the faction screen"
    },
    "weapons": {
     "status": "shared",
@@ -133,22 +133,197 @@
    },
    "console_mockup": {
     "stage": "drafted",
-    "mockup": 4,
-    "note": "Console skins: the Vos Syndicate"
+    "mockup": 28,
+    "note": "Battle console: Vos Syndicate"
    },
    "ships_mockup": {
-    "stage": "none",
-    "mockup": null,
-    "note": "A stand-in corsair"
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
    },
    "emblem_mockup": {
-    "stage": "drafted",
-    "mockup": 9,
-    "note": "Faction emblems"
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder emblem, on the faction screen"
    },
    "weapons": {
     "status": "shared",
     "note": "Stand-in"
+   }
+  },
+  "axiom": {
+   "culture": {
+    "status": "open",
+    "note": "Provisional, in openspec/changes/console-skins/design.md; the survey asks (U7, U8, N1-N6)"
+   },
+   "console_mockup": {
+    "stage": "drafted",
+    "mockup": 25,
+    "note": "Battle console: The Axiom"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
+   },
+   "emblem_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder emblem, on the faction screen"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "The role's approved class's mounts until its combat change"
+   }
+  },
+  "exponent": {
+   "culture": {
+    "status": "open",
+    "note": "Provisional, in openspec/changes/console-skins/design.md; the survey asks (U7, U8, N1-N6)"
+   },
+   "console_mockup": {
+    "stage": "drafted",
+    "mockup": 26,
+    "note": "Battle console: The Exponent"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
+   },
+   "emblem_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder emblem, on the faction screen"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "The role's approved class's mounts until its combat change"
+   }
+  },
+  "redtithe": {
+   "culture": {
+    "status": "open",
+    "note": "Provisional, in openspec/changes/console-skins/design.md; the survey asks (U7, U8, N1-N6)"
+   },
+   "console_mockup": {
+    "stage": "drafted",
+    "mockup": 27,
+    "note": "Battle console: Red Tithe"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
+   },
+   "emblem_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder emblem, on the faction screen"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "The role's approved class's mounts until its combat change"
+   }
+  },
+  "tarsine": {
+   "culture": {
+    "status": "open",
+    "note": "Provisional, in openspec/changes/console-skins/design.md; the survey asks (U7, U8, N1-N6)"
+   },
+   "console_mockup": {
+    "stage": "drafted",
+    "mockup": 30,
+    "note": "Battle console: Tarsine Remnant"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
+   },
+   "emblem_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder emblem, on the faction screen"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "The role's approved class's mounts until its combat change"
+   }
+  },
+  "aelith": {
+   "culture": {
+    "status": "open",
+    "note": "Provisional, in openspec/changes/console-skins/design.md; the survey asks (U7, U8, N1-N6)"
+   },
+   "console_mockup": {
+    "stage": "drafted",
+    "mockup": 31,
+    "note": "Battle console: Aelith Conclave"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
+   },
+   "emblem_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder emblem, on the faction screen"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "The role's approved class's mounts until its combat change"
+   }
+  },
+  "ombrai": {
+   "culture": {
+    "status": "open",
+    "note": "Provisional, in openspec/changes/console-skins/design.md; the survey asks (U7, U8, N1-N6)"
+   },
+   "console_mockup": {
+    "stage": "drafted",
+    "mockup": 32,
+    "note": "Battle console: Ombrai"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
+   },
+   "emblem_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder emblem, on the faction screen"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "The role's approved class's mounts until its combat change"
+   }
+  },
+  "vhorr": {
+   "culture": {
+    "status": "open",
+    "note": "Provisional, in openspec/changes/console-skins/design.md; the survey asks (U7, U8, N1-N6)"
+   },
+   "console_mockup": {
+    "stage": "drafted",
+    "mockup": 33,
+    "note": "Battle console: Vhorr Brood"
+   },
+   "ships_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
+   },
+   "emblem_mockup": {
+    "stage": "game",
+    "mockup": 36,
+    "note": "Placeholder emblem, on the faction screen"
+   },
+   "weapons": {
+    "status": "shared",
+    "note": "The role's approved class's mounts until its combat change"
    }
   }
  }

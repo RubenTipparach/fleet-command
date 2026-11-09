@@ -152,8 +152,11 @@ const live = {
 };
 
 // ---- Shapes for the battle console's vector keys ----------------------------------------------------------------
-// Nothing is cut: every rounded rectangle the page asks for is a pod with fully round ends, and a knob is round.
-function rr(G, X, Y, W, H, r) { G.beginPath(); if (!(W > 0 && H > 0)) { G.rect(X, Y, W, H); return; } G.roundRect(X, Y, W, H, Math.min(W, H) / 2); }
+// Nothing is cut: a key or pill the page asks for (up to 48 px across its short side) is a pod with fully round ends, unless
+// it is a wide row (over 4 times as long as tall), which takes the corner the page asks for (at least 30 % of its height)
+// so its aligned text keeps its margin (owner: "this makes hroizontal aligned text all have issues"); a larger box (a log, a list, a card) keeps 24 px corners so its text stays inside (owner, 2026-11-08, of a capsule-shaped
+// event log: "corners are too round here and the text falls out"). A knob is round.
+function rr(G, X, Y, W, H, r) { G.beginPath(); if (!(W > 0 && H > 0)) { G.rect(X, Y, W, H); return; } const s = Math.min(W, H), wide = Math.max(W, H) > 4 * s; G.roundRect(X, Y, W, H, wide ? Math.min(s / 2, Math.max(r || 0, s * 0.3)) : s <= 48 ? s / 2 : Math.min(s / 2, Math.max(r || 0, 24))); }
 function knob(G, cx, cy, r) { G.beginPath(); G.arc(cx, cy, r, 0, 2 * P); }
 
 // ---- The kit ------------------------------------------------------------------------------------------------------

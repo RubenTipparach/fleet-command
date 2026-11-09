@@ -67,11 +67,52 @@ def pieces():
     def stepped(x0, y0, x1, y1, s):
         return box(x0, y0, x1, y1).difference(unary_union([box(x0, y0, x0 + s, y0 + s), box(x1 - s, y0, x1, y0 + s),
                                                            box(x0, y1 - s, x0 + s, y1), box(x1 - s, y1 - s, x1, y1)]))
-    well = stepped(12, 12, 148, 108, 18)
-    add("frame.panel", "nine", (160, 120), soft(stepped(0.5, 0.5, 159.5, 119.5, 6), SOFT), [("dim", soft(well, SOFT))],
-        rivets=[(21, 21, 3.2), (139, 21, 3.2), (21, 99, 3.2), (139, 99, 3.2)], margins=(34, 34, 34, 34), stretch="xy")
+    #
+    # Version 2 of the battle console's Remnant (owner, 2026-11-08: "tarsine background is terrible, it should be like a
+    # metal texture, but here it just looks like sludge stretched out"): a frame's well holds a floor of dark worked iron
+    # (the panel's face, which the readouts are set on), not a pane of grimy glass, and the frame is rendered at the size
+    # it is drawn, so nothing is a small texture stretched over a large panel. The expanded panel (6, 34, 1268 x 1040 on
+    # the 1920 x 1080 reference) is frame.panel at 1:1; the column's three docked panels are console.column, below.
+    def framed(x, y, w, h):
+        """A frame's well and its four capital rivets for the panel rectangle (x, y, w, h): the well 12 px in, stepped
+        18 px at each corner into a capital that holds a great rivet."""
+        return (stepped(x + 12, y + 12, x + w - 12, y + h - 12, 18),
+                [(x + 21, y + 21, 3.2), (x + w - 21, y + 21, 3.2), (x + 21, y + h - 21, 3.2), (x + w - 21, y + h - 21, 3.2)])
+    FW, FH = 1268, 1040
+    well, caps = framed(0, 0, FW, FH)
+    add("frame.panel", "nine", (FW, FH), soft(stepped(0.5, 0.5, FW - 0.5, FH - 0.5, 6), SOFT), [("floor", soft(well, SOFT))],
+        rivets=caps, margins=(34, 34, 34, 34), stretch="xy")
+    # An inset is a display window: dark smoked glass, its dirt only along the rim, so it stretches to any size clean.
     add("frame.inset", "nine", (64, 48), soft(rbox(0.5, 0.5, 63.5, 47.5, 6), SOFT), [("dim", soft(rbox(9, 9, 55, 39, 6), SOFT))],
         margins=(14, 14, 14, 14), stretch="xy", dz=-4.0, streaks=False)
+    # The column (the Krai's console.column, the current standard): one cast plate, 480 x 1080, the battle console's three
+    # docked panels formed into it as framed wells at their exact rectangles (station 6,68 468 x 420; ship 6,494 468 x 276;
+    # weapons 6,776 468 x 160), the plate's own iron running unbroken between them as a 30 px divider that the next
+    # panel's title lintel is set on (the page centres it 3 px above the panel's top). Rendered whole, at its size.
+    col_wells, col_rivets = [], []
+    for r in ((6, 68, 468, 420), (6, 494, 468, 276), (6, 776, 468, 160)):
+        w_, c_ = framed(*r)
+        col_wells.append(("floor", soft(w_, SOFT)))
+        col_rivets += c_
+    add("console.column", "hero", (480, 1080), soft(rbox(0.5, 0.5, 479.5, 1079.5, 6), SOFT), col_wells,
+        rivets=col_rivets + [(18, 26, 3.2), (462, 26, 3.2), (18, 1054, 3.2), (462, 1054, 3.2)])
+    # The ground behind an expanded panel (CLAUDE.md section 7: no black behind a metal skin): the column's iron as one
+    # plain plate, riveted at its edges, a forge seam pressed across it at a third and two thirds. The page lays its band
+    # (x 100-390, y 40-1040) side by side, every other copy mirrored, so the seams run on across the width.
+    add("console.backing", "hero", (480, 1080), soft(box(0.5, 0.5, 479.5, 1079.5), SOFT),
+        [("seam", soft(box(30, y - 2.5, 450, y + 2.5), 2.4)) for y in (360, 720)],
+        rivets=[(x, y, 3.2) for x in (18, 462) for y in (22, 200, 340, 380, 540, 700, 740, 880, 1058)], roll=1.2, land=1.0)
+    # The title lintel (the battle console's plate.title, 140 x 24, stretched in x): a bar of iron, its ends chipped, a
+    # worn gold inlay along its foot and a rivet at each end, inside the 18 px margins. The title is set live on the iron.
+    add("plate.title", "nine", (140, 24), soft(Polygon([(4, 1), (136, 0.8), (139.4, 5), (139.4, 23.4), (0.6, 23.4), (0.6, 4.5)]), 2.4), [],
+        rivets=[(9, 12, 2.2), (131, 12, 2.2)], gold=[soft(box(20, 18.4, 120, 20.4), 0.9)], margins=(0, 18, 0, 18), stretch="x",
+        roll=1.2, land=1.0, dz=-2.0, streaks=False)
+    # The allocation cells (32 x 28, nine-sliced): the tablet key's arched window in miniature in a block of iron, the same
+    # dirt on the glass in every state; only the light behind it changes (dark, gold, ember, a verdigris-tinged light for
+    # power in use; locked: no light and a dark slot).
+    for state, film in (("idle", "dim"), ("lit", "warm"), ("warn", "lamp_red"), ("accord", "accord"), ("locked", "slot")):
+        add(f"cell.{state}", "nine", (32, 28), soft(rbox(0.5, 0.5, 31.5, 27.5, 4), 2.2), [(film, soft(tablet(6, 5, 26, 23, 6, 1.5), 1.2))],
+            margins=(10, 10, 10, 10), stretch="xy", roll=1.0, land=1.0, dz=-2.5, pad=1.0, streaks=False)
     # The symbol bar's track: an iron rail with a groove of grimy glass the arched cells sit in (inset 9, 3: 14 px cells).
     add("bar.track", "nine", (96, 20), soft(box(0.5, 0.5, 95.5, 19.5), 1.4), [("slot", soft(box(7, 2.2, 89, 17.8), 1.2))],
         live=[("cells", box(9, 3, 87, 17))], margins=(0, 14, 0, 14), stretch="x", roll=0.6, land=0.4, inset=(9, 3), dz=-2.0,
@@ -92,13 +133,15 @@ def pieces():
             margins=(12, 14, 12, 14), stretch="x", dz=-4.0, pad=1.5, streaks=False)
     # The strips: an iron beam with a long channel of grimy glass for the readouts; at each end a stepped gold bracket
     # lies on the iron, riveted down, rust running from its rivets. 72 px, the channel's open band rows 13-59.
-    chan = soft(rbox(60, 10, 452, 62, 8), SOFT)
+    # Rendered at the 1440 px they are drawn on the reference (the view's width), so the beam is never stretched there.
+    SW = 1440
+    chan = soft(rbox(60, 10, SW - 60, 62, 8), SOFT)
     bracket = Polygon([(8, 8), (36, 8), (36, 16), (50, 16), (50, 56), (36, 56), (36, 64), (8, 64)])
     for name in ("strip.top", "strip.bottom"):
-        add(name, "nine", (512, 72), soft(rbox(0.5, 0.5, 511.5, 71.5, 8), SOFT), [("dim", chan)],
-            rivets=[(16, 20, 3.0), (16, 52, 3.0), (496, 20, 3.0), (496, 52, 3.0)],
-            gold=[soft(bracket, 2.0), soft(Polygon([(512 - x, y) for x, y in bracket.exterior.coords]), 2.0)],
-            live=[("readouts", box(104, 14, 408, 58))], margins=(10, 100, 10, 100), stretch="x", dz=-6.0, pad=1.5)
+        add(name, "nine", (SW, 72), soft(rbox(0.5, 0.5, SW - 0.5, 71.5, 8), SOFT), [("dim", chan)],
+            rivets=[(16, 20, 3.0), (16, 52, 3.0), (SW - 16, 20, 3.0), (SW - 16, 52, 3.0)],
+            gold=[soft(bracket, 2.0), soft(Polygon([(SW - x, y) for x, y in bracket.exterior.coords]), 2.0)],
+            live=[("readouts", box(104, 14, SW - 104, 58))], margins=(10, 100, 10, 100), stretch="x", dz=-6.0, pad=1.5)
     add("divider", "nine", (128, 10), soft(rbox(0.5, 0.5, 127.5, 9.5, 4.5), 2), [("slot", soft(box(14, 3.3, 114, 6.7), 1.2))],
         margins=(0, 16, 0, 16), stretch="x", roll=0.6, land=1.0, dz=-2.0, pad=0.5, streaks=False)
     # Heroes. The name plate: an iron plaque pointed at both ends, a worn gold field lit dimly from behind, two rivets.

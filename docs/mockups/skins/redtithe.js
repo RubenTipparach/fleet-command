@@ -12,12 +12,12 @@ const F = window.FCK, H = window.FCRedTithe, RT = H.RT;
 // ---- the skin -----------------------------------------------------------------------------------------------------
 F.register('redtithe', {
   name: 'Red Tithe', kind: 'Painted in canvas: crusted, bloodied bounty sheets nailed to scarred oak planks, strap iron and knives, trap-jaw keys, a bandolier for every bar', bg: RT.bg, sampleBg: RT.paper,
-  css: { '--s-ink': RT.ink, '--s-dim': '#3b2a1e', '--s-num': '#1c130d', '--s-body': '"Special Elite", monospace', '--btn-ink': '#16100b', '--btn-justify': 'center',
+  css: { '--s-ink': RT.ink, '--s-dim': '#3b2a1e', '--s-num': '#1c130d', '--s-body': '"IM Fell English SC", monospace', '--btn-ink': '#16100b', '--btn-justify': 'center',
     // a halo of the slip's own paper behind the stencil: invisible on the slip, it keeps a long label legible where a
     // narrow key's label runs out over the jaws' teeth and the stakes (the kit sheet's 120 px key)
-    '--btn-shadow': '0 1px 0 rgba(255,240,205,0.35), 0 0 2px #bea77b, 0 0 3px #bea77b, 0 0 5px rgba(190,167,123,0.85)', '--btn-font': '700 17px/1 "Stardos Stencil", sans-serif', '--btn-track': '0.05em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.05s', '--btn-sink': '1.5px',
-    '--tab-font': '400 14px/1 "Special Elite", monospace', '--tab-ink': '#d8c69a', '--tab-ink-on': '#1a120c',
-    '--title-font': '700 19px/1 "Stardos Stencil", sans-serif', '--title-ink': '#6b1810', '--lbl-font': '400 15px/1 "Special Elite", monospace', '--num-font': '400 25px/1 "Special Elite", monospace',
+    '--btn-shadow': '0 1px 0 rgba(255,240,205,0.35), 0 0 2px #bea77b, 0 0 3px #bea77b, 0 0 5px rgba(190,167,123,0.85)', '--btn-font': '400 17px/1 "Pirata One", sans-serif', '--btn-track': '0.05em', '--btn-case': 'uppercase', '--btn-motion': 'padding-top 0.05s', '--btn-sink': '1.5px',
+    '--tab-font': '400 14px/1 "IM Fell English SC", monospace', '--tab-ink': '#d8c69a', '--tab-ink-on': '#1a120c',
+    '--title-font': '400 19px/1 "Pirata One", sans-serif', '--title-ink': '#6b1810', '--lbl-font': '400 15px/1 "IM Fell English SC", monospace', '--num-font': '400 25px/1 "IM Fell English SC", monospace',
     // The strips are 72 px; their open band is the sheet inside its torn edge, rows 11-61, so each label stands over its
     // strap with room to spare; the bandolier's middle tiles, so its stitches keep their pitch at any width.
     '--stt-pt': '12px', '--stt-pb': '12px', '--stb-pt': '12px', '--stb-pb': '12px', '--strip-lamp': '44px', '--bt-rep': 'round' },
@@ -25,9 +25,9 @@ F.register('redtithe', {
   // The frame's top margin carries the knife and the teeth, so the title is stencilled at the head of the sheet itself.
   title: (t, m) => { t.style.cssText = 'position:relative;justify-self:start;align-self:flex-start;margin-left:2px;letter-spacing:0.12em;'; },
   // The captain's name is typed into the bounty sheet's field (64-404 x 10-46), clear of the seal and the knife.
-  plateText: { left: 64, top: 12, width: 336, height: 30, font: '400 21px/30px "Special Elite", monospace', color: '#1a120c', sub: 'RED LEDGER · CAPT. HESK VARRO' },
+  plateText: { left: 64, top: 12, width: 336, height: 30, font: '400 21px/30px "IM Fell English SC", monospace', color: '#1a120c', sub: 'RED LEDGER · CAPT. HESK VARRO' },
   helmKeys: 'ring', helmR: 92, shield: [RT.brass, '#b8561c', RT.fresh],
-  fonts: ['700 20px "Stardos Stencil"', '400 20px "Special Elite"'], view: { title: '400 28px "Special Elite"', body: '400 24px "Special Elite"', upper: true, ink: RT.bone, dim: RT.brass },
+  fonts: ['400 20px "Pirata One"', '400 20px "IM Fell English SC"'], view: { title: '400 28px "IM Fell English SC"', body: '400 24px "IM Fell English SC"', upper: true, ink: RT.bone, dim: RT.brass },
   // The column's ground: a wall of the hall's planks, drawn once at the column's size (a JPEG: it is all grain, and a PNG of it runs to megabytes).
   build: () => Object.assign(F.fromPainters(H.nine, H.heroSheet, (n) => H.iconSheet(n), false), { column: F.paint(H.GROUND[0], H.GROUND[1], H.ground).toDataURL('image/jpeg', 0.88) }),
   live: H.live,
@@ -38,7 +38,7 @@ F.register('redtithe', {
   shapes: 'Trap-jaw keys on oak stakes, torn bounty sheets nailed to scarred plank boards bound with strap iron, knives and a hatchet in the wood, strings of teeth, a revolver cylinder in an oak wheel, tally-stick tabs, bandolier bars.',
   light: 'Painted: a hard hall light from the upper left; worn plank edges catch it, gouges, grain and tallies hold shadow, blades and iron glint, deep cast shadows under blades and paper; no glow but the alert lamps.',
   motion: 'A key\'s jaws snap shut and blood seeps along the bite; a bar loads round by round.',
-  type: '"Stardos Stencil" stencilled titles and keys, "Special Elite" typed readouts.',
+  type: '"Pirata One" blackletter titles and keys, "IM Fell English SC" ship\'s-log labels.',
   palette: [['Dried blood', RT.dried, 'Stains, seals, titles', 'The tithe already taken'], ['Fresh blood', RT.fresh, 'Alerts only', 'The tithe being taken now'],
     ['Old paper', RT.paper, 'Sheets, keys, readout grounds', 'The ledger: every debt written down'], ['Hall oak', RT.oak, 'Boards, frames, stakes, tally sticks, the column', 'The boards every sheet is nailed to: the Tithe\'s hall, where debts are posted and paid'],
     ['Brass', RT.brass, 'Rounds, ready states', 'Spent cartridges counted as standing'], ['Gun steel', RT.steel, 'Jaws, blades, strap iron', 'What holds the sheet holds the crew']],
