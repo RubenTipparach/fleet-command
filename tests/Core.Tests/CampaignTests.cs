@@ -556,6 +556,32 @@ public sealed class CampaignTests
     }
 
     [Fact]
+    public void A_campaign_without_unfinished_factions_holds_standing_only_with_the_factions_in_its_world()
+    {
+        // owner, 2026-11-09: "add a flag to toggle unfinished factions to off be default in options"
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord", unfinished: false);
+        Assert.False(c.S.Unfinished);
+        Assert.Contains("krai", c.S.Standing.Keys);
+        Assert.Contains("vos", c.S.Standing.Keys);
+        Assert.DoesNotContain("axiom", c.S.Standing.Keys);
+        Assert.All(c.S.Standing.Keys, f => Assert.True(Camp.Finished(f), f));
+        Assert.Contains("axiom", Campaign.Campaign.New(Camp, "concord", unfinished: true).S.Standing.Keys);
+    }
+
+    [Fact]
+    public void A_save_keeps_its_own_unfinished_factions_setting_and_an_older_save_keeps_every_faction()
+    {
+        // owner, 2026-11-09: "this flag is override by any save"
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord", unfinished: false);
+        Campaign.Campaign back = Campaign.Campaign.Load(Camp, c.Save());
+        Assert.False(back.S.Unfinished);
+        Assert.DoesNotContain("axiom", back.S.Standing.Keys);
+        string old = Campaign.Campaign.New(Camp, "concord").Save().Replace("\"Unfinished\":true,", "");
+        Assert.DoesNotContain("Unfinished", old);
+        Assert.True(Campaign.Campaign.Load(Camp, old).S.Unfinished);
+    }
+
+    [Fact]
     public void Every_hull_whose_battle_class_has_a_model_shows_a_schematic()
     {
         // the store and fleet pages draw a hull's schematic; one left blank shows an empty frame (the Hunt's hulls did)

@@ -206,6 +206,9 @@ public sealed partial class FactionScreen : FlowPanel
         int hover = -1;
         if (Stage != null)
         {
+            // unfinished factions only when Options turns them on (owner, 2026-11-09)
+            bool all = GameSettings.UnfinishedFactions;
+            Stage.Keep = id => all || F.Data.Factions.TryGetValue(id, out CampFaction? cf) && CanPlay(cf);
             Vector2 mp = GetLocalMousePosition();
             Stage.Pointer = new Vector2(mp.X / Math.Max(1, Size.X) * 2 - 1, 1 - mp.Y / Math.Max(1, Size.Y) * 2);
             Stage.Picked = F.Picked;
@@ -227,7 +230,7 @@ public sealed partial class FactionScreen : FlowPanel
                 Text(fac.Name.ToUpperInvariant(), r.GetCenter().X, ly + 18, 20, picked ? new Color(fac.Color).Lightened(0.35f) : play ? C.Text : C.Lilac, HorizontalAlignment.Center, r.Size.X * 2.2f, 700, 2);
                 if (!play) Lbl("Not in the game yet", r.GetCenter().X, ly + 38, r.Size.X * 2.2f, null, HorizontalAlignment.Center, 13);
             }
-            if (Narrow) KeyGrid(Stage.Factions);
+            if (Narrow) KeyGrid(Stage.Factions.Where((_, i) => Stage.Shown(i)).ToList());
             Stage.Hover = hover;
         }
         // the picked faction's keys, in a sheet below the table

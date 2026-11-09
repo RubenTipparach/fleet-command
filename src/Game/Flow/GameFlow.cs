@@ -231,7 +231,7 @@ public sealed partial class GameFlow : Node
             {
                 await Step(report, 0.1f, "Charting the sectors", () =>
                 {
-                    Camp = Campaign.Campaign.New(Data, side);
+                    Camp = Campaign.Campaign.New(Data, side, unfinished: GameSettings.UnfinishedFactions);
                     Camp.S.Log.Add($"Turn 1: {Camp.S.Fleet[0].Name} takes her first command at {Camp.Home.PortName}.");
                 });
                 await Begin(report);
