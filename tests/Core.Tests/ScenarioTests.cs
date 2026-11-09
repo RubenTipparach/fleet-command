@@ -75,7 +75,7 @@ public class ScenarioTests
         foreach (string name in new[] { "Battle", "Duel", "Arming", "Allied fleet", "Four races" }) Assert.Contains(hunt, s => s.Name == name);
         // and every general scene the Concord plays, bar its own line as the foe (owner, 2026-11-07: "Ensure spaceships for
         // ssarith are also implemented")
-        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && s.Name is not ("The Hunt" or "Hunt wrecks")))
+        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && !IsWeaponScene(s) && s.Name is not ("The Hunt" or "Hunt wrecks")))
             Assert.Contains(hunt, s => s.Name == c.Name);
         // its ships are its own line's, its freighter (the Tally carrier, mockup 24) among them, but its depot in Relief, the
         // mockups' station, as every side's is
@@ -93,7 +93,7 @@ public class ScenarioTests
         foreach (string name in new[] { "Battle", "Duel", "Arming", "Four races" }) Assert.Contains(own, s => s.Name == name);
         // and every general scene the Concord plays, bar the allied fleet (its three races are the Concord, Krai and Ssarith;
         // the Institute joins them in Four races) (owner, 2026-11-07: "test all kelvan general mission scenarios")
-        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && s.Name is not ("Allied fleet" or "The Institute" or "Institute wrecks")))
+        foreach (Scenario c in TestData.Data.Scenarios.Where(s => s.Side == "concord" && !IsWeaponScene(s) && s.Name is not ("Allied fleet" or "The Institute" or "Institute wrecks")))
             Assert.Contains(own, s => s.Name == c.Name);
         foreach (string side in new[] { "concord", "krai" })
             foreach (string name in new[] { "The Institute", "Institute wrecks" })

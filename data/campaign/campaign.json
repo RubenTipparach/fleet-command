@@ -571,7 +571,7 @@
    "name": "Vos corsair",
    "cls": "Raider",
    "battle_class": "vcr",
-   "schematic": "",
+   "schematic": "vos/vos_dd",
    "for_sale": false
   },
   "freighter": {
@@ -580,7 +580,7 @@
    "name": "Freighter",
    "cls": "Freighter",
    "battle_class": "kff",
-   "schematic": "",
+   "schematic": "kethran/kethran_ff",
    "for_sale": false
   },
   "freighter_concord": {
@@ -589,7 +589,7 @@
    "name": "Gauge carrier",
    "cls": "Freighter",
    "battle_class": "fr",
-   "schematic": "",
+   "schematic": "freighters/freighter_concord",
    "for_sale": false
   },
   "freighter_krai": {
@@ -598,7 +598,7 @@
    "name": "Spear train",
    "cls": "Freighter",
    "battle_class": "krai_fr",
-   "schematic": "",
+   "schematic": "freighters/freighter_krai",
    "for_sale": false
   },
   "freighter_ssarith": {
@@ -607,7 +607,7 @@
    "name": "Tally carrier",
    "cls": "Freighter",
    "battle_class": "hunt_fr",
-   "schematic": "",
+   "schematic": "freighters/freighter_ssarith",
    "for_sale": false
   },
   "freighter_kelvane": {
@@ -616,7 +616,7 @@
    "name": "Twin ledger",
    "cls": "Freighter",
    "battle_class": "kelvane_fr",
-   "schematic": "",
+   "schematic": "freighters/freighter_kelvane",
    "for_sale": false
   },
   "axiom_ff": {
