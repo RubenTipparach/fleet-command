@@ -215,6 +215,9 @@ public sealed record GameData(
     /// <summary>The numbers of the mockup's other systems (data/battle/systems/*.json).</summary>
     public SystemsDef Systems { get; init; } = new();
 
+    /// <summary>The sounds the game plays (data/audio/cues.json).</summary>
+    public AudioCues Audio { get; init; } = AudioCues.Empty;
+
     /// <summary>A scenario by id; throws naming the id when there is none.</summary>
     public Scenario ScenarioById(string id) =>
         Scenarios.FirstOrDefault(s => s.Id == id) ?? throw new KeyNotFoundException($"no scenario '{id}' in data/battle/scenarios.json");

@@ -50,6 +50,7 @@ public sealed class SsarithKit : IKit
             // "Black Ops One" stencilled for headings, "VT323" phosphor for everything else. VT323 at 1.2x Antonio's size
             // measures about as wide (a pixel face is short), so every slot that fits a Concord label fits a Hunt one;
             // weight 700 at 22 px and up is a heading, Black Ops One at 0.8x.
+            KeySound = "ui_clunk", // the modelled metal skins' clunk (sound-effects design section 2)
             Type = new TypeSet(Vt323, BlackOps, (size, weight) =>
                 weight >= 700 && size >= 22 ? new Face(true, (int)MathF.Round(size * 0.8f), 400)
                 : new Face(false, (int)MathF.Round(size * 1.2f), 400)),

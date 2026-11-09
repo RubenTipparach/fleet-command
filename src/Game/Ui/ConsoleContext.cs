@@ -52,6 +52,8 @@ public sealed class ConsoleContext
     /// <summary>How far through the next fixed step the frame is drawn, 0 to 1 (Main's accumulator over the step): shots in
     /// flight are drawn that share of the way from their last step's place (Battle.DrawnAt).</summary>
     public double StepShare = 1;
+    /// <summary>The console's own sounds: its keys and the bridge bed (ConsoleSounds).</summary>
+    public required ConsoleSounds Sounds { get; init; }
     /// <summary>The battle being fought; replaced on a restart.</summary>
     public required Battle Battle { get; set; }
 

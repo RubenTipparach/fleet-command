@@ -30,6 +30,9 @@ public sealed class Imm
 
     private List<Hit> _cur = new(), _last = new();
     private Hit? _drag;
+    /// <summary>Called when a press lands on a control that acts (a click, not a drag): the console's key sound
+    /// (ConsoleSounds), so every key on every panel sounds from this one place.</summary>
+    public System.Action? Pressed { get; set; }
     public string? Hot { get; private set; }
     public string? Active { get; private set; }
     /// <summary>The pointer in the panel's coordinates, far away when it is elsewhere.</summary>
@@ -100,7 +103,7 @@ public sealed class Imm
                     if (was == null) return false;
                     Hit? h = TopAt(b.Position);
                     Shift = b.ShiftPressed;
-                    if (h != null && h.Id == was) h.Click?.Invoke(b.Position);
+                    if (h != null && h.Id == was && h.Click != null) { Pressed?.Invoke(); h.Click(b.Position); }
                     Shift = false;
                     return true;
                 }

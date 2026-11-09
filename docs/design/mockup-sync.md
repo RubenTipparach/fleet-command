@@ -31,6 +31,7 @@ draw as before), and the special weapons range (16) keeps its old inlined weapon
 the scaled figures would break it), which leaves its `inline_data.py --check` failing until its scene unit is 1 km and its
 ships are drawn at `ship_frame_x` times their length. Task: `battle-console-engine` 2.8, "distances x10 in the
 mockups".
+| 17 | Battle sounds | v10 | the console keys (each skin's key cue: the Concord's chirp, the metal skins' clunk, on every console key) and the bridge bed (`amb_bridge`, the brown-noise bed the owner picked) under a battle, 2026-11-07 (`ConsoleSounds.cs`, `data/audio/cues.json`). Not yet: the weapons, hits, ship sounds and alerts (`sound-effects` 3.2-3.7) | `sound-effects` |
 
 Ships (2026-11-05, owner: "looks like the albatros is behind a version, please update ships to latest"): in step. The
 battle console mockup (mockup 2 v82, mockup 8 v21, mockup 15 v6) flies the same exported glbs the game flies, each class's

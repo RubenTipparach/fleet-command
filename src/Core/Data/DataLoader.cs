@@ -19,6 +19,7 @@ public static partial class DataLoader
     {
         "battle/weapons.json", "battle/classes.json", "battle/factions.json", "battle/scenarios.json", "battle/tuning.json", "console/layout.json",
         "battle/missiles.json", "battle/special_weapons.json", "battle/range.json",
+        "audio/cues.json",
         "battle/scenes/comms.json", "battle/scenes/tractor.json", "battle/scenes/reactor.json", "battle/scenes/cloak.json", "battle/scenes/tactical.json",
         "battle/systems/comms.json", "battle/systems/tractor.json", "battle/systems/reactor.json", "battle/systems/cloak.json", "battle/systems/tactical.json",
         "battle/systems/field.json",
@@ -55,7 +56,8 @@ public static partial class DataLoader
         RangeDef range = LoadRange(J("battle/range.json"), weapons);
         SystemsDef systems = SystemsDef.Load(J);
         systems.CheckComms(classes);
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems };
+        AudioCues audio = AudioCues.Load(J("audio/cues.json"));
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems, Audio = audio };
     }
 
     /// <summary>The damage range (data/battle/range.json): every program's weapons exist, and its numbers are in range.</summary>

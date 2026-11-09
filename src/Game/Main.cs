@@ -31,6 +31,8 @@ public sealed partial class Main : Node
     private MenuCard _menu = null!;
     private OptionsCard _options = null!;
     private MusicPlayer _music = null!;
+    /// <summary>The cue table, set before the first skin is made, so each skin's key sound is checked as it is.</summary>
+    private AudioCues _audio = AudioCues.Empty;
     private readonly Dictionary<Region, ConsolePanel> _panels = new();
     private double _acc;
     private Dictionary<string, Action> _bindings = new();
@@ -56,13 +58,18 @@ public sealed partial class Main : Node
         Scenario start = StartScenario(data);
         _forcedSkin = _args.GetValueOrDefault("skin");
         _skinId = _forcedSkin ?? data.Factions[start.Side].Skin!;
+        _audio = data.Audio;
+        var sounds = new ConsoleSounds();
+        sounds.Init(data.Audio);
+        sounds.Log = _args.ContainsKey("playtest");
+        AddChild(sounds);
         IKit kit = KitById(_skinId);
         GameActions act = null!;
         act = new GameActions(() => _x);
         _x = new ConsoleContext
         {
             Data = data, Kit = kit, Fonts = new Fonts("res://assets/fonts/Antonio-VariableFont_wght.ttf"), Tips = new TipBoard(),
-            State = new ConsoleState(), Act = act, Battle = new Battle(data, start),
+            State = new ConsoleState(), Act = act, Battle = new Battle(data, start), Sounds = sounds,
         };
         act.OnLayout = Relayout;
         act.OnRestart = Restart;
@@ -206,6 +213,7 @@ public sealed partial class Main : Node
         if (_kits.TryGetValue(id, out IKit? kit)) return kit;
         kit = Kits.For(id);
         KitPieces.Verify(kit);
+        _audio.Get(kit.Style.KeySound); // a skin naming a sound the cue table lacks stops here, naming it
         return _kits[id] = kit;
     }
 
@@ -234,6 +242,8 @@ public sealed partial class Main : Node
         _menu.Visible = _x.State.MenuOpen;
         _options.Visible = _x.State.OptionsOpen;
         _music.Play(_flow == null || _flow.Screen == FlowScreen.Battle ? "battle" : "main_theme");
+        // the bridge bed under a battle, silent on the menus and the map
+        _x.Sounds.Bed(_flow == null || _flow.Screen == FlowScreen.Battle ? "amb_bridge" : null);
         if (_flow != null && _flow.Screen != FlowScreen.Battle) return;
         FollowCommand();
         if (_x.State.Paused || _x.State.MenuOpen || _args.ContainsKey("still")) return;
