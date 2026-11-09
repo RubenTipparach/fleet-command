@@ -130,7 +130,9 @@ public sealed partial class Battle
         {
             MountDef md = mounts[i];
             WeaponDef w = Data.Weapons[md.Weapon];
-            s.Mounts.Add(new Mount { Index = i, Def = md, Weapon = w, Charge = 0.6 + (i % 3) * 0.15, Selected = !w.IsPointDefence });
+            bool armed = d.ArmOnly == null || d.ArmOnly.Contains(md.Weapon);   // a weapons test scene arms its one weapon
+            s.Mounts.Add(new Mount { Index = i, Def = md, Weapon = w, Charge = armed ? 0.6 + (i % 3) * 0.15 : 0, Selected = !w.IsPointDefence,
+                State = armed ? Arming.Normal : Arming.Offline });
         }
         return s;
     }

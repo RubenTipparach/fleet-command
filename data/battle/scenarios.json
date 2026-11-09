@@ -1,5 +1,5 @@
 {
- "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet. The Hunt (concord_hunt) puts the Ssarith Hunt's approved ships against the Concord (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"); the Hunt is played as the Concord or the Krai there. Once the Hunt's console was built (mockup 15), the Ssarith are a side of their own (ssarith_battle, ssarith_duel, ssarith_arming: the Hunt's approved ships against the Concord's and the Krai's). The allied scenes (*_allied, *_four_races; the battle console mockup's Allied fleet and Four races, openspec/changes/fleet-skins) put a Concord, a Krai and a Ssarith ship in one fleet to hop between (the Fleet key, keys 1 to 9), the console wearing the skin of the ship you command; in them alone the foes are the mockup's Kethran and Vos stand-ins (no Krai or Concord stand-in anywhere), and Four races adds the Kelvane Institute's research cruiser Patience, as the mockup does. Once the Institute's ships were approved for the game (mockup 23; owner, 2026-11-07: \"perfect, implment these ships in game\"), The Institute and Institute wrecks put its line against the Concord or the Krai, as The Hunt and Hunt wrecks do, the damage ranges stand its five classes in a row of their own, and the Institute is a side of its own (kelvane_battle, kelvane_duel, kelvane_arming, kelvane_four_races), the Patience its captain's ship; its ships' names are its classes' names and its captains are \"Institute captain\" until its culture is set (survey C4), but the mockup's Dr. Orrel of the Patience. The Hunt is a side of its own too, in Battle, Duel, Arming and the allied scenes, and in every general scene the Concord plays but The Hunt and Hunt wrecks (ssarith_wrecks, ssarith_range, ssarith_institute, ssarith_institute_wrecks here, the rest in data/battle/scenes; 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its Hunt Cruiser the captain's ship, its ships named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4).",
+ "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet. The Hunt (concord_hunt) puts the Ssarith Hunt's approved ships against the Concord (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"); the Hunt is played as the Concord or the Krai there. Once the Hunt's console was built (mockup 15), the Ssarith are a side of their own (ssarith_battle, ssarith_duel, ssarith_arming: the Hunt's approved ships against the Concord's and the Krai's). The allied scenes (*_allied, *_four_races; the battle console mockup's Allied fleet and Four races, openspec/changes/fleet-skins) put a Concord, a Krai and a Ssarith ship in one fleet to hop between (the Fleet key, keys 1 to 9), the console wearing the skin of the ship you command; in them alone the foes are the mockup's Kethran and Vos stand-ins (no Krai or Concord stand-in anywhere), and Four races adds the Kelvane Institute's research cruiser Patience, as the mockup does. Once the Institute's ships were approved for the game (mockup 23; owner, 2026-11-07: \"perfect, implment these ships in game\"), The Institute and Institute wrecks put its line against the Concord or the Krai, as The Hunt and Hunt wrecks do, the damage ranges stand its five classes in a row of their own, and the Institute is a side of its own (kelvane_battle, kelvane_duel, kelvane_arming, kelvane_four_races), the Patience its captain's ship; its ships' names are its classes' names and its captains are \"Institute captain\" until its culture is set (survey C4), but the mockup's Dr. Orrel of the Patience. The Hunt is a side of its own too, in Battle, Duel, Arming and the allied scenes, and in every general scene the Concord plays but The Hunt and Hunt wrecks (ssarith_wrecks, ssarith_range, ssarith_institute, ssarith_institute_wrecks here, the rest in data/battle/scenes; 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its Hunt Cruiser the captain's ship, its ships named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4). The weapon scenes (weapon_*; owner, 2026-11-06: \"Make some test scenes for weapons at 1/4 speed and render mp4 for different weapons types\") play at a quarter speed (time_scale) with the player's ship armed with one weapon type (arm_only) against a held target 20 km ahead, all under one sky so the weapons are seen against the same backdrop, and each fielded only by the side that has the weapon; Point defence turns it round, the foe firing torpedoes and missiles at a ship armed with point defence alone.",
  "scenarios": [
   {
    "id": "concord_battle",
@@ -5882,6 +5882,390 @@
      "speed_m_s": 0,
      "stance": "hold",
      "hold_fire": true
+    }
+   ]
+  },
+  {
+   "id": "weapon_lance",
+   "sky": "aurora",
+   "name": "Weapon: Lance",
+   "side": "concord",
+   "seed": 20261120,
+   "time_scale": 0.25,
+   "objective": "Watch the weapon fire at quarter speed",
+   "say": [
+    "Tactical",
+    "Only the lance is armed. Fire on the Kharz."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "arm_only": [
+      "lance"
+     ]
+    },
+    {
+     "id": "t_kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -20000,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "arm_only": [
+      "lance"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weapon_disruptor",
+   "sky": "aurora",
+   "name": "Weapon: Disruptor",
+   "side": "krai",
+   "seed": 20261121,
+   "time_scale": 0.25,
+   "objective": "Watch the weapon fire at quarter speed",
+   "say": [
+    "Tactical",
+    "Only the disruptor is armed. Fire on the Resolute."
+   ],
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "arm_only": [
+      "disruptor"
+     ]
+    },
+    {
+     "id": "t_resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -20000,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "arm_only": [
+      "lance"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weapon_torpedo",
+   "sky": "aurora",
+   "name": "Weapon: Pulse torpedo",
+   "side": "concord",
+   "seed": 20261122,
+   "time_scale": 0.25,
+   "objective": "Watch the weapon fire at quarter speed",
+   "say": [
+    "Tactical",
+    "Only the pulse torpedo is armed. Fire on the Kharz."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "arm_only": [
+      "torpedo"
+     ]
+    },
+    {
+     "id": "t_kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -20000,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "arm_only": [
+      "lance"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weapon_missile",
+   "sky": "aurora",
+   "name": "Weapon: Missile",
+   "side": "concord",
+   "seed": 20261123,
+   "time_scale": 0.25,
+   "objective": "Watch the weapon fire at quarter speed",
+   "say": [
+    "Tactical",
+    "Only the missile is armed. Fire on the Kharz."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "arm_only": [
+      "missile"
+     ]
+    },
+    {
+     "id": "t_kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -20000,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "arm_only": [
+      "lance"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weapon_pd",
+   "sky": "aurora",
+   "name": "Weapon: Point defence",
+   "side": "concord",
+   "seed": 20261124,
+   "time_scale": 0.25,
+   "objective": "Watch the weapon fire at quarter speed",
+   "say": [
+    "Tactical",
+    "Their ship fires torpedoes and missiles; only our point defence is armed."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "arm_only": [
+      "pd"
+     ]
+    },
+    {
+     "id": "t_kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -20000,
+     "heading_deg": 180,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "arm_only": [
+      "torpedo",
+      "missile"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weapon_chorus",
+   "sky": "aurora",
+   "name": "Weapon: Chorus lance",
+   "side": "concord",
+   "seed": 20261125,
+   "time_scale": 0.25,
+   "objective": "Watch the weapon fire at quarter speed",
+   "say": [
+    "Tactical",
+    "Only the chorus lance is armed. Fire on the Kharz."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "arm_only": [
+      "chorus"
+     ]
+    },
+    {
+     "id": "t_kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -20000,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "arm_only": [
+      "lance"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weapon_quell",
+   "sky": "aurora",
+   "name": "Weapon: Quell torpedo",
+   "side": "concord",
+   "seed": 20261126,
+   "time_scale": 0.25,
+   "objective": "Watch the weapon fire at quarter speed",
+   "say": [
+    "Tactical",
+    "Only the quell torpedo is armed. Fire on the Kharz."
+   ],
+   "ships": [
+    {
+     "id": "petrel",
+     "name": "Petrel",
+     "captain": "Cdr. Amsel",
+     "class": "dd",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "arm_only": [
+      "quell"
+     ]
+    },
+    {
+     "id": "t_kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -20000,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "arm_only": [
+      "lance"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "weapon_forge",
+   "sky": "aurora",
+   "name": "Weapon: Forge driver",
+   "side": "krai",
+   "seed": 20261127,
+   "time_scale": 0.25,
+   "objective": "Watch the weapon fire at quarter speed",
+   "say": [
+    "Tactical",
+    "Only the forge driver is armed. Fire on the Resolute."
+   ],
+   "ships": [
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "arm_only": [
+      "forge"
+     ]
+    },
+    {
+     "id": "t_resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 0,
+     "z_m": -20000,
+     "heading_deg": 90,
+     "speed_m_s": 0,
+     "stance": "hold",
+     "hold_fire": true,
+     "arm_only": [
+      "lance"
+     ]
     }
    ]
   }

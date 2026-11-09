@@ -554,6 +554,14 @@ public sealed class CampaignTests
             foreach (string layer in new[] { "hull", "wire" })
                 Assert.True(File.Exists(Path.Combine(assets, h.Schematic + $".{layer}.png")), $"{h.Id}: {h.Schematic}.{layer}.png");
     }
+
+    [Fact]
+    public void Every_hull_whose_battle_class_has_a_model_shows_a_schematic()
+    {
+        // the store and fleet pages draw a hull's schematic; one left blank shows an empty frame (the Hunt's hulls did)
+        foreach (Hull h in Camp.Hulls.Values.Where(h => TestData.Data.Classes[h.BattleClass].Model != null))
+            Assert.True(h.Schematic != "", $"{h.Id}: its class {h.BattleClass} has a model but the hull names no schematic");
+    }
 }
 
 public sealed class HexGridTests

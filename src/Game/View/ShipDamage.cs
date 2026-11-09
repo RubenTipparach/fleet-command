@@ -148,12 +148,14 @@ public sealed class ShipDamage
         float s = Math.Max(0.6f, _lenM / 150f);
         if (e.HullDamage <= 0)
         {
-            Fx.ShieldFlare(_fx, World(p + dir * (6f + 0.12f * _lenM)), Math.Max(0.04f, 0.05f * _lenU), (World(p + dir) - at).Normalized());
+            Vector3 on = World(p + dir * (6f + 0.12f * _lenM));
+            Fx.ShieldFlare(_fx, on, Fx.Readable(_fx, on, Math.Max(0.04f, 0.05f * _lenU), Fx.ShieldMinShare), (World(p + dir) - at).Normalized());
             return;
         }
         bool beam = e.Kind == "beam", big = e.Kind == "torpedo";
-        Fx.Fireball(_fx, at, Math.Max(0.04f, (beam ? 0.03f : big ? 0.07f : 0.05f) * _lenU), outward);
-        Fx.Flash(_fx, at + outward * 0.02f, 0.9f * _lenU, beam ? 1.5f : 3f, beam ? 0.25f : 0.45f);
+        float r = Fx.Readable(_fx, at, Math.Max(0.04f, (beam ? 0.03f : big ? 0.07f : 0.05f) * _lenU));
+        Fx.Fireball(_fx, at, r, outward);
+        Fx.Flash(_fx, at + outward * 0.02f, Math.Max(0.9f * _lenU, 8 * r), beam ? 1.5f : 3f, beam ? 0.25f : 0.45f);
         Scorch(p, beam ? 1.6f : big ? 5f : 3.2f, beam ? 0f : 1f);
         if (big) Hole(p, n, (2.6f + (float)_rng.NextDouble() * 1.8f) * s);
         if (e.Destroyed) { StartBreach(); return; }

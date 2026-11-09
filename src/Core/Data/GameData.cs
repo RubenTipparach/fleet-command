@@ -108,6 +108,9 @@ public sealed record ShipStart(string Id, string Name, string Captain, string Cl
     public bool Runs { get; init; }
     /// <summary>Under a truce: it holds its fire and its place until the player's side fires first, then fights.</summary>
     public bool Truce { get; init; }
+    /// <summary>The weapon ids it starts with armed (a weapons test scene's one weapon); its other mounts start Offline.
+    /// Null: every mount armed.</summary>
+    public IReadOnlyList<string>? ArmOnly { get; init; }
 }
 
 /// <summary>A ship's craft and mines in a scenario, each null for its class's loadout; the fighters' first mission.</summary>
@@ -133,6 +136,8 @@ public sealed record Scenario(string Id, string Name, string Side, ulong Seed, s
     public IReadOnlyList<string> Lethal { get; init; } = System.Array.Empty<string>();
     /// <summary>The asteroids of the scene.</summary>
     public IReadOnlyList<RockDef> Rocks { get; init; } = System.Array.Empty<RockDef>();
+    /// <summary>The speed the scene plays at, a share of real time (a weapons test scene's quarter speed); 1 for real time.</summary>
+    public double TimeScale { get; init; } = 1;
     /// <summary>A test scene's planets (data/battle/scenes/comms.json), or null.</summary>
     public IReadOnlyList<PlanetDef>? Planets { get; init; }
     /// <summary>A test scene's goal, met to win whatever enemies are left (Scenes.Comms), or null.</summary>

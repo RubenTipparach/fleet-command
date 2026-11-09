@@ -42,4 +42,11 @@
 - [ ] 2.8 Sync task "distances x10 in the mockups" (owner, 2026-11-06: "1km -> 10km"): the game's battle distances are ten
   times the mockups' and its ships are framed at `tuning.json` `ship_frame_x` times their length (`docs/design/mockup-sync.md`);
   give mockups 2, 8, 15 and 16 a 1 km scene unit and draw their ships at the framed length, so the inlined data reads the same
+- [ ] 2.9 Sync task "missile tails" (owner, 2026-11-06: "your missiles don't have much of a tail"): give the special weapons
+  range (mockup 16) the game's and mockup 2's missile tail, 2.4 s long and 0.45 units wide, a point every 1/30 s of battle time
+- [ ] 2.10 Sync task "impacts" (owner, 2026-11-06: "missing explosions when weapon impacts", "the shield impacts should be
+  pretty visible", "it should be like a shield spark, hull impact would be a flame explosion"): give the battle console
+  mockups (2, 8, 15 and the Kelvane page) the game's impact effects, a flame explosion on the hull and a blue-white spark off
+  the shields, never smaller than `Fx.ImpactMinShare` and `Fx.ShieldMinShare` of the camera's distance
+  (`docs/design/mockup-sync.md`, Weapon impacts)
 - [ ] 2.7 Phone layouts, once the mockup has them

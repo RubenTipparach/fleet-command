@@ -286,7 +286,8 @@ public sealed partial class BattleView : Node3D
             {
                 // a stand-in has no pieces to break, but it ends as every ship does (it is gone the frame after)
                 if (e.Destroyed && b.ShipById(e.ShipId) is { } dead) { Fx.ShipEnd(this, m.GlobalPosition, (float)(dead.Class.FrameM / MPerU)); _standInEnd = ShipDamage.NovaSeenS; }
-                else Fx.Fireball(this, m.GlobalPosition, e.HullDamage > 0 ? 0.12f : 0.06f, Vector3.Up);
+                else if (e.HullDamage > 0) Fx.Fireball(this, m.GlobalPosition, Fx.Readable(this, m.GlobalPosition, 0.12f), Vector3.Up);
+                else Fx.ShieldFlare(this, m.GlobalPosition, Fx.Readable(this, m.GlobalPosition, 0.06f, Fx.ShieldMinShare), Vector3.Up);
             }
         }
         foreach (ShipDamage d in _damage.Values) d.Step((float)dt);

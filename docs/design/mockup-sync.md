@@ -57,6 +57,24 @@ mockup draw it (`src/Game/View/ShotView.cs` with `beam`, `flare` and `beads` sha
 disruptor bolts as hot streaks, torpedoes as six-armed purple stars with bead trails, missiles as body, ball plume and
 tail in their grade's colour, point defence as gold tracers, flares and the decoy shuttle. Task `weapon-fx` 3.4.
 
+Missile tails (2026-11-06, owner: "your missiles don't have much of a tail"): in step in both (mockups 2, 8, 15 and the Kelvane
+page, and `ShotView`). The tail is 2.4 s of flight (was 0.8 s), 0.45 units wide (was 0.3), with a point kept every 1/30 s of
+battle time (`missile_trail_every_s`, `TrailEveryS`) up to 80, so its length is set by battle time; before, the last 40 frames
+were kept, so the tail shrank with the frame rate and to a quarter at quarter speed. The special weapons range (16) keeps its
+old tail until its sync, task `battle-console-engine` 2.9.
+
+Weapon impacts (2026-11-06, owner, of the quarter speed weapon takes: "missing explosions when weapon impacts or missing shield
+reaction when weapon impacts", "the shield impacts should be pretty visible"). The shield display: a hit flares the struck facing's
+bands toward white (`shield_flash_white` 0.7, `ShieldShell.FlashWhite`) and 3.5 times as bright (`shield_flash_boost` 2.5), its inner
+band lit even when the facing is drained; before, a hit only raised the inner band's opacity from 0.8 to 1. In step in both (mockups
+2, 8, 15, the Kelvane page, and `ShieldShell`). The game's impact effects (`ShipDamage.OnHit`: the fireball on the hull, the blue
+flare off the shields) were sized to the hull, which at 20 km is a few pixels; they now never draw smaller than a share of
+their distance from the camera (`Fx.ImpactMinShare` 0.015, at 20 km about a third of a cruiser's length; `Fx.ShieldMinShare` 0.03
+for a shield hit). A shield hit was a puff of pale particles that died in under half a second; it is now a spark, not a flame (owner: "it
+should be like a shield spark, hull impact would be a flame explosion"): a sharp blue-white pinpoint flash (`Fx.Glow`), streaks of
+blue-white spark thrown back off the shield with blue embers, and a short blue light on the hull; a hull hit keeps the fireball. The main fault was elsewhere: every particle burst (`Fx.Burst`, `Fx.Streaks`) was created already emitting, so it went off as it was added, at the battle's origin, before it was moved to the hit; every explosion's sparks, smoke and fire, and every shield flare, burst there instead (in the weapon scenes, on the firing ship). They now start only once placed. The battle console
+mockups draw no impact effect at all, as before (game ahead); task `battle-console-engine` 2.10.
+
 Schematics (2026-11-05, owner: "generate schematics for each ship ... I want these to be used in game, and in store"): the
 game is ahead of the mockups. The battle's systems display and the campaign's shipyard, fleet and outfitter draw each ship's
 two-layer schematic (`assets/ships/schematics/`, `src/Game/Ui/Schematics.cs`); the battle console mockup (mockups 2, 8, 15)
