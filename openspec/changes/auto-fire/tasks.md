@@ -6,7 +6,10 @@
 - [x] 1.4 The mockups: `A.auto`, `autoFire`, the split key and KeyR in the Concord page, the faction pages rewritten from it
 - [ ] 1.5 The owner's review; F1, F2
 - [x] 1.6 The console skins page (`docs/mockups/console-skins.html`): Auto, Fire and Multiple on the weapons row
-- [ ] 1.7 The Vhorr Brood's organic keys: re-measure the blockout and re-sculpt `key.auto`, `key.fire` and `key.multiple`
-  at their new sizes (`tools/blender/build_ui_vhorr_organic.py --only ...`). Blocked: `tools/mockups/vhorr_blockout.mjs`
-  no longer finds the helm pad on the page ("Cannot read properties of undefined (reading 'protected')", line 135),
-  so the tool needs mending first. Until then the Brood's sculpted Fire and Multiple keys keep their old 192 px
+- [x] 1.7 The Vhorr Brood's organic keys: `tools/mockups/vhorr_blockout.mjs` mended (it named a hero piece only by the
+  placeholder kit's images, so it no longer found the helm pad once the sculpted kit was in; and it measured the page with
+  every sculpted slot pinned to its old size, so a changed row read as unchanged: it now unpins the stretchable slots
+  first). Re-measured, the weapons row only was taken into `assets/ui/vhorr/organic/blockout.json` (Auto 82, Fire 78.5,
+  Multiple 223 px; the other slots differ from their sculpts by page changes older than this one, left for their own
+  re-sculpt), and `key.auto`, `key.fire`, `key.multiple` and the weapons panel re-sculpted in Blender
+  (`--only panel.weapons`, larva keys). G1 holds (every label at least 2.5 mm clear); console fit clear in every skin
