@@ -448,6 +448,24 @@ const SECTIONS = [
       { id: 'B19', q: 'Inventory transporter: 5 crates a beam, one beam per transporter charge (about 6 s with 3 E in the transporter). Right?', options: ['As built', 'Everything in one beam', 'Fewer crates, faster charges'], rec: 0,
         why: 'A delivery is a few beams, so standing off the planet under fire is a choice that costs time.' },
     ] },
+  { tag: 'CR', name: 'Commander rank (change commander-rank, mockup 1)',
+    lead: 'Your ask (2026-11-09): the higher your commander\'s level, the harder general missions get, so a new captain in a frigate is not swamped. Drafted in the campaign mockup (the Rank on the top bar, map_rank); no game code until you approve it.',
+    qs: [
+      { id: 'CR1', q: 'What raises rank?', options: ['Career prestige: every prestige point gained, losses ignored, so a bad mission never demotes you', 'Its own experience points, earned per mission', 'Prestige as it stands, so a loss can demote you'], rec: 0,
+        why: 'One number you already see, and a demotion would make the next missions easier, which rewards losing.' },
+      { id: 'CR2', q: 'Five ranks at career prestige 0, 30, 80, 160 and 300 (about 5, 13, 27 and 50 missions in)?', options: ['Yes, tuned after a bot sweep at each rank', 'Fewer ranks (3)', 'More ranks (8), smaller steps'], rec: 0,
+        why: 'Rank 2 comes early enough to feel, rank 5 takes a long campaign.' },
+      { id: 'CR3', q: 'What does rank change in a general mission?', options: ['How many enemy ships (Light, Moderate, Heavy weighted by rank: a new captain sees no Heavy) and their biggest hull (tier 1 at rank 1, up to tier 5)', 'Only how many ships', 'Only how big they are'], rec: 0,
+        why: 'Today a Light patrol against your frigate can still bring a destroyer: the hull size matters as much as the count.' },
+      { id: 'CR4', q: 'Should difficulty also follow your fleet (its size and hulls), not just rank?', options: ['Not yet: rank only, so you can tell why missions got harder', 'Yes: rank and fleet strength together'], rec: 0,
+        why: 'Scaling to the fleet punishes buying ships; rank alone is easy to read.' },
+      { id: 'CR5', q: 'Rank titles: each faction its own, from its culture?', options: ['Yes, each faction\'s own titles once its culture names them; the Concord\'s (Lieutenant Commander to Rear Admiral) until then', 'One set of titles for everyone'], rec: 0,
+        why: 'The Krai or the Kelvane would not say Commodore.' },
+      { id: 'CR6', q: 'Harder missions pay more: Moderate 1.25 times and Heavy 1.5 times a Light mission\'s reward?', options: ['Yes', 'More (Heavy twice)', 'No: pay by grade only'], rec: 0,
+        why: 'A senior captain should earn more for the bigger fights.' },
+      { id: 'CR7', q: 'Should rank unlock bigger hulls at your shipyard?', options: ['Later, as its own change', 'Yes, in this change'], rec: 0,
+        why: 'Keeps this change to difficulty; buying is the standing rules\' job today.' },
+    ] },
 ];
 
 const DECIDED = [

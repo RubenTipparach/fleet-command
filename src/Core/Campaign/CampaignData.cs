@@ -89,6 +89,9 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
 {
     public IEnumerable<Hull> HullsOf(string side) => Hulls.Values.Where(h => h.Side == side).OrderBy(h => h.Tier);
     /// <summary>The side's hull of a tier, or its smallest when it has none of that tier.</summary>
+    /// <summary>Whether a faction is finished enough to be in the world: it holds territory on the map (a seed). The others
+    /// are the unfinished factions, left out of a campaign unless the player turns them on (owner, 2026-11-09).</summary>
+    public bool Finished(string fac) => Map.Seeds.Any(sd => sd.Fac == fac);
     public Hull HullOfTier(string side, int tier) => HullsOf(side).FirstOrDefault(h => h.Tier == tier) ?? HullsOf(side).First();
     public Tier TierOf(Hull h) => Tiers[h.Tier - 1];
     public IEnumerable<MissionScript> Contracts => Missions.Values.Where(m => !m.Story && !m.Encounter && !m.Event).OrderBy(m => m.Id, StringComparer.Ordinal);

@@ -3435,7 +3435,7 @@ function buildCampaign(side = 'concord', seed = 7) {
   const fleet = [newShip(smallestHull(side), FACTIONS[side].prefix + SHIP_NAMES[side][0])];
   fleet[0].supplies.marines = Math.min(2, SUPPLIES[0].max(fleet[0]));
   CAMP = { side, seed, R, hexes, groups, fleet, at: { ...HOME[side] }, home: { ...HOME[side] }, credits: 4000, turn: 1, mp: MOVE_POINTS, missions: [], active: [], log: [], crew: [], officerPool: [], mid: 0,
-    captain: 'Captain Ardent', battles: 0, standing: startStanding(side), dir: Math.PI / 2, prestige: 0, order: null };
+    captain: 'Captain Ardent', battles: 0, standing: startStanding(side), dir: Math.PI / 2, prestige: 0, career: 0, order: null };
   CAMP.freighters = makeFreighters();
   rollOfficers();
   offerMission('shakedown');
@@ -3527,6 +3527,24 @@ function missionCtx() {
   };
 }
 // Offer a mission: the script's own choice of sector, never one that already has a mission. `at` pins the sector.
+// Commander rank (openspec/changes/commander-rank, provisional until approved; owner, 2026-11-09: "The higher level your
+// commander is the more difficult general missions get"): read from career prestige (every gain, losses ignored); it sets
+// the strength weights (Light, Moderate, Heavy) and the enemy tier ceiling of general missions. Moves to
+// rules.ranks in data/campaign/campaign.json when built (task 1.1).
+const RANKS = [
+  { title: 'Lieutenant Commander', at: 0, w: [70, 30, 0], tierMax: 1 },
+  { title: 'Commander', at: 30, w: [45, 45, 10], tierMax: 2 },
+  { title: 'Captain', at: 80, w: [25, 45, 30], tierMax: 3 },
+  { title: 'Commodore', at: 160, w: [10, 40, 50], tierMax: 4 },
+  { title: 'Rear Admiral', at: 300, w: [0, 35, 65], tierMax: 5 },
+];
+const STRENGTH_REWARD_X = { Light: 1, Moderate: 1.25, Heavy: 1.5 };
+const rankOf = (career = CAMP.career || 0) => { let i = 0; RANKS.forEach((r, k) => { if (career >= r.at) i = k; }); return i; };
+function rollStrength(R) {
+  const w = RANKS[rankOf()].w, t = w.reduce((a, b) => a + b, 0);
+  let x = R() * t; for (let i = 0; i < w.length; i++) { if ((x -= w[i]) < 0) return ['Light', 'Moderate', 'Heavy'][i]; }
+  return 'Heavy';
+}
 function offerMission(id, at) {
   const R = CAMP.R, ctx = missionCtx(), ids = FCMissions.contracts();
   for (let tries = 0; tries < 20; tries++) {
@@ -3534,7 +3552,8 @@ function offerMission(id, at) {
     const pool = (at ? [ctx.hex(at.c, at.r)] : def.where(ctx)).filter((h) => !CAMP.missions.some((m) => m.c === h.c && m.r === h.r));
     if (!pool.length) { if (id) return null; continue; }
     const h = pool[Math.floor(R() * pool.length)];
-    const m = { id: ++CAMP.mid, script: sid, c: h.c, r: h.r, turns: def.kind === 'story' ? null : def.turns, strength: ['Light', 'Moderate', 'Heavy'][Math.floor(R() * 3)], reward: def.reward + (def.kind === 'story' ? 0 : Math.floor(R() * 5) * 50), data: { ...(at?.data || {}) } };
+    const m = { id: ++CAMP.mid, script: sid, c: h.c, r: h.r, turns: def.kind === 'story' ? null : def.turns, strength: def.kind === 'story' ? 'Moderate' : rollStrength(R), reward: def.reward + (def.kind === 'story' ? 0 : Math.floor(R() * 5) * 50), data: { ...(at?.data || {}) } };
+    if (def.kind !== 'story') m.reward = Math.round(m.reward * STRENGTH_REWARD_X[m.strength]);
     def.setup(ctx, m);
     CAMP.missions.push(m);
     CAMP.known ||= {}; CAMP.known[key(h.c, h.r)] = h.owner;   // its intel reveals the sector
@@ -5207,7 +5226,7 @@ function stepFlight(dt) {
 // ---------------------------------------------------------------------------------------------------------------
 // Screens. S is the page's own state; every screen is rebuilt from it by render().
 // ---------------------------------------------------------------------------------------------------------------
-const S = { screen: 'menu', opts: { master: 8, music: 6, fx: 7, display: 'Fullscreen', quality: 'High', scale: 100 }, quit: false, closed: false,
+const S = { screen: 'menu', opts: { master: 8, music: 6, fx: 7, display: 'Fullscreen', quality: 'High', scale: 100, unfinished: 'Off' }, quit: false, closed: false,
   sk: { scen: 0, scale: 1, fleet: [], sel: 0 }, lo: { group: 'primary', hp: 0, sys: null, err: '', variants: [] },
   sel: null, path: null, port: null, mission: null, result: null, from: null, yard: 'buy', camp: { name: 'Captain Ardent', diff: 1 },
   pick: null, newSide: 'concord', missionsOpen: false, standingOpen: false };
@@ -5312,7 +5331,10 @@ const SCREENS = {
         // be in options"); the game's OptionsCard
         h('tr', {}, h('td', { text: 'Display' }), h('td', {}, pick('display', ['Fullscreen', 'Window']))),
         h('tr', {}, h('td', { text: 'Graphics' }), h('td', {}, pick('quality', ['Low', 'Medium', 'High']))),
-        h('tr', {}, h('td', { text: 'Interface scale' }), h('td', {}, pick('scale', [90, 100, 115], (v) => `${v}%`))))),
+        h('tr', {}, h('td', { text: 'Interface scale' }), h('td', {}, pick('scale', [90, 100, 115], (v) => `${v}%`))),
+        // unfinished factions, off by default (owner, 2026-11-09: "add a flag to toggle unfinished factions to off be default in
+        // options"); a campaign keeps the setting it was started with (the game's GameSettings and CampaignState.Unfinished)
+        h('tr', { title: 'Off: the factions in the game. On: every faction, finished or not. Saves keep their own setting.' }, h('td', { text: 'Unfinished factions' }), h('td', {}, pick('unfinished', ['Off', 'On']))))),
       h('div', { class: 'row' }, h('span', { class: 'spacer' }), key_('Done', () => go('menu'), 'go'))));
   },
 
@@ -5378,7 +5400,7 @@ const SCREENS = {
     const out = [h('div', { class: 'fachead' }, h('div', {}, h('div', { class: 'plate', text: 'Campaign' }), h('h2', { text: 'Choose your faction' })),
         key_('Back', () => go('menu', { pick: null }), 'small')),
       SEATS.map((f) => h('div', { class: 'flabel' + (PLAYABLE.includes(f) ? '' : ' later'), id: `flabel-${f}` }, h('b', { text: seatName(f) }), h('span', { text: seatBadge(f) }))),
-      h('div', { class: 'fgrid', role: 'group', 'aria-label': 'Factions' }, SEATS.map((f) => h('button', { type: 'button', 'aria-pressed': String(S.pick === f), disabled: !PLAYABLE.includes(f) || undefined,
+      h('div', { class: 'fgrid', role: 'group', 'aria-label': 'Factions' }, SEATS.filter((f) => S.opts.unfinished === 'On' || PLAYABLE.includes(f)).map((f) => h('button', { type: 'button', 'aria-pressed': String(S.pick === f), disabled: !PLAYABLE.includes(f) || undefined,
         title: PLAYABLE.includes(f) ? seatName(f) : seatName(f) + ': not in the game yet', onclick: () => { S.pick = f; render(); } },
         h('img', { alt: '', src: FAC.thumbs[f] || '' }), h('span', { text: FACTIONS[f]?.short || PH_SHORT[f] }))))];
     if (S.pick) {
@@ -5418,6 +5440,7 @@ const SCREENS = {
       h('div', { class: 'stat cap' }, h('b', { text: 'Captain' }), h('span', { text: CAMP.captain })),
       h('div', { class: 'stat' }, h('b', { text: 'Credits' }), h('span', { class: 'num', text: CAMP.credits.toLocaleString('en-US') })),
       h('div', { class: 'stat prestige' }, h('b', { text: 'Prestige' }), h('span', { class: 'num', text: CAMP.prestige })),
+      h('div', { class: 'stat rank', title: `Career prestige ${CAMP.career || 0}${RANKS[rankOf() + 1] ? `; ${RANKS[rankOf() + 1].title} at ${RANKS[rankOf() + 1].at}` : ''}. Rank sets how hard general missions are.` }, h('b', { text: 'Rank' }), h('span', { text: RANKS[rankOf()].title })),
       h('div', { class: 'stat' }, h('b', { text: 'Turn' }), h('span', { class: 'num', text: CAMP.turn })),
       h('div', { class: 'stat' }, h('b', { text: 'Moves' }), h('span', { class: 'num', text: `${CAMP.mp} / ${MOVE_POINTS}` })),
       key_(`Missions ${CAMP.active.length}`, () => { S.missionsOpen = !S.missionsOpen; S.standingOpen = false; render(); }, `small missionskey ${S.missionsOpen ? 'on' : ''}`),
@@ -5501,6 +5524,7 @@ const SCREENS = {
       r.kind === 'campaign' ? h('div', { class: 'tiles' },
         h('div', { class: 'tile' }, h('b', { text: 'Credits' }), h('span', { class: `num ${r.reward > 0 ? 'ok' : ''}`, text: signed(r.reward) })),
         h('div', { class: 'tile' }, h('b', { text: 'Prestige' }), h('span', { class: `num ${r.prestige > 0 ? 'ok' : r.prestige < 0 ? 'err' : ''}`, text: signed(r.prestige) }), h('small', { text: `now ${r.prestigeNow}` })),
+        r.promoted ? h('div', { class: 'tile' }, h('b', { text: 'Rank' }), h('span', { class: 'num ok', text: 'Promoted' }), h('small', { text: r.promoted })) : null,
         h('div', { class: 'tile rep' }, h('b', { text: 'Reputation' }), r.standing.length ? r.standing.map(([f, d, now]) => h('span', { class: 'repline' },
           h('span', { class: 'fac', style: `background:${FACTIONS[f].color}` }), `${FACTIONS[f].short} `, h('span', { class: `num ${d > 0 ? 'ok' : 'err'}`, text: signed(d) }), h('small', { text: ` (${now})` })))
           : h('span', { class: 'muted', text: 'No change' }))) : null,
@@ -5898,6 +5922,7 @@ function applyResult(m, o) {
   const def = MS(m), out = def.result(missionCtx(), m, o) || {}, r = { reward: out.credits || 0, prize: null, next: [], log: out.log || null, standing: [] };
   CAMP.credits += r.reward;
   r.prestige = out.prestige ?? FCMissions.prestigeOf(m, o); CAMP.prestige += r.prestige; r.prestigeNow = CAMP.prestige;
+  const rankWas = rankOf(); CAMP.career = (CAMP.career || 0) + Math.max(0, r.prestige); r.promoted = rankOf() > rankWas ? RANKS[rankOf()].title : null;
   // Reputation: each faction's standing as it changed (after the -100 to 100 limits), for the report.
   for (const [f, d] of Object.entries(out.standing || {})) if (CAMP.standing[f] != null) { const was = CAMP.standing[f]; changeStanding(f, d); if (CAMP.standing[f] !== was) r.standing.push([f, CAMP.standing[f] - was, CAMP.standing[f]]); }
   if (out.prize && CAMP.fleet.length < FLEET_MAX) {
@@ -6007,6 +6032,8 @@ window.MOCKUP_SHOTS = {
   map_path: () => { freshCampaign(); selectHex(CAMP.at.c + 2, CAMP.at.r - 1); },
   // Mid flight: the corvette lifted off its stand halfway along a three-sector route.
   map_flight: () => { freshCampaign('krai'); centreOn(CAMP.at.c - 1, CAMP.at.r, 11); const res = pathTo({ c: CAMP.at.c - 2, r: CAMP.at.r }); moveFleet(res); stepFlight(0.5 / FLIGHT_SECTORS_S * 2.0); },
+  map_rank: () => { freshCampaign(); CAMP.career = 95; CAMP.prestige = 80; CAMP.missions = []; for (let i = 0; i < 6; i++) offerMission(); rebuildMarkers(); render(); },
+  options_unfinished: () => { go('options'); },
   map_standing: () => { freshCampaign(); CAMP.standing.ssarith = 20; S.standingOpen = true; render(); },
   map_missions: () => { freshCampaign(); const m = CAMP.missions.find((x) => x.script === 'shakedown'); CAMP.active.push(m.id); rebuildMarkers(); S.missionsOpen = true; render(); },
   shakedown: () => { freshCampaign(); const m = CAMP.missions.find((x) => x.script === 'shakedown'); centreOn(m.c, m.r, 14); selectHex(m.c, m.r); briefing(m); },
