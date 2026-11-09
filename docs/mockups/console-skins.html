@@ -1372,7 +1372,9 @@ function buildConsole() {
   helmRow.append(side); col.append(helmRow);
   const ssd = slot(heroEl('ssd.bezel', 460, 300), 'ssd.bezel'); liveCanvas(ssd, 460, 300, (x) => ssdLive(x, S)); col.append(ssd);
   const wpn = slot(panel('Weapons', 'display:grid;gap:8px;padding-top:10px;min-width:0'), 'panel.weapons');   // no overflow clip: a skin's title may sit in the frame's border
-  const r1 = el('div', ''); r1.style.cssText = 'display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px'; r1.append(button('Fire', 'hover'), button('Multiple'));
+  const r1 = el('div', ''); // the Fire key in two, Auto then Fire (owner, 2026-11-08), as on the battle console; three keys to the row, so their
+  // labels are drawn at 65 % of the skin's key text, Auto and Fire as wide as their labels and Multiple the rest, (fitted in the page, below) to clear every skin's key rims
+  r1.style.cssText = 'display:grid;grid-template-columns:max-content max-content minmax(0,1fr);gap:4px'; r1.append(button('Auto', 'tight'), button('Fire', 'hover tight'), button('Multiple', 'tight'));
   const r2 = el('div', ''); r2.style.cssText = 'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px'; r2.append(slot(el('div', 'nine k-tab', 'Offline'), 'tab.offline'), slot(el('div', 'nine k-tab sel', 'Normal'), 'tab.normal'), slot(el('div', 'nine k-tab', 'Overload'), 'tab.overload'));
   wpn.append(r1, r2); col.append(wpn);
   const radar = el('div', ''); radar.style.cssText = 'display:flex;gap:6px;align-items:center;flex:1;min-height:0';
@@ -1383,6 +1385,8 @@ function buildConsole() {
   const crest = slot(heroEl('crest', 96, 96), 'crest');
   radar.append(dial, rp, crest); col.append(radar);
   root.append(col);
+  // the weapons row's three keys at 65 % of the skin's key text (above)
+  for (const b of root.querySelectorAll('.k-button.tight')) b.style.fontSize = parseFloat(getComputedStyle(b).fontSize) * 0.65 + 'px';
   // A skin's growth over the console (optional `overgrow(x, rects)`): painted once the console is laid out, over its
   // pieces and the gaps between them, given every slot's rectangle in console px so it keeps clear of their content.
   if (S.overgrow) {

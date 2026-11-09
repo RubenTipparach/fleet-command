@@ -7384,6 +7384,7 @@ function step() {
   for (const s of W.ships) if (s.alive) systemsStep(s);
   for (const s of W.ships) if (s.alive && s !== W.player) { s.thinkT -= DT; if (s.thinkT <= 0) { s.thinkT = 0.5; think(s); } }
   if (W.player.alive && W.player.engaged && !W.player.het && W.player.broke <= 0) steer(W.player, W.player.order, navTarget(W.player), AI_RANGE_KM.mid);
+  autoFire(W.player);
   for (const s of W.ships) { s.px = s.x; s.pz = s.z; }
   for (const s of W.ships) if (s.alive) move(s);
   for (const s of W.ships) if (s.alive && s.beam) towStep(s);
@@ -7876,6 +7877,12 @@ function fireable(s) {
   return s.mounts.filter((m) => m.sel && m.w !== 'pd' && ready(m)).map((m) => { const pt = pinTarget(m); return [m, pt || t, pt ? m.pin.aim : s.aim]; })
     .filter(([m, tt]) => tt && inArc(s, m, tt) && inRange(s, m, tt));
 }
+// Auto fire, each step: what Fire would loose on Multiple fires now (fireable, so the Fire key's count is what it looses);
+// never while cloaked, never at a friendly, and silently, so the log is not flooded.
+function autoFire(s) {
+  if (!s.auto || !s.alive || s.cloak.k > 0) return;
+  for (const [m, tt, aim] of fireable(s)) if (tt.side !== s.side) fireMount(s, m, tt, aim);
+}
 // A pin stops when its ship, or the subsystem it was aimed at, is destroyed.
 function pinsStep() {
   const s = W.player;
@@ -8069,6 +8076,9 @@ const A = {
   // Hit details (owner: "recommend shift + click to see weapon hit stats in details"): for an aim, or one mount.
   hitInfo: (o) => { hitInfo = o; logOpen = false; sceneOpen = false; },
   volley: () => { W.player.volley = !W.player.volley; },
+  // Auto fire (owner, 2026-11-08: "Auto is a toggle that will enable the ship to fire all currently active weapons"):
+  // every selected, armed weapon fires as it bears (autoFire, each step)
+  auto: () => { const s = W.player; s.auto = !s.auto; say('Tactical', s.auto ? 'Auto fire: every selected weapon fires as it bears.' : 'Auto fire off.'); },
   arm: (state) => { for (const m of W.player.mounts) if (m.sel && m.w !== 'pd' && canArm(m.w, state)) { if (m.state !== state) m.charge = state === 'offline' ? 0 : Math.min(m.charge, 0.5); m.state = state; } },
   selectMount: (i) => { const m = W.player.mounts[i]; if (m && m.w !== 'pd') m.sel = !m.sel; },
   // One mount: fire it alone at the target, or set its arming state alone (the expanded weapons panel).
@@ -8415,7 +8425,7 @@ const ownFleet = () => W.ships.filter((o) => o.side === 0 && o.alive);
 const takeFleet = (n) => { const own = ownFleet(); if (own[n]) A.command(own[n].id); };
 const KEYS = { Digit1: () => takeFleet(0), Digit2: () => takeFleet(1), Digit3: () => takeFleet(2), Digit4: () => takeFleet(3), KeyA: () => A.turn(-15), KeyD: () => A.turn(15), KeyQ: () => A.turn(-45), KeyE: () => A.turn(45), KeyW: () => A.speedStep(1), KeyS: () => A.speedStep(-1),
   // Space pauses and resumes (owner, 2026-11-03: "space should pause/resume"); F fires
-  KeyX: () => A.allStop(), Space: () => A.pause(), KeyF: () => A.fire(), Tab: () => A.nextTarget(), KeyP: () => A.pause(), Escape: () => (expanded ? A.expand(expanded) : A.menu()), KeyM: () => A.volley() };
+  KeyX: () => A.allStop(), Space: () => A.pause(), KeyF: () => A.fire(), Tab: () => A.nextTarget(), KeyP: () => A.pause(), Escape: () => (expanded ? A.expand(expanded) : A.menu()), KeyM: () => A.volley(), KeyR: () => A.auto() };
 addEventListener('keydown', (e) => { const f = KEYS[e.code]; if (!f || menuOpen && e.code !== 'Escape') return; e.preventDefault(); f(); tickUI(); });
 
 // =================================================================================================================
@@ -10151,7 +10161,10 @@ function uiWeapons(r, big) {
   const sel = s.mounts.filter((m) => m.sel && m.w !== 'pd'), states = [...new Set(sel.map((m) => m.state))];
   const n = fireable(s).length;
   const w1 = (b.w - 6) * 0.62;
-  button('w.fire', b.x, b.y, w1, 48, `Fire · ${n}`, A.fire); button('w.multi', b.x + w1 + 6, b.y, b.w - w1 - 6, 48, s.volley ? 'Multiple' : 'Single', A.volley, { sel: () => s.volley });
+  // the Fire key in two (owner, 2026-11-08: "Fire button should be divided into two sections. Auto and Fire")
+  const wa = (w1 - 6) * 0.4;
+  button('w.auto', b.x, b.y, wa, 48, 'Auto', A.auto, { center: true, sel: () => !!s.auto });
+  button('w.fire', b.x + wa + 6, b.y, w1 - wa - 6, 48, `Fire · ${n}`, A.fire); button('w.multi', b.x + w1 + 6, b.y, b.w - w1 - 6, 48, s.volley ? 'Multiple' : 'Single', A.volley, { sel: () => s.volley });
   tabs('w.arm', b.x, b.y + 54, b.w, 40, ARM_MODES, states.length === 1 ? states[0] : null, A.arm, (id) => !sel.some((m) => canArm(m.w, id)));
   if (!big) return;
   let y = b.y + 106; LBL('Select', b.x, y + 13); y += 20;
@@ -11292,6 +11305,8 @@ function tractorScene() {
 }
 function damagedSystems() { const s = W.player; s.mounts[1].hp = 0.6; s.mounts[2].hp = 0.2; s.mounts[5].hp = 0; s.mounts[6].state = 'offline'; s.sys.sensors = 0.6; s.sys.engines = 0.25; }
 window.MOCKUP_SHOTS = {
+  // Auto fire (openspec/changes/auto-fire): Auto lit, the weapons firing by themselves as they bear
+  auto_fire: () => scripted(30, () => { A.nextTarget(); A.auto(); for (let i = 0; i < Math.round(8 / DT); i++) step(); }),
   // damage control, arming, cloaking, officers and boarding defence (openspec/changes/damage-control, weapon-arming,
   // cloaking, officers, boarding-defence)
   // a drag in the queue, held: Sensors lifted from fourth to second, the pointer still down

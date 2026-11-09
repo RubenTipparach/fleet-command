@@ -35,7 +35,7 @@ public sealed class GameActions
         ["helm_port_15"] = () => B.Turn(-15), ["helm_starboard_15"] = () => B.Turn(15),
         ["helm_port_45"] = () => B.Turn(-45), ["helm_starboard_45"] = () => B.Turn(45),
         ["speed_up"] = () => B.SpeedStep(1), ["speed_down"] = () => B.SpeedStep(-1), ["all_stop"] = () => B.AllStop(),
-        ["fire"] = () => B.Fire(), ["next_target"] = () => B.NextTarget(), ["toggle_volley"] = () => B.ToggleVolley(),
+        ["fire"] = () => B.Fire(), ["next_target"] = () => B.NextTarget(), ["toggle_volley"] = () => B.ToggleVolley(), ["toggle_auto"] = () => B.ToggleAutoFire(),
         ["planet_view"] = PlanetView, ["pause"] = Pause, ["back"] = Back, ["toggle_fullscreen"] = Fullscreen,
         ["command_1"] = () => Command(1), ["command_2"] = () => Command(2), ["command_3"] = () => Command(3),
         ["command_4"] = () => Command(4), ["command_5"] = () => Command(5), ["command_6"] = () => Command(6),

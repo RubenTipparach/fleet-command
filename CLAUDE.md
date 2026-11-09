@@ -387,6 +387,14 @@ else's artwork):
   keys and icons stay vector. The Vhorr get organic modelling and shaders ("slimey leather, tendrils, claws,
   carapaces, fibers ... the alien hive mind aesthetic"); the Kelvane are modelled after "old school electircal
   dashboards, dials, switches".
+- **The Concord UI is the master UI** (owner, 2026-11-08: "we will treat the concord UI as master ui and any changes to
+  concord should trickle to all other UI panels unless explicitly stated that it should be different"). A change to the
+  Concord's UI (a key, a panel, a readout, a layout or what a control does) goes into every other faction's UI in the same
+  branch: every skin in the game, and every faction's mockup pages (the battle consoles are written from the Concord page
+  by `tools/mockups/skin_page.py`; any other faction page is edited to match). A faction's UI differs from the Concord's
+  only where the owner has said it should, and that difference is written in its change's design. What trickles down is
+  what is on the screen and what it does; how it is drawn (pieces, shapes, palette, icons) stays each skin's own design
+  language, under the three rules above.
 - **No black behind a metallic skin's panels** (owner, 2026-11-04: "We need a background for the lleft panel area. Black
   background is forbidden for metallic panel based factions"). Every skin whose panels are modelled metal (the Kethran,
   Krai, Ssarith, Ombrai, Kelvane, and the Aelith's shells) has a rendered ground behind its column, and behind an expanded

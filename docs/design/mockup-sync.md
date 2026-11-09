@@ -119,6 +119,7 @@ Everything below is open in both skins: the Krai console is mockup 2's page in a
 | Weapon targeting (v71) | Aim-at icons, by-arc and precise weapons, the chopping block, shift-click hit details, pinned fire, the expanded Tactical grid | Built (the chopping block is every hit's rule) | none: in step |
 | Damage control (v72, v73) | The repair queue with crews, ordered by drag and drop | Built | none: in step |
 | Arming (v72) | Proximity torpedoes, overloaded lances | Built | none: in step |
+| Auto fire (2026-11-08) | The Fire key split into Auto and Fire, R toggles Auto, written into every faction page from the Concord's | Built, in every skin: the same split, the same rule (`Fireable`), R | none: in step |
 | Cloaking (v72) | Cloaks on both sides, the ECCM sweep | Built, with nebulae, ECM and ECCM | the tactical map's nebula disc; the Target box's detail waiting on a scan |
 | Officers (v72) | An officer slot on every station with its hover card | Built: slots, hover cards, the helm, power, repair and science officers' abilities | the tactical, fleet, comms, point defence and security officers' abilities (`officers` 2.3); campaign officers in the battle's slots (2.5) |
 | Boarding defence (v72) | The Security page, the deck plan in 3D, teams and boarders | Built on the Transport station's Security tab; the deck plan drawn by projection, not a second renderer | each class's own deck plan (Petrel's and the Krai frigate's stand in) |

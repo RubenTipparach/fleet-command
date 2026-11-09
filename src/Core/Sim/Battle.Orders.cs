@@ -166,6 +166,24 @@ public sealed partial class Battle
 
     public void ToggleVolley() => Player.Volley = !Player.Volley;
 
+    /// <summary>Auto fire on or off for the ship you command (owner, 2026-11-08: "Fire button should be divided into two
+    /// sections. Auto and Fire. Auto is a toggle that will enable the ship to fire all currently active weapons").</summary>
+    public void ToggleAutoFire()
+    {
+        Player.AutoFire = !Player.AutoFire;
+        Say("Tactical", Player.AutoFire ? "Auto fire: every selected weapon fires as it bears." : "Auto fire off.");
+    }
+
+    // Auto fire, every step: the mounts Fire would loose on Multiple (Fireable: selected, armed, ready, in arc and in range
+    // of a pinned ship or the locked enemy) fire now, so the Fire key's count is what auto fire looses. Never while cloaked,
+    // never at a friendly, and nothing is said, so the log is not flooded.
+    private void AutoFireStep()
+    {
+        Ship p = Player;
+        if (!p.AutoFire || !p.Alive || p.Struck || p.Cloaking) return;
+        foreach (var (m, t, aim) in Fireable()) FireMount(p, m, t, aim);
+    }
+
     /// <summary>Selects the mounts of one weapon type for the volley (null: every weapon but point defence).</summary>
     public void SelectGroup(string? weapon)
     {
