@@ -30,6 +30,7 @@ public sealed partial class MapHud : FlowPanel
         if (F.Port == null && F.Brief != null) Briefing(c, F.Brief);
         if (F.Port == null && F.Brief == null) SectorPanel(c, (F.Sel ?? (c.S.AtC, c.S.AtR)).C, (F.Sel ?? (c.S.AtC, c.S.AtR)).R);
         if (LogOpen && F.Port == null) MissionLog(c);
+        if (StandingOpen && F.Port == null) StandingSheet(c);
         HoverName(c);
         if (F.Msg.Length > 0)
         {
@@ -42,6 +43,8 @@ public sealed partial class MapHud : FlowPanel
 
     /// <summary>The mission log is open (the top bar's Missions key).</summary>
     public bool LogOpen;
+    /// <summary>The standing sheet is open (the top bar's Standings key).</summary>
+    public bool StandingOpen;
 
     // the top bar, as the mockup's: Menu, the captain, credits, prestige, turn, moves, the Missions key (the log of accepted
     // missions), standing with each other faction, and each ship of the fleet with its hull bar
@@ -68,23 +71,44 @@ public sealed partial class MapHud : FlowPanel
         Stat("Turn", c.S.Turn.ToString());
         Stat("Moves", $"{c.S.Mp} / {c.Data.Rules.MovePoints}");
         int active = c.S.Missions.Count(m => c.S.Active.Contains(m.Id));
-        Button("top.missions", new Rect2(x, 12, 150, 40), $"Missions {active}", () => LogOpen = !LogOpen, on: LogOpen, tip: new Tip("Mission log", new (string, string, Color?)[] { ("Shows", "the missions you have taken, and recent news", null) }));
+        Button("top.missions", new Rect2(x, 12, 150, 40), $"Missions {active}", () => { LogOpen = !LogOpen; StandingOpen = false; }, on: LogOpen, tip: new Tip("Mission log", new (string, string, Color?)[] { ("Shows", "the missions you have taken, and recent news", null) }));
         x += 168;
         if (Narrow) return;
-        Lbl("Standing with", x, 26, 200, null, HorizontalAlignment.Left, 13);
+        // standing, as friends and enemies (owner, 2026-11-09: "standing just show friends and enemies, with logos, and not
+        // full names. If I hover over icons then show the name"): each a faction's emblem, its name and standing on hover;
+        // the factions you are neither friends nor enemies with are left out
         float cx = x;
-        foreach (string f in c.Data.Factions.Keys.Where(f => f != "neutral" && f != c.S.Side && c.S.Standing.ContainsKey(f)))
+        void Group(string label, string key, IEnumerable<string> facs)
         {
-            int st = c.Standing(f);
-            string t = $"{c.Data.Factions[f].Short} {(st > 0 ? "+" : "")}{st}";
-            float w = X.Fonts.Width(t, 17, 600) + 30;
-            var chip = new Rect2(cx, 32, w, 26);
-            Ui.Reg($"top.st.{f}", chip, null, null, new Tip(c.Data.Factions[f].Name, new (string, string, Color?)[] { ("Standing", st.ToString(), null), ("Ports", c.GrantsOf(f) is { Count: > 0 } gr ? string.Join(", ", gr) : st >= 0 ? "market only" : "closed to you", st >= 0 ? C.Accord : C.Alert) }));
-            Shapes.RoundRect(this, chip, new Color(Sk.R.Plate, 0.9f), 6);
-            DrawRect(new Rect2(chip.Position + new Vector2(8, 9), new Vector2(9, 9)), FacColor(f));
-            Text(t, chip.Position.X + 22, chip.Position.Y + 19, 17, C.Text, HorizontalAlignment.Left, w, 600);
-            cx += w + 6;
+            Lbl(label, cx, 26, 120, null, HorizontalAlignment.Left, 13);
+            float gx = cx;
+            List<string> list = facs.ToList();
+            if (list.Count == 0) Text("None", gx, 50, 17, C.Lilac, HorizontalAlignment.Left, 80, 600);
+            foreach (string f in list)
+            {
+                int st = c.Standing(f);
+                var icon = new Rect2(gx, 30, 30, 30);
+                HitState hs = Ui.Reg($"top.{key}.{f}", icon, _ => { StandingOpen = true; LogOpen = false; }, null, new Tip(c.Data.Factions[f].Name, new (string, string, Color?)[] { ("Standing", $"{(st > 0 ? "+" : "")}{st}", st > 0 ? C.Accord : st < 0 ? C.Alert : null), ("Ports", c.GrantsOf(f) is { Count: > 0 } gr ? string.Join(", ", gr) : st >= 0 ? "market only" : "closed to you", st >= 0 ? C.Accord : C.Alert) }));
+                Shapes.RoundRect(this, icon, new Color(Sk.R.Plate, hs.Hot ? 1 : 0.9f), 6);
+                if (FactionScreen.Tex(f) is { } tex)
+                {
+                    float q = Math.Min(26f / tex.GetWidth(), 26f / tex.GetHeight());
+                    var sz = new Vector2(tex.GetWidth(), tex.GetHeight()) * q;
+                    DrawTextureRect(tex, new Rect2(icon.GetCenter() - sz / 2, sz), false);
+                }
+                else DrawRect(new Rect2(icon.GetCenter() - new Vector2(6, 6), new Vector2(12, 12)), FacColor(f));
+                gx += 34;
+            }
+            cx = Math.Max(gx, cx + Math.Max(X.Fonts.Width(label.ToUpperInvariant(), 13, 600, 1), 60)) + 18;
         }
+        // the Standings key opens every faction's standing (owner, 2026-11-09: "If I click on the standings button I can see
+        // the status of all standings")
+        Button("top.standing", new Rect2(cx, 12, 140, 40), "Standings", () => { StandingOpen = !StandingOpen; LogOpen = false; }, on: StandingOpen,
+            tip: new Tip("Standings", new (string, string, Color?)[] { ("Shows", "your standing with every faction", null) }));
+        cx += 158;
+        var others = Others(c);
+        Group("Friends", "friend", others.Where(c.FriendlyTo));
+        Group("Enemies", "enemy", others.Where(c.HostileTo));
         x = Math.Max(cx, x + 120) + 16;
         // the fleet: each ship's name and hull; a tap glides the view to the fleet
         foreach (CampShip sh in c.S.Fleet)
@@ -114,6 +138,46 @@ public sealed partial class MapHud : FlowPanel
         Button("keys.fleet", new Rect2(kx + 164, y, box.End.X - Sk.Pad.R - 4 - (kx + 164), 42), "Fleet", () => { F.SelectHex((c.S.AtC, c.S.AtR)); MapOf()?.CentreOnFleet(); }, tip: new Tip("Go to your fleet"));
         Button("top.end", new Rect2(Size.X - 196, Size.Y - 66, 180, 50), "End turn", F.EndTurn, on: true,
             tip: new Tip("End turn", new (string, string, Color?)[] { ("Then", "the factions move, missions change", null) }));
+    }
+
+    /// <summary>Every faction you can hold a standing with, in the data's order.</summary>
+    private static List<string> Others(Campaign.Campaign c) =>
+        c.Data.Factions.Keys.Where(f => f != "neutral" && f != c.S.Side && c.S.Standing.ContainsKey(f)).ToList();
+
+    // the standing sheet (the Standings key): every faction's emblem, name, standing and its bar, friend or enemy, and
+    // what its ports open to you
+    private void StandingSheet(Campaign.Campaign c)
+    {
+        List<string> facs = Others(c);
+        const float Row = 40;
+        float w = Math.Min(560, Size.X - 32), h = 40 + facs.Count * Row;
+        Rect2 b = Sheet(new Rect2(16, 80, w, h), "Standings");
+        float x = b.Position.X, y = b.Position.Y + 8, bw = b.Size.X;
+        foreach (string f in facs)
+        {
+            int st = c.Standing(f);
+            bool friend = c.FriendlyTo(f), enemy = c.HostileTo(f);
+            Color tone = friend ? C.Accord : enemy ? C.Alert : C.Lilac;
+            if (FactionScreen.Tex(f) is { } tex)
+            {
+                float q = Math.Min(30f / tex.GetWidth(), 30f / tex.GetHeight());
+                var sz = new Vector2(tex.GetWidth(), tex.GetHeight()) * q;
+                DrawTextureRect(tex, new Rect2(new Vector2(x + 15, y + 17) - sz / 2, sz), false);
+            }
+            else DrawRect(new Rect2(x + 9, y + 11, 12, 12), FacColor(f));
+            Text(c.Data.Factions[f].Name, x + 40, y + 23, 17, C.Text, HorizontalAlignment.Left, 170, 600);
+            // the bar: -100 to +100, 0 in the middle
+            var bar = new Rect2(x + 214, y + 13, 120, 10);
+            Shapes.RoundRect(this, bar, C.Deep, 4);
+            float mid = bar.Position.X + bar.Size.X / 2, len = bar.Size.X / 2 * Math.Clamp(Math.Abs(st) / 100f, 0, 1);
+            DrawRect(new Rect2(st >= 0 ? mid : mid - len, bar.Position.Y, len, bar.Size.Y), tone);
+            DrawRect(new Rect2(mid - 0.5f, bar.Position.Y - 2, 1, bar.Size.Y + 4), C.Lilac);
+            Text($"{(st > 0 ? "+" : "")}{st}", x + 376, y + 23, 17, tone, HorizontalAlignment.Right, 40, 700);
+            Text(friend ? "Friend" : enemy ? "Enemy" : "Neutral", x + 386, y + 23, 15, tone, HorizontalAlignment.Left, 70, 600);
+            string ports = c.GrantsOf(f) is { Count: > 0 } gr ? string.Join(", ", gr) : st >= 0 ? "market only" : "closed";
+            Ui.Reg($"standing.{f}", new Rect2(x, y, bw, Row - 4), null, null, new Tip(c.Data.Factions[f].Name, new (string, string, Color?)[] { ("Standing", $"{(st > 0 ? "+" : "")}{st}", tone), ("Ports", ports, st >= 0 ? C.Accord : C.Alert) }));
+            y += Row;
+        }
     }
 
     // the mission log (the Missions key): the accepted missions, each a key that glides to it and opens its briefing, and
