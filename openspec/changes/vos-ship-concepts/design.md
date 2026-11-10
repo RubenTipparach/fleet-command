@@ -194,12 +194,55 @@ Measured from the built geometry (`window.MOCKUP_MEASURE`).
 | Redrawing freighters and parts as simpler shapes | A second copy of each hull (CLAUDE.md 6.1), and it would stop being the game's ship |
 | Unlike port and starboard sides | The owner's rule: single axis symmetry |
 
+## Version 3: battle freighters (owner, 2026-11-10)
+
+The owner, on version 2: "6 and 5 are cool, but I would like you to create some unique battle freighter designs".
+
+- **Kept:** 5 Twin haul and 6 Prize frigate, as they are.
+- **Withdrawn:** 1 Wolf, 2 Chaser, 3 Boarder, 4 Gun barge, 7 Tender and 8 Saucer runner. Each was another faction's
+  freighter with one thing swapped, so it read as that faction's ship.
+- **New:** six battle freighters, numbered 9 to 14, whose layouts are the Syndicate's own.
+
+### D9. What makes a battle freighter the Vos's own
+
+D6 still holds: a clan cuts and welds, and its ships are made of what it took. What changes is how much it rearranges.
+
+1. **Only a freighter's working parts are kept**: its drive block and a length of its spine, cut from the game's glb
+   (`base(key, length)`), never scaled.
+2. **The layout is new.** The spine is a keel to hang things on, and what hangs on it is arranged for fighting. That
+   arrangement is the design, and no other faction's ship has it.
+3. **A container is never just cargo.** It is the game's container (12 by 12 by 24 m) put to a fighting use: a gun
+   house, a missile pod, a magazine, quarters for a boarding crew, a floor of a tower.
+4. **Vos metal does the fighting work**: armour, arms, hubs, prows and guns, in rust plate with a brass rail, each a
+   closed skin grown on `hull-grow.js`. A gun's mouth is lit verdigris.
+5. **Taken warship parts are accents**: a cruiser's nacelles, a frigate's saucer.
+
+### D10. The six battle freighters
+
+Measured from the built geometry (`window.MOCKUP_MEASURE`).
+
+| # | Ship | Job | Built on | The layout | Size, m |
+|---|---|---|---|---|---|
+| 9 | Broadside | Fight an escort side on | A Krai freighter's drive block and 195 m of its tall spine | Seven gun-house containers down each flank, each muzzle through its outer wall, armour above and below, a welded prow | 297 x 56 x 46 |
+| 10 | Drum | Break a convoy from far off | A Concord freighter's drive block and 130 m of spine | Twelve missile-pod containers in two rings of six round the spine, a hub of plate under each ring | 206 x 58 x 62 |
+| 11 | Cross | Guns that bear on any side | A Hunt freighter's drive block and 150 m of spine | Four arms 62 m long near the bow, a gun at each tip, two magazines on each; a Concord Albatross's nacelles on the side arms | 242 x 135 x 134 |
+| 12 | Ram | Break through and board | A Krai freighter's drive block and 100 m of spine | A wedge of armour 64 m across and 90 m long; six containers of boarding quarters behind its shoulders; Albatross nacelles | 242 x 79 x 47 |
+| 13 | Castle | Command a raid | A Concord freighter's drive block and 190 m of spine | Twelve containers stacked three high on the drive block, a Concord Petrel's saucer on top; five guns along the spine | 276 x 44 x 108 |
+| 14 | Delta | Run down a convoy and carry it off | A Hunt freighter's drive block and 190 m of spine | Twenty containers in rows widening aft as two swept wings on a welded deck, an armoured edge and a tip gun on each | 284 x 158 x 32 |
+
+- **Silhouettes.** Each reads from one view: a long slab with a row of ports; a drum on a stick; a cross; an arrowhead on
+  a shaft; a tower over a low deck; a delta.
+- **Sizes.** 206 to 297 m, freighter-sized, as their bases are.
+- **Literals and bodies.** The names say the layout, as a gunner would. Nothing is drawn from the Vos's bodies, and none
+  is a picture of a sailing ship, though Broadside and Castle borrow those words for what the layouts do.
+- **Rough.** These are massings: the Drum's containers and the Cross's arms are placed by rule, and none has rooms yet.
+
 ## Open questions
 
 | # | Question | Provisional answer |
 |---|---|---|
-| Y1 | Is this how the Vos get their ships: freighters converted with taken parts, nothing built new? | Yes |
-| Y2 | Which conversions go on? | 1 Wolf, 2 Chaser, 3 Boarder, 4 Gun barge, 5 Twin haul |
+| Y1 | Is this how the Vos get their ships: freighter parts and taken parts rearranged, nothing built from new? | Yes |
+| Y2 | Which battle freighters go on, beside 5 and 6? | 9 Broadside, 10 Drum, 12 Ram, 13 Castle |
 | Y3 | Do taken parts keep their makers' colours, with Vos metal in rust and brass? | Yes, dulled, with clan paint added in detail |
 | Y4 | May a Vos ship carry parts of any faction, or only its neighbours'? | Any faction the clan could have raided |
-| Y5 | Do the Vos fly small ships too (frigate size), or only converted freighters and prizes? | Both: prizes like the Prize frigate are the small ships |
+| Y5 | Which becomes which class? | Prize frigate the small ship, Ram and Drum the middle, Broadside and Castle the capitals, Twin haul the clan's home ship |

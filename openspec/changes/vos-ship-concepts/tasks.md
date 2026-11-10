@@ -15,7 +15,14 @@
 - [x] 1b.2 Vos-made joining pieces (collar, strut, prow, tub, deck) grown on `hull-grow.js`
 - [x] 1b.3 Eight conversions, each from a freighter and a raider's job; shots looked at; DOM fit passes
 - [x] 1b.4 Survey section Y rewritten
-- [ ] 1b.5 The owner's picks
+- [x] 1b.5 The owner's note on version 2 (2026-11-10): 5 and 6 kept; "create some unique battle freighter designs"
+
+## 1c. Version 3: battle freighters
+
+- [x] 1c.1 `base()`: a freighter's drive block and spine cut to length; guns, beams and single containers
+- [x] 1c.2 Six battle freighters (9 to 14) in the Syndicate's own layouts, beside 5 and 6; shots looked at; DOM fit passes
+- [x] 1c.3 Survey section Y updated
+- [ ] 1c.4 The owner's picks
 
 ## 2. After the picks
 

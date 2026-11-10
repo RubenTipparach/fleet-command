@@ -1,9 +1,10 @@
 ## ADDED Requirements
 
-### Requirement: A Vos ship is a conversion, not a new hull
+### Requirement: A Vos ship is made of freighter parts and taken parts
 
-Every Vos ship on mockup 37 SHALL start as one of the game's freighters or a captured warship, and SHALL carry parts
-taken from other factions' approved ships. No Vos hull SHALL be sculpted new.
+Every Vos ship on mockup 37 SHALL be built on a freighter's drive block and spine from the game, or on a captured
+warship, with the game's containers and parts taken from other factions' approved ships. No Vos hull SHALL be sculpted
+new. A battle freighter's layout SHALL be the Syndicate's own: no other faction's ship is arranged the same way.
 
 #### Scenario: Reading a conversion
 - **WHEN** the owner picks a conversion in the list
