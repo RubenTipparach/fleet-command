@@ -36,7 +36,13 @@
 - [x] 1e.2 Every ship cut to about cruiser size (122 to 185 m) and given one trade: boarding, mines, tractor beams, rock
   breaking, fighters, passing as a freighter
 - [x] 1e.3 Survey section Y: Y5 decided; Y8 to Y10 added
-- [ ] 1e.4 The owner's answers to Y7 to Y10
+- [ ] 1e.4 The owner's answers to Y7 to Y11
+
+## 1f. Version 6: fighters
+
+- [x] 1f.1 Three fighters of the Syndicate's own (21 Cutter, 22 Twin boom, 23 Stack), about 16 m, welded round salvaged engines
+- [x] 1f.2 The Saucer runner carries six Cutters in place of the Institute fighters
+- [x] 1f.3 Survey Y11
 
 ## 2. After the picks
 

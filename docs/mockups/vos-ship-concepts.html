@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Permanent+Marker&family=Patrick+Hand&display=swap">
 <style>
-/* Mockup 37 (OpenSpec change vos-ship-concepts, mockup-work.md), version 5: the Vos Syndicate's six specialists. The
+/* Mockup 37 (OpenSpec change vos-ship-concepts, mockup-work.md), version 6: the Vos Syndicate's six specialists and its fighters. The
    owner, 2026-11-10, on version 2's conversions: "6 and 5 are cool, but I would like you to create some unique battle
    freighter designs" (and on version 1: "they are usualy modified freighters", "out of scrapped parts or stolen parts from
    other ships"). Six battle freighters in layouts of the Syndicate's own, each built on a real freighter's drive block and
@@ -17,7 +17,8 @@
    were not 5,6 it was saucer runner and boarder", then "pirate ships instead of having larger and larger class, they are all
    roughly "cruiser" sized ships with hull on the lower side, but all are specialized in: Boarding, Mine laying, Tractor Beam,
    Rock breaking ... and figher launching", "and of course, disguising themselves as freighters too!"): six ships of about
-   cruiser size, one for each trade, from the owner's picks (3, 8, 9, 10, 11 and 12). */
+   cruiser size, one for each trade, from the owner's picks (3, 8, 9, 10, 11 and 12). Version 6 (the owner: "pirate fighters need
+   to be unique, like more fighter looking!"): three fighters of the Syndicate's own, welded round salvaged engines. */
 :root {
   color-scheme: dark;
   --bg: #0c0605; --panel: rgba(28, 13, 10, 0.94); --rule: #5a3426;
@@ -84,7 +85,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
   <header>
     <h1>Vos <span>ships</span></h1>
     <a class="master" href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
-    <p class="sub">Mockup 37, v5. <code>vos-ship-concepts</code>. Six specialists of about cruiser size, each a freighter's drive block with one trade built on it: boarding, mines, tractor beams, rock breaking, fighters, and passing as a freighter.</p>
+    <p class="sub">Mockup 37, v6. <code>vos-ship-concepts</code>. Three fighters of the Syndicate's own (21 to 23, at the back of the board), and six specialists of about cruiser size, each a freighter's drive block with one trade built on it: boarding, mines, tractor beams, rock breaking, fighters, and passing as a freighter.</p>
   </header>
   <div class="scroll">
     <div class="grp"><h2>View</h2><div class="row" id="viewRow"></div></div>
@@ -92,6 +93,7 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outlin
     <div class="grp"><h2>Show</h2><div class="row" id="showRow"></div></div>
     <div class="grp"><h2>Measured</h2><dl class="facts" id="facts"></dl></div>
     <div class="grp notes"><h2>Notes</h2>
+      <p>Version 6 (you: "pirate fighters need to be unique, like more fighter looking!"). Three fighters of the Syndicate's own, 21 Cutter, 22 Twin boom and 23 Stack, each about 16 m: wings, guns out at the tips or under the nose, one or two big engines and a blunt glazed nose. A fighter is small enough for a clan's yard to weld whole round a salvaged engine, so these are the one thing the Vos build. The Saucer runner now carries six Cutters in place of the stolen Institute fighters. They are tiny on the board; pick one in the list to see it close.</p>
       <p>Version 5 (you: "the ships I wanted were not 5,6 it was saucer runner and boarder"; "they are all roughly cruiser sized ships with hull on the lower side, but all are specialized"; "and of course, disguising themselves as freighters too"). The Boarder and the Saucer runner are back; the Twin haul, the Prize frigate, the Castle and the Delta are off the board.</p>
       <p>The Vos have no ladder of bigger and bigger classes. Every ship is about cruiser size, 150 to 180 m, built on a freighter's drive block and a short length of its spine, with a weaker hull than a warship of its size. Each has one trade: the Boarder boards, the Drum lays mines, the Cross holds with tractor beams, the Ram breaks rocks, the Saucer runner launches fighters, and the Broadside is the one that passes closest as a freighter.</p>
       <p>All six are made of freighter parts, so all of them read as freighters from far off. That is the disguise.</p>
@@ -285,7 +287,7 @@ controls.enableDamping = true; controls.dampingFactor = 0.08; controls.minDistan
 scene.add(new THREE.HemisphereLight(0xf2e2cc, 0x241410, 0.55));
 const sun = new THREE.DirectionalLight(0xfff0dc, 1.25); sun.position.set(-320, 420, 520); scene.add(sun);
 const rim = new THREE.DirectionalLight(0x9fd0c8, 0.5); rim.position.set(300, -100, -400); scene.add(rim);
-const grid = new THREE.GridHelper(1600, 16, 0x3a2018, 0x1e100c); grid.position.y = -90; scene.add(grid);
+const grid = new THREE.GridHelper(2000, 20, 0x3a2018, 0x1e100c); grid.position.y = -90; scene.add(grid);
 
 // Materials. A taken part keeps a dulled version of its maker's colour (the Concord's pearl, the Krai's dark steel, the
 // Hunt's olive gunmetal, the Institute's champagne), so its origin can be read. What the Syndicate makes itself is its
@@ -361,7 +363,7 @@ function crates(list) { const g = new THREE.Group(), box = new THREE.BoxGeometry
 // round the port side to the crown (9); 1 the keel plate's edge, 2 the chine, 3 and 4 the brass rail, 5 the upper chine,
 // 6 and 7 the deck's edge, 8 the coaming. Edge 3 (and its mirror, 14) is the rail.
 function vsec(p) {
-  const { hb, top, bot, kw = Math.min(1, hb * 0.3), bw = 0.5, bh = 1, cf = 0.78, ch = 0.4, tc = Math.min(0.8, hb * 0.2) } = p;
+  const { hb, top, bot, kw = Math.min(1, hb * 0.3), bw = Math.min(0.5, hb * 0.1), bh = Math.min(1, (top - bot) * 0.2), cf = 0.78, ch = 0.4, tc = Math.min(0.8, hb * 0.2) } = p;
   const ym = p.ym ?? bot + (top - bot) * 0.45, hbu = p.hbu ?? hb * 0.8, sy = Math.max(ym + bh / 2, top - Math.min(1.2, (top - ym) * 0.4)), cw = Math.max(0, hbu - tc) * 0.5;
   const half = [[kw, bot], [Math.max(kw, hb * cf), bot + (ym - bh / 2 - bot) * ch], [hb + bw, ym - bh / 2], [hb + bw, ym + bh / 2], [hbu, sy], [hbu, sy], [Math.max(cw, hbu - tc), top], [cw, top]];
   for (let i = 1; i < half.length; i++) if (half[i][1] < half[i - 1][1] - 1e-6 || half[i][0] < 0) VSEC_BAD.push(`point ${i + 1} of ${JSON.stringify(p)}`);
@@ -369,7 +371,8 @@ function vsec(p) {
 }
 const VSEC_BAD = [];
 const rail = (k) => (k === 3 || k === 14 ? 'brass' : false);
-// A Vos-made piece: a body through stations [z, section], closed at both ends (an end may be lit: a drive, a gun's mouth).
+// A Vos-made piece: a body through stations [z, section], closed at both ends (an end may be lit: a gun's mouth), or with a
+// drive recessed into its stern (stern: 'drive').
 function made(stations, { stern = 'cap', bow = 'hull' } = {}) { const g = new THREE.Group(), K = new HG.Skin(g, { mats: MAT, sec: vsec, crease: 18, fanCaps: true });
   const S = K.body(stations, rail, vsec, { stern }); K.branch('end', S, stations[stations.length - 1][0], [[0, 1, 1, 0, 0]], { capKind: bow }); K.done(); return g; }
 // The collar welded round a cut: a band of plate a little larger than the section it closes.
@@ -403,6 +406,30 @@ const CRATE = new THREE.BoxGeometry(12, 12, 24);
 const mirrorX = (o) => { const m = o.clone(true); m.scale.x *= -1; m.position.x *= -1; return m; };
 
 // ---------------------------------------------------------------------------------------------------------------
+// The Syndicate's fighters (version 6; owner, 2026-11-10: "pirate fighters need to be unique, like more fighter looking!").
+// A fighter is small enough for a breaking yard to weld whole, so these are the one thing the Vos build: flat plate round
+// one salvaged engine, a blunt glazed nose (no pointed bows), wings, and guns out where they clear the nose. About 16 m,
+// beside the Institute's 14 m fighter. sec(): a small craft's section.
+const sec = (hb, top, bot) => ({ hb, top, bot });
+const FIGHTERS = {
+  // one engine, wings swept back from the shoulders, a gun at each tip, a fin
+  cutter(g) { g.add(made([[-8, sec(1.5, 1.4, -1.2)], [-3, sec(2, 1.9, -1.6)], [4, sec(1.8, 1.7, -1.4)], [7.5, sec(1.3, 1.2, -1.1)]], { stern: 'drive', bow: 'well' }));
+    for (const sx of [1, -1]) { g.add(beam([sx * 1.4, -0.2, 0], [sx * 7.5, -0.6, -5.5], 2.4, 0.28, 0.45)); g.add(gun(sx * 7.5, -0.6, -6, 'fore', 0.55, 4.5)); }
+    g.add(beam([0, 1.4, -3.5], [0, 4.2, -8], 1.8, 0.22, 0.45)); },
+  // two engines on two booms, the pilot in a pod between them, guns under the pod
+  twinboom(g) { for (const sx of [1, -1]) g.add(at(made([[-8, sec(0.95, 0.95, -0.95)], [3, sec(1.05, 1, -1)], [5.5, sec(0.8, 0.75, -0.75)]], { stern: 'drive' }), sx * 3.4, 0, 0));
+    g.add(made([[-3, sec(1.3, 1.2, -1.1)], [3, sec(1.7, 1.6, -1.3)], [7, sec(1.4, 1.3, -1.1)]], { bow: 'well' }));
+    g.add(beam([-3.4, 0, 0.5], [3.4, 0, 0.5], 2.6, 0.3)); g.add(beam([-3.4, 1.4, -7], [3.4, 1.4, -7], 1.1, 0.2));
+    for (const sx of [1, -1]) { g.add(beam([sx * 3.4, 0.6, -7], [sx * 3.4, 1.5, -7], 0.9, 0.2)); g.add(beam([sx * 4.2, 0, 0], [sx * 7.6, 0, -1.5], 1.8, 0.24, 0.5)); g.add(gun(sx * 0.9, -1.5, 3.5, 'fore', 0.45, 4)); } },
+  // one engine, two short wings one above the other braced at the tips, a gun at each of the four tips
+  stack(g) { g.add(made([[-7, sec(1.6, 1.5, -1.4)], [-2, sec(2.1, 2, -1.8)], [4, sec(1.9, 1.8, -1.5)], [6.5, sec(1.4, 1.3, -1.2)]], { stern: 'drive', bow: 'well' }));
+    for (const y of [2.3, -2.1]) { g.add(beam([-6.2, y, 0.5], [6.2, y, 0.5], 1.9, 0.22)); for (const sx of [1, -1]) g.add(gun(sx * 6.2, y, 1, 'fore', 0.42, 3.4)); }
+    for (const sx of [1, -1]) { g.add(beam([sx * 6.2, -2.1, 0.5], [sx * 6.2, 2.3, 0.5], 0.7, 0.2)); g.add(beam([sx * 1.2, 1.6, 0.5], [sx * 1.2, 2.3, 0.5], 0.6, 0.2)); g.add(beam([sx * 1.2, -1.5, 0.5], [sx * 1.2, -2.1, 0.5], 0.6, 0.2)); }
+    g.add(beam([0, 1.5, -3], [0, 3.6, -7], 1.5, 0.2, 0.5)); },
+};
+const fighter = (kind) => { const g = new THREE.Group(); FIGHTERS[kind](g); return g; };
+
+// ---------------------------------------------------------------------------------------------------------------
 // The six specialists (version 5): the owner's picks, each cut down to about cruiser size and given one trade. Each names the job it answers, the freighter parts it is built on and what else was taken for it.
 const BLOCKS = [
   { n: 3, name: 'Boarder', job: 'Boarding', base: 'A Hunt freighter\'s drive block and 30 m of its spine', parts: 'The forward half of a Hunt frigate (the Forked prow); two containers of boarding quarters',
@@ -434,20 +461,28 @@ const BLOCKS = [
       for (const sx of [1, -1]) g.add(crate(sx * (B.hb + 6), -1.5, 72, 0, sx > 0));
       const n = take('albatross', { pieces: ['nacelle_port'] }), nc = n.userData.box.getCenter(V3()); const x = B.bhb + 16, port = at(n, x - nc.x, 2 - nc.y, 30 - nc.z); g.add(port, mirrorX(port));
       for (const zz of [16, 40]) for (const sx of [1, -1]) g.add(beam([sx * (B.bhb - 4), 2, zz], [sx * (x - 2), 2, zz], 3.5, 3)); } },
-  { n: 8, name: 'Saucer runner', job: 'Fighter launching', base: 'A Hunt freighter\'s drive block and 20 m of its spine', parts: 'The saucer and command deck of a Concord Petrel; six Institute fighters; two containers as hangars',
-    tell: 'A Hunt freighter\'s drive block with a Concord frigate\'s saucer welded straight onto its stub of spine. A deck is welded over the drive block for six stolen fighters, the saucer is their flight control, and two containers are their hangars.',
+  { n: 8, name: 'Saucer runner', job: 'Fighter launching', base: 'A Hunt freighter\'s drive block and 20 m of its spine', parts: 'The saucer and command deck of a Concord Petrel; two containers as hangars. Its six fighters are the Syndicate\'s own (21 Cutter)',
+    tell: 'A Hunt freighter\'s drive block with a Concord frigate\'s saucer welded straight onto its stub of spine. A deck is welded over the drive block for six of the Syndicate\'s own fighters, the saucer is their flight control, and two containers are their hangars.',
     build(g) { const B = BLOCK.freighter_ssarith, L = 92; g.add(base('freighter_ssarith', L));
       g.add(collar({ hb: B.hb, top: B.top, bot: B.bot }, L, 14, 1.25));
       const sa = take('petrel_level', { pieces: ['hull', 'command'] }), sb = sa.userData.box; g.add(at(sa, -(sb.min.x + sb.max.x) / 2, (B.top + B.bot) / 2 - (sb.min.y + sb.max.y) / 2 + 2, L + 4 - sb.min.z));
       g.add(made([[4, { hb: 24, top: B.bh + 2, bot: B.bh - 2 }], [66, { hb: 24, top: B.bh + 2, bot: B.bh - 2 }]]));
-      const ft = take('kelvane_fighter'), fb = ft.userData.box, fc = fb.getCenter(V3());
-      for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) { const m = ft.clone(); m.position.set((c - 1) * 13 - fc.x, B.bh + 2.2 - fb.min.y, 20 + r * 28 - fc.z); g.add(m); }
+      for (let r = 0; r < 2; r++) for (let c = 0; c < 3; c++) g.add(at(fighter('cutter'), (c - 1) * 16, B.bh + 3.5, 20 + r * 26));
       for (const sx of [1, -1]) g.add(crate(sx * (B.hb + 6), 0, 82, 0, sx > 0)); } },
   { n: 9, name: 'Broadside', job: 'Passing as a freighter', base: 'A Krai freighter\'s drive block and 104 m of its tall spine', parts: 'Eight containers, each a gun house behind its doors',
     tell: 'The one that passes closest inspection. From any distance it is a Krai freighter with eight containers on its flanks. Each container is a gun house, its muzzle behind the outer doors until they drop.',
     build(g) { const B = BLOCK.freighter_krai, L = 160; g.add(base('freighter_krai', L)); const x = B.hb + 6;
       for (let k = 0; k < 4; k++) { const z = 74 + k * 25; for (const sx of [1, -1]) { g.add(crate(sx * x, -1.5, z, 0, k % 2 === 1)); g.add(gun(sx * (x + 5.2), -1.5, z, sx > 0 ? 'port' : 'starboard', 2.6, 2.4)); } }
       g.add(made([[L - 2, { hb: 10.5, top: 16, bot: -19 }], [L + 10, { hb: 9.2, top: 14, bot: -17 }]])); } },
+  { n: 21, name: 'Cutter', job: 'Fighter', base: 'Welded new in a clan\'s yard, round one salvaged engine', parts: 'One engine; two guns',
+    tell: 'One big engine, a blunt glazed nose, wings swept back from the shoulders with a long gun at each tip, and a tall fin. The Saucer runner carries six.',
+    build(g) { FIGHTERS.cutter(g); } },
+  { n: 22, name: 'Twin boom', job: 'Fighter', base: 'Welded new in a clan\'s yard, round two salvaged engines', parts: 'Two engines; two guns',
+    tell: 'Two engines on two booms joined by a wing and a tailplane, the pilot in a glazed pod between them, two guns under the pod.',
+    build(g) { FIGHTERS.twinboom(g); } },
+  { n: 23, name: 'Stack', job: 'Fighter', base: 'Welded new in a clan\'s yard, round one salvaged engine', parts: 'One engine; four guns',
+    tell: 'One engine and two short wings, one above the other, braced at the tips, with a gun at each of the four tips: slow to turn, heavy in a pass.',
+    build(g) { FIGHTERS.stack(g); } },
 ];
 
 // The board: four columns, two rows, read left to right and top to bottom from behind, so every bow (+z) points up the
@@ -466,10 +501,10 @@ window.MOCKUP_MEASURE = () => BLOCKS.map((b, i) => ({ n: b.n, name: b.name, leng
 let focus = -1, showPetrel = false, showLabels = true, viewKey = 'board';
 const VIEWS = { board: { label: 'Board' }, top: { label: 'Board from above' }, side: { label: 'Board from ahead' } };
 const back = () => { const asp = stage.clientWidth / stage.clientHeight; return asp <= 0.75 ? 3.4 : asp < 1.5 ? 1.25 : 1; };
-function setView(k) { viewKey = k; focus = -1; SHIPS.forEach((g) => { g.visible = true; }); const v = { board: [[0, 680, -900], [0, -20, 20]], top: [[0, 1150, -0.01], [0, 0, 0]], side: [[0, 180, 1100], [0, -20, 0]] }[k];
+function setView(k) { viewKey = k; focus = -1; SHIPS.forEach((g) => { g.visible = true; }); const v = { board: [[0, 820, -1150], [0, -20, -80]], top: [[0, 1500, -150.01], [0, 0, -150]], side: [[0, 700, 1250], [0, -20, -120]] }[k];
   camera.position.set(...v[0]); controls.target.set(...v[1]); camera.position.sub(controls.target).multiplyScalar(back()).add(controls.target); controls.update(); sync(); }
 // a ship from its bow quarter (what a target sees coming), or from the side or above; the distance follows its size
-function focusOn(i, from = [-0.72, 0.3, 0.95]) { focus = i; const p = SHIPS[i].position, d = Math.max(MEAS[i].size.z, MEAS[i].size.x * 1.6) * 1.15; SHIPS.forEach((g, j) => { g.visible = j === i; });
+function focusOn(i, from = [-0.72, 0.3, 0.95]) { focus = i; const p = SHIPS[i].position, d = Math.max(MEAS[i].size.z, MEAS[i].size.x * 1.6) * 1.15; controls.minDistance = Math.min(20, d / 3); SHIPS.forEach((g, j) => { g.visible = j === i; });
   controls.target.copy(p); camera.position.copy(p).add(V3(...from).multiplyScalar(d * back())); controls.update(); sync(); }
 function sync() {
   $('viewRow').innerHTML = Object.entries(VIEWS).map(([k, v]) => `<button data-k="${k}" aria-pressed="${focus < 0 && k === viewKey}">${v.label}</button>`).join('');
@@ -478,8 +513,8 @@ function sync() {
   const f = focus >= 0 ? MEAS[focus] : null, B = focus >= 0 ? BLOCKS[focus] : null;
   $('facts').innerHTML = f ? `<dt>${B.n} ${B.name}</dt><dd>${f.size.z.toFixed(0)} m long, ${f.size.x.toFixed(0)} m beam, ${f.size.y.toFixed(0)} m tall, ${f.tris.toLocaleString('en')} triangles</dd><dt>Built on</dt><dd>${B.base}</dd><dt>Taken</dt><dd>${B.parts}</dd>`
     : MEAS.map((m, i) => `<dt>${BLOCKS[i].n} ${BLOCKS[i].name}</dt><dd>${m.size.z.toFixed(0)} by ${m.size.x.toFixed(0)} by ${m.size.y.toFixed(0)} m</dd>`).join('');
-  PETREL.visible = showPetrel; if (focus >= 0) PETREL.position.copy(SHIPS[focus].position).add(V3(0, MEAS[focus].size.y / 2 + 30, 0)); else PETREL.position.set(0, 0, -400);
-  $('status').textContent = focus >= 0 ? `${B.n} ${B.name}: ${B.job.toLowerCase()}` : 'Six specialists, all about cruiser size';
+  PETREL.visible = showPetrel; if (focus >= 0) PETREL.position.copy(SHIPS[focus].position).add(V3(0, MEAS[focus].size.y / 2 + 30, MEAS[focus].size.z < 40 ? 70 : 0)); else PETREL.position.set(0, 0, -400);
+  $('status').textContent = focus >= 0 ? `${B.n} ${B.name}: ${B.job.toLowerCase()}` : 'Six specialists and three fighters';
   $('tip').textContent = focus >= 0 ? `${B.job}. ${B.tell}` : 'Bow toward the top of the board. Pick one to look closer. Drag to orbit, scroll or pinch to zoom.';
 }
 $('viewRow').onclick = (e) => { const b = e.target.closest('button'); if (b) setView(b.dataset.k); };

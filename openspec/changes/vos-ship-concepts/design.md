@@ -300,6 +300,33 @@ which trade is ours (survey Y8). Measured from the built geometry.
 - **The Boarder's bow** is a Hunt frigate's fork, a taken part with two pointed tines. Version 4's rule covers what the
   Syndicate welds, so it is left as taken; whether a crew blunts it is survey Y7.
 
+## Version 6: the Syndicate's own fighters (owner, 2026-11-10)
+
+The owner: "pirate fighters need to be unique, like more fighter looking!". Version 5's Saucer runner carried six stolen
+Institute fighters, which said nothing about the Vos.
+
+### D13. The one thing the Vos build
+
+A fighter is about 16 m long, small enough for a breaking yard to weld whole. So the fighters are the exception to D6:
+they are built new, in the Syndicate's flat plate, round one or two salvaged engines. Every other Vos ship is still
+freighter parts and taken parts.
+
+Each has what makes a fighter read as one: wings, guns set out where they clear the nose, a big engine for its size, and
+a glazed nose for the pilot. The nose is blunt (version 4's rule).
+
+| # | Fighter | Layout | Engines | Guns | Size, m |
+|---|---|---|---|---|---|
+| 21 | Cutter | Wings swept back from the shoulders, a tall fin | 1 | 2, one at each wing tip | 15.6 x 18.6 x 6.0 |
+| 22 | Twin boom | Two booms joined by a wing and a tailplane, the pilot in a pod between them | 2 | 2, under the pod | 15.7 x 16.8 x 3.6 |
+| 23 | Stack | Two short wings one above the other, braced at the tips | 1 | 4, one at each wing tip | 13.6 x 13.9 x 6.3 |
+
+- **On the Saucer runner:** six Cutters, in place of the Institute fighters. Which fighter the Vos fly is survey Y11.
+- **Built with** the same pieces as the ships' Vos-made metal (`made`, `beam`, `gun`), each a closed skin grown on
+  `hull-grow.js`; an engine is a drive recessed into a body's stern. The section's rail and deck edge now scale down
+  with a small body, which leaves the ships as they were.
+- **Scale.** The Institute's fighter is 14 m. On the board the fighters are specks beside 150 m ships; each is framed
+  by its own size when picked.
+
 ## Open questions
 
 | # | Question | Provisional answer |
@@ -311,6 +338,7 @@ which trade is ours (survey Y8). Measured from the built geometry.
 | Y8 | Is each trade on the right hull? | As drawn |
 | Y9 | Is the disguise a trade of one ship or a trait of all? | A trait of all, with the Broadside best at it |
 | Y10 | How does rock breaking work? | A slow charged shot at a rock; the rock splits, and everything within reach takes heavy damage |
+| Y11 | Which fighter do the Vos fly? | 21 Cutter |
 
 Decided (owner, 2026-11-10): Y2, the picks (3, 8, 9, 10, 11, with 12 added by us for the rock breaker); Y5, no class
 ladder: every ship about cruiser size, a weaker hull, one trade each.

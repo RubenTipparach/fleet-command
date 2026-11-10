@@ -62,3 +62,4 @@
 - 2026-11-10, cloud session: version 37, version id `1794304083-6285`: section Y for mockup 37 v3 (Y2 the battle freighter picks, Y5 which becomes which class).
 - 2026-11-10, cloud session: version 38, version id `1794305330-c7ac`: section Y for mockup 37 v4: Y2 decided (9, 10, 11 with 5 and 6), Y6 (which ship is "15"), Y7 (the taken bows on 5 and 6).
 - 2026-11-10, cloud session: version 39, version id `1794310789-1b0e`: section Y for mockup 37 v5: Y5 decided (no class ladder), Y6 dropped, Y8 (trades on hulls), Y9 (the disguise), Y10 (rock breaking).
+- 2026-11-10, cloud session: version 40, version id `1794315325-f882`: Y11, which fighter the Vos fly (mockup 37 v6).

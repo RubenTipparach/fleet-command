@@ -4,7 +4,7 @@
 
 Every Vos ship on mockup 37 SHALL be built on a freighter's drive block and spine from the game, or on a captured
 warship, with the game's containers and parts taken from other factions' approved ships. No Vos hull SHALL be sculpted
-new. A battle freighter's layout SHALL be the Syndicate's own: no other faction's ship is arranged the same way.
+new, except its fighters. A battle freighter's layout SHALL be the Syndicate's own: no other faction's ship is arranged the same way.
 
 #### Scenario: Reading a conversion
 - **WHEN** the owner picks a conversion in the list
@@ -43,3 +43,12 @@ trade, among boarding, mine laying, tractor beams, rock breaking, fighter launch
 #### Scenario: The board
 - **WHEN** `window.MOCKUP_MEASURE()` runs on mockup 37
 - **THEN** it lists six ships, each between 110 m and 190 m long
+
+### Requirement: The Vos fly fighters of their own
+
+The Vos SHALL have fighters of their own design, each with wings, guns clear of the nose, a blunt glazed nose and at
+least one engine, and SHALL NOT fly another faction's fighter as their own.
+
+#### Scenario: The Saucer runner's deck
+- **WHEN** the Saucer runner is shown
+- **THEN** the six fighters on its deck are the Syndicate's own
