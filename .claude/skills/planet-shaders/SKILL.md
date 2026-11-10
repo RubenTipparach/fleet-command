@@ -1,0 +1,87 @@
+---
+name: planet-shaders
+description: Make, change and judge Fleet Command's planets and asteroids in Godot, the godot-sandbox way - a planet as a stack of seamless shells round a unit sphere (ground, crater shell, domed cloud layer, rings, a single-scattering atmosphere), every pattern on the sphere's direction in model space with no UVs or seams, relief as a height field differenced into a normal, gas giants as warped, sheared bands with storms and ring shadows, asteroids grown in the vertex stage from one ball mesh, the detail growing as the camera comes down (Falchion's octaves), looks in data/space/planets.json and asteroids.json, and stills from the planet gallery looked at before it is done. Use whenever making or changing a planet, a planet kind, a gas giant, rings, clouds, craters, an atmosphere, an asteroid or rock, or when a planet "looks flat", "looks painted", "has seams", "is too smooth up close" ("planet shader", "new planet type", "gas giant", "rings", "asteroid", "proc gen rocks", "clouds on the planet", "craters").
+---
+
+# Planet shaders
+
+Owner, 2026-11-09: "We need some really good in game planet shaders. Read planet code from godot sandbox and falchion
+(detail level). Make a slick planet skill mainly based on the godot sandbox stuff and port shaders over here. Make a few
+different planet types ... gas giants with rings. We also need shaders for proc gen asteroids too."
+
+The method is godot-sandbox's (`RubenTipparach/godot-sandbox` at `d5d8e461`: `resources/shaders/comic_dirt_ground`,
+`comic_crater_overlay`, `comic_cloud_layer`, `comic_atmosphere_shell`, and `scenes/planet_body_3d.tscn` that stacks them).
+The detail by distance is Falchion's (`RubenTipparach/falchion` at `5d128af8`, `src/render/planets/PlanetMaterial.ts`): more
+noise octaves as the camera comes down. Provenance is in `.claude/skills/PROVENANCE.md`.
+
+## Where things are
+
+| File | Owns |
+|---|---|
+| `src/Game/View/PlanetBody.cs` | **The one builder of a planet**: its layers, their meshes and render order, the tilt, and `Sync` (sun and detail each frame). The battle and the gallery both call it; never build a planet anywhere else (CLAUDE.md 6.1) |
+| `src/Game/View/PlanetLooks.cs` | Reads and validates `data/space/planets.json` into a `PlanetLook` and sets the ground and air materials (`Apply`) |
+| `src/Game/View/planet_noise.gdshaderinc` | The shared noise (PCG3D hash, value noise, fbm, fbm by octaves), the tangent frame, the capped relief normal, the Fibonacci lattice, the day term and the ring density. Every planet shader and the asteroid include it |
+| `planet.gdshader` | Rocky and lava ground (Falchion's: seas, caps, craters, canyons, volcanoes, night lights, sites) |
+| `planet_gas.gdshader` | Gas giant tops: bands, jets, eddies, storms, ovals, limb, ring shadow |
+| `planet_craters.gdshader` | The crater shell (sandbox) |
+| `planet_clouds.gdshader` | The cloud layer (sandbox) |
+| `planet_rings.gdshader` | Rings |
+| `planet_atmosphere.gdshader` | The single-scattering air (sandbox) |
+| `asteroid.gdshader`, `Asteroids.cs`, `data/space/asteroids.json` | Procedural rocks |
+| `PlanetGallery.cs` | The stills (below) |
+
+The planet kinds are `PlanetDef.Kinds` (`src/Core/Data/Scenes.Comms.cs`); `planets.json` must have a look for every one and
+no other. A new kind is a new name there and a new row there, nothing else.
+
+## The rules (sandbox)
+
+1. **No UVs.** Every pattern is a function of `normalize(VERTEX)` in model space, so there is no seam, no pinched pole,
+   and the pattern turns with the planet. A `SphereMesh`'s UVs and tangents are never read.
+2. **A shell per layer**, each its own sphere a little above the last, in render priority order: ground 0, craters 1
+   (1.004), clouds 2 (a third of the air's height up), rings 3, air 4. A shell between features `discard`s, so the one
+   under shows.
+3. **Relief is a height field differenced into a normal** (`pn_frame`, `pn_relief`): four samples either side along two
+   tangents, the step widened to the fragment's own footprint on the sphere (`max(step, fwidth-ish * 1.5)`, so the limb
+   does not sparkle), the slope capped (`max_slope`, so no fine feature turns the surface inside out). Amplitudes of fine
+   terms stay small: each term's slope scales with its frequency.
+4. **A crater is a profile, not a painting**: a bowl and a raised rim as height, its exact slope bending the normal;
+   craters on a jittered Fibonacci lattice in three sizes, big first, small stamped over.
+5. **A cloud has tops**: its height is the square root of the density above the edge (fast climb at the rim, round
+   over the top) plus a finer billow inside; its edge thins over a soft fringe, never a cut line. Two layers turn against
+   each other about a wind axis.
+6. **One sun.** Every layer is `unshaded` and lit by the same `sun_dir` uniform (toward the sun, world space) and
+   `sun_energy`, with the same soft terminator (`pn_day`), set every frame by `PlanetBody.Sync` from the battle's
+   `DirectionalLight3D`. That keeps Forward+ and Compatibility identical. A relief may shade a layer, never black it: shade
+   relative to the sphere's own light (see the clouds).
+7. **Hashes are PCG on the float's bits** (`pn_hash31`), never `fract(sin)` or a fract-multiply hash (CLAUDE.md 10).
+
+## Gas giants and rings
+
+- Bands by latitude (`bands` pairs), each band's shade drawn from its own number (no two pairs repeat), edges torn by two
+  passes of domain warp sheared along the latitude (`turbulence`), streaks drawn out along the latitude at more octaves up
+  close, jets that alternate by band (`flow_speed`), a great storm (`storm_lat` as a sine, `storm_size`, its longitude
+  from the seed) in the palette's fourth colour, small white ovals that twist the flow, darker hazy poles, limb darkening.
+- Rings are a flat square in the equator plane cut to the annulus; their density by radius (`pn_ring_density`) is shared
+  with the giant's tops, which take the rings' shadow by casting the sun's ray to the ring plane. The rings take the
+  planet's shadow by the same ray against the unit sphere. Lean the planet (`tilt_deg`) so the rings open toward the
+  camera; the whole stack and the installations lean with it (`PlanetBody.Body`).
+
+## Asteroids
+
+One shared ball mesh; the shape is grown in the vertex stage: low noise at two scales (`lumpiness`), up to four flat split
+planes (`facets`: the ball stops where it meets each), crater bowls with rims. The vertex normal is the shape differenced
+across the sphere; the fragment mixes it half and half with the screen's facet normal, adds the sandbox ground's grain and
+pebbles as relief, and colours by two rock colours, dust on the high ground, darker crater floors. Rocks are lit by the
+scene's lights like ships (not unshaded). Seeds go through FNV-1a so neighbouring rocks share nothing.
+
+## Look, then call it done
+
+```sh
+.tools/godot/Godot_mono.app/Contents/MacOS/Godot --path . --resolution 1280x800 -- --planet-gallery=docs/screenshots/game/planets
+scripts/game-stills.sh docs/screenshots/game ms-planet-gas,ms-planet-terran,ms-planet-surface,kelvane-ui-tractor
+```
+
+The gallery saves every kind from afar and up close and every rock kind, through `PlanetBody` itself. Look at each still
+(make a contact sheet) for: seams or pinched poles, sparkle at the limb, a black patch in a lit layer, bands that repeat,
+a ring shadow on the wrong side, rocks that read as balls. Then the battle stills, which show the same planets under a
+battle's sun and in the planet view down to the surface.
