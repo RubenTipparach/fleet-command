@@ -7,7 +7,15 @@
 - [x] 1.3 Twelve blockouts from five drafted traditions, every skin closed
 - [x] 1.4 Mockup 37, `docs/mockups/vos-ship-concepts.html`; shots looked at; DOM fit passes
 - [x] 1.5 Survey section Y (Y1-Y5)
-- [ ] 1.6 The owner's picks
+- [x] 1.6 The owner's note on version 1 (2026-11-10): not sculpted shapes; modified freighters with scrapped and stolen parts
+
+## 1b. Version 2: conversions
+
+- [x] 1b.1 The parts bin: the game's glbs inlined, parts taken by piece or by a clean cut, never scaled
+- [x] 1b.2 Vos-made joining pieces (collar, strut, prow, tub, deck) grown on `hull-grow.js`
+- [x] 1b.3 Eight conversions, each from a freighter and a raider's job; shots looked at; DOM fit passes
+- [x] 1b.4 Survey section Y rewritten
+- [ ] 1b.5 The owner's picks
 
 ## 2. After the picks
 

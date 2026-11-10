@@ -124,12 +124,82 @@ and every blockout from its quarter and its side at desktop.
 | Reusing the Institute's section with other numbers | A rolled case is the Institute's language; a second faction on it would be a recolour |
 | Unlike port and starboard sides, for a salvaged look | The owner's rule: single axis symmetry |
 
+## Version 2: conversions (owner, 2026-11-10)
+
+The owner, on version 1: "a lot of this resumble other factions, you should think about how pirate ships work? they are
+usualy modified freighters. So I would avoid sculpting random shapes and consider how a pirate faction might design
+their ships - out of scrapped parts or stolen parts from other ships".
+
+Version 1's decisions D1, D2 and D4 are superseded: the five schools, the twelve sculpted hulls and the full section
+layout are gone from the page. D3's palette stays, for what the Syndicate makes itself.
+
+### D6. How a Vos ship comes to be
+
+A clan has no shipyard that builds hulls. It has a breaking yard. So a Vos ship is never designed from a blank sheet:
+
+1. **It starts as a freighter.** Freighters are what raiders meet, what they can take, and what their crews know how to
+   run. The four in the game (mockup 24: the Concord's, the Krai's, the Hunt's and the Institute's) are the bases.
+2. **It is cut and stripped for a job.** Containers come off, a bow is cut away, a frame is emptied.
+3. **Taken parts go on.** Nacelles, a saucer, a bow, a whole small warship, fighters: each from another faction's ship.
+4. **The yard joins them.** Collars round each cut, struts, a welded prow, gun tubs. This is the only Vos-made metal.
+
+Rules the page holds to:
+- **Every taken part is the game's own ship.** The page inlines the glbs the game flies (`assets/ships/`) and copies
+  their triangles; no part is redrawn (CLAUDE.md 6.1).
+- **Nothing is scaled.** A crew uses what it could take, at its true size. A cruiser's nacelle is small beside a 300 m
+  freighter, and it stays small.
+- **A cut is a clean line.** Triangles crossing a cut are clipped on it, and a collar a little larger than the measured
+  section covers the open end.
+- **Origin stays readable.** Each taken part wears a dulled version of its maker's colour; Vos-made metal is rust with
+  a brass rail.
+- **Mirror symmetry** about the centre plane, as every ship (the owner's single axis symmetry).
+
+**The hull rule.** CLAUDE.md section 10 says no stretched primitive is a visible part of a hull. The taken parts are
+whole pieces of approved ships, not primitives. The joining pieces are grown on `hull-grow.js` from the Syndicate's
+section (`vsec`, now 18 points with no deckhouse), each a closed skin. The containers are the game's container, which
+is a box by nature (mockup 24).
+
+### D7. The eight conversions
+
+Measured from the built geometry (`window.MOCKUP_MEASURE`).
+
+| # | Conversion | Job | Starts as | Taken | Vos-made | Size, m |
+|---|---|---|---|---|---|---|
+| 1 | Wolf | Pass as a freighter | Concord freighter, whole, 28 of its 32 containers | Nothing that shows | Four gun tubs where containers were | 300 x 44 x 56 |
+| 2 | Chaser | Catch a freighter | Krai freighter, stripped, its bow cut off at 190 m | Both nacelles of a Concord Albatross | A collar and a welded prow; four struts | 226 x 60 x 46 |
+| 3 | Boarder | Board a freighter | Hunt freighter, cut 60 m short at the bow | The forward half of a Hunt frigate (the Forked prow) | The collar joining them | 339 x 52 x 36 |
+| 4 | Gun barge | Outgun an escort | Institute freighter, its frame emptied forward | A whole Krai corvette | Four struts holding it in the frame | 274 x 80 x 25 |
+| 5 | Twin haul | Carry the clan | Two Concord freighters, 70 m apart | The saucer and command deck of a Concord Petrel | Five struts; a pedestal under the saucer | 300 x 92 x 65 |
+| 6 | Prize frigate | Keep what you took | No freighter: a captured Krai frigate's hull | Both nacelles of a Concord Albatross; two containers | Four struts | 110 x 56 x 34 |
+| 7 | Tender | Launch small craft | Institute freighter, whole | Twelve Institute fighters | A deck welded across the frame | 274 x 80 x 25 |
+| 8 | Saucer runner | Outrun a patrol | Hunt freighter, only its aft 120 m | The saucer and command deck of a Concord Petrel | The collar joining them | 213 x 52 x 36 |
+
+- **Sizes.** Seven of the eight are freighter-sized, 213-339 m, longer than any faction's warship. That is what a
+  converted freighter is. Whether the Vos also fly small ships is survey Y5.
+- **Not from the body, and no literals.** Nothing here is shaped at all: every form is a freighter or a taken part.
+- **Why these jobs.** Each is something a raider must do to a convoy: get close unnoticed, catch it, board it, beat its
+  escort, carry the take and the crew home, put small craft out, and get away.
+
+### D8. The page, version 2
+
+- The board is four columns by two rows, 330 m apart, on a 100 m grid.
+- A focused ship is framed by its own size. Its facts give what it starts as and what was taken.
+- The list gives each conversion's job and its one-line tell. The Concord Petrel (the game's glb) stands in for scale.
+- The page inlines ten glbs and the ship manifest (for the freighters' containers): 3.5 MB.
+
+| Considered | Why not |
+|---|---|
+| Keeping version 1's sculpted hulls beside the conversions | The owner's note rejects sculpted shapes for this faction |
+| Scaling a taken part to suit the freighter | A crew cannot scale a nacelle; true size is what makes it read as taken |
+| Redrawing freighters and parts as simpler shapes | A second copy of each hull (CLAUDE.md 6.1), and it would stop being the game's ship |
+| Unlike port and starboard sides | The owner's rule: single axis symmetry |
+
 ## Open questions
 
 | # | Question | Provisional answer |
 |---|---|---|
-| Y1 | Which of the five traditions are the Vos? | All five, as schools inside the Syndicate |
-| Y2 | Which blockouts go on? | 1 Fork, 4 Splice, 5 Lashed three, 7 Dart, 12 Strongroom |
-| Y3 | Do the hulls wear the console's palette? | Yes |
-| Y4 | Flat plate and hard chines? | Yes |
-| Y5 | How do the Vos get their classes? | Each pick a class by size |
+| Y1 | Is this how the Vos get their ships: freighters converted with taken parts, nothing built new? | Yes |
+| Y2 | Which conversions go on? | 1 Wolf, 2 Chaser, 3 Boarder, 4 Gun barge, 5 Twin haul |
+| Y3 | Do taken parts keep their makers' colours, with Vos metal in rust and brass? | Yes, dulled, with clan paint added in detail |
+| Y4 | May a Vos ship carry parts of any faction, or only its neighbours'? | Any faction the clan could have raided |
+| Y5 | Do the Vos fly small ships too (frigate size), or only converted freighters and prizes? | Both: prizes like the Prize frigate are the small ships |

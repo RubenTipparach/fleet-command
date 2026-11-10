@@ -7,14 +7,14 @@ own. The owner, 2026-11-10: "lets desgin some vos pirate ships!".
 
 ## What Changes
 
-- **Mockup 37, Vos Syndicate Ships** (`docs/mockups/vos-ship-concepts.html`): a blockout board of twelve frigate-sized
-  hulls, as the Hunt's and the Institute's ships began (mockups 12 and 23). Breadth comes first, so the owner picks before
-  anything is detailed.
-- **Five traditions drafted inside the Syndicate**, because its culture is thin: the Boarders, the Breakers, the Runners,
-  the Chartkeepers and the Share. Each blockout names the one it comes from. All are provisional (survey Y1).
-- **The Syndicate's own cross-section**, `vsec`: flat plate welded at hard chines, on the shared grown hull
-  (`docs/mockups/lib/hull-grow.js`).
-- **Survey section Y**: the traditions, the picks, the palette, the plate and how the classes are set.
+- **Mockup 37, Vos Syndicate Ships** (`docs/mockups/vos-ship-concepts.html`), version 2: eight conversions, after the
+  owner's note on version 1 ("they are usualy modified freighters", "out of scrapped parts or stolen parts from other
+  ships"). Each starts as one of the game's four freighters and carries parts taken from other factions' approved ships,
+  at true size. Version 1's twelve sculpted hulls and five drafted schools are withdrawn.
+- **The parts bin**: the page inlines the game's own glbs and copies their triangles, cutting cleanly where a crew cut.
+- **The Syndicate's own metal**: collars, struts, a welded prow and gun tubs in flat welded plate, grown on the shared
+  `docs/mockups/lib/hull-grow.js`.
+- **Survey section Y**, rewritten for the conversions.
 
 ## Impact
 

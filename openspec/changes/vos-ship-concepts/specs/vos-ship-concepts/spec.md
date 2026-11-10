@@ -1,28 +1,27 @@
 ## ADDED Requirements
 
-### Requirement: The Vos Syndicate's ships start from a board of blockouts
+### Requirement: A Vos ship is a conversion, not a new hull
 
-Mockup 37 SHALL show twelve frigate-sized blockouts, each naming the drafted tradition it comes from, for the owner to
-pick from before any is detailed.
+Every Vos ship on mockup 37 SHALL start as one of the game's freighters or a captured warship, and SHALL carry parts
+taken from other factions' approved ships. No Vos hull SHALL be sculpted new.
 
-#### Scenario: Looking at one
-- **WHEN** the owner picks a blockout in the list
-- **THEN** it is shown alone, orbitable, with its size, triangle count and tradition
+#### Scenario: Reading a conversion
+- **WHEN** the owner picks a conversion in the list
+- **THEN** it is shown alone, orbitable, with what it starts as and what was taken
 
-### Requirement: Every Vos hull is one closed grown skin
+### Requirement: Taken parts are the game's own ships at true size
 
-Every Vos blockout SHALL be grown on `docs/mockups/lib/hull-grow.js` from the Syndicate's own section layout, with no
-placed primitive and no open edge.
+Every taken part SHALL be copied from the glb the game flies, never redrawn and never scaled.
 
-#### Scenario: Closure
-- **WHEN** `window.MOCKUP_MEASURE()` runs on the page
-- **THEN** every blockout reports zero open edges
+#### Scenario: A nacelle on a freighter
+- **WHEN** the Chaser carries a Concord Albatross's nacelles
+- **THEN** each nacelle is the Albatross's own mesh at its own size
 
-### Requirement: No Vos hull is drawn from the species' body
+### Requirement: Only the joining metal is the Syndicate's
 
-Every Vos blockout SHALL be sourced from a tradition inside the Syndicate and SHALL NOT be shaped after the Vos's bodies,
-nor be a picture of a sailing ship, a skull or a hook.
+Everything the Syndicate makes itself SHALL be a closed skin grown on `docs/mockups/lib/hull-grow.js` in its own plate,
+and SHALL cover each cut it closes.
 
-#### Scenario: The stereotype test
-- **WHEN** a blockout's description is read without the species' name
-- **THEN** it describes a working ship's shape
+#### Scenario: A cut bow
+- **WHEN** a freighter's bow is cut away
+- **THEN** a collar a little larger than the measured section covers the cut
