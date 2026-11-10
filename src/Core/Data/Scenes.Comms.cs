@@ -21,7 +21,7 @@ public sealed record ShipSetup(int? Marines, IReadOnlyDictionary<string, int> Te
 /// <summary>A planet in a scene: where it is and its radius (metres), its colour, and what it asks to be given.</summary>
 public sealed record PlanetDef(string Id, string Name, double XM, double ZM, double RadiusM, string Color, IReadOnlyDictionary<string, int> Needs)
 {
-    /// <summary>The kind of world, which picks its look in the view (PlanetLooks): terran, ocean, desert, ice, lava, barren or gas.</summary>
+    /// <summary>The kind of world, which picks its look in the view (PlanetLooks): one of <see cref="Kinds"/>.</summary>
     public string Kind { get; init; } = "terran";
     /// <summary>What stands on its surface, to scan and send an away team to (Battle.Field).</summary>
     public IReadOnlyList<InstallationDef> Installations { get; init; } = System.Array.Empty<InstallationDef>();
@@ -30,7 +30,7 @@ public sealed record PlanetDef(string Id, string Name, double XM, double ZM, dou
     /// <summary>Someone on the surface waiting to be beamed up (an envoy or a research team to extract), or null.</summary>
     public string? Waiting { get; init; }
     /// <summary>The planet kinds the view can draw.</summary>
-    public static readonly string[] Kinds = { "terran", "ocean", "desert", "ice", "lava", "barren", "gas", "ice_giant", "toxic" };
+    public static readonly string[] Kinds = { "terran", "ocean", "desert", "ice", "lava", "barren", "gas", "ice_giant", "toxic", "city", "archipelago", "fossil", "ruins" };
 }
 
 /// <summary>Something on a planet's surface: a name, its kind (outpost, lab, ruin, mine, city, battery or wreck), where it
