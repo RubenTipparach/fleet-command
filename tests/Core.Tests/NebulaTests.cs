@@ -74,6 +74,36 @@ public class NebulaTests
     }
 
     [Fact]
+    public void A_plume_on_the_sight_line_breaks_a_lock_beyond_the_lock_range_and_one_beside_it_does_not()
+    {
+        // both ships in open space, 60 km apart, a plume of radius 10 km half way between them or 30 km off the line
+        string Between(double xM) => "\"nebulae\": [{\"x_m\": " + xM + ", \"z_m\": -30000, \"r_m\": 10000, \"density\": 1}], ";
+        Battle hidden = Duel(Between(0), zM: -60000), clear = Duel(Between(30000), zM: -60000);
+        foreach (Battle b in new[] { hidden, clear }) b.ShipById("b")!.Ecm = b.Player.Eccm;
+        Ship me = hidden.Player, t = hidden.ShipById("b")!;
+        Assert.Equal(0, hidden.Rules.NebulaAt(me.X, me.Z));
+        Assert.Equal(0, hidden.Rules.NebulaAt(t.X, t.Z));
+        Assert.Equal(1, hidden.Rules.NebulaOnLine(me, t), 9);
+        Assert.False(hidden.CanLock(me, t));
+        Assert.Equal(0, clear.Rules.NebulaOnLine(clear.Player, clear.ShipById("b")!));
+        Assert.True(clear.CanLock(clear.Player, clear.ShipById("b")!));
+        // a lock held when the cloud comes between is lost
+        hidden.Rules.Nebulae = Array.Empty<NebulaDef>();
+        hidden.Lock("b");
+        Assert.Equal("b", me.Target);
+        hidden.Rules.Nebulae = new[] { new NebulaDef(0, -30000, 10000, 1) };
+        Run(hidden, 0.5);
+        Assert.Null(me.Target);
+        Assert.Contains(hidden.Log, l => l.Who == "Science" && l.Text.StartsWith("Lost lock on"));
+        // inside the lock range, or with ECCM above its ECM, the cloud between hides nothing
+        t.Z = -(Nb.LockKm - 1) * 1000;
+        Assert.True(hidden.CanLock(me, t));
+        t.Z = -60000;
+        t.Ecm = me.Eccm - 1;
+        Assert.True(hidden.CanLock(me, t));
+    }
+
+    [Fact]
     public void Where_plumes_overlap_the_denser_counts()
     {
         Battle b = Duel("\"nebulae\": [{\"x_m\": 0, \"z_m\": 0, \"r_m\": 20000, \"density\": 0.4}, {\"x_m\": 0, \"z_m\": 0, \"r_m\": 30000, \"density\": 1, \"storm\": true}], ");
@@ -89,6 +119,7 @@ public class NebulaTests
             + "{\"id\": \"k\", \"name\": \"K\", \"captain\": \"C\", \"class\": \"krai_dn\", \"faction\": \"krai\", \"side\": 0, \"x_m\": 0, \"z_m\": 0, \"heading_deg\": 0, \"speed_m_s\": 0},"
             + "{\"id\": \"c\", \"name\": \"C\", \"captain\": \"C\", \"class\": \"ca\", \"faction\": \"concord\", \"side\": 1, \"x_m\": 0, \"z_m\": -40000, \"heading_deg\": 90, \"speed_m_s\": 0, \"hold_fire\": true, \"stance\": \"hold\"}]}";
         var b = new Battle(TestData.Data, DataLoader.LoadScenario(StrictJson.Parse(json, "test"), TestData.Data.Classes, TestData.Data.Factions));
+        b.ShipById("c")!.Ecm = b.Player.Eccm - 1;   // locked into the plume: its ECCM sees through, so only the missile is lost
         b.Lock("c");
         foreach (Mount m in b.Player.Mounts) { m.Selected = m.Weapon.Kind == "missile"; m.Charge = 1; }
         Assert.Equal(1, b.Fire());
@@ -115,6 +146,7 @@ public class NebulaTests
     {
         Battle b = Duel(Plume());   // no storm: the strike is ordered here, so the timing is the rule's alone
         Ship me = b.Player, t = b.ShipById("b")!;
+        t.Ecm = me.Eccm - 1;   // locked out of the plume it stands in: its ECCM sees through
         b.Lock("b");
         Run(b, 2);
         foreach (Mount m in me.Mounts) m.Charge = 0.5;

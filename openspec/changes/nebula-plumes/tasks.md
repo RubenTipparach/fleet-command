@@ -27,6 +27,18 @@
 - [ ] 2.11 `assets/space/*.bin` in the export presets' include filter, when the Windows and Android exports are set up
 - [ ] 2.12 A planet's air or rings in front of a plume draw under it (the render order's known limit, design): sort
   plumes against planets by distance if a scene ever needs it
+- [x] 2.13 A lock needs a clear sight line (`Rules.NebulaOnLine`, `Battle.CanLock`, `lock_km` 20); `NebulaTests`
+- [x] 2.14 The decks (`NebulaDeck`, `nebula_deck.gdshader`, `data/space/nebula_decks.json`), the shared cloud include
+  (`nebula_cloud.gdshaderinc`), columns that reach them, coloured by column placement, fading at their edges and into
+  the sky
+- [x] 2.15 Four forms (`NebulaDef.Forms`) and each column's own proportions; the four scenes' extra columns and puffs
+- [x] 2.16 The nebula battles' skies in their plumes' colours (`tools/space/nebula_recipes.py`)
+- [ ] 2.17 The deck's grain where a long ray crosses it at a low angle (40 steps over up to 300 km): blue-noise jitter or
+  a step that grows with distance
+- [ ] 2.18 The frame time with the decks and eleven plumes, on the Mac and on the phone, for each style
+- [x] 2.19 Varying density inside the cloud (`contrast`), the nebula's fog, and the three styles (`volume`, `meshes`,
+  `billboards`) on one switch, side by side in `nebula-styles.png`
+- [ ] 2.20 Keep the style the owner picks (survey NP12) and delete the others, with the deck colour's second copy
 
 ## 3. Mockup sync (CLAUDE.md section 4)
 
@@ -39,4 +51,4 @@
 
 ## 4. The owner's review
 
-- [ ] 4.1 Survey NP1-NP7; the looks approved or changed
+- [ ] 4.1 Survey NP1-NP11; the looks approved or changed

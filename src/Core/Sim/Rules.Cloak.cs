@@ -42,6 +42,23 @@ public sealed partial class Rules
     /// <summary>The chance a second that lightning finds a ship at (x, z): storm_strikes_per_min x the storm's density there.</summary>
     public double StormStrikePerS(double x, double z) => CloakData is { } c ? c.Nebula.StormStrikesPerMin / 60 * StormAt(x, z) : 0;
 
+    /// <summary>The nebula a sight line from s to t passes through (owner, 2026-11-10: "ships whose targeting raycasts goes
+    /// through a cloud looses target locks"): the densest point of any plume along the line between them, the ends included,
+    /// 0 when the line is clear. A plume is a column standing through the battle plane, so the line is tested on the plane:
+    /// the nearest point of the line to each plume's centre, at the density there (NebulaAt's thinning to the edge).</summary>
+    public double NebulaOnLine(Ship s, Ship t)
+    {
+        if (CloakData is not { } c) return 0;
+        double best = 0, dx = t.X - s.X, dz = t.Z - s.Z, len2 = dx * dx + dz * dz;
+        foreach (NebulaDef n in Nebulae)
+        {
+            double u = len2 > 0 ? Math.Clamp(((n.XM - s.X) * dx + (n.ZM - s.Z) * dz) / len2, 0, 1) : 0;
+            double d = Geometry.Dist(s.X + u * dx, s.Z + u * dz, n.XM, n.ZM);
+            if (d < n.RM) best = Math.Max(best, n.Density * (1 - c.Nebula.EdgeThinFrac * d / n.RM));
+        }
+        return best;
+    }
+
     /// <summary>The nebula between two ships: the denser of where each is.</summary>
     public double NebulaBetween(Ship s, Ship t) => Math.Max(NebulaAt(s.X, s.Z), NebulaAt(t.X, t.Z));
 

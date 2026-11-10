@@ -244,7 +244,7 @@ public sealed partial class Battle
         if (Player.Target != t.Id && Strike.AimMount(Player.Aim) >= 0) Player.Aim = "weapons";
         // a cloaked enemy cannot be locked until it is seen, nor one a nebula hides (Battle.Cloak.cs)
         if (t.Side != Player.Side && !Detected(Player, t)) { SayOnce("Science", "No lock: it is cloaked. Sweep to find it."); return; }
-        if (t.Side != Player.Side && !CanLock(Player, t)) { SayOnce("Science", $"No lock: the nebula hides it. Raise ECCM above its ECM, or close to {Cs.Nebula.LockKm:0} km."); return; }
+        if (t.Side != Player.Side && !CanLock(Player, t)) { SayOnce("Science", $"No lock: the nebula is between us. Raise ECCM above its ECM, or close to {Cs.Nebula.LockKm:0} km."); return; }
         Player.Target = t.Id;
         Say("Tactical", t.Side == Player.Side ? $"Selected: {t.Name}, {t.Class.Name} (friendly)." : $"Target locked: {t.Name}, {t.Class.Name}.");
     }

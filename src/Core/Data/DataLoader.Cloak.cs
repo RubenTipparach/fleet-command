@@ -51,7 +51,8 @@ public static partial class DataLoader
     }
 
     /// <summary>A scenario's nebula plumes ("nebulae": each x_m, z_m and r_m in metres, density above 0 to 1, storm for an
-    /// ion storm, and a look of NebulaDef.Looks: "violet" when left out, a storm's "slate"); empty when it has none.</summary>
+    /// ion storm, a look of NebulaDef.Looks: "violet" when left out, a storm's "slate", and a form of NebulaDef.Forms,
+    /// "column" when left out); empty when it has none.</summary>
     public static IReadOnlyList<NebulaDef> CloakNebulae(StrictJson root)
     {
         var list = new List<NebulaDef>();
@@ -64,7 +65,9 @@ public static partial class DataLoader
             bool storm = n.Bool("storm", false);
             string look = n.Has("look") ? n.Str("look") : storm ? NebulaDef.StormLook : "violet";
             if (Array.IndexOf(NebulaDef.Looks, look) < 0) throw new DataError($"{n.Where}.look: one of {string.Join(", ", NebulaDef.Looks)}, not '{look}'");
-            list.Add(new NebulaDef(n.Num("x_m"), n.Num("z_m"), r, d, look, storm));
+            string form = n.Has("form") ? n.Str("form") : "column";
+            if (Array.IndexOf(NebulaDef.Forms, form) < 0) throw new DataError($"{n.Where}.form: one of {string.Join(", ", NebulaDef.Forms)}, not '{form}'");
+            list.Add(new NebulaDef(n.Num("x_m"), n.Num("z_m"), r, d, look, storm, form));
             n.Done();
         }
         return list;

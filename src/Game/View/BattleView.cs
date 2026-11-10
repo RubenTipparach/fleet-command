@@ -34,6 +34,7 @@ public sealed partial class BattleView : Node3D
 
     private ConsoleContext _x = null!;
     private Camera3D _cam = null!;
+    private Godot.Environment _env = null!;
     private readonly Dictionary<string, Node3D> _models = new();
     private readonly List<OmniLight3D> _strobes = new();
     private readonly Dictionary<string, ShipDamage> _damage = new();
@@ -93,6 +94,7 @@ public sealed partial class BattleView : Node3D
             // glow, for the weapons' light (change weapon-fx: the weapons range's bloom): only what is brighter than 1
             GlowEnabled = true, GlowIntensity = 0.7f, GlowBloom = 0f, GlowHdrThreshold = 1.0f, GlowBlendMode = Godot.Environment.GlowBlendModeEnum.Additive,
         };
+        _env = env;
         AddChild(new WorldEnvironment { Environment = env, Name = "Environment" });
         // the sun casts high-quality shadows, the ships onto themselves too (owner, 2026-11-04: "need high quality shadows on
         // ships too", "looks like you didnt enable self shadowing"): four cascades out to 60 units (6 km) round the camera,

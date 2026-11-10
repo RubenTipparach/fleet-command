@@ -1,7 +1,8 @@
 // NebulaPlume: the one builder of a nebula plume in 3D (openspec/changes/nebula-plumes; owner, 2026-11-10: "something like
 // a 3d noise texture would be cool? something like how Ace Combat 7 does clouds, entering a column of nebula plume can
-// hide you from enemies"). A plume is one mesh, a bounding column scaled to the plume's radius and standing on its place
-// on the battle plane, drawn by nebula_plume.gdshader, which marches the cloud (the column's shape, Cover, baked into a
+// hide you from enemies", "The clouds need to stretch up in columns of varying widths across the map"). A plume is one mesh,
+// a bounding column scaled to the plume's radius and standing on its place on the battle plane, reaching from the deck of
+// cloud below the battle into the deck above (NebulaDeck; their numbers are DeckLook's), drawn by nebula_plume.gdshader, which marches the cloud (the column's shape, Cover, baked into a
 // small 3D texture of its own) through the shared 3D noise
 // (assets/space/plume_noise.bin, written by tools/space/plume_noise.py) in the plume's look (data/space/plumes.json,
 // PlumeLooks). The mesh's unit is the plume's radius: the circle the rules test (Rules.NebulaAt) is radius 1 on the plane,
@@ -16,9 +17,9 @@ namespace FleetCommand.Game.View;
 
 public sealed class NebulaPlume
 {
-    /// <summary>How far a plume hangs below the battle plane, and the bounding column's radius, in the plume's radii (the
-    /// shader's bottom and bound): the widest head (anvil 0.8, lobes, lean and billows) stays inside it.</summary>
-    public const float Bottom = -0.45f, Bound = 2.1f;
+    /// <summary>The bounding column's radius, in the plume's radii (the shader's bound): the widest flare (anvil 0.8, lobes,
+    /// wander and billows) stays inside it.</summary>
+    public const float Bound = 2.9f;
     /// <summary>A plume's place in the draw order: after every planet layer (PlanetBody.Priority and below), before the
     /// glows, beams and shields at 0.</summary>
     public const int Priority = -1;
@@ -26,9 +27,9 @@ public sealed class NebulaPlume
     public const int Flashes = 4;
     /// <summary>The noise's size a side, in voxels of four bytes (tools/space/plume_noise.py SIZE).</summary>
     public const int NoiseSize = 64;
-    /// <summary>The baked shape's size in voxels, across (x and z, over the bounding column's width) and up (bottom to
-    /// top): about a fifteenth of a radius a voxel, a third of the shape's softest edge.</summary>
-    public const int CoverXZ = 64, CoverY = 48;
+    /// <summary>The baked shape's size in voxels, across (x and z, over the bounding column's width) and up (foot to top):
+    /// about a tenth of a radius a voxel across, a fifth of the shape's softest edge.</summary>
+    public const int CoverXZ = 64, CoverY = 64;
     /// <summary>Half the band the billows stand in, either side of the column's edge, radii.</summary>
     public const float Edge = 0.2f;
     private const string NoiseFile = "res://assets/space/plume_noise.bin";
@@ -38,16 +39,44 @@ public sealed class NebulaPlume
 
     public readonly MeshInstance3D Node;
     public readonly NebulaDef Def;
+    /// <summary>Where in the noise the plume is cut from and which way it leans, three numbers 0 to 1.</summary>
+    public readonly Vector3 Seed;
     public readonly PlumeLook Look;
     /// <summary>The plume's radius in the scene's units (the mesh's scale).</summary>
     public readonly float RadiusU;
+    /// <summary>How far the column reaches above the plane (and below it), and where it flares into each deck, in its radii
+    /// (DeckLook.ColumnFlareKm): a narrow column stands many of its radii tall, a wide one few. It is gone a little past the
+    /// flare, where the deck's funnel has come down to meet it: drawn over the deck, any of it inside would show.</summary>
+    public readonly float TopR, FlareR;
+    /// <summary>Where the column's head ends above the plane, and its foot below it, in its radii, for a form that does not
+    /// reach that deck (NebulaDef.Forms); 0 where it runs into the deck.</summary>
+    public readonly float CapUpR, CapDownR;
+    /// <summary>How high the column's cloud stands above the plane, radii: its head, or its flare into the deck above.</summary>
+    public float HeadR => CapUpR > 0 ? CapUpR : FlareR;
+    /// <summary>Whether the column runs into the deck above, and into the deck below (where a deck reaches down to meet it:
+    /// NebulaDeck).</summary>
+    public bool JoinsAbove => CapUpR <= 0;
+    public bool JoinsBelow => CapDownR <= 0;
     private readonly ShaderMaterial _mat;
 
-    private NebulaPlume(NebulaDef def, PlumeLook look, Vector3 seed, float mPerU)
+    private NebulaPlume(NebulaDef def, PlumeLook look, DeckLook deck, Vector3 seed, float mPerU)
     {
         Def = def;
         Look = look;
+        Seed = seed;
         RadiusU = (float)(def.RM / mPerU);
+        FlareR = deck.ColumnFlareKm * 1000 / (float)def.RM;
+        TopR = Math.Max(FlareR * 1.3f, FlareR + 0.15f);
+        // a form short of a deck ends in a head (or a foot) a share of the way there, by the plume's own seed; a puff is a
+        // radius or so either way, never reaching the flare
+        float v = Frac(seed.X * 7.31f + seed.Z * 2.17f), w = Frac(seed.Y * 5.77f + seed.X * 3.41f);
+        (CapUpR, CapDownR) = def.Form switch
+        {
+            "rising" => (FlareR * Mathf.Lerp(0.4f, 0.75f, v), 0f),
+            "hanging" => (0f, FlareR * Mathf.Lerp(0.3f, 0.6f, v)),
+            "puff" => (Math.Clamp(Mathf.Lerp(0.55f, 1.15f, v), 0.35f, FlareR * 0.7f), Math.Clamp(Mathf.Lerp(0.35f, 0.8f, w), 0.3f, FlareR * 0.6f)),
+            _ => (0f, 0f),
+        };
         _shader ??= GD.Load<Shader>("res://src/Game/View/nebula_plume.gdshader");
         _mat = new ShaderMaterial { Shader = _shader, RenderPriority = Priority };
         _mat.SetShaderParameter("noise_tex", Noise());
@@ -56,11 +85,14 @@ public sealed class NebulaPlume
         _mat.SetShaderParameter("color_glow", look.Glow);
         _mat.SetShaderParameter("glow_strength", look.GlowStrength);
         _mat.SetShaderParameter("density", (float)def.Density);
-        _mat.SetShaderParameter("top", look.HeightR);
-        _mat.SetShaderParameter("bottom", Bottom);
+        _mat.SetShaderParameter("top", TopR);
+        _mat.SetShaderParameter("bottom", -TopR);
+        _mat.SetShaderParameter("flare", FlareR);
+        _mat.SetShaderParameter("deck_fill", deck.Fill);
         _mat.SetShaderParameter("bound", Bound);
-        _mat.SetShaderParameter("cover_tex", CoverTexture(look.HeightR, look.Anvil, seed));
+        _mat.SetShaderParameter("cover_tex", CoverTexture(TopR, FlareR, CapUpR, CapDownR, look.Anvil, seed));
         _mat.SetShaderParameter("absorption", look.Absorption);
+        _mat.SetShaderParameter("contrast", look.Contrast);
         _mat.SetShaderParameter("base_scale", look.BaseScale);
         _mat.SetShaderParameter("detail_scale", look.DetailScale);
         _mat.SetShaderParameter("erosion", look.Erosion);
@@ -68,31 +100,38 @@ public sealed class NebulaPlume
         _mat.SetShaderParameter("clear", Math.Max(look.ClearKm * 1000f / mPerU / RadiusU, 1e-3f));
         _mat.SetShaderParameter("seed", seed);
         _mat.SetShaderParameter("flash_color", look.Flash);
-        _mat.SetShaderParameter("flash", new Color[Flashes]);
+        _mat.SetShaderParameter("flash", new Vector4[Flashes]);
         // the column the shader marches: a little wider than Bound (a 32-sided column's flats sit inside its radius), as
-        // far below the plane as above, so the mesh needs no offset; the shader stops at Bottom itself
+        // far below the plane as above
         float r = Bound * 1.02f;
         Node = new MeshInstance3D
         {
             Name = "Plume", MaterialOverride = _mat, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-            Mesh = new CylinderMesh { TopRadius = r, BottomRadius = r, Height = 2 * look.HeightR, RadialSegments = 32, Rings = 1 },
+            Mesh = new CylinderMesh { TopRadius = r, BottomRadius = r, Height = 2 * TopR, RadialSegments = 32, Rings = 1 },
             Position = new Vector3((float)(def.XM / mPerU), 0, (float)(def.ZM / mPerU)), Scale = Vector3.One * RadiusU,
         };
     }
 
     /// <summary>A scenario's plume in its look, with its own seed (three numbers 0 to 1: where in the noise it is cut from,
     /// which way it leans), at <paramref name="mPerU"/> metres to the scene's unit.</summary>
-    public static NebulaPlume Build(NebulaDef def, Vector3 seed, float mPerU) => new(def, PlumeLooks.For(def.Look), seed, mPerU);
+    public static NebulaPlume Build(NebulaDef def, Vector3 seed, float mPerU) => new(def, PlumeLooks.For(def.Look), DeckLook.Get(), seed, mPerU);
 
     /// <summary>The sun (the direction toward it, world space, and its strength), the battle's clock in seconds, and the
     /// lightning inside the plume now: up to <see cref="Flashes"/> flashes, each a place in the plume's own units (x, y, z in
     /// radii from its foot) with its brightness in the alpha.</summary>
-    public void Sync(Vector3 sunDir, float sunEnergy, double battleS, Color[] flashes)
+    public void Sync(Vector3 sunDir, float sunEnergy, double battleS, Vector4[] flashes)
     {
         _mat.SetShaderParameter("sun_dir", sunDir);
         _mat.SetShaderParameter("sun_energy", sunEnergy);
         _mat.SetShaderParameter("plume_time", (float)battleS);
         _mat.SetShaderParameter("flash", flashes);
+    }
+
+    /// <summary>The battle's fog (its colour, and its density a scene unit), laid over the cloud at its own depth.</summary>
+    public void SetFog(Color color, float densityPerU)
+    {
+        _mat.SetShaderParameter("fog_color", color);
+        _mat.SetShaderParameter("fog_density", densityPerU);
     }
 
     private static float Smooth(float a, float b, float x)
@@ -101,39 +140,60 @@ public sealed class NebulaPlume
         return t * t * (3 - 2 * t);
     }
 
-    // A slow field over the plane, 0 to 1, cut from the seed: where the column's towers stand and where its foot hangs.
+    private static float Frac(float x) => x - Mathf.Floor(x);
+
+    // A slow field over the plane, 0 to 1, cut from the seed: where a head's towers stand.
     private static float Lobes(float ax, float ay, Vector3 ph) =>
         0.5f + 0.25f * (Mathf.Sin(ax * 2.1f + ph.X + 1.3f * Mathf.Sin(ay * 1.7f + ph.Y)) + Mathf.Sin(ay * 2.6f + ph.Z + 1.1f * Mathf.Sin(ax * 1.9f + ph.X * 2f)));
 
     /// <summary>The column's shape, the one implementation of it: how far inside the column a point is (the plume's own
     /// units, radii from its foot), 0 outside, 1 in the heart, soft between over half a radius. On the plane (y = 0) the
-    /// cloud's mean edge is the circle of radius 1 (the rule's), but for the lobes; the column leans as it climbs, spreads
-    /// toward its head by <paramref name="anvil"/>, and ends in towers of different heights (the tallest reach
-    /// <paramref name="top"/>) that round over to nothing, as its foot hangs to different depths: never cut flat.</summary>
-    public static float Cover(Vector3 p, float top, float anvil, Vector3 seed)
+    /// cloud's mean edge is the circle of radius 1 (the rule's), but for the lobes. Above and below it the column wanders,
+    /// bulges and narrows at its waist as it climbs, each by its own amount drawn from the seed (owner, 2026-11-10: "we also
+    /// dont want all the columns to have the same shape"). An end that reaches a deck (cap 0) flares by
+    /// <paramref name="anvil"/> of its radius from <paramref name="flare"/> on (less in a column that flares within a radius
+    /// of the plane, so a wide one never spreads into a table) and thins away by <paramref name="top"/>, where the deck's
+    /// funnel has come down to meet it (NebulaDeck); an end short of its deck (<paramref name="capUp"/>,
+    /// <paramref name="capDown"/>, radii) rounds over into towers of different heights.</summary>
+    public static float Cover(Vector3 p, float top, float flare, float capUp, float capDown, float anvil, Vector3 seed)
     {
-        if (p.Y <= Bottom || p.Y >= top) return 0;
+        float ay = Math.Abs(p.Y);
+        float cap = p.Y >= 0 ? capUp : capDown;
+        if (ay >= top || (cap > 0 && ay >= cap * 1.1f)) return 0;
         Vector3 ph = seed * Mathf.Tau;
-        float u = Math.Max(p.Y, 0) / top;
-        float lean = 0.06f * Math.Clamp(Math.Abs(p.Y) * 2, 0f, 1f) + 0.07f * Math.Max(p.Y, 0);
-        float x = p.X + lean * Mathf.Sin(p.Y * 1.3f + ph.X), z = p.Z + lean * Mathf.Cos(p.Y * 1.1f + ph.Y);
+        // this column's own proportions
+        float wander = Mathf.Lerp(0.06f, 0.32f, Frac(seed.X * 3.7f + seed.Y * 1.3f));
+        float waist = Mathf.Lerp(0.0f, 0.28f, Frac(seed.Y * 4.1f + seed.Z * 2.9f));
+        float bulge = Mathf.Lerp(0.03f, 0.16f, Frac(seed.Z * 5.3f + seed.X * 1.7f));
+        float lobe = Mathf.Lerp(0.04f, 0.16f, Frac(seed.X * 6.1f + seed.Z * 3.3f));
+        int k1 = 2 + (int)(Frac(seed.Y * 8.3f) * 3), k2 = 5 + (int)(Frac(seed.Z * 9.7f) * 4);
+        // none of the wander or bulge on the plane, where the column is the rule's circle
+        float rise = Smooth(0, 1.5f, ay);
+        float x = p.X + rise * wander * (Mathf.Sin(p.Y * 0.42f + ph.X) + 0.4f * Mathf.Sin(p.Y * 1.3f + ph.Y));
+        float z = p.Z + rise * wander * (Mathf.Cos(p.Y * 0.37f + ph.Y) + 0.4f * Mathf.Cos(p.Y * 1.1f + ph.Z));
         float len = Mathf.Sqrt(x * x + z * z);
-        float r = p.Y < 0 ? Mathf.Lerp(0.5f, 1f, Smooth(Bottom, 0, p.Y)) : 1 - 0.14f * Mathf.Sin(Mathf.Pi * Math.Clamp(u / 0.55f, 0f, 1f));
-        r += anvil * 0.5f * Smooth(0.4f, 0.8f, u);
+        float h = ay / (cap > 0 ? cap : flare);
+        float r = 1 + rise * (-waist * Mathf.Sin(Mathf.Pi * Math.Clamp(h, 0f, 1f)) + bulge * Mathf.Sin(p.Y * 0.9f + ph.Z));
+        if (cap <= 0)
+        {
+            float spread = anvil * Math.Min(1f, flare);
+            r += spread * Smooth(0.6f, 1f, h) + spread * 0.5f * Smooth(flare, top, ay);
+        }
         float ang = Mathf.Atan2(z, x);
-        r *= 1 + 0.08f * Mathf.Sin(3 * ang + ph.Z + p.Y * 1.5f) + 0.04f * Mathf.Sin(7 * ang - ph.X - p.Y * 2.7f);
+        r *= 1 + lobe * Mathf.Sin(k1 * ang + ph.Z + p.Y * 1.5f) + lobe * 0.5f * Mathf.Sin(k2 * ang - ph.X - p.Y * 2.7f);
         float side = Smooth(-Edge, Edge * 1.5f, r - len);
         if (side <= 0) return 0;
-        float towers = Smooth(0.15f, 0.85f, Lobes(x * 1.9f, z * 1.9f, ph));
-        float head = (top - Edge) * Mathf.Lerp(0.45f, 1f, towers) * Mathf.Sqrt(Math.Max(1 - 0.42f * len * len, 0));
-        float foot = Bottom * Mathf.Lerp(0.3f, 1f, Lobes(x * 2.3f, z * 2.3f, new Vector3(ph.Z, ph.X, ph.Y)));
-        return side * Smooth(-Edge, Edge * 1.5f, head - p.Y) * Smooth(0, 0.3f, p.Y - foot);
+        if (cap <= 0) return side * (1 - Smooth(flare * 0.85f, top, ay));
+        // a head (or a foot) of towers of different heights that round over
+        float towers = Smooth(0.15f, 0.85f, Lobes(x * 1.9f, z * 1.9f, p.Y >= 0 ? ph : new Vector3(ph.Z, ph.X, ph.Y)));
+        float head = cap * Mathf.Lerp(0.55f, 1f, towers) * Mathf.Sqrt(Math.Max(1 - 0.42f * len * len, 0));
+        return side * Smooth(-Edge, Edge * 1.5f, head - ay);
     }
 
-    // The shape over the bounding box (x and z from -Bound to Bound, y from Bottom to top) as a 3D texture of one byte a
+    // The shape over the bounding box (x and z from -Bound to Bound, y from -top to top) as a 3D texture of one byte a
     // voxel, a z slice an image, sampled at voxel centres; the box's outer voxels are clear, so a sample clamped past the
     // box reads none.
-    private static ImageTexture3D CoverTexture(float top, float anvil, Vector3 seed)
+    private static ImageTexture3D CoverTexture(float top, float flare, float capUp, float capDown, float anvil, Vector3 seed)
     {
         int n = CoverXZ, h = CoverY;
         var slices = new Godot.Collections.Array<Image>();
@@ -144,8 +204,8 @@ public sealed class NebulaPlume
                 for (int j = 1; j < h - 1; j++)
                     for (int i = 1; i < n - 1; i++)
                     {
-                        var p = new Vector3(((i + 0.5f) / n * 2 - 1) * Bound, Bottom + (j + 0.5f) / h * (top - Bottom), ((k + 0.5f) / n * 2 - 1) * Bound);
-                        px[j * n + i] = (byte)Mathf.RoundToInt(Cover(p, top, anvil, seed) * 255);
+                        var p = new Vector3(((i + 0.5f) / n * 2 - 1) * Bound, -top + (j + 0.5f) / h * 2 * top, ((k + 0.5f) / n * 2 - 1) * Bound);
+                        px[j * n + i] = (byte)Mathf.RoundToInt(Cover(p, top, flare, capUp, capDown, anvil, seed) * 255);
                     }
             slices.Add(Image.CreateFromData(n, h, false, Image.Format.R8, px));
         }

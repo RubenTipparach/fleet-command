@@ -499,6 +499,16 @@ const SECTIONS = [
         why: 'Today both sides blunder through alike, which is fair but not clever.' },
       { id: 'NP7', q: 'The looks: seven colours of plume (violet, garnet, brass, teal, orchid, and the dark slate and cinder storms), towers of different heights, lightning inside the storm and a forked bolt onto the struck ship. What should change?', options: ['Good as built', 'Taller and wider: a wall of cloud across the field', 'Softer and thinner: more see-through', 'Notes below'], rec: 0,
         why: 'Look at the takes first; the shapes and colours are one data file.' },
+      { id: 'NP8', q: 'A sight line through a plume breaks a lock. Beyond what range, and does ECCM above the target\'s ECM still see through?', options: ['20 km, and ECCM still sees through', '20 km, and nothing sees through', 'Any range: a plume between always hides', '60 km (as the first build had for a ship inside a plume)'], rec: 0,
+        why: 'Most fights are inside 60 km, so at 60 km a plume between the fleets hid almost nothing; at 20 km it hides each fleet from the other until they close to knife range.' },
+      { id: 'NP9', q: 'The decks of cloud above and below a nebula battle: 18 km off the plane, 20 km deep, whole 40 km past the outermost column and gone 90 km beyond, fading into the sky from 110 to 260 km off. What should change?', options: ['Good as built', 'Closer to the plane: a tighter cavern', 'Farther off: more open sky between', 'Notes below'], rec: 0,
+        why: 'The numbers are one data file (data/space/nebula_decks.json); the top deck thins away when the camera zooms out above it.' },
+      { id: 'NP10', q: 'How many plumes in a nebula battle, and of which forms?', options: ['Two big columns, five of 8-18 km in all four forms (column, rising, hanging, puff), four small puffs', 'More: a forest of columns', 'Fewer: a few big columns only', 'Notes below'], rec: 0,
+        why: 'Every plume is cover that breaks locks and halves fire, so more plumes make a slower, more hide-and-seek fight.' },
+      { id: 'NP11', q: 'A nebula battle\'s sky takes its plumes\' colours, with a wall of the same cloud round the horizon. Keep it?', options: ['Yes', 'Keep the old skies', 'Notes below'], rec: 0,
+        why: 'The sky shows only in the band between the decks, so it reads as the far side of the same nebula.' },
+      { id: 'NP12', q: 'Which style should draw the nebula (docs/screenshots/game/nebula-styles.png shows all three in three battles)?', options: ['3 Billboards: Crab Breeze\'s lit camera-facing puffs', '1 Volume: marched cloud', '2 Meshes: displaced puffs', 'Notes below'], rec: 0,
+        why: 'The billboards read most like real cloud in the stills and cost the least; the volume is the softest but hazy; the meshes look carved.' },
     ] },
 ];
 

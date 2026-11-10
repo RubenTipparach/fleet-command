@@ -11,10 +11,10 @@ using Godot;
 namespace FleetCommand.Game.View;
 
 /// <summary>One look of plume (a row of data/space/plumes.json): the cloud's colour in the sun and in its own shadow, the
-/// glow of its thin edges, how tall the column stands (in its radii) and how far its head spreads, how fast it swallows
+/// glow of its thin edges, how far the column flares into the decks above and below, how fast it swallows
 /// light, the size of its billows and wisps, how fast they rise, how far from the camera it is back to its full
 /// thickness, and an ion storm's lightning.</summary>
-public sealed record PlumeLook(Color Lit, Color Deep, Color Glow, float GlowStrength, float HeightR, float Anvil, float Absorption,
+public sealed record PlumeLook(Color Lit, Color Deep, Color Glow, float GlowStrength, float Anvil, float Absorption, float Contrast,
     float BaseScale, float DetailScale, float Erosion, float DriftPerS, float ClearKm, Color Flash, float FlashesPerMin);
 
 public static class PlumeLooks
@@ -39,8 +39,8 @@ public static class PlumeLooks
             if (!NebulaDef.Looks.Contains(look)) throw new DataError($"{File}.{look}: not a plume look (there are: {string.Join(", ", NebulaDef.Looks)})");
             StrictJson o = root.Obj(look);
             looks[look] = new PlumeLook(PlanetLooks.Col(o, "lit"), PlanetLooks.Col(o, "deep"), PlanetLooks.Col(o, "glow"),
-                PlanetLooks.Range(o, "glow_strength", 0, 2), PlanetLooks.Range(o, "height_r", 0.5, 4), PlanetLooks.Range(o, "anvil", 0, 0.8),
-                PlanetLooks.Range(o, "absorption", 0.5, 16), PlanetLooks.Range(o, "base_scale", 0.3, 4), PlanetLooks.Range(o, "detail_scale", 1, 12),
+                PlanetLooks.Range(o, "glow_strength", 0, 2), PlanetLooks.Range(o, "anvil", 0, 0.8),
+                PlanetLooks.Range(o, "absorption", 0.5, 16), PlanetLooks.Range(o, "contrast", 0, 1), PlanetLooks.Range(o, "base_scale", 0.3, 4), PlanetLooks.Range(o, "detail_scale", 1, 12),
                 PlanetLooks.Range(o, "erosion", 0, 1), PlanetLooks.Range(o, "drift_per_s", 0, 0.2), PlanetLooks.Range(o, "clear_km", 0, 200), PlanetLooks.Col(o, "flash"),
                 PlanetLooks.Range(o, "flashes_per_min", 0, 120));
             o.Done();
