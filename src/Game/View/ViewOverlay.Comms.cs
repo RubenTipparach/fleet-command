@@ -24,8 +24,13 @@ public sealed partial class ViewOverlay
         if (B.ShipById(id) is { Alive: true } s) (x, z) = (s.X, s.Z);
         else if (B.Planets.FirstOrDefault(p => p.Id == id) is { } p) (x, z) = (p.X, p.Z);
         else return null;
-        return Local(x, z) is { } l && new Rect2(Vector2.Zero, Size).Grow(-8).HasPoint(l) ? l + GlobalPosition : null;
+        return ScreenPointAt(x, z);
     }
+
+    /// <summary>Where a point of the battle plane (metres) is drawn in the window, for the scripted captain's click on the
+    /// plane (the helm by pointing); null when it is off the view.</summary>
+    public Vector2? ScreenPointAt(double xm, double zm) =>
+        Local(xm, zm) is { } l && new Rect2(Vector2.Zero, Size).Grow(-8).HasPoint(l) ? l + GlobalPosition : null;
 
     partial void DrawComms(Fonts f)
     {

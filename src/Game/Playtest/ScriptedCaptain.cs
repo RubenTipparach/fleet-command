@@ -174,6 +174,7 @@ public sealed partial class ScriptedCaptain : Node
         double closest = double.MaxValue;
         string? closestOf = null;
         bool ordered = false, hadTarget = false;
+        double lastPoint = double.MinValue, nearestFoe = double.MaxValue;
         string? steering = null, commanding = B.Player.Id;
         while (B.Over == null && B.T - t0 < maxS)
         {
@@ -212,6 +213,22 @@ public sealed partial class ScriptedCaptain : Node
                 }
             }
             hadTarget = B.TargetOf(me) != null;
+            // enemies in sight but none to lock (a nebula plume on every sight line, beyond the lock range): steer for the
+            // nearest by clicking the plane toward it, as a captain points the helm, every few seconds; closing on it is
+            // progress (Mac playtest 2026-11-10: kelvane_heavy's captain sat 60 s behind a plume, "No lock: the nebula is
+            // between us")
+            if (steer && B.TargetOf(me) == null && B.SeenFoes(me).OrderBy(o => Rules.DistKm(me, o)).FirstOrDefault() is { } hid)
+            {
+                double gap = Rules.DistKm(me, hid);
+                if (gap < nearestFoe - 1) { nearestFoe = gap; lastChange = B.T; }
+                if (B.T - lastPoint > 4)
+                {
+                    lastPoint = B.T;
+                    double k = Math.Min(8, gap * 0.5) / Math.Max(gap, 1e-3);
+                    await ClickPlane(me.X + (hid.X - me.X) * k, me.Z + (hid.Z - me.Z) * k);
+                }
+            }
+            else nearestFoe = double.MaxValue;
             // the Intercept key lit is Intercept on: pressing it again would turn it off (free heading), so only press it unlit.
             // A helm order lapses when its target dies and the next is locked by itself, so an order given before is checked
             // again, not remembered (bot suite 2026-11-08: kelvane_hunt flew on free heading past the Hunt carrier)
@@ -568,6 +585,19 @@ public sealed partial class ScriptedCaptain : Node
         vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = p, GlobalPosition = p }, true);
         await Frames(3);
         return null;
+    }
+
+    /// <summary>Clicks the battle plane in the view at a point (metres), as a captain points the helm there; nothing when
+    /// the point is off the view.</summary>
+    private async Task ClickPlane(double xm, double zm)
+    {
+        if (_sources().OfType<View.ViewOverlay>().FirstOrDefault() is not { } ov || ov.ScreenPointAt(xm, zm) is not { } p) return;
+        Viewport vp = GetViewport();
+        vp.PushInput(new InputEventMouseMotion { Position = p, GlobalPosition = p }, true);
+        await Frames(1);
+        vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = true, Position = p, GlobalPosition = p }, true);
+        vp.PushInput(new InputEventMouseButton { ButtonIndex = MouseButton.Left, Pressed = false, Position = p, GlobalPosition = p }, true);
+        await Frames(2);
     }
 
     /// <summary>Clicks each listed control in turn, one a battle second, for up to maxS battle seconds or until the battle
