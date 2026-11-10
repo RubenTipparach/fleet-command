@@ -43,7 +43,10 @@ Data and code borrowed for the mockups (not skills, recorded here so they are fo
   (`RubenTipparach/godot-sandbox` at `d5d8e461`: `comic_dirt_ground`, `comic_crater_overlay`, `comic_cloud_layer`,
   `comic_atmosphere_shell`, `planet_body_3d.tscn`), its detail by distance from Falchion (`RubenTipparach/falchion` at
   `5d128af8`, `src/render/planets/PlanetMaterial.ts`), its hash from Jarzynski and Olano, "Hash Functions for GPU
-  Rendering" (2020, PCG3D). The gas giant, rings and asteroid shaders are new.
+  Rendering" (2020, PCG3D). The gas giant, rings and asteroid shaders are new. The ground patterns (2026-11-10,
+  `src/Game/View/planet_patterns.gdshaderinc`: the city, the bones' ground, the ruins' lamps and pulse) are after Falchion's
+  `src/render/planets/patterns.glsl.ts`, the `cubeUV` of its `atmosphere.glsl.ts` and the palettes of its
+  `src/content/planetLooks.ts`, at the same revision; the skeletons, ring works, towns, causeways and island chains are new.
 
 Not copied, and why:
 - Crab Breeze's `bevy-architecture`, `deterministic-simulation` and `perf-measure`: Bevy and Rust

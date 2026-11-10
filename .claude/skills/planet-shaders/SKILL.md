@@ -21,7 +21,8 @@ noise octaves as the camera comes down. Provenance is in `.claude/skills/PROVENA
 | `src/Game/View/PlanetBody.cs` | **The one builder of a planet**: its layers, their meshes and render order, the tilt, and `Sync` (sun and detail each frame). The battle and the gallery both call it; never build a planet anywhere else (CLAUDE.md 6.1) |
 | `src/Game/View/PlanetLooks.cs` | Reads and validates `data/space/planets.json` into a `PlanetLook` and sets the ground and air materials (`Apply`) |
 | `src/Game/View/planet_noise.gdshaderinc` | The shared noise (PCG3D hash, value noise, fbm, fbm by octaves), the tangent frame, the capped relief normal, the Fibonacci lattice, the day term and the ring density. Every planet shader and the asteroid include it |
-| `planet.gdshader` | Rocky and lava ground (Falchion's: seas, caps, craters, canyons, volcanoes, night lights, sites) |
+| `planet.gdshader` | Rocky and lava ground (Falchion's: seas, caps, craters, canyons, volcanoes, night lights, sites), and the island chains (`islands`) |
+| `planet_patterns.gdshaderinc` | What was built, or died, on a rocky ground (`pattern`): the city, the ruins, the bones. Included by `planet.gdshader` (below) |
 | `planet_gas.gdshader` | Gas giant tops: bands, jets, eddies, storms, ovals, limb, ring shadow |
 | `planet_craters.gdshader` | The crater shell (sandbox) |
 | `planet_clouds.gdshader` | The cloud layer (sandbox) |
@@ -114,6 +115,43 @@ What makes a world read as a place and not a painted ball. Each of these was a f
 
 Not measured: the ground shader costs more than it did, and no phone frame time has been taken for it yet.
 
+## Worlds with something on the ground (owner, 2026-11-10: "city planet, archipelego, fossil planet (lots of bones). and an old alien ruins planet")
+
+Four kinds after Falchion's world types (`src/content/planetLooks.ts`, `src/render/planets/patterns.glsl.ts`):
+
+| Kind | In `planets.json` | From |
+|---|---|---|
+| `city` | `"pattern":"city"` | Falchion's `ecumenopolis` (its PATTERN 1), ported |
+| `archipelago` | `"islands":1.0` | New here (Falchion has none by the name): chains of small islands along ridged crests, in shoals |
+| `fossil` | `"pattern":"bones"` | Falchion's `bones` row for the ground (its PATTERN 4); the skeletons are new here (Falchion's bones are props) |
+| `ruins` | `"pattern":"ruins"` | New here, after Falchion's `deadtech` (dying lamps) and `choir` (the pulse). Tied to no faction: who built it is the owner's to say (CLAUDE.md section 1) |
+
+A pattern is a rocky ground's last coat (`pp_surface`, called before the grain): it recolours the ground, adds to the
+emission and gives a `rise` that joins the relief. Craters and canyons cut through it (`clear`). The rules it is drawn by:
+
+1. **A cube, even in angle.** Cells sit on the six faces of a cube (`pp_cube`: the tangent undone, so a block at a face's
+   corner is the size of one at its middle; `pp_dir` goes back). Every cell count is a whole number to the cube unit, so
+   cells meet the faces' edges.
+2. **The pixel's size is passed in** (`px`, taken once by the caller outside any branch), never `fwidth` inside a
+   pattern: a derivative across a face's edge or inside a loop is wrong or undefined.
+3. **Nothing finer than a pixel is drawn sharp.** A line narrower than a pixel is drawn a pixel wide at its share of the
+   brightness (`pp_band`, `pp_line`); a cell's number goes to the mean as the cell shrinks under a pixel (`pp_soft`); a
+   level of detail fades out as its cells do (`pp_fade`) and its loop stops there. So nothing sparkles from afar, the
+   brightness holds at every distance, and the cost falls with distance.
+4. **Detail in levels, each a whole multiple of the last** (the city's streets split seven times; the bones come in seven
+   sizes, the ring works in four), so there is always something a few pixels wide from orbit down to the planet view's
+   closest.
+5. **A grid must not read as a grid from orbit.** The city's avenues are bent by a low noise (zero at the faces' edges,
+   so they still meet), its open ground is chosen block by block from a noise, its districts differ in tone. A regular
+   cube grid read as a disco ball.
+6. **Emission is bright under the game's glow.** The city's night is about a third of Falchion's strength, and its
+   lights follow a density (thick round old cores, thin between), or the night side is one saturated sheet.
+7. **A thing has a state, not only a shape**: each arc of a ring work stands or has fallen by its own number, the ruins
+   are buried by a drift mask and broken by a crumble noise, the skeletons are half in the ground. Whole clean shapes read
+   as a blueprint.
+
+No frame time has been taken for the patterns on a phone.
+
 ## Gas giants and rings
 
 - Bands by latitude (`bands` pairs), each band's shade drawn from its own number (no two pairs repeat), edges torn by two
@@ -137,7 +175,7 @@ scene's lights like ships (not unshaded). Seeds go through FNV-1a so neighbourin
 
 ```sh
 .tools/godot/Godot_mono.app/Contents/MacOS/Godot --path . --resolution 1280x800 -- --planet-gallery=docs/screenshots/game/planets
-scripts/game-stills.sh docs/screenshots/game ms-planet-battle,ms-planet-terran,ms-planet-ocean,ms-planet-desert,ms-planet-ice,ms-planet-lava,ms-planet-barren,ms-planet-gas,ms-planet-ice_giant,ms-planet-toxic,ms-planet-surface,ms-planet-sites,ms-planet-sites-close
+scripts/game-stills.sh docs/screenshots/game ms-planet-battle,ms-planet-terran,ms-planet-ocean,ms-planet-desert,ms-planet-ice,ms-planet-lava,ms-planet-barren,ms-planet-gas,ms-planet-ice_giant,ms-planet-toxic,ms-planet-city,ms-planet-archipelago,ms-planet-fossil,ms-planet-ruins,ms-planet-surface,ms-planet-low-city,ms-planet-surface-city,ms-planet-low-fossil,ms-planet-surface-fossil,ms-planet-low-ruins,ms-planet-surface-ruins,ms-planet-sites,ms-planet-sites-close
 ```
 
 The gallery saves every kind from afar, up close and as a crescent (the sun round behind, so the terminator crosses the
@@ -147,4 +185,6 @@ print nothing: the stills are the check. Look at each still
 a ring shadow on the wrong side, rocks that read as balls; and in the crescents, a terminator that fades instead of stepping, a night side that is
 black (no features to make out) or brighter than a faint fill, a rim glowing round the dark limb, lit
 patches floating in the night, a coast outlined in lights, blocks or stripes along the terminator. Then the battle stills, which show the same planets under a
-battle's sun and in the planet view down to the surface.
+battle's sun and in the planet view down to the surface. A world with a pattern is also looked at from low over it
+(`ms-planet-low-<kind>`, `ms-planet-surface-<kind>`): its finest levels must still hold something, and from afar it must
+not sparkle, show the cube's faces or read as a grid.

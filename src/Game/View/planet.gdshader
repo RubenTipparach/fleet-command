@@ -29,6 +29,11 @@
 //    it, one turned away is in night a little before (terminator_relief), so low light picks the ranges out; the night
 //    side keeps a minimal fill, enough to make its features out under its lights (PN_NIGHT_FILL), and the air's rim is
 //    only a trace round it (pn_rim).
+//
+// Four more kinds of world (owner, 2026-11-10: "theres some world types in falchion, city planet, archipelego, fossil
+// planet (lots of bones). and an old alien ruins planet"): an archipelago is this ground with its continents sunk and
+// chains of small islands raised (islands); a city world, a ruins world and a bone world are a pattern drawn over the
+// ground (pattern, pattern_color: planet_patterns.gdshaderinc, after Falchion's patterns.glsl.ts).
 shader_type spatial;
 render_mode unshaded, shadows_disabled, cull_back;
 
@@ -59,6 +64,9 @@ uniform vec3 glow : source_color = vec3(1.0, 0.8, 0.48);
 uniform vec3 city_glow : source_color = vec3(1.0, 0.8, 0.48);
 uniform float cities = 0.0;
 uniform float volcanoes = 0.0;
+uniform float islands = 0.0;   // an archipelago: the continents sunk to shoals, chains of small islands raised
+uniform int pattern = 0;       // what stands on the ground: 0 nothing, 1 a city, 2 ruins, 3 bones (PlanetLooks.Patterns)
+uniform vec3 pattern_color : source_color = vec3(0.8);
 uniform vec3 seed = vec3(0.0);
 // the battle's sun: the direction toward it (world space), its colour and strength
 uniform vec3 sun_dir = vec3(0.4, 0.7, 0.6);
@@ -281,6 +289,8 @@ vec3 ramp4(vec3 a, vec3 b, vec3 c, vec3 d, float t) {
 	return t < 0.3333 ? mix(a, b, t * 3.0) : (t < 0.6667 ? mix(b, c, t * 3.0 - 1.0) : mix(c, d, t * 3.0 - 2.0));
 }
 
+#include "res://src/Game/View/planet_patterns.gdshaderinc"
+
 // Falchion's CRATER_DEPTH and VOLCANO_HEIGHT (src/core/surface/Terrain.ts)
 const float CRATER_DEPTH = 0.32;
 const float VOLCANO_HEIGHT = 0.6;
@@ -308,6 +318,14 @@ void fragment() {
 	vec3 warp = vec3(snoise(p * 0.55 + vec3(31.0)), snoise(p * 0.55 + vec3(57.0)), snoise(p * 0.55 + vec3(83.0)));
 	vec3 pw = p + warp * 0.22;
 	float h = fbm_n(pw, octaves);
+	// an archipelago: the continents sunk to shoals, and chains of small islands raised along drowned ridges, each chain
+	// broken into beads, in some stretches of the sea and not in others
+	if (islands > 0.0) {
+		float crest = smoothstep(0.52, 0.8, ridged(pw * 2.3 + vec3(61.0)));
+		float bead = smoothstep(-0.35, 0.35, snoise(p * 6.5 + vec3(23.0)) + 0.4 * snoise(p * 19.0 + vec3(37.0)));
+		float stretch = smoothstep(-0.4, 0.15, snoise(pw * 0.8 + vec3(77.0)));
+		h = h * mix(1.0, 0.5, islands) + islands * 0.5 * crest * bead * stretch;
+	}
 	float h_base = h;
 	float mtn = 0.0;
 	if (mountains > 0.0) {
@@ -410,6 +428,12 @@ void fragment() {
 		emissive += glow * volc.y * 1.8;
 		col = mix(col, glow * 0.5, volc.y * 0.6);
 	}
+	// what stands on the ground (a city, ruins, bones: planet_patterns.gdshaderinc), under the grain, the snow and the cloud
+	float rise = 0.0;
+	if (pattern > 0 && surface != 2) {
+		float gone = max(smoothstep(0.01, 0.06, -crater), cut);
+		col = pp_surface(v_obj, px, h_base, col, close, 1.0 - smoothstep(-0.16, -0.02, ndl), 1.0 - gone, emissive, rise, spec);
+	}
 	// the ground's own grain, once the camera is close enough to see it
 	if (close > 0.0 && surface != 2) {
 		col *= 1.0 + close * land * 0.2 * (0.6 * snoise(p * 43.0 + vec3(3.0)) + 0.4 * snoise(p * 131.0 + vec3(9.0)));
@@ -463,7 +487,7 @@ void fragment() {
 	// relief: the height shades the ground by its screen-space slope (Falchion's bump). The landforms at their full
 	// height, the broad terrain at a share of it (more up close), so ranges and basins read from afar
 	float h_rel = crater * CRATER_DEPTH - cut_depth + volc.x * VOLCANO_HEIGHT + mountains * 0.3 * mtn + lin * 0.05
-		+ (0.2 + 0.3 * close) * h_base;
+		+ (0.2 + 0.3 * close) * h_base + rise;
 	float relief = 1.0;
 	float day_land = day;
 	vec3 dpx = dFdx(VERTEX), dpy = dFdy(VERTEX);
