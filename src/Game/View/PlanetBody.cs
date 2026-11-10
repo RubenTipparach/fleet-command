@@ -56,10 +56,6 @@ public sealed class PlanetBody
             var m = Lit(_craters, 1);
             m.SetShaderParameter("coverage", look.CraterCover);
             m.SetShaderParameter("seed", seed.X);
-            // the floors a shade under the lowland, the rims the highland's colour
-            m.SetShaderParameter("color_floor", look.Palette[2].Darkened(0.15f));
-            m.SetShaderParameter("color_shadow", look.Palette[1].Darkened(0.35f));
-            m.SetShaderParameter("color_rim", look.Palette[3]);
             Body.AddChild(Mesh("Craters", _craterMesh, m));
         }
         if (look.CloudLayer is { } cl)

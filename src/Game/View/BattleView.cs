@@ -29,6 +29,8 @@ public sealed partial class BattleView : Node3D
     /// mockup's (owner, 2026-11-06: "1km -> 10km"); ships are drawn at their framed length (ShipClass.FrameM), so the picture is
     /// the mockup's.</summary>
     public const float MPerU = 1000f;
+    /// <summary>How far out the camera stays from the hull it watches, in the hull's framed lengths.</summary>
+    private const float HullClearX = 0.85f;
 
     private ConsoleContext _x = null!;
     private Camera3D _cam = null!;
@@ -267,7 +269,10 @@ public sealed partial class BattleView : Node3D
         if (pv != null) PlanetCamera(pv, focus, gliding ? 1 - e : 0);
         else
         {
-            var off = new Vector3(Mathf.Sin(Yaw) * Mathf.Cos(Pitch), Mathf.Sin(Pitch), Mathf.Cos(Yaw) * Mathf.Cos(Pitch)) * Dist;
+            // never inside the hull it watches: a station or freighter longer than the closest zoom keeps the camera out
+            // past its own size (the player's zoom is kept, and wins again once the hull is a smaller one)
+            float clear = _x.Battle.Scenario.DamageRange ? 0 : (float)(f.Class.FrameM / MPerU) * HullClearX;
+            var off = new Vector3(Mathf.Sin(Yaw) * Mathf.Cos(Pitch), Mathf.Sin(Pitch), Mathf.Cos(Yaw) * Mathf.Cos(Pitch)) * Mathf.Max(Dist, clear);
             _cam.Position = focus + off;
             _cam.LookAt(focus, Vector3.Up);
         }

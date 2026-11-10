@@ -112,6 +112,6 @@ shot ms-planet-sites-close 1920x1080 $MS --sites --survey --secure --near-planet
 shot ms-science-planet 1920x1080 $MS --sites --near-planet --select-planet --station=science
 shot ms-transport-sites 1920x1080 $MS --sites --survey --secure --near-planet --beam --select-planet --station=transport --tab=cargo --cargo-view=sites
 shot ms-unknown-contact 1920x1080 --steps=10
-for c in yd:krai ab:krai op:krai pb:krai mon:fauna pod:krai; do
+for c in sb:krai yd:krai ab:krai op:krai pb:krai mon:fauna pod:krai; do
   shot "ms-standin-${c%%:*}" 1920x1080 --steps=300 --swap=kharz:$c --target=kharz --target-view --zoom=0.5
 done

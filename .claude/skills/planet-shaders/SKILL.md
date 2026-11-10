@@ -44,8 +44,13 @@ no other. A new kind is a new name there and a new row there, nothing else.
    tangents, the step widened to the fragment's own footprint on the sphere (`max(step, fwidth-ish * 1.5)`, so the limb
    does not sparkle), the slope capped (`max_slope`, so no fine feature turns the surface inside out). Amplitudes of fine
    terms stay small: each term's slope scales with its frequency.
-4. **A crater is a profile, not a painting**: a bowl and a raised rim as height, its exact slope bending the normal;
-   craters on a jittered Fibonacci lattice in three sizes, big first, small stamped over.
+4. **A crater is a profile, not a painting**, shaped like a real impact (owner, 2026-11-09: "Craters didn't look natural
+   close up"): a flat floor (wider in big craters) with a central peak in the biggest, a wall steepest just under a sharp
+   rim crest, an ejecta blanket falling away outside it and fading into the plain, the rim wandering off the circle by a
+   low noise, a fine rubble relief on the floor. Craters sit on a jittered Fibonacci lattice in three sizes, big first,
+   small stamped over. **The crater shell multiplies the ground (`blend_mul`), it never paints a colour of its own**: the
+   ground's texture runs on through every crater and only the light on its slopes and a slight tint change. A crater
+   painted in palette colours read as a dark disc stuck on the plain.
 5. **A cloud has tops**: its height is the square root of the density above the edge (fast climb at the rim, round
    over the top) plus a finer billow inside; its edge thins over a soft fringe, never a cut line. Two layers turn against
    each other about a wind axis.
