@@ -349,6 +349,19 @@ THEMES = [
     ("hunt_ash_lattice", "Ash Lattice", "Pale ash-grey wisps in a crossed lattice over dark, a faint warm core.",
      2448, [0.009, 0.009, 0.01], [0.78, 0.76, 0.74], [((0.7, 0.68, 0.64), (0.16, 0.15, 0.14)), ((0.8, 0.6, 0.45), (0.18, 0.12, 0.08))],
      [0.75, 0.9, 1.15], [((0.98, 0.95, 0.9), (0.8, 0.65, 0.5))], 1.0),
+    # the heavy fleets' skies (the *_heavy scenarios, 2026-11-10): one for each of the four battles of three heavy ships a side
+    ("heavy_garnet_front", "Garnet Front", "A long garnet-red front of cloud with a brass-gold edge, a black lane under it and a white core at its head.",
+     2501, [0.02, 0.008, 0.012], [0.92, 0.66, 0.56], [((0.95, 0.2, 0.3), (0.3, 0.02, 0.08)), ((1.0, 0.72, 0.36), (0.36, 0.18, 0.05))],
+     [0.7, 0.95, 1.25], [((1.0, 0.95, 0.88), (1.0, 0.5, 0.4))], 1.15),
+    ("heavy_brass_squall", "Brass Squall", "Brass-yellow squall clouds over a slate-blue dark, a pale gold core and heavy lanes across it.",
+     2502, [0.01, 0.012, 0.02], [0.86, 0.8, 0.7], [((0.95, 0.76, 0.3), (0.3, 0.2, 0.05)), ((0.4, 0.52, 0.8), (0.06, 0.1, 0.24))],
+     [0.7, 0.9, 1.25], [((1.0, 0.97, 0.86), (0.95, 0.75, 0.4))], 1.1),
+    ("heavy_teal_anvil", "Teal Anvil", "A flat-topped anvil of teal cloud, sea-green beneath, a cold white core in its shadow.",
+     2503, [0.007, 0.016, 0.02], [0.62, 0.86, 0.86], [((0.25, 0.8, 0.85), (0.03, 0.18, 0.26)), ((0.45, 0.95, 0.65), (0.06, 0.26, 0.14))],
+     [0.8, 1.0, 1.1], [((0.92, 1.0, 1.0), (0.4, 0.85, 0.9))], 1.1),
+    ("heavy_orchid_wall", "Orchid Wall", "A high wall of orchid and violet cloud, rose at its crest, a lilac-white core behind a dark gate.",
+     2504, [0.016, 0.008, 0.024], [0.8, 0.66, 0.92], [((0.8, 0.4, 0.95), (0.2, 0.05, 0.32)), ((1.0, 0.5, 0.7), (0.32, 0.08, 0.2))],
+     [0.7, 0.9, 1.2], [((0.98, 0.92, 1.0), (0.75, 0.5, 1.0))], 1.2),
 ]
 
 

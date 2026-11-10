@@ -115,6 +115,13 @@ shot ms-planet-sites 1920x1080 $MS --sites --survey --secure --near-planet --bea
 shot ms-planet-sites-close 1920x1080 $MS --sites --survey --secure --near-planet --beam --planet-view=0.12 --yaw=-0.05 --pitch=0.3
 shot ms-science-planet 1920x1080 $MS --sites --near-planet --select-planet --station=science
 shot ms-transport-sites 1920x1080 $MS --sites --survey --secure --near-planet --beam --select-planet --station=transport --tab=cargo --cargo-view=sites
+# nebula plumes and an ion storm (change nebula-plumes): the columns from across the field, a storm with its lightning, the
+# view from inside a plume, a strike that trips the core, and the plumes on the tactical map
+shot nebula-plume 1920x1080 --scenario=concord_heavy --steps=60 --zoom=9 --pitch=0.2 --yaw=1.2
+shot nebula-storm 1920x1080 --scenario=kelvane_heavy --steps=60 --zoom=14 --pitch=0.3 --flicker
+shot nebula-inside 1920x1080 --scenario=krai_heavy --steps=60 --in-plume=0
+shot nebula-strike 1920x1080 --scenario=concord_heavy --in-plume=0 --steps=150 --strike --flicker --zoom=4 --pitch=0.25
+shot nebula-map 1920x1080 --scenario=concord_heavy --steps=60 --expand=radar
 shot ms-unknown-contact 1920x1080 --steps=10
 for c in sb:krai yd:krai ab:krai op:krai pb:krai mon:fauna pod:krai; do
   shot "ms-standin-${c%%:*}" 1920x1080 --steps=300 --swap=kharz:$c --target=kharz --target-view --zoom=0.5

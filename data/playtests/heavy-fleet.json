@@ -1,0 +1,8 @@
+{
+ "_doc": "The scripted captain with a heavy fleet (owner, 2026-11-10: \"record a battle with cruisers/carriers a larger fleet of 3 v 3 ships on each side\", \"make sure the bot uses as many systems at their disposal: shuttles, fighters, missiles, tractor beams, mines, and trransporters\", \"and of course special weapons\"): pick the scenario and fight it all out (the all_out beat: the fight beat with fighters, missile barrages, a disguised shuttle, the tractor, mines, hit and run raids and the special weapons used between volleys, hopping between the fleet's ships so each one's bays, racks and pads are used). Played on the heavy fleets, from every side (concord_heavy, krai_heavy, kelvane_heavy, ssarith_heavy); what was used is printed as PLAYTEST_SYSTEMS.",
+ "beats": [
+  { "do": "wait_ready" },
+  { "do": "pick_scene" },
+  { "do": "all_out", "s": 900, "arg": "hop" }
+ ]
+}

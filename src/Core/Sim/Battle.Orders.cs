@@ -180,7 +180,7 @@ public sealed partial class Battle
     private void AutoFireStep()
     {
         Ship p = Player;
-        if (!p.AutoFire || !p.Alive || p.Struck || p.Cloaking) return;
+        if (!p.AutoFire || !p.Alive || p.Struck || p.HoldsFire) return;
         foreach (var (m, t, aim) in Fireable()) FireMount(p, m, t, aim);
     }
 
@@ -198,7 +198,7 @@ public sealed partial class Battle
     }
 
     /// <summary>True when one mount could fire at the locked target now.</summary>
-    public bool CanFire(Mount m) => TargetOf(Player) is { } t && t.Side != Player.Side && !Player.Cloaking && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
+    public bool CanFire(Mount m) => TargetOf(Player) is { } t && t.Side != Player.Side && !Player.HoldsFire && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
 
     /// <summary>Fires one mount at the locked target.</summary>
     public bool FireOne(int index)
@@ -212,7 +212,7 @@ public sealed partial class Battle
     /// ship, else the locked enemy); one at a time when not in a volley.</summary>
     public Mount[] WouldFire()
     {
-        if (Player.Cloaking) return Array.Empty<Mount>();   // no fire while cloaked (Battle.Cloak.cs)
+        if (Player.HoldsFire) return Array.Empty<Mount>();   // no fire while cloaked (Battle.Cloak.cs) or with the core tripped (Battle.Nebula.cs)
         var all = Fireable().Select(f => f.M).ToArray();
         return Player.Volley ? all : all.Take(1).ToArray();
     }
@@ -222,6 +222,7 @@ public sealed partial class Battle
     public int Fire()
     {
         if (Player.Cloaking) { Say("Tactical", "Cannot fire while cloaked."); return 0; }
+        if (Player.CoreDown) { Say("Tactical", "Cannot fire: the core is down."); return 0; }
         Ship? t = TargetOf(Player);
         bool pins = Player.Mounts.Any(m => m.Selected && PinTarget(m) != null);
         if (t == null && !pins) { Say("Tactical", "No target locked."); return 0; }

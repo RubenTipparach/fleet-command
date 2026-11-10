@@ -18,7 +18,7 @@ public class ArmingTests
         b.ArmOne(0, Arming.Overload);
         Assert.Equal(Arming.Overload, lance.State);
         Assert.True(Rules.Mode(lance).Damage > lance.Weapon.Normal.Damage);
-        Assert.False(Rules.InRange(me, lance, t));
+        Assert.False(b.Rules.InRange(me, lance, t));
         Assert.Equal(0, b.Rules.HitChance(me, lance, t));
         t.Z = -39000;
         Assert.True(b.Rules.HitChance(me, lance, t) > 0);

@@ -14,7 +14,10 @@ how to run one. The scripted captain exists (2026-11-04, change `battle-scenario
 `data/playtests/` and the suite of runs, every scenario from both sides, in `data/playtests/suite.json`. Its beats
 today: `wait_ready`, `pick_scene` (through the view's scene selector), `click <control id>`, `press <input action>`,
 `station <id>`, `expand <Station|Ship|Weapons>`, `collapse`, `arm <offline|normal|overload>`, `helm <key>`,
-`fight` (lock with Tab, order Intercept, fire when a charged weapon is in arc, until won or lost) and `hold <s>`. A
+`fight` (lock with Tab, order Intercept, fire when a charged weapon is in arc, until won or lost), `all_out` (the
+same fight with every other system the ship has used as it goes: fighters, a missile barrage, a disguised shuttle, the
+tractor, mines beamed and dropped, a transporter raid, special weapons, hopping between its ships; it prints what it used
+as `PLAYTEST_SYSTEMS`) and `hold <s>`. A
 beat with no progress is `stuck`. `scripts/playtest.sh` plays the suite headless at a fixed 30 frames a second (a
 verdict, not a look); `scripts/playtest.sh --watch` plays it in a window in real time, for recording.
 

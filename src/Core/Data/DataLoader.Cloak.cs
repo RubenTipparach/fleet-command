@@ -1,5 +1,5 @@
-// DataLoader.Cloak: the scenario fields of the cloak-and-sensors package, read with the rest of a scenario: a nebula on the
-// battle plane, a scene won by repelling boarders, and per ship its cloak, ECM and ECCM, the energy its scene gives its
+// DataLoader.Cloak: the scenario fields of the cloak-and-sensors package, read with the rest of a scenario: nebula plumes on
+// the battle plane, a scene won by repelling boarders, and per ship its cloak, ECM and ECCM, the energy its scene gives its
 // systems, its marines and a boarding captain's orders (the battle console mockup's scene setups, docs/mockups/
 // battle-console.html SCENES.nebula, cloak and repel). Every field is optional and checked (CLAUDE.md 6.4).
 using System;
@@ -50,15 +50,23 @@ public static partial class DataLoader
             s.Bool("shields_down", false), bat);
     }
 
-    /// <summary>A scenario's nebula (metres; density 0 to 1), or null.</summary>
-    public static NebulaDef? CloakNebula(StrictJson root)
+    /// <summary>A scenario's nebula plumes ("nebulae": each x_m, z_m and r_m in metres, density above 0 to 1, storm for an
+    /// ion storm, and a look of NebulaDef.Looks: "violet" when left out, a storm's "slate"); empty when it has none.</summary>
+    public static IReadOnlyList<NebulaDef> CloakNebulae(StrictJson root)
     {
-        if (root.ObjOrNull("nebula") is not { } n) return null;
-        double r = n.Num("r_m"), d = n.Num("density");
-        if (r <= 0) throw new DataError($"{n.Where}.r_m: must be above 0");
-        if (d is <= 0 or > 1) throw new DataError($"{n.Where}.density: above 0 and at most 1");
-        var nb = new NebulaDef(n.Num("x_m"), n.Num("z_m"), r, d);
-        n.Done();
-        return nb;
+        var list = new List<NebulaDef>();
+        if (!root.Has("nebulae")) return list;
+        foreach (StrictJson n in root.ObjList("nebulae"))
+        {
+            double r = n.Num("r_m"), d = n.Num("density");
+            if (r <= 0) throw new DataError($"{n.Where}.r_m: must be above 0");
+            if (d is <= 0 or > 1) throw new DataError($"{n.Where}.density: above 0 and at most 1");
+            bool storm = n.Bool("storm", false);
+            string look = n.Has("look") ? n.Str("look") : storm ? NebulaDef.StormLook : "violet";
+            if (Array.IndexOf(NebulaDef.Looks, look) < 0) throw new DataError($"{n.Where}.look: one of {string.Join(", ", NebulaDef.Looks)}, not '{look}'");
+            list.Add(new NebulaDef(n.Num("x_m"), n.Num("z_m"), r, d, look, storm));
+            n.Done();
+        }
+        return list;
     }
 }

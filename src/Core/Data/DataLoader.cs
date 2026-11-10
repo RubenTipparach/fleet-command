@@ -334,7 +334,7 @@ public static partial class DataLoader
         ScenarioGoal? goal = CommsScenes.LoadGoal(root);
         CommsScenes.Check(root.Where, ships, planets, goal);
         var scenario = ScenarioExtras.Scene(root, new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun, isRange, Wells: WellDef.ReadList(root),
-            Nebula: CloakNebula(root), Repel: root.Bool("repel", false))) with { Planets = planets, Goal = goal };
+            Nebulae: CloakNebulae(root), Repel: root.Bool("repel", false))) with { Planets = planets, Goal = goal };
         root.Done();
         return scenario;
     }

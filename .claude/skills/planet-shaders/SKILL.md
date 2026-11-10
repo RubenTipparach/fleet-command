@@ -30,6 +30,7 @@ noise octaves as the camera comes down. Provenance is in `.claude/skills/PROVENA
 | `planet_atmosphere.gdshader` | The single-scattering air (sandbox) |
 | `asteroid.gdshader`, `Asteroids.cs`, `data/space/asteroids.json` | Procedural rocks |
 | `PlanetGallery.cs` | The stills (below) |
+| `nebula_plume.gdshader`, `NebulaPlume.cs`, `PlumeLooks.cs`, `data/space/plumes.json`, `BattleView.Nebula.cs` | Nebula plumes and ion storms (below) |
 
 The planet kinds are `PlanetDef.Kinds` (`src/Core/Data/Scenes.Comms.cs`); `planets.json` must have a look for every one and
 no other. A new kind is a new name there and a new row there, nothing else.
@@ -38,8 +39,9 @@ no other. A new kind is a new name there and a new row there, nothing else.
 
 1. **No UVs.** Every pattern is a function of `normalize(VERTEX)` in model space, so there is no seam, no pinched pole,
    and the pattern turns with the planet. A `SphereMesh`'s UVs and tangents are never read.
-2. **A shell per layer**, each its own sphere a little above the last, in render priority order: ground 0, craters 1
-   (1.004), clouds 2 (a third of the air's height up), rings 3, air 4. A shell between features `discard`s, so the one
+2. **A shell per layer**, each its own sphere a little above the last, in render priority order from
+   `PlanetBody.Priority` (-10): ground +0, craters +1 (1.004), clouds +2 (a third of the air's height up), rings +3,
+   air +4. All of a planet draws before a nebula plume (`NebulaPlume.Priority`, -1) and the battle's glows (0). A shell between features `discard`s, so the one
    under shows.
 3. **Relief is a height field differenced into a normal** (`pn_frame`, `pn_relief`): four samples either side along two
    tangents, the step widened to the fragment's own footprint on the sphere (`max(step, fwidth-ish * 1.5)`, so the limb
@@ -177,6 +179,29 @@ planes (`facets`: the ball stops where it meets each), crater bowls with rims. T
 across the sphere; the fragment mixes it half and half with the screen's facet normal, adds the sandbox ground's grain and
 pebbles as relief, and colours by two rock colours, dust on the high ground, darker crater floors. Rocks are lit by the
 scene's lights like ships (not unshaded). Seeds go through FNV-1a so neighbouring rocks share nothing.
+
+## Nebula plumes
+
+Owner, 2026-11-10: "something like a 3d noise texture would be cool? something like how Ace Combat 7 does clouds"; change
+`nebula-plumes`. A plume is a column of cloud standing on the circle its rules test (`Rules.NebulaAt`), one mesh and one
+draw call, marched in `nebula_plume.gdshader`.
+
+- **The shape is C#, baked; the detail is noise.** `NebulaPlume.Cover` is the one implementation of the column's shape
+  (the lean, the anvil, towers of different heights, a hanging foot), baked per plume into a 64 x 48 x 64 texture. The
+  shader multiplies it by the shared tiling noise (`assets/space/plume_noise.bin`, written by
+  `tools/space/plume_noise.py` from a seeded generator; `--check` proves the file is the generator's). Computing the shape
+  in the shader at every step cost twice the frame: never move it back.
+- **The march**: clipped to the bounding column and the scene's depth, jittered by a PCG hash of the pixel, stopped when
+  opaque; a short second march toward the sun for the cloud's own shadow. 128 and 3 steps on Forward+, 44 and 2 on
+  Compatibility.
+- **The same sun as the planets** (rule 6): `sun_dir` and `sun_energy` from `BattleView`, the cloud `unshaded`.
+- **From inside, the picture thins toward the camera** (`clear_km`), so the captain's ship stays in sight. The rules do
+  not thin.
+- **A storm's lightning**: flickers in the cloud are the view's (seeded, `flashes_per_min`); the bolt onto a ship is the
+  simulation's strike (`Battle.Lightning`), drawn by `BattleView.Nebula`.
+- Stills: `scripts/game-stills.sh docs/screenshots/game nebula-plume,nebula-storm,nebula-inside,nebula-strike,nebula-map`.
+  Look for: a cut-off flat top or side (the shape leaving its bounding column), banding (too few steps), a plume drawn
+  over a ship in front of it, a column whose foot is not the map's circle.
 
 ## Look, then call it done
 

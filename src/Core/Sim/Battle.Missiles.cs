@@ -9,6 +9,10 @@
 //   grade's chance, and chases the lure; one that reaches it spends itself there (a decoy is destroyed by the first).
 //   A burnt-out flare leaves its missiles lost; a decoy gone (destroyed, out of life, or voided by its ship firing main
 //   weapons) sends its missiles back for the ship (SFC2, printed pages 136-137). Point defence is PointDefenceStep.
+// - A nebula plume loses a missile its target (openspec/changes/nebula-plumes; owner, 2026-11-10: "missiles dont quite
+//   work"): each second it flies in one, or after a ship in one, it has the nebula's missile_lost_per_s x the density of a
+//   chance to fly on straight. Drawn from the "nebula" stream, and only inside a plume, so every other battle replays as
+//   it did.
 // The rolls come from their own stream ("countermeasures"), so a battle still replays exactly from its seed.
 using System;
 using System.Collections.Generic;
@@ -65,6 +69,8 @@ public sealed partial class Battle
         }
         sh.DX = (ax - sh.X) / d; sh.DZ = (az - sh.Z) / d;
         sh.X += sh.DX * stepM; sh.Z += sh.DZ * stepM;
+        // a plume round the missile or its target loses it the target, and it flies on as it was heading (Rules.Cloak.cs)
+        if (sh.Lure == null && Rules.MissileLostPerS(sh.X, sh.Z, t!) is > 0 and var perS && _nebRng.Next() < perS * dt) sh.Lost = true;
     }
 
     // the missiles closing on a ship that are still after it (no lure, not lost), in the stable shot order

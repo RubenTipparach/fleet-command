@@ -13,7 +13,7 @@ public class SensorsTests
 {
     private static CloakSystems Cs => TestData.Data.Systems.Cloak;
     private static Tuning Tu => TestData.Data.Tuning;
-    private const string Nebula = "\"nebula\": {\"x_m\": 0, \"z_m\": -70000, \"r_m\": 48000, \"density\": 0.85}, ";
+    private const string Nebula = "\"nebulae\": [{\"x_m\": 0, \"z_m\": -70000, \"r_m\": 48000, \"density\": 0.85}], ";
 
     private static void Run(Battle b, double s) { for (int i = 0; i < Math.Round(s / b.Tuning.StepS); i++) b.Step(); }
 
@@ -56,14 +56,13 @@ public class SensorsTests
     }
 
     [Fact]
-    public void Inside_a_nebula_every_shot_loses_its_penalty_and_ecm_counts_its_gain_more()
+    public void Inside_a_nebula_ecm_counts_its_gain_more()
     {
         Battle b = CloakTests.Pair("ca", "concord", "krai_ff", "krai", -70000, scene: Nebula, extraB: ", \"hold_fire\": true");
         Ship t = b.ShipById("b")!;
         t.Ecm = 2;
         double nb = b.Rules.NebulaAt(t.X, t.Z);
-        double want = -Tu.EcmStep * 2 * (1 + Cs.Nebula.EwGainX * nb) - Cs.Nebula.HitPenalty * nb;
-        Assert.Equal(want, b.Rules.Ew(b.Player, t), 9);
+        Assert.Equal(-Tu.EcmStep * 2 * (1 + Cs.Nebula.EwGainX * nb), b.Rules.Ew(b.Player, t), 9);
     }
 
     [Fact]

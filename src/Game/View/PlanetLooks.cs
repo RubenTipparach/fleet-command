@@ -140,16 +140,16 @@ public static class PlanetLooks
         return look;
     }
 
-    private static float Range(StrictJson o, string k, double lo, double hi)
+    internal static float Range(StrictJson o, string k, double lo, double hi)
     {
         double v = o.Num(k);
         if (!double.IsFinite(v) || v < lo || v > hi) throw new DataError($"{o.Where}.{k}: between {lo} and {hi}, not {v}");
         return (float)v;
     }
 
-    private static Color Col(StrictJson o, string k) => Hex(o.Str(k), $"{o.Where}.{k}");
+    internal static Color Col(StrictJson o, string k) => Hex(o.Str(k), $"{o.Where}.{k}");
 
-    private static Color Hex(string c, string where) =>
+    internal static Color Hex(string c, string where) =>
         Regex.IsMatch(c, "^#[0-9a-fA-F]{6}$") ? new Color(c) : throw new DataError($"{where}: a colour as #rrggbb, not '{c}'");
 
     /// <summary>Sets a look on a planet's ground and air (null for a world with no air): the rocky ground's every number

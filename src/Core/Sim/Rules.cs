@@ -97,8 +97,6 @@ public sealed partial class Rules
         return Math.Abs(Geometry.Wrap(b - c)) <= m.Def.ArcWidthDeg * Geometry.Deg / 2;
     }
 
-    public static bool InRange(Ship s, Mount m, Ship t) => DistKm(s, t) <= Mode(m).RangeKm;
-
     public static bool Ready(Mount m) => m.State != Arming.Offline && m.Charge >= 1 && m.Hp > 0 && m.StunS <= 0;
 
     /// <summary>Seconds until a mount is ready at the rate Battle charges it, or null when it is not cooling.</summary>
@@ -118,8 +116,8 @@ public sealed partial class Rules
         if (t == null || !t.Alive || !InRange(s, m, t)) return 0;
         WeaponMode w = Mode(m);
         double d = DistKm(s, t);
-        double p = _t.HitChanceNear - _t.HitChanceFalloff * d / w.RangeKm;
-        p += Ew(s, t);   // ECM, ECCM, the nebula, passive sensors and a cloak (Rules.Cloak.cs)
+        double p = _t.HitChanceNear - _t.HitChanceFalloff * d / RangeKm(s, m, t);
+        p += Ew(s, t);   // ECM, ECCM, passive sensors and a cloak (Rules.Cloak.cs)
         // a proximity burst ignores the target's speed and adds its bonus (weapon-arming design)
         if (!w.IgnoreSpeed) p -= _t.HitSpeedPenaltyPer300MS * Math.Abs(t.V) / 300;
         p += w.HitBonus;
@@ -129,7 +127,8 @@ public sealed partial class Rules
         // erratic manoeuvres: harder to hit, and harder to hit with
         if (t.Erratic) p *= _t.ErraticHit;
         if (s.Erratic) p *= _t.ErraticHit;
-        return Math.Clamp(p, _t.HitChanceMin, _t.HitChanceMax);
+        // a plume takes its share last, off the chance as it stands, so a shot in the thick of one hits half as often
+        return Math.Clamp(p, _t.HitChanceMin, _t.HitChanceMax) * NebulaHitX(s, t);
     }
 
     /// <summary>A subsystem's status from its health and its energy.</summary>

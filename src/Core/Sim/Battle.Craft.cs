@@ -183,7 +183,7 @@ public sealed partial class Battle
         double x = s.X + r.X * side * bd.SideOffsetM, z = s.Z + r.Z * side * bd.SideOffsetM;
         _shots.Add(new Shot
         {
-            Kind = "missile", X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, To = t.Id, From = s.Id, Hit = _craftRng.Next() < bd.HitX,
+            Kind = "missile", X = x, Z = z, SX = x, SZ = z, TX = t.X, TZ = t.Z, To = t.Id, From = s.Id, Hit = _craftRng.Next() < bd.HitX * Rules.NebulaHitX(s, t),
             Damage = Lethal("barrage") ? t.Class.HullHp * Data.Systems.LethalHullShareX : g.Damage, SpeedMS = g.SpeedMS, Life = bd.LifeS, Color = g.Color, Grade = g, PdHitsLeft = g.PdHits,
         });
     }

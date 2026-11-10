@@ -15,6 +15,9 @@ export DOTNET_ROOT="$(dirname "$DOTNET")" PATH="$(dirname "$DOTNET"):$PATH" DOTN
 echo "== faction readiness page is what the game says (docs/design/faction-readiness.html, CLAUDE.md section 12)"
 python3 tools/factions/readiness.py --check
 
+echo "== the plumes' noise is what its generator writes (assets/space/plume_noise.bin, change nebula-plumes)"
+python3 tools/space/plume_noise.py --check
+
 echo "== headless tests (FleetCommand.Core)"
 "$DOTNET" test tests/Core.Tests -v q --nologo
 
