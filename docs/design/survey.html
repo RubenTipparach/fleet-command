@@ -510,6 +510,30 @@ const SECTIONS = [
       { id: 'NP12', q: 'Which style should draw the nebula (docs/screenshots/game/nebula-styles.png shows all three in three battles)?', options: ['3 Billboards: Crab Breeze\'s lit camera-facing puffs', '1 Volume: marched cloud', '2 Meshes: displaced puffs', 'Notes below'], rec: 0,
         why: 'The billboards read most like real cloud in the stills and cost the least; the volume is the softest but hazy; the meshes look carved.' },
     ] },
+  { tag: 'EZ', name: 'The engagement zone (change engagement-zone, designed, not built)',
+    lead: 'Your asks (2026-11-10): a big square zone of engagement; leaving it is a retreat, with 30 s to turn around before the mission is abandoned; abandoning without a working warp drive self-destructs the ship, with the warning on screen. The warning banner and the zone on the radar and map are mockup 37, for your approval first.',
+    qs: [
+      { id: 'EZ1', q: 'How big is the zone?', options: ['300 km a side, centred between the fleets\' starts', '200 km a side: tighter fights', '500 km a side: room to run', 'Set per mission'], rec: 0,
+        why: 'The heavy scenes start their fleets about 105 km apart and their plumes reach about 130 km from the middle.' },
+      { id: 'EZ2', q: 'What does abandoning a mission cost in the campaign?', options: ['The mission is failed, as a withdrawal', 'Failed, and standing lost with the mission\'s giver', 'Notes below'], rec: 0,
+        why: 'A withdrawal already ends a battle; abandoning is a withdrawal you did not plan.' },
+      { id: 'EZ3', q: 'A ship that comes back inside and leaves again: does it get the full 30 s again?', options: ['Yes, the full 30 s', 'No, the clock only pauses inside'], rec: 0,
+        why: 'Full time again keeps the rule simple to read on screen.' },
+      { id: 'EZ4', q: 'When the commanded ship abandons, what of the rest of the fleet?', options: ['They warp out with it; a wingman without a working drive is left behind and lost', 'They all self-destruct if any drive is down', 'Each wingman must leave the zone itself'], rec: 0,
+        why: 'The retreat is the fleet\'s; a ship that cannot warp cannot follow.' },
+      { id: 'EZ5', q: 'Do enemy ships respect the zone?', options: ['They keep inside it; an enemy that leaves has fled and counts as gone', 'They ignore it'], rec: 0,
+        why: 'Otherwise a fleeing enemy could stall a mission by running for the edge.' },
+    ] },
+  { tag: 'BS', name: 'Stars in battles with planets (change battle-stars, designed, not built)',
+    lead: 'Your ask (2026-11-10): if there is a planet there should be a star, distant or in the same map; usually far off, unless the battle is in a sector that holds a star.',
+    qs: [
+      { id: 'BS1', q: 'Does a battle with no planet show its star too?', options: ['Yes, when its sector has one; otherwise deep space as now', 'Only battles with planets'], rec: 0,
+        why: 'The light of a battle should always come from somewhere a captain can see.' },
+      { id: 'BS2', q: 'A star in the map: can a ship fly into it?', options: ['No: it destroys a ship, and it stands outside the engagement zone by default', 'It is scenery only'], rec: 0,
+        why: 'A star on the field is a hazard; keeping it outside the zone keeps fights clear of it.' },
+      { id: 'BS3', q: 'Does a near star change the rules (heat, sensors)?', options: ['Not now: light only', 'Yes: sensors blinded toward it, heat near it'], rec: 0,
+        why: 'Rules for stars would be their own change.' },
+    ] },
 ];
 
 const DECIDED = [
