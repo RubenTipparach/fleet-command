@@ -186,13 +186,18 @@ public sealed partial class BattleView : Node3D
         return box ?? new Aabb();
     }
 
-    /// <summary>The stand-in for a class's shape, in its faction's stand-in colours.</summary>
+    /// <summary>The stand-in for a class's shape, in its faction's stand-in colours, scaled inside an unscaled holder as an
+    /// approved ship is (<see cref="ShipModel"/>), so what joins the holder (the shield display, the stacking's measure) is in
+    /// scene units: scaled on the holder itself, a station's shields were drawn its length squared wide (owner, 2026-11-10:
+    /// "The shield display is super far from the the stations").</summary>
     private static Node3D StandIn(Ship s)
     {
         var model = GD.Load<PackedScene>($"res://scenes/standins/{s.Class.Shape}.tscn").Instantiate<Node3D>();
         model.Scale = Vector3.One * (float)(s.Class.FrameM / MPerU);
         Paint(model, new Color(s.Faction.Hull), new Color(s.Faction.Trim));
-        return model;
+        var holder = new Node3D();
+        holder.AddChild(model);
+        return holder;
     }
 
     private static void Paint(Node n, Color hull, Color trim)
