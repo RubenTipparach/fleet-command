@@ -257,6 +257,49 @@ that".
 Sizes after the change, in metres: 9 Broadside 271 x 56 x 46; 10 Drum 190 x 58 x 62; 11 Cross 234 x 135 x 134;
 12 Ram 212 x 79 x 47; 13 Castle 264 x 44 x 108; 14 Delta 274 x 158 x 32.
 
+## Version 5: six specialists (owner, 2026-11-10)
+
+The owner, in three messages:
+- "my bad, the ships I wanted were not 5,6 it was saucer runner and boarder";
+- "pirate ships instead of having larger and larger class, they are all roughly "cruiser" sized ships with hull on the
+  lower side, but all are specialized in: Boarding, Mine laying, Tractor Beam, Rock breaking (can split up asteroids
+  causing high damage to ships nearb them including it self) and figher launching";
+- "oh and of course, disguising themselves as freighters too!".
+
+### D11. The Vos line is trades, not sizes
+
+- **No class ladder.** Every Vos ship is about cruiser size. On the board they run 122 to 185 m; the game's cruisers
+  are 111 m (Concord), 134 m (Krai), 150 m (Hunt) and 166 m (Institute).
+- **A weaker hull.** A Vos ship has fewer hull points than a warship of its size ("hull on the lower side"). It is a
+  freighter's drive block with a trade bolted on, not an armoured warship. The number is set with its class data.
+- **One trade a ship.** Five trades the owner named, each a system a captain uses in battle, and the disguise.
+- **The disguise** is read here as something every Vos ship does, since every one is made of freighter parts, with one
+  ship that does it best. Whether it is a trade of its own or a trait of all is survey Y9.
+
+### D12. The six specialists
+
+Each is one of the owner's picks, cut down to a freighter's drive block and a short length of spine. Which hull takes
+which trade is ours (survey Y8). Measured from the built geometry.
+
+| # | Ship | Trade | Built on | What does the work | Size, m |
+|---|---|---|---|---|---|
+| 3 | Boarder | Boarding | A Hunt freighter's drive block and 30 m of spine | A Hunt frigate's forked bow, to hold a prize; two containers of boarding quarters | 161 x 52 x 32 |
+| 10 | Drum | Mine laying | A Concord freighter's drive block and 60 m of spine | Twelve containers of mines in two rings, a chute in each one's outer face | 122 x 64 x 64 |
+| 11 | Cross | Tractor beams | A Hunt freighter's drive block and 50 m of spine | Four arms with a tractor emitter at each tip, 80 m apart; the machinery in a container on each arm | 134 x 95 x 94 |
+| 12 | Ram | Rock breaking | A Krai freighter's drive block and 40 m of spine | The breaker's driver in the flat face of a hammer head of armour 60 m across; Albatross nacelles to get clear | 148 x 79 x 46 |
+| 8 | Saucer runner | Fighter launching | A Hunt freighter's drive block and 20 m of spine | A deck over the drive block for six stolen Institute fighters; a Concord Petrel's saucer as flight control | 185 x 52 x 38 |
+| 9 | Broadside | Passing as a freighter | A Krai freighter's drive block and 104 m of spine | Eight containers on its flanks, each a gun house behind its doors | 170 x 46 x 46 |
+
+- **Withdrawn:** 5 Twin haul, 6 Prize frigate, 13 Castle and 14 Delta. The owner's "15" matched no ship; with six
+  trades and six picks filling them it is no longer asked, and Y8 offers the Castle and the Delta again.
+- **Rock breaking in the game.** The trade needs asteroids in a battle that can be split, and a blast that hurts every
+  ship near it, the breaker included. That is its own change, after `campaign-space` 2.3 (rocks in battles). The Ram's
+  armoured head is drawn for it: the ship hides behind it when the pieces fly.
+- **Trades the game already has:** boarding (`boarding-party`), mines and tractors (`data/battle/systems/tractor.json`),
+  fighters (the carriers' parked craft). The disguise is new.
+- **The Boarder's bow** is a Hunt frigate's fork, a taken part with two pointed tines. Version 4's rule covers what the
+  Syndicate welds, so it is left as taken; whether a crew blunts it is survey Y7.
+
 ## Open questions
 
 | # | Question | Provisional answer |
@@ -264,8 +307,10 @@ Sizes after the change, in metres: 9 Broadside 271 x 56 x 46; 10 Drum 190 x 58 x
 | Y1 | Is this how the Vos get their ships: freighter parts and taken parts rearranged, nothing built from new? | Yes |
 | Y3 | Do taken parts keep their makers' colours, with Vos metal in rust and brass? | Yes, dulled, with clan paint added in detail |
 | Y4 | May a Vos ship carry parts of any faction, or only its neighbours'? | Any faction the clan could have raided |
-| Y5 | Which becomes which class? | Prize frigate the small ship, Drum the middle, Broadside and Cross the capitals, Twin haul the clan's home ship |
-| Y6 | Which ship is "15"? | 14 Delta |
-| Y7 | Do the taken bows on 5 and 6 get cut blunt too? | No: they are the makers' own |
+| Y7 | Is the Boarder's taken fork cut blunt? | No: it is the tool the ship is for |
+| Y8 | Is each trade on the right hull? | As drawn |
+| Y9 | Is the disguise a trade of one ship or a trait of all? | A trait of all, with the Broadside best at it |
+| Y10 | How does rock breaking work? | A slow charged shot at a rock; the rock splits, and everything within reach takes heavy damage |
 
-Decided: Y2, the picks (owner, 2026-11-10): 5, 6, 9, 10 and 11, and one more (Y6).
+Decided (owner, 2026-11-10): Y2, the picks (3, 8, 9, 10, 11, with 12 added by us for the rock breaker); Y5, no class
+ladder: every ship about cruiser size, a weaker hull, one trade each.

@@ -28,11 +28,22 @@
 
 - [x] 1d.1 No pointed bows: every welded bow ends in a flat face; the Ram a hammer head
 - [x] 1d.2 5 and 6 first on the board and in the list, marked kept
-- [ ] 1d.3 The owner's answer to Y6 and Y7
+- [x] 1d.3 The owner's correction (2026-11-10): the kept ships are the Saucer runner and the Boarder, not 5 and 6
+
+## 1e. Version 5: six specialists
+
+- [x] 1e.1 3 Boarder and 8 Saucer runner restored; 5, 6, 13 and 14 withdrawn
+- [x] 1e.2 Every ship cut to about cruiser size (122 to 185 m) and given one trade: boarding, mines, tractor beams, rock
+  breaking, fighters, passing as a freighter
+- [x] 1e.3 Survey section Y: Y5 decided; Y8 to Y10 added
+- [ ] 1e.4 The owner's answers to Y7 to Y10
 
 ## 2. After the picks
 
-- [ ] 2.1 Each pick's rooms first, then its hull fitted round them (Ship Design Bible)
-- [ ] 2.2 The picks as a line of classes at their own sizes
-- [ ] 2.3 Detail, the ship's own unwrap and bake (`ship-detailing`)
-- [ ] 2.4 Once approved for implementation: export, classes, and the placeholder Vos line (mockup 36) retired
+- [ ] 2.1 Each ship's rooms first, then its parts fitted round them (Ship Design Bible)
+- [ ] 2.2 Detail, the ship's own unwrap and bake (`ship-detailing`)
+- [ ] 2.3 Rock breaking as its own change (asteroids that split, a blast that hurts every ship near), after
+  `campaign-space` 2.3
+- [ ] 2.4 The disguise as its own change (how a Vos ship reads as a freighter until it acts)
+- [ ] 2.5 Once approved for implementation: export, six classes of about cruiser size with a weaker hull, and the
+  placeholder Vos line (mockup 36) retired

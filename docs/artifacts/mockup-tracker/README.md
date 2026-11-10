@@ -158,3 +158,4 @@
 - Version 163 published 2026-11-10, cloud session, version id `1794303421-b3f0`: M37 at v2 (conversions); the survey at v36.
 - Version 164 published 2026-11-10, cloud session, version id `1794304097-cf0c`: M37 at v3 (battle freighters); the survey at v37.
 - Version 165 published 2026-11-10, cloud session, version id `1794305341-ed9c`: M37 at v4 (blunt noses); the survey at v38.
+- Version 166 published 2026-11-10, cloud session, version id `1794310801-f213`: M37 at v5 (six specialists); the survey at v39.

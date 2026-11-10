@@ -34,3 +34,12 @@ Every bow the Syndicate welds SHALL end in a flat face.
 #### Scenario: The Ram
 - **WHEN** the Ram is seen from above
 - **THEN** its head ends in a flat face 52 m wide, not a point
+
+### Requirement: The Vos line is specialists of about cruiser size
+
+The Vos line SHALL have no ladder of larger classes: every Vos ship SHALL be about cruiser size and SHALL have one
+trade, among boarding, mine laying, tractor beams, rock breaking, fighter launching and passing as a freighter.
+
+#### Scenario: The board
+- **WHEN** `window.MOCKUP_MEASURE()` runs on mockup 37
+- **THEN** it lists six ships, each between 110 m and 190 m long
