@@ -73,6 +73,7 @@ public sealed partial class BattleView : Node3D
     private string? _lastTarget;
     private string? _watched;   // the ship Target view last orbited: it stays on its wreck until the next lock
     private Vector3 _focus, _glideFrom;
+    private string? _commanded;   // the ship commanded last frame (a change glides the camera to the new one)
     private float _glideT = GlideS;
     private bool _focusSet;
 
@@ -122,6 +123,7 @@ public sealed partial class BattleView : Node3D
     {
         foreach (Node3D n in _models.Values) n.QueueFree();
         foreach (ShipDamage d in _damage.Values) d.FreeDebris();
+        _commanded = null;
         _models.Clear();
         _strobes.Clear();
         _damage.Clear();
@@ -257,6 +259,11 @@ public sealed partial class BattleView : Node3D
             if (_shields.TryGetValue(s.Id, out ShieldShell? sh)) { sh.Visible = s.Alive && s.CloakK <= 0; if (sh.Visible) sh.Show(s, _x.Kit.C); }   // a cloak's shields are down
         }
         Ship p = b.Player;
+        // command passed to another ship of the fleet: the camera glides to it, as the Target view key glides (owner,
+        // 2026-11-10: "when switch ships in your fleet camera should smooth transition like it does when toggle focus target
+        // is clicked"); a new battle starts on its ship
+        if (_commanded != null && p.Id != _commanded && _focusSet) StartGlide();
+        _commanded = p.Id;
         FollowTarget(p);
         LockStep(p, dt);
         Ship? tv = TargetView ? b.TargetOf(p) ?? Wreck(b) : null;
