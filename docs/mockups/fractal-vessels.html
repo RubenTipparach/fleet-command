@@ -5,15 +5,18 @@
   shades it and writes its true depth, so a mesh ship (the Concord's Petrel, beside it at true scale) sorts against it as
   it would against another hull. Three forms, one for each school of the Axiom's draft culture (survey N1): a 4D quaternion Julia set
   sliced into our three dimensions (the escape-time school), an octahedron flake (the tilers) and a branching tree (the
-  branchers). Desktop only (owner, 2026-11-10:
-  "dont worry about phone", "I dont really need this stuff to work on a phone").
+  branchers). Version 2 (owner, 2026-11-10: "Make this thing phone friendly please! Also half resolution ray match if you
+  don't mind", replacing the day's earlier "dont worry about phone"): on a phone the controls are a bottom sheet you can
+  fold away (portrait) or a narrow column (landscape), every control a 44 px target; and the vessels are marched at half
+  the screen's resolution into a target of their own, the Petrel's depth drawn there first so it still hides them, then
+  scaled up over the full-resolution scene (a quarter of the pixels marched; a switch under Cost draws them full size).
 
   Contract with tools/mockups/shoot.mjs: window.MOCKUP_SHOTS, MOCKUP_READY, MOCKUP_SCENE (threejs-mockups skill).
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Fractal Vessels</title>
 <style>
   /* One screen: the 3D view fills it; a title block top left, a control column top right, the views along the bottom. */
@@ -59,18 +62,73 @@
   .tag { position: fixed; transform: translate(-50%, -100%); color: var(--ink); font-size: 13px; letter-spacing: .06em;
     text-transform: uppercase; pointer-events: none; white-space: nowrap; text-shadow: 0 0 4px #000, 0 0 2px #000; }
   .tag small { display: block; color: var(--dim); text-transform: none; letter-spacing: 0; text-align: center; }
+  /* Touch and phones (owner, 2026-11-10: "Make this thing phone friendly please!"): every control a 44 px target, the
+     controls a sheet that folds away, the view buttons a strip that scrolls, clear of the notch and the home bar. */
+  .stage canvas { touch-action: none; }
+  .sheetHead { display: none; }
+  .aboutBtn { display: none; }
+  @media (pointer: coarse) {
+    .forms button, .views button, .sheetHead button, .aboutBtn { min-height: 44px; }
+    .row input[type=range] { height: 44px; }
+    .check { min-height: 44px; }
+    .check input { width: 22px; height: 22px; }
+  }
+  @media (max-width: 760px), (max-height: 520px) {
+    body { font-size: 15px; }
+    .title { left: max(10px, env(safe-area-inset-left)); top: max(8px, env(safe-area-inset-top)); padding: 8px 10px;
+      max-width: calc(100% - 20px - env(safe-area-inset-left) - env(safe-area-inset-right)); box-sizing: border-box;
+      display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 10px; }
+    .title h1 { font-size: 15px; margin: 0; }
+    .title p { margin: 0; font-size: 13px; }
+    .title .more { display: none; grid-column: 1 / -1; margin-top: 6px; }
+    .title.open .more { display: block; }
+    .aboutBtn { display: block; grid-row: 1 / span 2; grid-column: 2; min-height: 44px; padding: 0 12px; background: var(--panel);
+      color: var(--ink); border: 1px solid var(--edge); border-radius: 4px; font: inherit; }
+    .sheetHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -8px 0 6px; padding: 6px 0 4px;
+      position: sticky; top: -10px; z-index: 1; background: var(--panel);   /* Hide stays in reach however far the sheet scrolls */
+      color: var(--dim); letter-spacing: .12em; text-transform: uppercase; font-size: 12px; font-weight: 600; }
+    .sheetHead button { min-height: 44px; min-width: 72px; background: var(--panel); color: var(--ink); border: 1px solid var(--edge);
+      border-radius: 4px; font: inherit; text-transform: none; letter-spacing: 0; font-size: 14px; }
+    .side.folded .sideBody { display: none; }
+    .side.folded .sheetHead { margin-bottom: 0; }
+    .views { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .views::-webkit-scrollbar { display: none; }
+    .views button { flex: none; min-height: 44px; }
+    .meter { display: none; }
+    .tag { font-size: 11px; }
+  }
+  /* Portrait: the sheet along the bottom, the view strip just above it (placed by fitSheet(), which reads the sheet's height). */
+  @media (max-width: 760px) and (orientation: portrait) {
+    .side { left: 0; right: 0; top: auto; bottom: 0; width: auto; max-height: 46%; border-radius: 10px 10px 0 0;
+      border-left: 0; border-right: 0; border-bottom: 0;
+      padding: 8px max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+    .views { left: max(10px, env(safe-area-inset-left)); right: max(10px, env(safe-area-inset-right)); max-width: none;
+      bottom: var(--sheet-h, 120px); padding-bottom: 8px; }
+  }
+  /* Landscape phones: a narrow column on the right, the strip along the bottom left. */
+  @media (max-height: 520px) and (orientation: landscape) {
+    .side { width: 270px; top: max(8px, env(safe-area-inset-top)); bottom: max(8px, env(safe-area-inset-bottom)); max-height: none;
+      right: max(8px, env(safe-area-inset-right)); }
+    .side.folded { bottom: auto; }
+    .title { max-width: calc(100% - 300px - env(safe-area-inset-left) - env(safe-area-inset-right)); }
+    .views { left: max(10px, env(safe-area-inset-left)); bottom: max(8px, env(safe-area-inset-bottom));
+      max-width: calc(100% - 300px - env(safe-area-inset-left) - env(safe-area-inset-right)); }
+  }
 </style>
 </head>
 <body>
 <div class="stage" id="stage"></div>
-<div class="title">
+<div class="title" id="title">
   <h1>Fractal vessels</h1>
   <p><a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a></p>
-  <p>Mockup 37, OpenSpec change <code>fractal-vessels</code>, v1. These ships have no mesh. Each pixel marches along its ray into a
-    distance field until it reaches the surface. Beside them is the Concord's Petrel (86 m), for scale. Drag to orbit and scroll to zoom.
-    Desktop only.</p>
+  <p class="more">Mockup 37, OpenSpec change <code>fractal-vessels</code>, v2. These ships have no mesh. Each pixel marches along its ray into a
+    distance field until it reaches the surface, at half the screen's resolution unless you switch it off under Cost. Beside them is
+    the Concord's Petrel (86 m), for scale. Drag to orbit and scroll or pinch to zoom.</p>
+  <button class="aboutBtn" id="aboutBtn" aria-expanded="false" aria-controls="title">About</button>
 </div>
 <aside class="side" id="side">
+  <div class="sheetHead"><span>Controls</span><button id="fold" aria-expanded="true" aria-controls="sideBody">Hide</button></div>
+  <div class="sideBody" id="sideBody">
   <h2>Form</h2>
   <div class="forms" id="forms"></div>
   <p class="about" id="about"></p>
@@ -83,6 +141,7 @@
   <h2>Cost</h2>
   <div class="row"><label for="iter">Fractal iterations</label><input type="range" id="iter" min="3" max="14" step="1" value="9"><output id="iterOut"></output></div>
   <div class="row"><label for="steps">March steps per pixel</label><input type="range" id="steps" min="32" max="320" step="8" value="160"><output id="stepsOut"></output></div>
+  <label class="check"><input type="checkbox" id="half" checked> March at half resolution</label>
   <div class="row"><label for="scale">Render scale</label><input type="range" id="scale" min="0.25" max="1.5" step="0.05" value="1"><output id="scaleOut"></output></div>
   <h2>Scene</h2>
   <label class="check"><input type="checkbox" id="lineup"> All three in a line</label>
@@ -92,8 +151,10 @@
     <dt>Frame rate</dt><dd id="fps">-</dd>
     <dt>Frame time</dt><dd id="ms">-</dd>
     <dt>Pixels drawn</dt><dd id="px">-</dd>
+    <dt>Pixels marched</dt><dd id="pxm">-</dd>
     <dt>Vessel geometry</dt><dd>12 triangles each</dd>
   </dl>
+  </div>
 </aside>
 <div class="views" id="views"></div>
 <div class="meter" id="meter"></div>
@@ -147,9 +208,13 @@ function mulberry32(seed) {
 }
 
 const stage = document.getElementById('stage');
+// Layers: 0 the full-resolution scene, VESSELS the raymarched ships (drawn into their own target at half resolution),
+// OCCLUDERS the meshes whose depth is drawn into that target first, so a ship behind the Petrel stays hidden.
+const VESSELS = 1, OCCLUDERS = 2;
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.info.autoReset = false;   // a frame is several renders (the scene, the march, the composite): counted together, reset in frame()
 stage.append(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -170,6 +235,7 @@ const DECK_Y = 0, SHIP_Y = 40;
 scene.add(new THREE.GridHelper(600, 60, 0x2b3160, 0x141833));
 const person = new THREE.Mesh(new THREE.CapsuleGeometry(0.25, 1.3, 4, 8), new THREE.MeshStandardMaterial({ color: 0xffcc66 }));
 person.position.set(0, DECK_Y + 0.9, 0);
+person.layers.enable(OCCLUDERS);
 scene.add(person);
 
 // ---- Stars: directions at infinity, classes and colours by the shares in data/space/starfield.json.
@@ -435,19 +501,72 @@ const vessels = FORMS.map((f, i) => {
   const mesh = new THREE.Mesh(new THREE.BoxGeometry(...f.box.map((v) => (v + MARGIN) * 2)), mat);
   mesh.scale.setScalar(f.length_m / (2 * f.box[2]));
   mesh.name = 'vessel_' + f.id;
+  mesh.layers.set(VESSELS);
   const inv = new THREE.Matrix4();
   mesh.onBeforeRender = (r, s, cam) => {
     inv.copy(mesh.matrixWorld).invert();
     uniforms.uCam.value.copy(cam.position).applyMatrix4(inv);
     uniforms.uMV.value.multiplyMatrices(cam.matrixWorldInverse, mesh.matrixWorld);
     uniforms.uP.value.copy(cam.projectionMatrix);
-    const h = renderer.getDrawingBufferSize(tmpV2).y;
+    const rt = r.getRenderTarget(), h = rt ? rt.height : renderer.getDrawingBufferSize(tmpV2).y;   // a pixel's size where it is marched
     uniforms.uPix.value = 2 * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) / h * 1.2;
   };
   scene.add(mesh);
   return { form: f, mesh, uniforms };
 });
 const tmpV2 = new THREE.Vector2();
+
+// ---- Half-resolution marching (owner, 2026-11-10: "half resolution ray match"). The vessels march into a target half
+// the drawing buffer's width and height (a quarter of the pixels), with its own depth; the occluders' depth goes in
+// first, so the depth test hides what is behind them. The target keeps linear light and alpha (a hit is opaque, the halo
+// partly so, the rest clear); one full-screen triangle scales it up with the renderer's filtering, tone maps and encodes
+// it as the vessels' own shader would on screen, and lays it over the full-resolution scene.
+const HALF = 0.5;
+const march = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter,
+  depthBuffer: true, depthTexture: new THREE.DepthTexture(1, 1) });
+const DEPTH_ONLY = new THREE.MeshBasicMaterial({ colorWrite: false });
+const comp = new THREE.Mesh(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([-1, -1, 0, 3, -1, 0, -1, 3, 0], 3)),
+  new THREE.ShaderMaterial({ uniforms: { uMarch: { value: march.texture } }, transparent: true, depthTest: false, depthWrite: false,
+    vertexShader: 'varying vec2 vUv; void main() { vUv = position.xy * 0.5 + 0.5; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: `uniform sampler2D uMarch; varying vec2 vUv;
+      void main() {
+        vec4 m = texture2D(uMarch, vUv);   // light already multiplied by its alpha (normal blending onto a clear target)
+        if (m.a < 0.002) discard;
+        gl_FragColor = vec4(m.rgb / m.a, m.a);
+        #include <tonemapping_fragment>
+        #include <encodings_fragment>
+      }` }));
+comp.frustumCulled = false;
+const compScene = new THREE.Scene(), compCam = new THREE.Camera();
+compScene.add(comp);
+let marched = 0;   // pixels marched in the last frame's target, for the readout
+// One frame, every path the same (the loop and the shots both call it).
+function render() {
+  if (!state.half) {
+    camera.layers.enable(VESSELS);
+    renderer.render(scene, camera);
+    camera.layers.disable(VESSELS);
+    marched = renderer.getDrawingBufferSize(tmpV2).x * tmpV2.y;
+    return;
+  }
+  renderer.setRenderTarget(null);
+  renderer.render(scene, camera);                                  // the full-resolution scene, no vessels (layer 0)
+  const bg = scene.background, auto = renderer.autoClear;
+  renderer.getClearColor(clearKeep); const clearA = renderer.getClearAlpha();
+  renderer.setRenderTarget(march);
+  renderer.setClearColor(0x000000, 0); renderer.clear(true, true, true);
+  renderer.autoClear = false; scene.background = null;
+  camera.layers.set(OCCLUDERS); scene.overrideMaterial = DEPTH_ONLY;
+  renderer.render(scene, camera);                                  // the occluders' depth
+  scene.overrideMaterial = null; camera.layers.set(VESSELS);
+  renderer.render(scene, camera);                                  // the vessels, tested against it
+  camera.layers.set(0); scene.background = bg;
+  renderer.setRenderTarget(null);
+  renderer.render(compScene, compCam);                             // scaled up over the scene
+  renderer.autoClear = auto; renderer.setClearColor(clearKeep, clearA);
+  marched = march.width * march.height;
+}
+const clearKeep = new THREE.Color();
 
 // ---- The Petrel, from its committed glb (a mockup's bow is +Z; a glb's is -Z, so it is turned a half turn).
 const petrel = new THREE.Group();
@@ -460,13 +579,15 @@ function loadPetrel() {
   for (let i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
   return new Promise((ok) => new THREE.GLTFLoader().parse(b.buffer, '', (gl) => {
     gl.scene.rotation.y = Math.PI;
+    gl.scene.traverse((o) => o.layers.enable(OCCLUDERS));   // its depth hides a vessel behind it in the half-resolution pass
     petrel.add(gl.scene);
     ok();
   }, (e) => { console.warn('Petrel did not load', e); ok(); }));
 }
 
 // ---- State and controls.
-const state = { form: 0, w: 0, anim: true, damage: 0, glow: 1, halo: true, iter: 9, steps: 160, scale: 1, lineup: false, petrel: true };
+const COARSE = matchMedia('(pointer: coarse)').matches;   // a phone or a tablet: a little cheaper to start with
+const state = { form: 0, w: 0, anim: true, damage: 0, glow: 1, halo: true, iter: 9, steps: COARSE ? 128 : 160, scale: 1, half: true, lineup: false, petrel: true };
 const $ = (id) => document.getElementById(id);
 const formsEl = $('forms');
 FORMS.forEach((f, i) => {
@@ -477,7 +598,7 @@ FORMS.forEach((f, i) => {
 });
 const sliders = { w: 'w', dmg: 'damage', glow: 'glow', iter: 'iter', steps: 'steps', scale: 'scale' };
 for (const [id, k] of Object.entries(sliders)) $(id).addEventListener('input', (e) => { state[k] = +e.target.value; apply(); });
-for (const [id, k] of Object.entries({ anim: 'anim', halo: 'halo', lineup: 'lineup', petrel: 'petrel' })) {
+for (const [id, k] of Object.entries({ anim: 'anim', halo: 'halo', half: 'half', lineup: 'lineup', petrel: 'petrel' })) {
   $(id).addEventListener('change', (e) => { state[k] = e.target.checked; apply(); });
 }
 
@@ -497,6 +618,7 @@ function apply() {
   $('about').textContent = `${f.about} From the Axiom's ${f.school} (draft culture).`;
   $('wLabel').textContent = f.wLabel;
   for (const [id, k] of Object.entries(sliders)) $(id).value = state[k];
+  $('half').checked = state.half;
   $('anim').checked = state.anim; $('halo').checked = state.halo; $('lineup').checked = state.lineup; $('petrel').checked = state.petrel;
   $('wOut').textContent = state.w.toFixed(2);
   $('dmgOut').textContent = Math.round(state.damage * 100) + '%';
@@ -544,12 +666,27 @@ function resize() {
   camera.updateProjectionMatrix();
   const s = renderer.getDrawingBufferSize(tmpV2);
   $('px').textContent = `${s.x} x ${s.y}`;
+  const mw = Math.max(1, Math.ceil(s.x * HALF)), mh = Math.max(1, Math.ceil(s.y * HALF));
+  march.setSize(mw, mh);
+  $('pxm').textContent = state.half ? `${mw} x ${mh}` : `${s.x} x ${s.y}`;
+  fitSheet();
 }
 addEventListener('resize', resize);
 
+// ---- Phones: the controls fold away to their header; About opens the title's text; in portrait the view strip sits on
+// top of the sheet, however tall the sheet is.
+const side = $('side'), titleEl = $('title');
+$('fold').onclick = () => { const f = side.classList.toggle('folded'); $('fold').textContent = f ? 'Show' : 'Hide'; $('fold').setAttribute('aria-expanded', String(!f)); fitSheet(); };
+$('aboutBtn').onclick = () => { const o = titleEl.classList.toggle('open'); $('aboutBtn').setAttribute('aria-expanded', String(o)); };
+function fitSheet() { document.documentElement.style.setProperty('--sheet-h', side.getBoundingClientRect().height + 'px'); }
+if (matchMedia('(max-width: 760px) and (orientation: portrait)').matches) { side.classList.add('folded'); $('fold').textContent = 'Show'; $('fold').setAttribute('aria-expanded', 'false'); }
+
 // ---- Views and shots. Each shot sets the whole state, so a shot is the same every run, and draws at once.
-const look = (pos, tgt) => { camera.position.set(...pos); controls.target.set(...tgt); controls.update(); };
-const set = (o) => { Object.assign(state, { anim: false, damage: 0, glow: 1, halo: true, iter: 9, steps: 160, lineup: false, petrel: true }, o); apply(); };
+// A view is framed for a wide screen; on a narrow one (a phone held upright) it steps back along its own line so the same
+// width fits. Only when a view is picked: the camera is never moved for the player otherwise (CLAUDE.md section 8).
+const look = (pos, tgt) => { const k = Math.max(1, 1.2 / camera.aspect);
+  camera.position.set(...pos.map((v, i) => tgt[i] + (v - tgt[i]) * k)); controls.target.set(...tgt); controls.update(); };
+const set = (o) => { Object.assign(state, { anim: false, damage: 0, glow: 1, halo: true, iter: 9, steps: 160, half: true, lineup: false, petrel: true }, o); apply(); };
 const VIEWS = {
   three_quarter: () => look([150, 100, 190], [-30, SHIP_Y, 0]),
   side: () => look([300, SHIP_Y + 10, 0], [-40, SHIP_Y, 0]),
@@ -558,12 +695,14 @@ const VIEWS = {
   close: () => look([42, SHIP_Y + 28, 52], [0, SHIP_Y, 10]),
   line_up: () => { state.lineup = true; apply(); look([60, 190, 420], [40, SHIP_Y, 0]); },
 };
-const draw = () => { controls.update(); renderer.render(scene, camera); placeTags(); };
+const draw = () => { controls.update(); renderer.info.reset(); render(); placeTags(); };
 const SHOTS = {
   julia: () => { set({ form: 0, w: 0 }); VIEWS.three_quarter(); draw(); },
   julia_slice_low: () => { set({ form: 0, w: -0.7 }); VIEWS.three_quarter(); draw(); },
   julia_slice_high: () => { set({ form: 0, w: 0.7 }); VIEWS.three_quarter(); draw(); },
   julia_close: () => { set({ form: 0, w: 0, petrel: false }); VIEWS.close(); draw(); },
+  julia_close_full: () => { set({ form: 0, w: 0, petrel: false, half: false }); VIEWS.close(); draw(); },   // the same, marched at full resolution
+  julia_behind_petrel: () => { set({ form: 0, w: 0 }); look([-260, SHIP_Y + 12, -8], [0, SHIP_Y, 0]); draw(); },   // the Petrel in front: its depth still hides the vessel
   julia_damaged: () => { set({ form: 0, w: 0, damage: 0.8 }); VIEWS.bow(); draw(); },
   lattice: () => { set({ form: 1, w: 0 }); VIEWS.three_quarter(); draw(); },
   lattice_close: () => { set({ form: 1, w: 0, petrel: false }); VIEWS.close(); draw(); },
@@ -573,6 +712,9 @@ const SHOTS = {
   branch_damaged: () => { set({ form: 2, w: 0, damage: 0.8 }); VIEWS.three_quarter(); draw(); },
   top_scale: () => { set({ form: 0, w: 0, lineup: true }); VIEWS.top(); draw(); },
   line_up: () => { set({ form: 0, w: 0, lineup: true }); VIEWS.line_up(); draw(); },
+  // the controls open, scrolled to the cost switches (on a phone the sheet starts folded); last, as it leaves them open
+  controls_open: () => { set({ form: 0, w: 0 }); VIEWS.three_quarter(); if (side.classList.contains('folded')) $('fold').click();
+    $('half').scrollIntoView({ block: 'center' }); draw(); },
 };
 const bar = $('views');
 for (const [name, fn] of Object.entries(VIEWS)) {
@@ -597,14 +739,15 @@ function frame(now) {
   }
   for (const v of vessels) v.uniforms.uW.value = state.w;
   controls.update();
-  renderer.render(scene, camera);
+  renderer.info.reset();
+  render();
   placeTags();
   if (now - shown > 250) {
     shown = now;
     const ms = times.reduce((a, b) => a + b, 0) / times.length;
     $('fps').textContent = (1000 / ms).toFixed(0) + ' fps';
     $('ms').textContent = ms.toFixed(1) + ' ms';
-    meter.textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws`;
+    meter.textContent = `${renderer.info.render.triangles.toLocaleString()} tris, ${renderer.info.render.calls} draws, ${(marched / 1e6).toFixed(2)} M pixels marched`;
   }
 }
 

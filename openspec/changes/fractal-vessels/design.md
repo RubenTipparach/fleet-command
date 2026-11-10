@@ -85,6 +85,36 @@ Three numbers are set per form, because the forms differ in how open they are:
   leave the box.
 - **Phones** are out of scope for this mockup (owner, 2026-11-10). In the game they would need a cheaper path (FV4).
 
+## D5a. Half resolution, and phones (v2)
+
+The owner, 2026-11-10: "Make this thing phone friendly please! Also half resolution ray match if you don't mind" (this
+replaces the day's earlier "dont worry about phone" for the mockup; survey FV4, how the game draws them on a phone, stays
+open).
+
+- **Marching at half resolution.** The vessels are on a layer of their own and are marched into a target half the drawing
+  buffer's width and height, so a quarter of the pixels march. The target keeps linear light (half floats) and alpha, and
+  has its own depth:
+  - first the occluders' depth goes in (the Petrel and the figure, with a material that writes no colour), so the depth
+    test still hides a vessel behind the Petrel;
+  - then the vessels, which write their hit depth as before;
+  - one full-screen triangle scales the target up with linear filtering, tone maps and encodes it as the vessels' shader
+    would on screen, and lays it over the full-resolution scene.
+  - A pixel's size in the march (`uPix`) is taken from the target's height, so the stopping distance and the normal's
+    sample step grow with the pixel.
+- **The cost.** In the cloud's software renderer (no frame time is claimed from it) the close Julia view took 542 ms full
+  size and 136 ms at half: about the quarter the pixels predict. Silhouettes against the Petrel are half-resolution
+  steps; at a phone's pixel density (2 to 3 device pixels a point, capped at 2) the target is still a pixel a point.
+- **A switch**, March at half resolution under Cost, draws them full size, for comparing.
+- **Phones.**
+  - On a narrow screen held upright, the controls are a sheet along the bottom that starts folded to its header (Show,
+    Hide), with the view buttons in a strip just above it that scrolls sideways.
+  - On a phone held sideways, the controls are a 270 px column on the right.
+  - The title folds to its name and the tracker link, with an About button.
+  - Every control is a 44 px target on a touch screen, and the page keeps clear of the notch and the home bar.
+  - A view button steps the camera back along its own line on a narrow screen, so the same width fits. This happens only
+    when a view is picked: the camera is never moved for the player otherwise.
+  - On a touch screen the march starts at 128 steps, not 160.
+
 ## D6. If it goes in the game
 
 - **One source for each function.** A `.gdshaderinc` holds it for the Godot shader. A C# copy serves the simulation's
