@@ -1,0 +1,327 @@
+{
+ "_doc": "The Vos Syndicate's fighters (mockup 37, change vos-ship-concepts): the detail laid over each low-poly hull by tools/blender/hull_detail.py and baked onto its own UVs by tools/blender/painted_bake.py --faction vos. The recipe is the Breakers' (the salvage yards), written from the Syndicate's accepted culture in openspec/changes/vos-ship-concepts/design.md, 'The fighters, detailed'. Sizes in metres, ship space (+x port, +y up, +z bow).",
+ "faction": "vos",
+ "out": "assets/ships/vos/baked",
+ "_out": "The game's placeholder Vos hulls live in assets/ships/vos/; the bakes are a mockup's until approved for implementation, so they go in a folder Godot does not import.",
+ "manifest_doc": "The Vos Syndicate's fighters (mockup 37): the Cutter (the standard fighter) and the Twin boom (the shuttle stand-in and bomber).",
+ "paint": {
+  "armour": [
+   "#6a2c16",
+   "#733519",
+   "#5a2414",
+   "#7c4126",
+   "#633020",
+   "#6f3319",
+   "#58301f",
+   "#5e2a18",
+   "#6b3a22",
+   "#4f2a1c",
+   "#676058",
+   "#565a48",
+   "#746a58"
+  ],
+  "accent": "#9a6a1c",
+  "sub": [
+   "#4a2416",
+   "#52291a",
+   "#432014",
+   "#5a2e1c"
+  ],
+  "under": "#3a1c14",
+  "greeble": [
+   "#3f2a22",
+   "#8a6a3a"
+  ],
+  "dome": "#16100e",
+  "dome_glow": 0.0,
+  "slat": "#5a3a2a",
+  "vent": "#22120e",
+  "glass": "#1a0d0a",
+  "livery": "#9a6a1c",
+  "ink": "#2a1410",
+  "light_edge": "#d9b98a",
+  "strip": "whole",
+  "strip_m": 0.7,
+  "pbr": {
+   "armour": [
+    0.68,
+    0.4
+   ],
+   "sub": [
+    0.75,
+    0.45
+   ],
+   "under": [
+    0.85,
+    0.4
+   ],
+   "greeble": [
+    0.6,
+    0.7
+   ],
+   "dome": [
+    0.1,
+    0.0
+   ],
+   "glass": [
+    0.08,
+    0.0
+   ],
+   "slat": [
+    0.6,
+    0.7
+   ],
+   "vent": [
+    0.9,
+    0.3
+   ],
+   "strip": [
+    0.4,
+    0.0
+   ],
+   "lamp": [
+    0.3,
+    0.0
+   ],
+   "machine": [
+    0.5,
+    0.7
+   ]
+  },
+  "livery_pbr": [
+   0.38,
+   0.75
+  ],
+  "strip_k": 0.6,
+  "strip_inner": 1.0,
+  "strip_rim_px": 7,
+  "strip_cell_m": 0.2,
+  "strip_cell_gap": 0.14,
+  "strip_cell_on": 0.7,
+  "strip_cell_k": 0.55,
+  "greeble_ao_floor": 0.6,
+  "glass_cells_k": 0.18,
+  "glass_cell_m": 0.1,
+  "glass_cells_rgb": [
+   0.25,
+   0.72,
+   0.64
+  ],
+  "ink_k": 0.3,
+  "machine": [
+   "#4a3a30",
+   "#a8741c"
+  ],
+  "machine_kinds": [
+   "greeble",
+   "machine",
+   "slat",
+   "vent"
+  ],
+  "machine_light": 0.7,
+  "strip_rim_k": 0.0,
+  "_doc": "Breakers' plate: rust is salvage (console-skins, Vos Syndicate), so the armour is a patchwork of rusts, with about one plate in five still in a maker's colour gone dull (a grey, an olive, a sand); brass (loot and luck) is the one metal kept bright, and there is little of it; the light is verdigris (the spoils kept). Nothing is black: the layer under the plates is a dark rust.",
+  "ao_floor": 0.4,
+  "accent_share": 0.0,
+  "_accent_share": "No whole plate is brass: brass is kept for the two bands (the Breakers' principle 3)."
+ },
+ "defaults": {
+  "smooth_deg": 18,
+  "cuts": "grid",
+  "facing_min": 0.38,
+  "seam_y_m": 0.0,
+  "strip_rgb": [
+   0.25,
+   0.72,
+   0.64
+  ],
+  "armour_t_m": 0.06,
+  "sub_t_m": 0.025,
+  "lift_m": 0.04,
+  "gap_m": [
+   0.03,
+   0.06
+  ],
+  "trench_m": [
+   0.1,
+   0.16
+  ],
+  "trench_share": 0.12,
+  "top_station_m": [
+   0.9,
+   2.6
+  ],
+  "spine_half_m": [
+   0.25,
+   0.6
+  ],
+  "flank_station_m": [
+   1.0,
+   2.8
+  ],
+  "flank_rake": [
+   -0.3,
+   0.3
+  ],
+  "greebles_per_m2": 0.0,
+  "overlay_min_m2": 1000000.0,
+  "overlay_inset": 0.88,
+  "overlay_lift_m": 0.2,
+  "light_ref": 0.9,
+  "pane_frame_m": {
+   "window": 0.1,
+   "bay": 0.35
+  },
+  "auto_floods": {
+   "step_m": 7,
+   "from_stern_m": 2.5,
+   "top_x_frac": 0
+  },
+  "flood": {
+   "standoff_m": 0.6,
+   "cone_deg": 120,
+   "tilt_deg": 22,
+   "power_w": 50
+  },
+  "inner_reach_m": 40.0,
+  "inner_machinery": false,
+  "inner_cell_m": [
+   4.0,
+   2.4
+  ],
+  "inner_mix": {
+   "bays": 0.2,
+   "grilles": 0.15,
+   "channels": 0.15,
+   "conduits": 0.12,
+   "plates": 0.2,
+   "coils": 0.1,
+   "pipes": 0.08
+  },
+  "corner_m": 0.05,
+  "cage_m": 0.35,
+  "hatch_share": 0.0,
+  "hatch_min_m2": 18.0,
+  "strip_lines_lit": false,
+  "_doc": "A fighter 15 m long, so every size is at its scale. Plates are cut from broken hulls: stations and rakes vary widely, each plate stands proud by its own amount (lift up to 4 cm on 6 cm plate), and the welds between them are left plain (gaps 3 to 6 cm).",
+  "lamp_k": 0.22
+ },
+ "ships": {
+  "vos_cutter": {
+   "_doc": "21, the Cutter, the standard fighter (owner, 2026-11-10: \"lets stick to 21 as standard fighter\").",
+   "seed": 2101,
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -2.0
+     ],
+     "size_m": 0.09,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      3.0,
+      3.16
+     ]
+    },
+    {
+     "band_z_m": [
+      -4.4,
+      -4.28
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {
+     "to_z_m": 5
+    }
+   },
+   "windows": [],
+   "domes": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      4.6
+     ],
+     "r_m": 0.75,
+     "h_m": 0.34,
+     "straps": [
+      [
+       0,
+       0.07
+      ],
+      [
+       90,
+       0.07
+      ]
+     ]
+    }
+   ],
+   "pods": []
+  },
+  "vos_twin_boom": {
+   "_doc": "22, the Twin boom, the shuttle stand-in, also flown as a bomber (owner, 2026-11-10).",
+   "seed": 2201,
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      1.0
+     ],
+     "size_m": 0.09,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      2.6,
+      2.76
+     ]
+    },
+    {
+     "band_z_m": [
+      -1.2,
+      -1.08
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {
+     "to_z_m": 4
+    }
+   },
+   "windows": [],
+   "domes": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      4.4
+     ],
+     "r_m": 0.7,
+     "h_m": 0.32,
+     "straps": [
+      [
+       0,
+       0.07
+      ],
+      [
+       90,
+       0.07
+      ]
+     ]
+    }
+   ],
+   "pods": []
+  }
+ }
+}

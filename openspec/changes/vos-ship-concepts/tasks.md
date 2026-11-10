@@ -44,6 +44,14 @@
 - [x] 1f.2 The Saucer runner carries six Cutters in place of the Institute fighters
 - [x] 1f.3 Survey Y11
 
+## 1g. Version 7: the fighters, detailed
+
+- [x] 1g.1 The fighters' jobs recorded (D14): Cutter the standard fighter, Twin boom the shuttle stand-in and bomber; survey Y11 decided
+- [x] 1g.2 The Breakers' recipe (D15) in `data/ships/vos/hull_detail.json`
+- [x] 1g.3 Both fighters exported, unwrapped and baked onto their own UVs (2048 px), shown on the page in Painted and PBR
+- [x] 1g.4 Survey Y12 (patched evenly or unevenly side to side)
+- [ ] 1g.5 The owner's look at the detailed fighters, and Y12's answer
+
 ## 2. After the picks
 
 - [ ] 2.1 Each ship's rooms first, then its parts fitted round them (Ship Design Bible)

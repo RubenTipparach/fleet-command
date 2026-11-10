@@ -52,3 +52,17 @@ least one engine, and SHALL NOT fly another faction's fighter as their own.
 #### Scenario: The Saucer runner's deck
 - **WHEN** the Saucer runner is shown
 - **THEN** the six fighters on its deck are the Syndicate's own
+
+### Requirement: The Cutter and the Twin boom are detailed on their own textures
+
+The Cutter (the standard fighter) and the Twin boom (the shuttle stand-in and bomber) SHALL each be unwrapped on its own
+and carry maps baked onto its own UVs (painted, base colour, ORM, tangent normals, emission and a hull-light map) in the
+Breakers' recipe, with no repeating tile as the main colour map and no black under the plating.
+
+#### Scenario: The baked fighters on the page
+- **WHEN** 21 Cutter or 22 Twin boom is picked on mockup 37 and Painted or PBR is chosen
+- **THEN** the craft is shown with its baked maps, and Night shows its baked hull lights
+
+#### Scenario: The manifest
+- **WHEN** `assets/ships/vos/baked/manifest.json` is read
+- **THEN** it lists `vos_cutter` and `vos_twin_boom`, each with a 2048 px texture size

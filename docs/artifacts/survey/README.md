@@ -63,3 +63,4 @@
 - 2026-11-10, cloud session: version 38, version id `1794305330-c7ac`: section Y for mockup 37 v4: Y2 decided (9, 10, 11 with 5 and 6), Y6 (which ship is "15"), Y7 (the taken bows on 5 and 6).
 - 2026-11-10, cloud session: version 39, version id `1794310789-1b0e`: section Y for mockup 37 v5: Y5 decided (no class ladder), Y6 dropped, Y8 (trades on hulls), Y9 (the disguise), Y10 (rock breaking).
 - 2026-11-10, cloud session: version 40, version id `1794315325-f882`: Y11, which fighter the Vos fly (mockup 37 v6).
+- 2026-11-10, cloud session: version 41, version id `1794327653-77e1`: Y11 decided (the Cutter the standard fighter, the Twin boom the shuttle stand-in and bomber); Y12, whether a Vos craft is patched unevenly side to side (mockup 37 v7).

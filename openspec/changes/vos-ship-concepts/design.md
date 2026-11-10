@@ -327,6 +327,62 @@ a glazed nose for the pilot. The nose is blunt (version 4's rule).
 - **Scale.** The Institute's fighter is 14 m. On the board the fighters are specks beside 150 m ships; each is framed
   by its own size when picked.
 
+## Version 7: the fighters, detailed (owner, 2026-11-10)
+
+The owner: "love all 3 of those fighters, lets stick to 21 as standard fighter, twin boom as the shuttle stand in ( but
+also they will be used as bombers as well) and lets get highres versions fo these built out".
+
+### D14. The fighters' jobs
+
+| Craft | Job | Notes |
+|---|---|---|
+| 21 Cutter | The standard fighter | What every Vos carrier deck flies; the Saucer runner's six |
+| 22 Twin boom | The shuttle stand-in, and a bomber | Carries boarders and cargo where another navy would fly a shuttle; with bombs slung under the pod it is the Vos's bomber |
+| 23 Stack | None yet | Liked, kept on the board, not detailed |
+
+The owner's words on the detail ("highres versions") are taken as approval for build of these two fighters only. The
+six specialists stay drafted.
+
+### D15. The Breakers' recipe (the `ship-detailing` method)
+
+**The culture**, as accepted: free clans of raiders; "luck, loot, loyalty to the crew, nothing else". The palette's
+meanings (`console-skins/design.md`, "Vos Syndicate"): rust is salvage (everything they own was someone's), brass is loot
+and luck, verdigris is the spoils kept. The tradition is the Breakers' (the salvage yards, D1), which is still a draft
+(survey Y1).
+
+**How the Breakers build** (principles):
+
+1. *Everything was someone's.* Plate is cut from broken hulls, so no two plates match in colour, size or thickness.
+2. *The join is left plain.* A weld or a patch is not hidden or faired; it is how the crew knows the work is sound.
+3. *Brass is luck.* The one metal kept bright; it marks what the crew trusts their lives to.
+4. *Nothing else.* No finish for its own sake: no paint scheme, no fairing, no emblem until a clan has earned one.
+5. *The spoils kept.* Light is verdigris: the drive, the gun mouths, the instruments behind the glass.
+
+**The recipe** (numbers in `data/ships/vos/hull_detail.json`):
+
+| Technique | Setting | From |
+|---|---|---|
+| Hull form | The page's welded bodies (`made`, `beam`, `gun`), exported by `export_blockouts.mjs` | D13 |
+| Plating | Uneven stations (0.9 to 2.8 m apart) with flank cuts raked up to 0.3 either way | 1 |
+| Relief | 6 cm plate, each plate proud by its own amount up to 4 cm, welds 3 to 6 cm wide, a few open trenches | 1, 2 |
+| Paint: plates | A patchwork: ten rusts and three makers' colours gone dull (a grey, an olive, a sand), about one plate in five; no whole plate brass | 1, 3 |
+| Liveries | Two brass bands a ship, at the canopy and the engine: the parts a pilot's life hangs on | 3 |
+| Emblem | None | 4 (and the Vos emblem is a placeholder) |
+| Features | One canopy bubble a craft, dark glass under two crossed straps | D13 (the glazed nose); 2 |
+| Exposed machinery, kit, marks | None on a 15 m craft | 4 |
+| Light | The render (sky, key and bounce), never the painted light; under layer a dark rust, never black | skill rules 3, 4 |
+| Glow | Verdigris drive, gun mouths and instrument cells behind the canopy glass | 5 |
+| Hull lights | Small floods forward along the body; a red beacon on the spine; nav lights by the tool's rule, every lamp at 0.22 of a warship's size (`lamp_k`, new in `hull_detail.py`) | Ship Design Bible 9 |
+
+- **Symmetric**, by the skill's rule 2: the patchwork is mirrored about the keel. Whether the Vos, of all people,
+  should be patched unevenly side to side is survey Y12.
+- **Cost** (measured): the Cutter 512 triangles and the Twin boom 928, unchanged from the blockouts; one 2048 px map set
+  each (24 m and 27 m of hull to a UV unit, so about 1.2 cm a texel); 17 and 14 minutes a bake on 4 cloud cores. The page
+  grew from 3.5 MB to 6.7 MB.
+- **Not yet done:** a room plan (a fighter has a cockpit only), bombs or a boarding hatch modelled on the Twin boom, the
+  Vos emblem (a placeholder), and anything in the game: the bakes sit in `assets/ships/vos/baked/`, which Godot does not
+  import, until the fighters are approved for implementation.
+
 ## Open questions
 
 | # | Question | Provisional answer |
@@ -338,7 +394,7 @@ a glazed nose for the pilot. The nose is blunt (version 4's rule).
 | Y8 | Is each trade on the right hull? | As drawn |
 | Y9 | Is the disguise a trade of one ship or a trait of all? | A trait of all, with the Broadside best at it |
 | Y10 | How does rock breaking work? | A slow charged shot at a rock; the rock splits, and everything within reach takes heavy damage |
-| Y11 | Which fighter do the Vos fly? | 21 Cutter |
+| Y12 | Should a Vos craft be patched unevenly side to side? | Mirrored, as now (provisional) |
 
 Decided (owner, 2026-11-10): Y2, the picks (3, 8, 9, 10, 11, with 12 added by us for the rock breaker); Y5, no class
 ladder: every ship about cruiser size, a weaker hull, one trade each.

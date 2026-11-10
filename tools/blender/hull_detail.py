@@ -508,7 +508,10 @@ def lights(lo, S, surf, mats, lamps, feats, defaults=None):
     zmin, zmax = min(v.z for v in vs), max(v.z for v in vs)
     zmid = (zmin + zmax) / 2
 
+    lamp_k = (defaults or {}).get("lamp_k", 1.0)   # a small craft's lamps to its own scale (a 15 m fighter: 0.25)
+
     def lamp_at(loc, n, colour, s, mirror=False):
+        s *= lamp_k
         feats.append(([(place(bm_box(s, s, s * 0.6), frame_at(loc, n, mirror)), "lamp:" + colour)], loc))
 
     def spot(loc, n, aim, rgb, power, cone, standoff, name):
