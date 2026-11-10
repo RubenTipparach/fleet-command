@@ -125,7 +125,7 @@ public sealed record RockDef(double XM, double ZM, double RadiusM, string? Name)
 /// gravity wells whose field a warp jump must reckon with (ScenarioStart), or null.</summary>
 public sealed record Scenario(string Id, string Name, string Side, ulong Seed, string Objective, string SayWho, string SayText,
     IReadOnlyList<ShipStart> Ships, string Sky, double SunEnergy = Scenario.DeepSpaceSun, bool DamageRange = false,
-    IReadOnlyList<MarkerDef>? Markers = null, IReadOnlyList<WellDef>? Wells = null, NebulaDef? Nebula = null, bool Repel = false)
+    IReadOnlyList<MarkerDef>? Markers = null, IReadOnlyList<WellDef>? Wells = null, IReadOnlyList<NebulaDef>? Nebulae = null, bool Repel = false)
 {
     /// <summary>False for a test scene whose own ship carries no weapons (the mockup's armed: false: the scene's tool is
     /// what destroys the target).</summary>

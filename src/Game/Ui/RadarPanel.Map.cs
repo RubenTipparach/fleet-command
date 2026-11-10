@@ -5,6 +5,7 @@
 // station. The map draws in a child control that clips to its box, so a ring wider than the box stops at its edge.
 using System;
 using System.Linq;
+using FleetCommand.Data;
 using FleetCommand.Sim;
 using Godot;
 
@@ -73,6 +74,9 @@ public sealed partial class RadarPanel
         else { X.State.FleetPick = best.Id; X.State.Station = "fleet"; }
     }
 
+    // a plume's colour on the map and the dial: a hazard's caution for an ion storm, the notes' lilac for a plume
+    private Color PlumeColor(NebulaDef n) => n.Storm ? C.Caution : C.Lilac;
+
     private void DrawMap(Control c, Vector2 size, double km)
     {
         Ship me = Me;
@@ -84,11 +88,21 @@ public sealed partial class RadarPanel
             c.DrawArc(mid, r * 1000 * k, 0, Mathf.Tau, 96, C.Deep, 1.5f, true);
             X.Fonts.Draw(c, $"{r} KM", mid.X + r * 1000 * k + 4, mid.Y - 4, 14, C.Lilac, HorizontalAlignment.Left, 0, 600);
         }
+        // the nebula plumes, each the circle the rules test (Rules.NebulaAt), an ion storm in the caution colour and named
+        foreach (NebulaDef n in B.Rules.Nebulae)
+        {
+            Vector2 np = MapAt(n.XM, n.ZM, size, km);
+            float nr = (float)n.RM * k;
+            Color nc = PlumeColor(n);
+            c.DrawCircle(np, nr, new Color(nc, 0.12f), true, -1, true);
+            c.DrawArc(np, nr, 0, Mathf.Tau, 64, new Color(nc, 0.6f), 1.5f, true);
+            X.Fonts.Draw(c, n.Storm ? "ION STORM" : "NEBULA", np.X, np.Y - nr - 6, 14, nc, HorizontalAlignment.Center, 200, 600);
+        }
         // the selected weapons' arcs out to their reach, faint
         foreach (Mount m in me.Mounts.Where(m => m.Selected && !m.Weapon.IsPointDefence && m.Def.ArcWidthDeg < 360))
         {
             float a0 = (float)(me.H + (m.Def.ArcCentreDeg - m.Def.ArcWidthDeg / 2) * Geometry.Deg - Math.PI / 2), a1 = a0 + (float)(m.Def.ArcWidthDeg * Geometry.Deg);
-            float rr = (float)(Rules.Mode(m).RangeKm * 1000) * k;
+            float rr = (float)(B.Rules.RangeKm(me, m) * 1000) * k;
             var pts = new Vector2[26];
             pts[0] = mid;
             for (int i = 0; i <= 24; i++) { float a = a0 + (a1 - a0) * i / 24; pts[i + 1] = mid + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * rr; }

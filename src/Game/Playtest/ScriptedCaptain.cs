@@ -27,7 +27,7 @@ public sealed partial class ScriptedCaptain : Node
     /// <summary>The beats a script may use; an unknown one is a data error naming it.</summary>
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
-          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer", "loiter", "port", "fire", "type" };
+          "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer", "loiter", "port", "all_out", "fire", "type" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -150,6 +150,8 @@ public sealed partial class ScriptedCaptain : Node
             case "offer": return await OfferBeat(b.Arg);
             case "loiter": return await Loiter(b.Seconds > 0 ? (int)b.Seconds : 10);
             case "port": return await PortBeat(b.Arg);
+            // a fleet battle with everything aboard (ScriptedCaptain.Systems.cs); arg "hop" takes each ship of the fleet in turn
+            case "all_out": return await AllOut(b.Seconds > 0 ? b.Seconds : 900, b.Arg);
             // a weapons test scene: fire on the locked target for s seconds, from where the ship stands (no helm order)
             case "fire": return await Fight(b.Seconds > 0 ? b.Seconds : 30, steer: false);
             default: return $"no beat '{b.Do}'";
@@ -164,7 +166,9 @@ public sealed partial class ScriptedCaptain : Node
     // sweep, against cloaked ships: with none in sight, the Science station's Sweep. With take, a captain out to take a prize
     // (a raid's freighter) rather than destroy her: with her hull under half, the weapons panel's Multiple key turned to
     // Single, so one shot at a time brings her to strike, and back to Multiple once she has struck. Without steer, it gives no helm order.
-    private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false, bool take = false, bool steer = true)
+    // With each, a captain with more to do than fire: it is called on the ship commanded once a pass, before the volley (the
+    // all_out beat's hands on the rest of the ship, ScriptedCaptain.Systems).
+    private async Task<string?> Fight(double maxS, double lingerS = 0, string aims = "", bool sweep = false, bool take = false, bool steer = true, Func<Ship, Task>? each = null)
     {
         double t0 = B.T, lastChange = B.T, lastBoost = B.T, sum = HullSum();
         double closest = double.MaxValue;
@@ -236,7 +240,8 @@ public sealed partial class ScriptedCaptain : Node
                 bool gentle = B.TargetOf(me) is { Prize: true, Struck: false } pz && pz.Hull < pz.Class.HullHp * 0.5;
                 if (me.Volley == gentle) await Click("volley");
             }
-            if (B.WouldFire().Length > 0) Press("fire");
+            if (each != null) await each(me);
+            if (B.WouldFire() is { Length: > 0 } loose) { NoteSpecials(loose); Press("fire"); }
             // a chase going nowhere (a target held, nothing would fire, no hull changed for 20 s): two boxes from the weapons
             // to the engines, as a captain short of speed would (Mac playtest 2026-11-08: a Krai corvette at 1200 m/s never
             // caught a Vos corsair kiting at 1200 m/s)
@@ -266,6 +271,15 @@ public sealed partial class ScriptedCaptain : Node
             if (B.T - lastChange > 60) return $"no hull changed for 60 s (t={B.T:0} s; {Standoff(me)}); last: {string.Join(" / ", B.Log.TakeLast(6).Select(l => $"{l.T:0} {l.Who}: {l.Text}"))}";
         }
         return null;
+    }
+
+    // How a battle went, from its log, as PLAYTEST_LOG lines: every ship lost, whatever else the caller asks for, and each
+    // side's ships with the hull they ended on.
+    private void PrintAccount(Func<LogLine, bool> also)
+    {
+        foreach (LogLine l in B.Log.Where(l => !l.Text.StartsWith("Hit on") && (l.Text.Contains("destroyed.") || l.Text.Contains("meltdown") || also(l))))
+            GD.Print($"PLAYTEST_LOG {l.T:0} s {l.Who}: {l.Text}");
+        GD.Print($"PLAYTEST_LOG sides: {string.Join("; ", B.Ships.GroupBy(s => s.Side).Select(g => $"side {g.Key}: " + string.Join(", ", g.Select(s => $"{s.Name} ({s.Class.Id}) {(s.Alive ? $"{s.Hull / s.Class.HullHp:P0}" : "lost")}"))))}");
     }
 
     // ---- The campaign (a script with "flow": true) -----------------------------------------------------------------
@@ -418,10 +432,7 @@ public sealed partial class ScriptedCaptain : Node
             if (stalled != null || B.Over == null) { how = "withdrew: " + (stalled ?? "out of time"); await Click("menu"); await Click("m.withdraw"); if (_x.State.MenuOpen) await Click("m.resume"); }
             else how = B.Over;
             // how it went, from the battle log: every ship struck or lost, and the prize's lines
-            foreach (var l in B.Log.Where(l => !l.Text.StartsWith("Hit on") && (l.Text.Contains("struck") || l.Text.Contains("destroyed.") || l.Text.Contains("meltdown")
-                         || B.Ships.Any(s => s.Prize && l.Text.Contains(s.Name)))))
-                GD.Print($"PLAYTEST_LOG {l.T:0} s {l.Who}: {l.Text}");
-            GD.Print($"PLAYTEST_LOG sides: {string.Join("; ", B.Ships.GroupBy(s => s.Side).Select(g => $"side {g.Key}: " + string.Join(", ", g.Select(s => $"{s.Name} ({s.Class.Id}) {(s.Alive ? $"{s.Hull / s.Class.HullHp:P0}" : "lost")}"))))}");
+            PrintAccount(l => l.Text.Contains("struck") || B.Ships.Any(s => s.Prize && l.Text.Contains(s.Name)));
             await Snap($"end-{m.Script}");
         }
         // a withdrawal warps out first: the drive charges and plots (about 21 s unopposed) before the jump
@@ -484,7 +495,7 @@ public sealed partial class ScriptedCaptain : Node
             if (B.ShipById(ship) is not { } f) continue;
             var free = cells.Where(c => c.Ship == ship && me.Mounts[c.Mount].Pin == null).ToList();
             if (free.Count == 0) continue;
-            var pick = free.FirstOrDefault(c => Rules.InArc(me, me.Mounts[c.Mount], f) && Rules.InRange(me, me.Mounts[c.Mount], f));
+            var pick = free.FirstOrDefault(c => Rules.InArc(me, me.Mounts[c.Mount], f) && B.Rules.InRange(me, me.Mounts[c.Mount], f));
             if (pick == default) pick = free[0];
             if (await Click($"tm.{pick.Mount}.{ship}") is { } stuck) return stuck;
         }

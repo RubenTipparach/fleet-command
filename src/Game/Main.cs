@@ -507,7 +507,8 @@ public sealed partial class Main : Node
 
     /// <summary>Plays the battle for --steps (default 600) as the mockup's scripted shots do (target locked, intercepting), sets the console as asked
     /// (--station, --page, --tab (Transport), --cargo-view, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor, --target-view: the camera glided
-    /// to the target), saves a PNG and quits. The window size is
+    /// to the target; --in-plume=n starts your ship in the scene's nth nebula plume, --strike has a storm's lightning strike it
+    /// on the last step and --flicker has every storm flicker in the shot), saves a PNG and quits. The window size is
     /// Godot's own --resolution flag.</summary>
     private async System.Threading.Tasks.Task Still(string path)
     {
@@ -519,8 +520,18 @@ public sealed partial class Main : Node
         if ((_args.GetValueOrDefault("target") ?? b.EnemiesOf(b.Player).FirstOrDefault()?.Id) is { } tgt) b.Lock(tgt);
         b.HelmOrder("intercept");
         b.SetSpeed(b.Rules.MaxSpeed(b.Player));
+        if (_args.TryGetValue("in-plume", out string? ip) && int.Parse(ip) is var pi && pi >= 0 && pi < b.Rules.Nebulae.Count)
+        {
+            b.Player.X = b.Rules.Nebulae[pi].XM; b.Player.Z = b.Rules.Nebulae[pi].ZM;
+        }
         for (int i = 0; i < steps; i++) { b.Step(); if (i == steps - 6) b.Fire(); }
         await StillField(b);
+        if (_args.ContainsKey("strike")) b.LightningStrike(b.Player);
+        if (_args.ContainsKey("flicker"))
+        {
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            _view.Flicker();
+        }
         if (_args.TryGetValue("station", out string? st)) _x.State.Station = st;
         if (_args.TryGetValue("page", out string? pg)) _x.State.ShipPage = pg;
         if (_args.TryGetValue("tab", out string? tb)) _x.State.TransportTab = tb;

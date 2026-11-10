@@ -145,7 +145,7 @@ public sealed partial class StationPanel
             {
                 int j = Array.IndexOf(cols, f);
                 var r = new Rect2(x + cw0 + j * cw + 3, y + 2, cw - 6, rh - 4);
-                bool ok = Rules.InArc(s, m, f) && Rules.InRange(s, m, f), pinned = m.Pin?.To == f.Id;
+                bool ok = Rules.InArc(s, m, f) && B.Rules.InRange(s, m, f), pinned = m.Pin?.To == f.Id;
                 double hc = ok ? B.Rules.HitChance(s, m, f, pinned ? m.Pin!.Aim : s.Aim) : 0;
                 int mi = m.Index;
                 string fid = f.Id;

@@ -482,6 +482,24 @@ const SECTIONS = [
       { id: 'DW6', q: 'When the reactor starts cooling back to safe, the warning reads "Reactor cooling, safe in N s" in amber until it is safe?', options: ['Yes', 'Clear it as soon as it starts cooling'], rec: 0,
         why: 'You see that your fix is working and how long until you are clear.' },
     ] },
+  { tag: 'NP', name: 'Nebula plumes and ion storms (change nebula-plumes, in the game)',
+    lead: 'Your asks (2026-11-10): nebula drawn as columns of cloud from a 3D noise texture, a plume that hides a ship, half accuracy, half energy range, missiles that do not quite work, and ion storms whose lightning trips a ship\'s core for a few seconds. Built in the game, in the four Heavy fleets scenes and the Nebula scenes; the stills are docs/screenshots/game/nebula-*.png and the four recorded battles show them in play. The numbers are data, easy to change.',
+    qs: [
+      { id: 'NP1', q: 'Half accuracy and half energy range: at full strength anywhere inside a plume, or by how thick the plume is where the ships are?', options: ['By thickness: a plume\'s edge and a thin plume are milder (a full plume halves; its edge takes off about a third)', 'Full strength anywhere inside'], rec: 0,
+        why: 'Skirting a plume\'s edge becomes a choice, and a scene can have thin and thick plumes.' },
+      { id: 'NP2', q: 'From how far can a ship in a plume be locked?', options: ['60 km, and from any range by a ship whose ECCM beats its ECM', 'Closer: 30 km', 'Farther: 90 km'], rec: 0,
+        why: 'Heavy fleets start about 105 km apart and long guns reach 90 km, so 60 km makes a plume real cover on the approach and none in a close fight.' },
+      { id: 'NP3', q: 'How badly do missiles fail in a plume?', options: ['Each second a missile has an 8 % chance to lose its target and fly on straight: about half are lost over 8 s of flight', 'Worse: nearly all are lost', 'Milder: about a quarter are lost'], rec: 0,
+        why: '"Dont quite work": a barrage into a plume is a gamble, not a waste.' },
+      { id: 'NP4', q: 'An ion storm: lightning finds each ship inside about 3 times a minute, the core is down 5 s, and no bolt finds that ship again for 15 s after it restarts. Right?', options: ['As built', 'Rarer and longer: once a minute, 10 s down', 'Harsher: 5 times a minute, 5 s down'], rec: 0,
+        why: 'A ship crossing a storm is struck once or twice: enough to fear, not enough to be helpless.' },
+      { id: 'NP5', q: 'Does a lightning strike also do damage?', options: ['No: losing all power under fire is the hazard', 'Yes: a little hull or a system knocked out'], rec: 0,
+        why: 'You asked for a shutdown; five seconds without shields in a fight already costs hull.' },
+      { id: 'NP6', q: 'Should AI captains know a storm from a plume?', options: ['Later, as its own task: they steer round storms, hide in plumes and lure you into both', 'They ignore both, as now'], rec: 0,
+        why: 'Today both sides blunder through alike, which is fair but not clever.' },
+      { id: 'NP7', q: 'The looks: seven colours of plume (violet, garnet, brass, teal, orchid, and the dark slate and cinder storms), towers of different heights, lightning inside the storm and a forked bolt onto the struck ship. What should change?', options: ['Good as built', 'Taller and wider: a wall of cloud across the field', 'Softer and thinner: more see-through', 'Notes below'], rec: 0,
+        why: 'Look at the takes first; the shapes and colours are one data file.' },
+    ] },
 ];
 
 const DECIDED = [

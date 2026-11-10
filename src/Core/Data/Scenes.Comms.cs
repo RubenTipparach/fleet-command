@@ -79,7 +79,8 @@ public static class CommsScenes
         return s;
     }
 
-    /// <summary>A scene's planets (its "planets"), or null when it has none.</summary>
+    /// <summary>A scene's planets (its "planets"), or null when it has none. A planet's "kind" is one of PlanetDef.Kinds,
+    /// terran when left out.</summary>
     public static IReadOnlyList<PlanetDef>? LoadPlanets(StrictJson root)
     {
         if (!root.Has("planets")) { root.ObjOrNull("planets"); return null; }
@@ -90,7 +91,9 @@ public static class CommsScenes
             if (!Regex.IsMatch(col, "^#[0-9a-fA-F]{6}$")) throw new DataError($"{p.Where}.color: a colour as #rrggbb, not '{col}'");
             double r = p.Num("radius_m");
             if (r <= 0) throw new DataError($"{p.Where}.radius_m: must be above 0");
-            list.Add(new PlanetDef(id, p.Str("name"), p.Num("x_m"), p.Num("z_m"), r, col, Counts(p.ObjOrNull("needs"), CommsDef.Items)));
+            string kind = p.Has("kind") ? p.Str("kind") : "terran";
+            if (Array.IndexOf(PlanetDef.Kinds, kind) < 0) throw new DataError($"{p.Where}.kind: one of {string.Join(", ", PlanetDef.Kinds)}, not '{kind}'");
+            list.Add(new PlanetDef(id, p.Str("name"), p.Num("x_m"), p.Num("z_m"), r, col, Counts(p.ObjOrNull("needs"), CommsDef.Items)) { Kind = kind });
             p.Done();
         }
         return list;

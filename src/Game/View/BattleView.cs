@@ -285,6 +285,7 @@ public sealed partial class BattleView : Node3D
         Project();
         _shots.Sync(b, _x.StepShare);
         SyncPlanets(b);
+        SyncNebulae(b);
     }
 
     // Battle damage (ShipDamage): each hit that has landed since the last frame makes its effect and scar, then every
