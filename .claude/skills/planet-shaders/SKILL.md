@@ -58,9 +58,21 @@ no other. A new kind is a new name there and a new row there, nothing else.
    and `sun_energy`, set every frame by `PlanetBody.Sync` from the battle's `DirectionalLight3D`. That keeps Forward+ and
    Compatibility identical. The light itself is one function, `pn_lit(col, day, ndl, air, sun)`, which the ground, the
    clouds and the gas tops all call: the day term (`pn_day_air`: a soft terminator under air, a hard one on an airless
-   world), a narrow reddened band at the terminator where there is air (`pn_twilight`), and a cold trace of light on the
-   night side so it is never pure black. A relief may shade a layer, never black it: shade relative to the sphere's own
-   light (the clouds), or multiply by the ratio of the slope's day term over the plain's (the crater shell).
+   world), a narrow, lightly reddened band at the terminator where there is air (`pn_twilight`), and a night side that is
+   night: a trace far below anything lit (it is linear light, and a hundredth of the day already shows as a tenth grey),
+   so only the city lights, the lava and the rim of air show there. On the day side a relief may shade a layer, never
+   black it: shade relative to the sphere's own light (the clouds), or multiply by the ratio of the slope's day term over
+   the plain's (the crater shell).
+   **Relief moves the terminator** (owner, 2026-11-10, with a photograph of a crescent Earth: "terminator line, normal
+   maps? do we have those?"). The normals are each layer's own height field differenced (rule 3), never a texture, and
+   the day term is steepest at the terminator, so a layer with relief gives `pn_day_air` its slope's own light:
+   `ndl + clamp(turn * terminator_relief, lo, hi)`, where `turn` is the relief normal's light less the sphere's. Along
+   the terminator a face toward the sun is lit and one turned away is in night, which is what picks out crater rims,
+   ranges and cloud tops there. Clamp the shift (ground -0.1 to 0.08, clouds -0.12 to 0.05), or lit islands float deep in
+   the night. The ground's gain stays moderate (0.7): its bump is a screen-space derivative of its height, and the
+   noise's lattice shows as blocks when it is pushed. Ease the relief in over the coast with the land mask, never
+   switch it on at a threshold. **Take `fwidth`, `dFdx` and `dFdy` outside any branch** and pass them in: inside
+   `if (land > 0.5)` they are undefined along the branch's edge, which drew every night coast as a line of city lights.
 7. **Hashes are PCG on the float's bits** (`pn_hash31`), never `fract(sin)` or a fract-multiply hash (CLAUDE.md 10).
 
 ## Realism (owner, 2026-11-10: "make planets more realistic please")
@@ -117,9 +129,10 @@ scene's lights like ships (not unshaded). Seeds go through FNV-1a so neighbourin
 scripts/game-stills.sh docs/screenshots/game ms-planet-battle,ms-planet-terran,ms-planet-ocean,ms-planet-desert,ms-planet-ice,ms-planet-lava,ms-planet-barren,ms-planet-gas,ms-planet-ice_giant,ms-planet-toxic,ms-planet-surface,ms-planet-sites,ms-planet-sites-close
 ```
 
-The gallery saves every kind from afar and up close and every rock kind, through `PlanetBody` itself, with a third of each
-disc in night. Its folder is under `res://`, so give it a path inside the repository. A shader that fails to compile may
+The gallery saves every kind from afar, up close and as a crescent (the sun round behind, so the terminator crosses the
+view) and every rock kind, through `PlanetBody` itself, with a third of each disc in night from afar. Its folder is under `res://`, so give it a path inside the repository. A shader that fails to compile may
 print nothing: the stills are the check. Look at each still
 (make a contact sheet) for: seams or pinched poles, sparkle at the limb, a black patch in a lit layer, bands that repeat,
-a ring shadow on the wrong side, rocks that read as balls. Then the battle stills, which show the same planets under a
+a ring shadow on the wrong side, rocks that read as balls; and in the crescents, a night side that is not black, lit
+patches floating in the night, a coast outlined in lights, blocks or stripes along the terminator. Then the battle stills, which show the same planets under a
 battle's sun and in the planet view down to the surface.

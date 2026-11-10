@@ -41,6 +41,11 @@ public sealed partial class PlanetGallery : Node3D
             Aim(new Vector3(-0.35f, 0.5f, 1.32f), new Vector3(-0.2f, 0.55f, 0.6f));
             for (int i = 0; i < 20; i++) { p.Sync(toSun, _sun.LightEnergy, 0.3f); await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame); }
             Save($"planet_{kind}_close.png");
+            // and as a crescent, the sun round behind: the terminator, where low light picks out the relief
+            Aim(new Vector3(0, 0.25f, 2.5f), new Vector3(0.42f, 0.05f, 0));
+            Vector3 low = new Vector3(0.9f, 0.22f, -0.38f).Normalized();
+            for (int i = 0; i < 20; i++) { p.Sync(low, _sun.LightEnergy, 1.5f); await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame); }
+            Save($"planet_{kind}_crescent.png");
             p.Root.QueueFree();
         }
         _sun.LookAt(_sun.GlobalPosition + new Vector3(0.7f, -0.45f, -0.55f), Vector3.Up);   // the rocks lit from the front left

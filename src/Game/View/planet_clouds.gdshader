@@ -25,6 +25,7 @@ uniform float relief_step = 0.06;
 uniform float cloud_relief = 0.6;
 uniform float relief_max_slope = 2.5;
 uniform float backlight_amount = 0.12;
+uniform float terminator_relief = 0.8;   // how far a top's slope moves its own terminator
 uniform float cloud_opacity = 0.9;
 uniform float fringe_opacity = 0.5;
 uniform float dome_height = 0.55;
@@ -123,9 +124,12 @@ void fragment() {
 	// alone: the relief tipping a top away from the sun only shades it)
 	float ndl_g = dot(g_world, L);
 	// (eased at both ends, never clamped: a clamp leaves flat grey patches with hard edges)
-	float day = pn_day(ndl_g) * (0.5 + 0.75 * smoothstep(-0.7, 0.55, dot(n_world, L) - ndl_g));
+	float turn = dot(n_world, L) - ndl_g;
+	// (the day taken on the top's own slope, so along the terminator the sunward side of a cloud is lit and its far side
+	// is in night: the relief the low light picks out)
+	float day = pn_day(ndl_g + clamp(turn * terminator_relief, -0.12, 0.05)) * (0.5 + 0.75 * smoothstep(-0.7, 0.55, turn));
 	// thin tops glow where the sun comes through them, just past the terminator
-	float back = backlight_amount * (1.0 - core_mask * 0.6) * smoothstep(-0.25, 0.0, ndl_g) * (1.0 - smoothstep(0.0, 0.3, ndl_g));
+	float back = backlight_amount * (1.0 - core_mask * 0.6) * smoothstep(-0.1, 0.0, ndl_g) * (1.0 - smoothstep(0.0, 0.2, ndl_g));
 	// thin cloud in the base colour, thick in the lit one, the tallest towers a little brighter still
 	vec3 col = mix(color_base, color_lit, core_mask) * (0.92 + 0.1 * smoothstep(t_core, t_core + 0.25, n));
 	vec3 sun = sun_color * sun_energy;

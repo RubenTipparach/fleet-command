@@ -24,7 +24,10 @@
 //    patches from afar that break into points as the camera comes down;
 //  - a lava world is a dark crust of plates whose joints glow where the ground is hot, round molten lowlands with
 //    floes of crust on them, and its volcanoes run a few broad flows, not rays;
-//  - the light falls off toward the terminator, soft and reddened under air, hard on a world with none (pn_day_air).
+//  - the light falls off toward the terminator, soft and reddened under air, hard on a world with none (pn_day_air),
+//    and the land's relief moves its own terminator: a slope toward the sun is lit a little past it, one turned away is
+//    in night a little before (terminator_relief), so low light picks the ranges out; the night side is black but for
+//    its lights.
 shader_type spatial;
 render_mode unshaded, shadows_disabled, cull_back;
 
@@ -37,6 +40,7 @@ uniform vec3 c2 : source_color = vec3(0.25, 0.49, 0.22);
 uniform vec3 c3 : source_color = vec3(0.55, 0.48, 0.35);
 uniform float sea = 0.02;
 uniform float ice_lat = 0.8;
+uniform float terminator_relief = 0.7;   // how far a slope moves its own terminator (times its turn from the sphere)
 uniform float clouds = 0.5;
 uniform vec3 cloud_color : source_color = vec3(1.0);
 uniform vec3 atmo : source_color = vec3(0.44, 0.71, 1.0);
@@ -263,8 +267,9 @@ float town_points(vec3 q) {
 }
 // a town's grain: 1 from afar (its points finer than a pixel, so the patch glows evenly), and as the camera comes down
 // the points themselves, at three sizes, each size showing once a pixel is finer than its cells
-float town_grain(vec3 d) {
-	float px = length(fwidth(d));
+// (px is the fragment's footprint, taken by the caller outside any branch: a derivative taken inside the land's branch
+// is undefined along the coast, and drew the coast as a line of lights)
+float town_grain(vec3 d, float px) {
 	float g = smoothstep(0.25, 0.9, px * 220.0);
 	g += (1.0 - smoothstep(0.25, 0.9, px * 220.0)) * town_points(d * 220.0 + seed) * 2.2;
 	g += (1.0 - smoothstep(0.25, 0.9, px * 700.0)) * town_points(d * 700.0 + seed.zxy) * 1.8;
@@ -427,7 +432,7 @@ void fragment() {
 			float urban = 0.45 * snoise(p * 23.0 + vec3(5.0)) + 0.55 * snoise(p * 71.0 + vec3(8.0));
 			float lived = (0.2 + 0.8 * region) * low * (0.1 + 0.9 * metro) * (1.0 - snow) * (1.0 - cold * 0.8);
 			float patch_k = smoothstep(0.72 - 0.34 * min(1.0, cities * 2.5) * lived, 0.86, urban * 0.5 + 0.5) * lived;
-			emissive += city_glow * patch_k * town_grain(v_obj) * night * 1.9 * min(1.0, cities * 4.0);
+			emissive += city_glow * patch_k * town_grain(v_obj, px) * smoothstep(0.5, 1.0, land) * night * 1.9 * min(1.0, cities * 4.0);
 		}
 	}
 	// painted clouds (a kind with no cloud layer of its own): they drift slowly
@@ -459,6 +464,7 @@ void fragment() {
 	float h_rel = crater * CRATER_DEPTH - cut_depth + volc.x * VOLCANO_HEIGHT + mountains * 0.3 * mtn + lin * 0.05
 		+ (0.2 + 0.3 * close) * h_base;
 	float relief = 1.0;
+	float day_land = day;
 	vec3 dpx = dFdx(VERTEX), dpy = dFdy(VERTEX);
 	float R = length(dpx) / max(length(dFdx(v_obj)), 1e-7);
 	float bh = h_rel * 0.045 * R;
@@ -466,15 +472,20 @@ void fragment() {
 	float det = dot(dpx, r1);
 	vec3 grad = sign(det) * (dFdx(bh) * r1 + dFdy(bh) * r2);
 	float sharp = 1.0 - smoothstep(0.15, 0.4, fwidth(h_rel));
-	if (land > 0.5) {
+	if (land > 0.0) {
+		// (eased in over the coast with the land itself, so the shore is not a line where the relief switches on)
 		vec3 nb = normalize(abs(det) * n - grad);
-		relief = mix(1.0, clamp(1.0 + (dot(nb, L) - ndl) * 1.8, 0.35, 1.5), sharp);
+		float turn = (dot(nb, L) - ndl) * sharp * land;
+		relief = clamp(1.0 + turn * 1.8, 0.35, 1.5);
+		// and the day itself taken on the slope: along the terminator a face toward the sun is lit, one turned away is night
+		// (by no more than a slope can: a ridge catches the sun a little past the terminator, never deep in the night)
+		day_land = pn_day_air(ndl + clamp(turn * terminator_relief, -0.1, 0.08), air);
 	}
 	// the sun on the sea: a tight glint inside a broad sheen
 	float ndh = max(dot(n, normalize(L + V)), 0.0);
 	float sp = (pow(ndh, 200.0) * 0.45 + pow(ndh, 24.0) * 0.09) * spec * day;
 	vec3 sun = sun_color * sun_energy;
-	vec3 lit_col = pn_lit(col, day * relief, ndl, air, sun) + sp * sun * pn_twilight(ndl, air) + emissive;
+	vec3 lit_col = pn_lit(col, day_land * relief, ndl, air, sun) + sp * sun * pn_twilight(ndl, air) + emissive;
 	// the air's rim, seen from afar (from inside the air, coming down, the shell scatters instead)
 	float rim = pow(1.0 - max(dot(n, V), 0.0), 2.5) * (1.0 - close);
 	lit_col += atmo * rim * atmo_strength * (0.15 + 0.85 * smoothstep(-0.3, 0.6, ndl)) * sun_energy;

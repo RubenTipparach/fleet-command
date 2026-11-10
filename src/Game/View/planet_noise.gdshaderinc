@@ -89,26 +89,30 @@ vec3 pn_fib_dir(float i, float n) {
 	return vec3(cos(th) * sin(phi), cos(phi), sin(th) * sin(phi));
 }
 
-// the battle's light on a surface whose normal makes ndl with the sun. Under air (air 1) the terminator is a wide
+// the battle's light on a surface whose normal makes ndl with the sun. Under air (air 1) the terminator is a short
 // twilight; on a world with none (air 0) it is a hard edge. Inside it the light falls off with the sun's height, so a
 // disc is brightest under the sun and shades toward its night, not one flat lit face. Every layer of a planet calls
-// this, so they all turn to night together.
+// this, so they all turn to night together. It is steepest at the terminator, so a layer with relief gives it the
+// slope's own ndl (its relief normal against the sun): there a slope facing the sun is lit and one turned away is in
+// night, which is what picks the relief out along the terminator (owner, 2026-11-10, with a photograph of a crescent
+// Earth: "terminator line, normal maps? do we have those?").
 float pn_day_air(float ndl, float air) {
-	float edge = smoothstep(mix(-0.02, -0.14, air), mix(0.05, 0.2, air), ndl);
-	return edge * (0.22 + 0.78 * pow(clamp(ndl, 0.0, 1.0), 0.6));
+	float edge = smoothstep(mix(-0.01, -0.06, air), mix(0.04, 0.16, air), ndl);
+	return edge * (0.26 + 0.74 * pow(clamp(ndl, 0.0, 1.0), 0.55));
 }
 float pn_day(float ndl) { return pn_day_air(ndl, 1.0); }
 
 // the sun's colour through the air at the terminator: reddened in the narrow band where its light comes in low (nothing
 // on an airless world)
 vec3 pn_twilight(float ndl, float air) {
-	return mix(vec3(1.0), vec3(1.0, 0.66, 0.42), air * (1.0 - smoothstep(-0.04, 0.2, ndl)));
+	return mix(vec3(1.0), vec3(1.0, 0.8, 0.62), air * (1.0 - smoothstep(-0.05, 0.1, ndl)));
 }
 
 // a surface of colour col under a sun: day is its share of the sun's light (pn_day_air, times any shade of its own), and
-// the night side keeps a trace of cold light so a dark world still reads as a globe
+// the night side is night: only the faintest cold trace, far below anything lit (a photograph of a planet shows its
+// night side black)
 vec3 pn_lit(vec3 col, float day, float ndl, float air, vec3 sun) {
-	return col * (vec3(0.008, 0.01, 0.014) + day * pn_twilight(ndl, air)) * sun;
+	return col * (vec3(0.0010, 0.0013, 0.002) + day * pn_twilight(ndl, air)) * sun;
 }
 
 // A ring system's density at radius r (the planet's radius is 1) between inner and outer: ringlets at three scales, a
