@@ -508,7 +508,7 @@ const SECTIONS = [
       { id: 'NP11', q: 'A nebula battle\'s sky takes its plumes\' colours, with a wall of the same cloud round the horizon. Keep it?', options: ['Yes', 'Keep the old skies', 'Notes below'], rec: 0,
         why: 'The sky shows only in the band between the decks, so it reads as the far side of the same nebula.' },
       { id: 'NP12', q: 'The meshes are out (your call). Which is the default, with the other as a graphics setting?', options: ['The volume on desktop, the billboards on phones', 'Billboards everywhere, the volume as a high setting'], rec: 0,
-        why: 'After the optimisation (64 then 128 shared steps, the decks and shadows baked) the volume costs about what the billboards do on the M4 Max: a played heavy battle 80 fps in the open and 70 inside a storm (37 and 36 before). Phones have no compute for the shared march, so the billboards stay theirs.' },
+        why: 'After the optimisation (64 then 128 shared steps, the decks and shadows baked) the volume costs about what the billboards do on the M4 Max: a played heavy battle 80 fps in the open and 70 inside a storm (37 and 36 before). The phones' renderer cannot share the march across a block of pixels, so the billboards stay theirs.' },
     ] },
   { tag: 'EZ', name: 'The engagement zone (change engagement-zone, designed, not built)',
     lead: 'Your asks (2026-11-10): a big square zone of engagement; leaving it is a retreat, with 30 s to turn around before the mission is abandoned; abandoning without a working warp drive self-destructs the ship, with the warning on screen. The warning banner and the zone on the radar and map are mockup 37, for your approval first.',
