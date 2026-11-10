@@ -149,12 +149,12 @@ what else can we do?"). Measured by the still tool's `--frame-ms` (a measurement
 v-sync off and the time a frame read by the clock; the battle stands still, so the CPU's share is small; Godot's GPU
 timer reads nothing on Metal), ms a frame at 1920 x 1080 on the M4 Max:
 
-| View | No cloud | Volume, 128 steps | 64 steps, each longer | and the decks baked | and each column's shadow baked | Billboards |
-|---|---|---|---|---|---|---|
-| `concord_heavy`, wide (zoom 1.5, pitch 0.15) | 5.9 | 11.9 | 9.8 | 6.2 | 6.1 | 6.3 |
-| `concord_heavy`, the chase camera | 5.9 | 21.7 | 17.0 | 10.4 | 8.9 | 6.5 |
-| `kelvane_heavy`, in the storm | 10.1 | 17.4 | 14.0 | 10.8 | 10.7 | 10.8 |
-| `ssarith_heavy`, low | 3.6 | 7.3 | 6.9 | 3.9 | 3.9 | 3.8 |
+| View | No cloud | Volume, 128 steps | 64 steps, each longer | and the decks baked | and each column's shadow baked | and the march shared by each 2 x 2 block | Billboards |
+|---|---|---|---|---|---|---|---|
+| `concord_heavy`, wide (zoom 1.5, pitch 0.15) | 5.9 | 11.9 | 9.8 | 6.2 | 6.1 | 6.1 | 6.3 |
+| `concord_heavy`, the chase camera | 5.9 | 21.7 | 17.0 | 10.4 | 8.9 | 6.5 | 6.5 |
+| `kelvane_heavy`, in the storm | 10.1 | 17.4 | 14.0 | 10.8 | 10.7 | 10.7 | 10.8 |
+| `ssarith_heavy`, low | 3.6 | 7.3 | 6.9 | 3.9 | 3.9 | 3.9 | 3.8 |
 
 - **64 steps**: 64 plain steps cut the march short of the far side of a column (it showed thinner, with a hard outline);
   each step half again as long (`FINE` 0.028 to 0.05 radii) reaches as far, and looks the same beside 128.
@@ -168,7 +168,18 @@ timer reads nothing on Metal), ms a frame at 1920 x 1080 on the M4 Max:
   texture (`NebulaPlume.ShadowTexture`: the cloud toward the sun, times the billows' mean share); the shader reads it in
   one fetch and keeps one near step through the noise for the billows' fine shadow on themselves. Three of the four
   noise reads of a step were the march toward the sun.
-- **Half resolution at 128 steps, estimated** (the whole 3D view at half scale, which shrinks the ships too, so a cost
+- **128 samples at the cost of half resolution, each pixel's own depth kept** (`nb_quad_offset`, `nb_quad_share` in
+  `nebula_cloud.gdshaderinc`): each pixel of a 2 x 2 block marches a quarter of the samples (a column 32 steps of 0.1
+  radii, a deck 20), offset a quarter step from the others, and the block puts the four together through the fine
+  derivatives; a pixel takes a neighbour's march only where that one reached as far (within 5 % of its own depth), so a
+  ship's edge keeps its own pixel and no cloud bleeds over it. A separate half-resolution pass would have needed the
+  scene's depth in another viewport and a depth-aware blend at every ship's edge; this keeps every pixel's depth and
+  costs the same. Looked at beside the 64-step march, whole and at four times: no blocks, no halo round a hull.
+  Forward+ only: Compatibility has no fine derivatives and marches each pixel whole.
+- **A whole battle again**, played through by the scripted captain as in the first table: `concord_heavy` median 80 fps
+  (the same CPU-held ceiling as with no cloud; 37 before), slowest second 53; `kelvane_heavy` median 70 fps, p10 55,
+  slowest 45 (36 before), most of it inside the storm.
+- **Half resolution at 128 steps, estimated** (before the block march) (the whole 3D view at half scale, which shrinks the ships too, so a cost
   estimate only), the chase view over its 5.7 ms floor: 64 steps 4.7 ms at full resolution and about 0.4 at half; 128
   steps 9.5 at full and about 2.4 at half.
 

@@ -29,7 +29,9 @@ render_mode unshaded, shadows_disabled, depth_draw_never, depth_test_disabled, b
 const int STEPS = 14;
 const int LIGHT_STEPS = 1;
 #else
-const int STEPS = 40;
+// a pixel marches 20 steps, a quarter step from each of its block's others (nb_quad_share): the block's four together
+// are 80 samples, at the cost of half resolution
+const int STEPS = 20;
 const int LIGHT_STEPS = 2;
 #endif
 uniform sampler3D noise_tex : repeat_enable, filter_linear;
@@ -104,14 +106,15 @@ void fragment() {
 	vec3 ro = CAMERA_POSITION_WORLD;
 	vec3 rd = normalize(v_world - ro);
 	float seen = 1.0 - smoothstep(0.45, 0.85, side * ro.y / underside);
-	if (seen <= 0.0) discard;
+	// (no discard before the block shares its marches: a ray that misses marches nothing)
+	bool hits = seen > 0.0;
 
 	// the ray's stretch inside the slab (the lowest the face hangs to the far side) and the deck's round edge
 	float y_in = underside - hang * 1.3 - join, y_out = underside + thickness;
 	float oy = side * ro.y, dy = side * rd.y;
 	float t0 = 0.0, t1 = reach;
 	if (abs(dy) < 1.0e-5) {
-		if (oy < y_in || oy > y_out) discard;
+		if (oy < y_in || oy > y_out) hits = false;
 	} else {
 		float a = (y_in - oy) / dy, b = (y_out - oy) / dy;
 		t0 = max(t0, min(a, b));
@@ -121,18 +124,22 @@ void fragment() {
 	float A = dot(rd.xz, rd.xz), B = dot(o2, rd.xz), C = dot(o2, o2) - fade_r * fade_r;
 	if (A > 1.0e-8) {
 		float h = B * B - A * C;
-		if (h < 0.0) discard;
-		h = sqrt(h);
+		if (h < 0.0) hits = false;
+		h = sqrt(max(h, 0.0));
 		t0 = max(t0, (-B - h) / A);
 		t1 = min(t1, (-B + h) / A);
 	} else if (C > 0.0) {
-		discard;
+		hits = false;
 	}
-	t1 = min(t1, nb_solid(depth_texture, SCREEN_UV, INV_PROJECTION_MATRIX));
-	if (t1 <= t0) discard;
+	float solid = nb_solid(depth_texture, SCREEN_UV, INV_PROJECTION_MATRIX);
+	t1 = hits ? min(t1, solid) : t0;
 
-	float dt = (t1 - t0) / float(STEPS);
+	float dt = max(t1 - t0, 0.0) / float(STEPS);
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
 	float t = t0 + dt * pn_hash31(vec3(FRAGCOORD.xy, 2.0));
+#else
+	float t = t0 + dt * (nb_quad_offset(FRAGCOORD.xy) + pn_hash31(vec3(FRAGCOORD.xy, 2.0))) * 0.25;
+#endif
 	vec3 sun_l = normalize(sun_dir);
 	float sun_k = nb_sun_k(sun_energy);
 	float phase = nb_phase(rd, sun_l);
@@ -198,9 +205,14 @@ void fragment() {
 		}
 		t += dt;
 	}
-	// far off, the deck fades into the sky behind it
-	float alpha = (1.0 - through) * seen * (1.0 - smoothstep(far_from, far_to, first));
-	if (alpha < 0.003) discard;
-	ALBEDO = mix(lit / (1.0 - through), fog_color, 1.0 - exp(-max(first, 0.0) * fog_density));
-	ALPHA = alpha;
+	// far off, the deck fades into the sky behind it; the haze at its own depth, on the premultiplied colour
+	float fade = max(seen, 0.0) * (1.0 - smoothstep(far_from, far_to, first));
+	float alpha = (1.0 - through) * fade;
+	vec4 v = vec4(mix(lit * fade, fog_color * alpha, 1.0 - exp(-max(first, 0.0) * fog_density)), alpha);
+#if CURRENT_RENDERER != RENDERER_COMPATIBILITY
+	v = nb_quad_share(v, min(solid, 1.0e6), 0.05 * min(solid, 1.0e6) + 0.05, FRAGCOORD.xy);
+#endif
+	if (v.a < 0.003) discard;
+	ALBEDO = v.rgb / v.a;
+	ALPHA = v.a;
 }

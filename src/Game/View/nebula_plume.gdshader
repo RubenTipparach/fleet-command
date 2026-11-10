@@ -31,9 +31,11 @@ const int STEPS = 44;
 const float LIGHT_REACH = 0.1;  // radii: the one near step toward the sun, through the noise
 const float FINE = 0.07;        // radii a step inside the cloud
 #else
-const int STEPS = 64;
+// a pixel marches 32 steps of 0.1 radii, a quarter step from each of its block's others (nb_quad_share): the block's
+// four together are 128 samples 0.025 apart, at the cost of half resolution
+const int STEPS = 32;
 const float LIGHT_REACH = 0.07;
-const float FINE = 0.05;
+const float FINE = 0.1;
 #endif
 const float COARSE = 4.0;       // steps in clear space are this many fine ones
 const int FLASHES = 4;
@@ -149,15 +151,19 @@ void fragment() {
 	vec3 ro = v_cam;
 	vec3 rd = normalize(v_local - v_cam);
 	float t0, t1;
-	if (!plume_bounds(ro, rd, t0, t1)) discard;
+	// (no discard before the block shares its marches: a ray that misses marches nothing)
+	bool hits = plume_bounds(ro, rd, t0, t1);
 
 	// the nearest solid along this ray, in radii: the march stops there
 	float solid = nb_solid(depth_texture, SCREEN_UV, INV_PROJECTION_MATRIX) / v_scale;
 	t0 = max(t0, 0.0);
-	t1 = min(t1, solid);
-	if (t1 <= t0) discard;
+	t1 = hits ? min(t1, solid) : t0;
 
+#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
 	float t = t0 + FINE * pn_hash31(vec3(FRAGCOORD.xy, 1.0));
+#else
+	float t = t0 + FINE * (nb_quad_offset(FRAGCOORD.xy) + pn_hash31(vec3(FRAGCOORD.xy, 1.0))) * 0.25;
+#endif
 	vec3 sun_l = normalize(sun_dir);
 	float sun_k = nb_sun_k(sun_energy);
 	float phase = nb_phase(rd, sun_l);
@@ -233,7 +239,12 @@ void fragment() {
 		t += dt;
 	}
 	float alpha = 1.0 - through;
-	if (alpha < 0.003) discard;
-	ALBEDO = mix(lit / alpha, fog_color, 1.0 - exp(-max(first, 0.0) * v_scale * fog_density));
-	ALPHA = alpha;
+	// the haze at the cloud's own depth, on the premultiplied colour
+	vec4 v = vec4(mix(lit, fog_color * alpha, 1.0 - exp(-max(first, 0.0) * v_scale * fog_density)), alpha);
+#if CURRENT_RENDERER != RENDERER_COMPATIBILITY
+	v = nb_quad_share(v, min(solid, 1.0e6), 0.05 * min(solid, 1.0e6) + 0.05, FRAGCOORD.xy);
+#endif
+	if (v.a < 0.003) discard;
+	ALBEDO = v.rgb / v.a;
+	ALPHA = v.a;
 }

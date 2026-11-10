@@ -193,8 +193,9 @@ draw call, marched in `nebula_plume.gdshader`.
   `tools/space/plume_noise.py` from a seeded generator; `--check` proves the file is the generator's). Computing the shape
   in the shader at every step cost twice the frame: never move it back.
 - **The march**: clipped to the bounding column and the scene's depth, jittered by a PCG hash of the pixel, stopped when
-  opaque; a short second march toward the sun for the cloud's own shadow. 64 and 3 steps on Forward+, 44 and 2 on
-  Compatibility.
+  opaque; the column's shadow toward the sun baked when it is built, one near step through the noise; the march
+  shared by each 2 x 2 block (`nb_quad_share`: a quarter of the samples a pixel, its own depth kept), 32 steps a pixel on
+  Forward+; 44 on Compatibility, each pixel marched whole.
 - **The same sun as the planets** (rule 6): `sun_dir` and `sun_energy` from `BattleView`, the cloud `unshaded`.
 - **One cloud, two shaders**: `nebula_cloud.gdshaderinc` is how a nebula's cloud is made from the noise and lit; the plume
   and the decks (`nebula_deck.gdshader`, `NebulaDeck`, `data/space/nebula_decks.json`: the slabs above and below the

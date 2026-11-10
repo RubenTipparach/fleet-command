@@ -55,6 +55,37 @@ vec3 nb_light(vec3 deep, vec3 lit, vec3 glow, float glow_strength, float height,
 		+ glow * glow_strength * thin * thin;
 }
 
+// The march shared by each 2 x 2 block of pixels (owner, 2026-11-10: "try the half resolution trick with 128"): each
+// pixel of the block marches a quarter of the samples, offset a quarter of a step from the others (nb_quad_offset), and
+// the block puts the four together (nb_quad_share), so the block gets four times the samples for one pixel's march, the
+// cost of marching at half resolution. Each pixel keeps its own depth: it takes a neighbour's march only where that one
+// reached as far (within tol of its own reach), so a ship's edge stays its own pixel's and no cloud bleeds over it. The
+// neighbours' results come from the fine derivatives across the block, so nb_quad_share is called in uniform control
+// flow, after every march, before any discard. Forward+ only: Compatibility has no fine derivatives and marches whole.
+
+// This pixel's offset within the block's four marches, 0 to 3 quarters of a step.
+float nb_quad_offset(vec2 frag) {
+	return float((int(frag.x) & 1) + 2 * (int(frag.y) & 1));
+}
+
+#if CURRENT_RENDERER != RENDERER_COMPATIBILITY
+// The block's four marches together: v this pixel's premultiplied colour and alpha, reach how far its march could go.
+vec4 nb_quad_share(vec4 v, float reach, float tol, vec2 frag) {
+	float sx = (int(frag.x) & 1) == 0 ? 1.0 : -1.0;
+	float sy = (int(frag.y) & 1) == 0 ? 1.0 : -1.0;
+	vec4 vx = v + sx * dFdxFine(v);
+	vec4 vy = v + sy * dFdyFine(v);
+	vec4 vd = vx + sy * dFdyFine(vx);
+	float rx = reach + sx * dFdxFine(reach);
+	float ry = reach + sy * dFdyFine(reach);
+	float rd = rx + sy * dFdyFine(rx);
+	float wx = step(abs(rx - reach), tol);
+	float wy = step(abs(ry - reach), tol);
+	float wd = step(abs(rd - reach), tol);
+	return (v + vx * wx + vy * wy + vd * wd) / (1.0 + wx + wy + wd);
+}
+#endif
+
 // The distance along the camera's ray to the nearest solid at this pixel (the depth texture), in view units; a march stops
 // there.
 float nb_solid(sampler2D depth_tex, vec2 screen_uv, mat4 inv_projection) {

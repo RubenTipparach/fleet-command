@@ -43,7 +43,8 @@
   picks the style, the billboards on phones
 - [x] 2.21 The volume cheaper: 64 longer steps, the decks' field baked (`DeckField`); the chase view 21.7 to 10.4 ms
 - [x] 2.22 Each column's shadow baked toward the battle's sun (`NebulaPlume.ShadowTexture`); the chase view 10.4 to 8.9 ms
-- [ ] 2.23 The march at half the pixels with 128 steps (owner: "try the half resolution trick with 128")
+- [x] 2.23 128 samples at the cost of half resolution, the march shared by each 2 x 2 block (`nb_quad_share`); the
+  chase view 8.9 to 6.5 ms, the floor 5.9
 - [ ] 2.24 Fewer steps for a far or small column (owner: "we can come back to 2 if we reeeealllly need it")
 
 ## 3. Mockup sync (CLAUDE.md section 4)
