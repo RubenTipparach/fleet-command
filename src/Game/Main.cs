@@ -24,13 +24,13 @@ namespace FleetCommand.Game;
 public sealed partial class Main : Node
 {
     private ConsoleContext _x = null!;
+    private bool _pausedHeard;
     private BattleView _view = null!;
     private ViewOverlay _overlay = null!;
     private Control _root = null!;
     private ColumnBacking _column = null!;
     private MenuCard _menu = null!;
     private OptionsCard _options = null!;
-    private MusicPlayer _music = null!;
     /// <summary>The cue table, set before the first skin is made, so each skin's key sound is checked as it is.</summary>
     private AudioCues _audio = AudioCues.Empty;
     private readonly Dictionary<Region, ConsolePanel> _panels = new();
@@ -123,8 +123,6 @@ public sealed partial class Main : Node
         _options.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         _options.Visible = false;
         optLayer.AddChild(_options);
-        _music = new MusicPlayer();
-        AddChild(_music);
 
         // the game flow (menus, campaign, missions) unless the run is one of the battle's own checks or a scenario asked for
         // a playtest whose script plays the campaign ("flow": true) runs the flow too, saving apart from the player's campaign
@@ -247,10 +245,15 @@ public sealed partial class Main : Node
         if (_x == null) return;
         _menu.Visible = _x.State.MenuOpen;
         _options.Visible = _x.State.OptionsOpen;
-        _music.Play(_flow == null || _flow.Screen == FlowScreen.Battle ? "battle" : "main_theme");
         // the bridge bed under a battle, silent on the menus and the map
         _x.Sounds.Bed(_flow == null || _flow.Screen == FlowScreen.Battle ? "amb_bridge" : null);
         if (_flow != null && _flow.Screen != FlowScreen.Battle) return;
+        // the pause key's sound, on and off (data/audio/events.json)
+        if (_x.State.Paused != _pausedHeard)
+        {
+            _pausedHeard = _x.State.Paused;
+            _x.Sounds.Key(_pausedHeard ? _x.Data.Sounds.PauseOn : _x.Data.Sounds.PauseOff);
+        }
         FollowCommand();
         if (_x.State.Paused || _x.State.MenuOpen || _args.ContainsKey("still")) return;
         double step = _x.Data.Tuning.StepS;

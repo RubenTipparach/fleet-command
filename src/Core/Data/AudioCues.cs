@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace FleetCommand.Data;
 
-/// <summary>One sound: its file (relative to the repository, under assets/audio, an .ogg), its bus (Master, Music or
+/// <summary>One sound: its file (relative to the repository, under assets/audio, an .ogg), its bus (Master or
 /// Effects) and its level at that bus in dB.</summary>
 public sealed record AudioCue(string Id, string File, string Bus, double VolumeDb);
 
@@ -14,7 +14,7 @@ public sealed record AudioCue(string Id, string File, string Bus, double VolumeD
 public sealed record AudioCues(IReadOnlyDictionary<string, AudioCue> Cues)
 {
     /// <summary>The buses a cue may name, made by the game's audio settings.</summary>
-    public static readonly string[] Buses = { "Master", "Music", "Effects" };
+    public static readonly string[] Buses = { "Master", "Effects" };
 
     /// <summary>No cues: the default before the file is read.</summary>
     public static readonly AudioCues Empty = new(new Dictionary<string, AudioCue>());

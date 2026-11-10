@@ -19,16 +19,22 @@
 
 - [x] 3.1 `data/audio/cues.json` and its validator in `src/Core` (`AudioCues`), with tests (2026-11-07: the console keys
   and the bridge bed; the battle's cues join it with 3.2-3.3)
-- [ ] 3.2 The event-to-cue mapping in `src/Core` (pure, tested on golden-seed battles)
-- [ ] 3.3 A sound player in `src/Game` reading `Battle.Hits` and the shots, placing 3D players at the named nodes
-- [ ] 3.4 Buses and the Options volume boxes
+- [x] 3.2 The event-to-cue mapping in `src/Core` (`BattleSounds`, `data/audio/events.json` read by `SoundMap` and checked
+  against the cue table; `BattleSoundsTests`) (owner, 2026-11-10: "Implement sound fx in the game")
+- [x] 3.3 A sound player in `src/Game` (`BattleAudio`): shots, hits, ships destroyed and lightning placed in 3D at their
+  ship, quieter with distance; the commanded ship's lock and critical hull and the pause key through the console
+  (placed at the ship, not yet at the named mount node)
+- [x] 3.4 Buses and the Options volume boxes: Master and Effects; the boxes' curve made the amplitude's share (a squared
+  curve put the defaults 20 dB down and the bed and the keys were not heard: owner, 2026-11-10, "I don't hear any clicks or
+  bridge hums"); the cue levels set so a near sound peaks about 10 dB under full scale
 - [x] 3.5 Skins' key sounds: each skin's style names its key cue (`SkinStyle.KeySound`, required), checked against the cue
   table as the skin is made; every console key plays it (`Imm.Pressed`, `ConsoleSounds.Key`) (2026-11-07)
 - [x] 3.5a The bridge bed loops under a battle, silent on the menus and the map (`ConsoleSounds.Bed`) (2026-11-07)
 - [x] 3.5b A playtest that hears the keys and the bed: in a scripted run every sound played prints `PLAYTEST_SOUND <cue>`;
   the Concord and Krai battles play the bed and their skin's key sound on every key press
   (`docs/playtests/2026-11-07-console-sounds.md`)
-- [ ] 3.6 The voice cap and pause behaviour
+- [x] 3.6 The voice cap (24 placed voices, the longest-playing taken past it) and the pause (no battle event while paused;
+  the pause key's own sound)
 - [ ] 3.7 `PLAYTEST_SOUND` lines (done for the console, 2026-11-07) and a playtest beat that checks them for the battle's
   sounds
 - [ ] 3.8 The game's credits carry every CC-BY pack's credit in use (`tools/audio/licence_exceptions.json`); none is in

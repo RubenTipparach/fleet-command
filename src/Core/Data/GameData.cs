@@ -227,6 +227,8 @@ public sealed record GameData(
 
     /// <summary>The sounds the game plays (data/audio/cues.json).</summary>
     public AudioCues Audio { get; init; } = AudioCues.Empty;
+    /// <summary>Which sound each thing the battle does plays (data/audio/events.json).</summary>
+    public SoundMap Sounds { get; init; } = SoundMap.Empty;
 
     /// <summary>A scenario by id; throws naming the id when there is none.</summary>
     public Scenario ScenarioById(string id) =>

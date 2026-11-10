@@ -33,6 +33,7 @@ public sealed partial class BattleView : Node3D
     private const float HullClearX = 0.85f;
 
     private ConsoleContext _x = null!;
+    private BattleAudio _audio = null!;
     private Camera3D _cam = null!;
     private Godot.Environment _env = null!;
     private readonly Dictionary<string, Node3D> _models = new();
@@ -80,6 +81,10 @@ public sealed partial class BattleView : Node3D
     public void Init(ConsoleContext ctx)
     {
         _x = ctx;
+        // the battle's sounds, placed where they happen (BattleAudio)
+        _audio = new BattleAudio();
+        _audio.Init(ctx.Data.Audio, ctx.Sounds);
+        AddChild(_audio);
         Name = "BattleView";
         // the environment's sky: the scenario's nebula as a baked panorama, for the hulls' reflections and part of their
         // ambient light (owner, 2026-11-04: "reflection probes for all those spacey backgrounds ... but dont crank it up
@@ -296,6 +301,7 @@ public sealed partial class BattleView : Node3D
         _shots.Sync(b, _x.StepShare);
         SyncPlanets(b);
         SyncNebulae(b);
+        _audio.Sync(b, MPerU, id => LiftOf(id));
     }
 
     // Battle damage (ShipDamage): each hit that has landed since the last frame makes its effect and scar, then every
