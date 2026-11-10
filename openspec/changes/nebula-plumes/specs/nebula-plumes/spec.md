@@ -4,7 +4,7 @@
 
 Inside a nebula plume at full density a shot SHALL keep half its chance to hit, a beam or bolt weapon SHALL reach half its
 range, and a missile SHALL lose its target with a chance of 0.08 a second. No ship SHALL lock another through a plume (any
-plume on the sight line between them, either ship's own included) from beyond 20 km unless its ECCM is above the other's
+plume on the sight line between them, either ship's own included) from beyond 15 km unless its ECCM is above the other's
 ECM, and a lock held when a plume comes between SHALL be lost. Each effect SHALL scale with the plume's density where the
 ships are (on the sight line, for a lock), and SHALL be nothing outside every plume.
 
@@ -23,11 +23,11 @@ ships are (on the sight line, for a lock), and SHALL be nothing outside every pl
 
 #### Scenario: Hiding in a plume
 - **WHEN** a ship sits in a plume 80 km from an enemy whose ECCM does not beat its ECM
-- **THEN** the enemy cannot lock it, and can once it closes inside 20 km
+- **THEN** the enemy cannot lock it, and can once it closes inside 15 km
 
 #### Scenario: A plume between two ships
 - **WHEN** two ships in clear space 60 km apart have a plume on the sight line between them, and one has the other locked
-- **THEN** the lock is lost and cannot be made again until they close inside 20 km, the line clears, or the locker's ECCM
+- **THEN** the lock is lost and cannot be made again until they close inside 15 km, the line clears, or the locker's ECCM
   beats the other's ECM; a plume beside the line hides nothing
 
 ### Requirement: An ion storm's lightning trips a ship's core

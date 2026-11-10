@@ -13,7 +13,7 @@ toward the plume's value by that thickness, so a thin plume is a mild one. Betwe
 | `hit_x` | 0.5 | A shot's chance to hit, multiplied, when either ship is in a full plume (owner: "and 1/2 acuracy to hit") |
 | `energy_range_x`, `energy_kinds` | 0.5; `beam`, `bolt` | An energy weapon's range, multiplied (owner: "energy weapons 1/2 range"); torpedoes, missiles and drivers keep theirs |
 | `missile_lost_per_s` | 0.08 a second | A missile's chance each second to lose its target and fly on straight, while it or its target is in a full plume (owner: "missiles dont quite work"): about half are lost over 8 s of flight |
-| `lock_km` | 20 km | No ship can lock another through a plume (any plume on the sight line between them, either ship's own included) from farther than this, unless its ECCM is above the other's ECM (owner: "can hide you from enemies", "ships whose targeting raycasts goes through a cloud looses target locks"); a lock held when a plume comes between is lost |
+| `lock_km` | 15 km | No ship can lock another through a plume (any plume on the sight line between them, either ship's own included) from farther than this, unless its ECCM is above the other's ECM (owner: "can hide you from enemies", "ships whose targeting raycasts goes through a cloud looses target locks"); a lock held when a plume comes between is lost |
 | `ew_gain_x` | 2 | How much more ECM and ECCM count in a full plume (unchanged from `cloaking`) |
 | `edge_thin_frac` | 0.3 | How much thinner a plume is at its edge than its middle |
 | `storm_strikes_per_min` | 3 a minute | How often lightning finds each ship in a full ion storm |
@@ -29,8 +29,9 @@ is on the sight line.
 the deck below to the deck above), so a sight line between two ships on the plane passes through it exactly where the
 line, seen from above, crosses its circle. The thickness on the line is the plume's thickness at the line's nearest point
 to the plume's middle, the densest plume counting; 0 when the line is clear. It was 60 km and "a ship inside a plume"
-before the owner asked for the sight line; at 20 km a plume between two fleets hides each from the other until they close
-to knife range (survey NP8).
+before the owner asked for the sight line, then 20 km; the owner set it at 15 km (2026-11-10: "15km is now max lockon range,
+so any ships below that threashold can lock on and shoot eachother inside a cloud column"): within 15 km two ships lock
+and fight whatever cloud lies between or round them, beyond it a plume between them hides each from the other.
 
 **An ion storm** (`Battle.Nebula.cs`). Each fixed step, each ship inside a storm rolls against
 `storm_strikes_per_min / 60 * thickness * dt`. A strike does no damage. It sets the ship's core down for
@@ -219,7 +220,7 @@ with the new numbers.
 | NP5 | Does a strike also do damage? | No: the loss of power is the hazard |
 | NP6 | Do AI captains avoid storms and use plumes? | Not yet: they fly through both |
 | NP7 | The seven looks, the towers' shape and the lightning | As built, until the owner has seen the stills and the takes |
-| NP8 | A sight line through a plume breaks a lock beyond what range, and does ECCM above the target's ECM still see through? | 20 km, and yes |
+| NP8 | A sight line through a plume breaks a lock beyond what range? | Decided: 15 km (owner, 2026-11-10); whether ECCM above the target's ECM still sees through stays provisional (yes) |
 | NP9 | The decks: how far off the plane, how deep, how far they reach, how fast they fade into the sky | 18 km off, 20 km deep, whole 40 km past the outermost column, gone 90 km beyond; fading from 110 to 260 km off |
 | NP10 | How many columns, puffs and of which forms in a nebula battle | Two big columns (the plume and the storm), five of 8 to 18 km in all four forms, four puffs of 4 to 6 km |
 | NP11 | A nebula battle's sky in its plumes' colours, with a wall of cloud round the horizon | As built |

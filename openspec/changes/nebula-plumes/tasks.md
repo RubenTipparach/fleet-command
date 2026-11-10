@@ -27,7 +27,7 @@
 - [ ] 2.11 `assets/space/*.bin` in the export presets' include filter, when the Windows and Android exports are set up
 - [ ] 2.12 A planet's air or rings in front of a plume draw under it (the render order's known limit, design): sort
   plumes against planets by distance if a scene ever needs it
-- [x] 2.13 A lock needs a clear sight line (`Rules.NebulaOnLine`, `Battle.CanLock`, `lock_km` 20); `NebulaTests`
+- [x] 2.13 A lock needs a clear sight line (`Rules.NebulaOnLine`, `Battle.CanLock`, `lock_km` 15, the owner's); `NebulaTests`
 - [x] 2.14 The decks (`NebulaDeck`, `nebula_deck.gdshader`, `data/space/nebula_decks.json`), the shared cloud include
   (`nebula_cloud.gdshaderinc`), columns that reach them, coloured by column placement, fading at their edges and into
   the sky

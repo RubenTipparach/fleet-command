@@ -65,19 +65,17 @@ public sealed partial class Battle
 
     public void ToggleOrbitDir() => Player.OrbitDir = -Player.OrbitDir;
 
-    // the helm's ranges move in steps of RangeStepKm, inside the tuning's hold limits
-    private const double RangeStepKm = 5;
-    private double StepKm(double v) => Math.Clamp(Math.Round(v / RangeStepKm) * RangeStepKm, Tuning.HoldMinKm, Tuning.HoldMaxKm);
+    /// <summary>The distance hold range keeps, snapped to the helm's range scale (HelmRange: 1 km steps up to 15 km, 5 km
+    /// above).</summary>
+    public void SetHoldKm(double km) { if (double.IsFinite(km)) Player.HoldKm = HelmRange.Snap(km, Tuning); }
 
-    /// <summary>The distance hold range keeps, in steps of 5 km.</summary>
-    public void SetHoldKm(double km) { if (double.IsFinite(km)) Player.HoldKm = StepKm(km); }
-
-    /// <summary>Hit and run's nearest and farthest range, at least one step (5 km) apart.</summary>
+    /// <summary>Hit and run's nearest and farthest range, on the helm's range scale, at least one step apart.</summary>
     public void SetRunRange(double lo, double hi)
     {
         if (!double.IsFinite(lo) || !double.IsFinite(hi)) return;
-        Player.RunMinKm = Math.Min(StepKm(lo), StepKm(hi) - RangeStepKm);
-        Player.RunMaxKm = Math.Max(StepKm(hi), Player.RunMinKm + RangeStepKm);
+        double h = HelmRange.Snap(hi, Tuning);
+        Player.RunMinKm = HelmRange.Snap(Math.Min(HelmRange.Snap(lo, Tuning), h - HelmRange.StepAt(h, Tuning)), Tuning);
+        Player.RunMaxKm = Math.Max(h, HelmRange.Snap(Player.RunMinKm + HelmRange.StepAt(Player.RunMinKm, Tuning), Tuning));
     }
 
     /// <summary>True while a high energy turn cannot be ordered (one under way, broken down, or the battery short).</summary>

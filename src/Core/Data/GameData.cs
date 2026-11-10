@@ -192,6 +192,11 @@ public sealed record Tuning(
     /// ramming contact, the hull a rock strikes), as the reference games draw their ships large against the space between
     /// them (owner, 2026-11-06: "multiply all distance by 10", "1km -> 10km": every distance grew tenfold, the ships did not).</summary>
     public double ShipFrameX { get; init; } = 1;
+    /// <summary>The helm's range sliders (HelmRange): the range their first half ends at, km, and the step below it and
+    /// above it, km.</summary>
+    public double HoldSplitKm { get; init; } = 15;
+    public double HoldFineStepKm { get; init; } = 1;
+    public double HoldStepKm { get; init; } = 5;
     /// <summary>Seconds an AI captain's fire goes without landing before it closes to half its fighting range (half again for each
     /// further such span, an eighth at most).</summary>
     public double AiCloseAfterS { get; init; } = 20;
