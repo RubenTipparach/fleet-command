@@ -42,8 +42,9 @@
   sucks lol", "we could save puffs for a lower end setting device like phones"); delete the meshes; a graphics setting
   picks the style, the billboards on phones
 - [x] 2.21 The volume cheaper: 64 longer steps, the decks' field baked (`DeckField`); the chase view 21.7 to 10.4 ms
-- [ ] 2.22 Next: the columns' march at half resolution, fewer steps for a far or small column, 2 light steps; the whole
-  battle played again for its frame rate
+- [x] 2.22 Each column's shadow baked toward the battle's sun (`NebulaPlume.ShadowTexture`); the chase view 10.4 to 8.9 ms
+- [ ] 2.23 The march at half the pixels with 128 steps (owner: "try the half resolution trick with 128")
+- [ ] 2.24 Fewer steps for a far or small column (owner: "we can come back to 2 if we reeeealllly need it")
 
 ## 3. Mockup sync (CLAUDE.md section 4)
 

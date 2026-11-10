@@ -30,6 +30,19 @@ public sealed class NebulaPlume
     /// <summary>The baked shape's size in voxels, across (x and z, over the bounding column's width) and up (foot to top):
     /// about a tenth of a radius a voxel across, a fifth of the shape's softest edge.</summary>
     public const int CoverXZ = 64, CoverY = 64;
+    /// <summary>The baked shadow's size in voxels a side (ShadowTexture): about a fifth of a radius a voxel across, finer
+    /// than the shadow of anything but a wisp, which the shader's one near step through the noise still gives.</summary>
+    public const int ShadowN = 32;
+    /// <summary>The most cloud the baked shadow holds toward the sun, radii of full-density cloud (its texture's 1); more
+    /// is as dark (the shader's absorption makes 2 radii of it about one fiftieth of the sun).</summary>
+    public const float ShadowMaxR = 2f;
+    /// <summary>The billows' mean share of the shape's density (the noise cuts the shape about in half), for the baked
+    /// shadow, which knows the shape and not the noise.</summary>
+    private const float ShadowMean = 0.5f;
+    /// <summary>The baked shadow's step toward the sun and how far it looks, radii; it starts past the shader's near step
+    /// (nebula_plume.gdshader LIGHT_REACH), which covers the first stretch with the noise.</summary>
+    private const float ShadowStep = 0.08f, ShadowReach = 3.5f, ShadowStart = 0.1f;
+
     /// <summary>Half the band the billows stand in, either side of the column's edge, radii.</summary>
     public const float Edge = 0.2f;
     private const string NoiseFile = "res://assets/space/plume_noise.bin";
@@ -59,7 +72,7 @@ public sealed class NebulaPlume
     public bool JoinsBelow => CapDownR <= 0;
     private readonly ShaderMaterial _mat;
 
-    private NebulaPlume(NebulaDef def, PlumeLook look, DeckLook deck, Vector3 seed, float mPerU)
+    private NebulaPlume(NebulaDef def, PlumeLook look, DeckLook deck, Vector3 seed, float mPerU, Vector3 toSun)
     {
         Def = def;
         Look = look;
@@ -90,7 +103,10 @@ public sealed class NebulaPlume
         _mat.SetShaderParameter("flare", FlareR);
         _mat.SetShaderParameter("deck_fill", deck.Fill);
         _mat.SetShaderParameter("bound", Bound);
-        _mat.SetShaderParameter("cover_tex", CoverTexture(TopR, FlareR, CapUpR, CapDownR, look.Anvil, seed));
+        (ImageTexture3D cover, ImageTexture3D shadow) = CoverTexture(TopR, FlareR, CapUpR, CapDownR, look.Anvil, seed, toSun.Normalized(), (float)def.Density);
+        _mat.SetShaderParameter("cover_tex", cover);
+        _mat.SetShaderParameter("shadow_tex", shadow);
+        _mat.SetShaderParameter("shadow_max", ShadowMaxR);
         _mat.SetShaderParameter("absorption", look.Absorption);
         _mat.SetShaderParameter("contrast", look.Contrast);
         _mat.SetShaderParameter("base_scale", look.BaseScale);
@@ -113,8 +129,9 @@ public sealed class NebulaPlume
     }
 
     /// <summary>A scenario's plume in its look, with its own seed (three numbers 0 to 1: where in the noise it is cut from,
-    /// which way it leans), at <paramref name="mPerU"/> metres to the scene's unit.</summary>
-    public static NebulaPlume Build(NebulaDef def, Vector3 seed, float mPerU) => new(def, PlumeLooks.For(def.Look), DeckLook.Get(), seed, mPerU);
+    /// which way it leans), at <paramref name="mPerU"/> metres to the scene's unit, its shadow baked for the battle's sun
+    /// (<paramref name="toSun"/>, world space: the sun holds still through a battle).</summary>
+    public static NebulaPlume Build(NebulaDef def, Vector3 seed, float mPerU, Vector3 toSun) => new(def, PlumeLooks.For(def.Look), DeckLook.Get(), seed, mPerU, toSun);
 
     /// <summary>The sun (the direction toward it, world space, and its strength), the battle's clock in seconds, and the
     /// lightning inside the plume now: up to <see cref="Flashes"/> flashes, each a place in the plume's own units (x, y, z in
@@ -192,10 +209,11 @@ public sealed class NebulaPlume
 
     // The shape over the bounding box (x and z from -Bound to Bound, y from -top to top) as a 3D texture of one byte a
     // voxel, a z slice an image, sampled at voxel centres; the box's outer voxels are clear, so a sample clamped past the
-    // box reads none.
-    private static ImageTexture3D CoverTexture(float top, float flare, float capUp, float capDown, float anvil, Vector3 seed)
+    // box reads none. And the shadow (ShadowTexture), from the same shape.
+    private static (ImageTexture3D Cover, ImageTexture3D Shadow) CoverTexture(float top, float flare, float capUp, float capDown, float anvil, Vector3 seed, Vector3 toSun, float density)
     {
         int n = CoverXZ, h = CoverY;
+        float[] cover = new float[n * h * n];
         var slices = new Godot.Collections.Array<Image>();
         for (int k = 0; k < n; k++)
         {
@@ -205,12 +223,57 @@ public sealed class NebulaPlume
                     for (int i = 1; i < n - 1; i++)
                     {
                         var p = new Vector3(((i + 0.5f) / n * 2 - 1) * Bound, -top + (j + 0.5f) / h * 2 * top, ((k + 0.5f) / n * 2 - 1) * Bound);
-                        px[j * n + i] = (byte)Mathf.RoundToInt(Cover(p, top, flare, capUp, capDown, anvil, seed) * 255);
+                        byte b = (byte)Mathf.RoundToInt(Cover(p, top, flare, capUp, capDown, anvil, seed) * 255);
+                        px[j * n + i] = b;
+                        cover[(k * h + j) * n + i] = b / 255f;
                     }
             slices.Add(Image.CreateFromData(n, h, false, Image.Format.R8, px));
         }
         var t = new ImageTexture3D();
         t.Create(Image.Format.R8, n, h, n, false, slices);
+        return (t, ShadowTexture(cover, top, toSun, density));
+    }
+
+    // The column's own shadow over the same box, ShadowN voxels a side: from each voxel's middle, the cloud of the shape
+    // toward the sun (the baked cover, read between its voxels, times the billows' mean share and the plume's density),
+    // in radii of full-density cloud over ShadowMaxR. The sun holds still through a battle, so this is the light march
+    // toward it done once, and the shader reads it in one fetch (owner, 2026-11-10: "do 1 first").
+    private static ImageTexture3D ShadowTexture(float[] cover, float top, Vector3 toSun, float density)
+    {
+        int n = CoverXZ, h = CoverY, m = ShadowN;
+        float Sample(Vector3 p)
+        {
+            // trilinear between the cover's voxel centres; nothing outside the box
+            float fx = (p.X / (2 * Bound) + 0.5f) * n - 0.5f, fy = ((p.Y + top) / (2 * top)) * h - 0.5f, fz = (p.Z / (2 * Bound) + 0.5f) * n - 0.5f;
+            if (fx < 0 || fy < 0 || fz < 0 || fx >= n - 1 || fy >= h - 1 || fz >= n - 1) return 0;
+            int x0 = (int)fx, y0 = (int)fy, z0 = (int)fz;
+            float ax = fx - x0, ay = fy - y0, az = fz - z0;
+            float V(int x, int y, int z) => cover[(z * h + y) * n + x];
+            float c00 = Mathf.Lerp(V(x0, y0, z0), V(x0 + 1, y0, z0), ax), c10 = Mathf.Lerp(V(x0, y0 + 1, z0), V(x0 + 1, y0 + 1, z0), ax);
+            float c01 = Mathf.Lerp(V(x0, y0, z0 + 1), V(x0 + 1, y0, z0 + 1), ax), c11 = Mathf.Lerp(V(x0, y0 + 1, z0 + 1), V(x0 + 1, y0 + 1, z0 + 1), ax);
+            return Mathf.Lerp(Mathf.Lerp(c00, c10, ay), Mathf.Lerp(c01, c11, ay), az);
+        }
+        var slices = new Godot.Collections.Array<Image>();
+        for (int k = 0; k < m; k++)
+        {
+            byte[] px = new byte[m * m];
+            for (int j = 0; j < m; j++)
+                for (int i = 0; i < m; i++)
+                {
+                    var p = new Vector3(((i + 0.5f) / m * 2 - 1) * Bound, -top + (j + 0.5f) / m * 2 * top, ((k + 0.5f) / m * 2 - 1) * Bound);
+                    float depth = 0;
+                    for (float d = ShadowStart; d < ShadowReach; d += ShadowStep)
+                    {
+                        Vector3 q = p + toSun * d;
+                        if (Math.Abs(q.X) > Bound || Math.Abs(q.Z) > Bound || Math.Abs(q.Y) > top) break;
+                        depth += Sample(q) * ShadowStep;
+                    }
+                    px[j * m + i] = (byte)Math.Clamp(Mathf.RoundToInt(depth * ShadowMean * density / ShadowMaxR * 255), 0, 255);
+                }
+            slices.Add(Image.CreateFromData(m, m, false, Image.Format.R8, px));
+        }
+        var t = new ImageTexture3D();
+        t.Create(Image.Format.R8, m, m, m, false, slices);
         return t;
     }
 

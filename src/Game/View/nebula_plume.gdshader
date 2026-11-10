@@ -8,8 +8,8 @@
 //   plumes stand alike), baked into a small 3D texture a plume, and exactly the rule's circle on the plane (radius 1 in the
 //   mesh's units is NebulaDef.RM: a ship the picture shows inside is inside);
 // - the cloud is the noise cut by that shape, and each sample lit, by nebula_cloud.gdshaderinc (the decks' too);
-// - each sample is lit by the battle's one sun through the cloud between (a few samples toward it, each twice as far as
-//   the last; Beer's law with a slower fall for light scattered many times), by the cloud's own dim light, by the glow
+// - each sample is lit by the battle's one sun through the cloud between (the column's own shadow, baked when the plume
+//   is built since the sun holds still, and one near step through the noise; Beer's law with a slower fall for light scattered many times), by the cloud's own dim light, by the glow
 //   of its thin edges, and in an ion storm by up to four lightning flashes inside it;
 // - the march strides through clear space and walks the cloud in fine steps, its skin in half steps, from a start
 //   jittered a step by a PCG hash of the pixel; the cloud thins toward the camera (clear), so a captain inside a plume
@@ -28,12 +28,10 @@ render_mode unshaded, shadows_disabled, depth_draw_never, depth_test_disabled, b
 
 #if CURRENT_RENDERER == RENDERER_COMPATIBILITY
 const int STEPS = 44;
-const int LIGHT_STEPS = 2;
-const float LIGHT_REACH = 0.1;  // radii: the first step toward the sun; each one after is twice the last
+const float LIGHT_REACH = 0.1;  // radii: the one near step toward the sun, through the noise
 const float FINE = 0.07;        // radii a step inside the cloud
 #else
 const int STEPS = 64;
-const int LIGHT_STEPS = 3;
 const float LIGHT_REACH = 0.07;
 const float FINE = 0.05;
 #endif
@@ -42,6 +40,8 @@ const int FLASHES = 4;
 
 uniform sampler3D noise_tex : repeat_enable, filter_linear;
 uniform sampler3D cover_tex : repeat_disable, filter_linear;
+uniform sampler3D shadow_tex : repeat_disable, filter_linear;   // the column's shadow toward the battle's sun, baked (NebulaPlume.ShadowTexture)
+uniform float shadow_max = 2.0;     // radii of full-density cloud at the shadow texture's 1
 uniform sampler2D depth_texture : hint_depth_texture, repeat_disable, filter_nearest;
 
 uniform vec3 sun_dir = vec3(0.4, 0.7, 0.6);   // toward the sun, world space
@@ -109,8 +109,12 @@ bool plume_bounds(vec3 ro, vec3 rd, out float t0, out float t1) {
 // How far inside the column a point is: 0 outside, 1 in the heart, soft between over half a radius, so the billows stand
 // out of the column and bays cut into it. The column's shape (NebulaPlume.Cover, the one implementation of it) is baked
 // into cover_tex over the bounding box, so a sample of the march costs a fetch and no trigonometry.
+vec3 plume_uvw(vec3 p) {
+	return vec3(p.x / (2.0 * bound) + 0.5, (p.y - bottom) / (top - bottom), p.z / (2.0 * bound) + 0.5);
+}
+
 float plume_cover(vec3 p) {
-	return textureLod(cover_tex, vec3(p.x / (2.0 * bound) + 0.5, (p.y - bottom) / (top - bottom), p.z / (2.0 * bound) + 0.5), 0.0).r;
+	return textureLod(cover_tex, plume_uvw(p), 0.0).r;
 }
 
 // The cloud at a point, 0 to the plume's density: the billows cut by the cover and drawn up to a firm body with a crisp
@@ -195,17 +199,13 @@ void fragment() {
 		float dt = FINE * (soft < 0.45 ? 0.5 : 1.0);
 		if (d > 0.002) {
 			if (first < 0.0) first = t;
-			// the cloud between this point and the sun
-			float shade = 0.0;
-			float reach = LIGHT_REACH;
-			vec3 lp = p;
-			for (int j = 0; j < LIGHT_STEPS; j++) {
-				lp += sun_l * reach;
-				float lc = plume_cover(lp);
-				float lt, ls;
-				if (lc > 0.002) shade += plume_cloud(lp, lc, false, lt, ls) * reach;
-				reach *= 2.0;
-			}
+			// the cloud between this point and the sun: the column's own, baked when the plume was built (the sun holds
+			// still through a battle), and one near step through the noise for the billows' fine shadow on themselves
+			float shade = textureLod(shadow_tex, plume_uvw(p), 0.0).r * shadow_max;
+			vec3 lp = p + sun_l * LIGHT_REACH;
+			float lc = plume_cover(lp);
+			float lt, ls;
+			if (lc > 0.002) shade += plume_cloud(lp, lc, false, lt, ls) * LIGHT_REACH;
 			float sun_t = nb_sun_through(shade, absorption, soft);
 			float height = clamp((p.y - bottom) / (top - bottom), 0.0, 1.0);
 			// the bays between billows lie deeper in the column than their tips, and take less of the sky's light

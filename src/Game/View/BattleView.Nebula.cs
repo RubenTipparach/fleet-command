@@ -63,9 +63,10 @@ public sealed partial class BattleView
         AddChild(_nebula);
         Rng looks = Rng.Fork(b.Scenario.Seed, "plume-look");
         _boltRng = Rng.Fork(b.Scenario.Seed, "plume-lightning");
+        Vector3 toSun = _sun.GlobalTransform.Basis.Z.Normalized();
         foreach (NebulaDef n in b.Rules.Nebulae)
         {
-            NebulaPlume p = NebulaPlume.Build(n, new Vector3((float)looks.Next(), (float)looks.Next(), (float)looks.Next()), MPerU);
+            NebulaPlume p = NebulaPlume.Build(n, new Vector3((float)looks.Next(), (float)looks.Next(), (float)looks.Next()), MPerU, toSun);
             _nebula.AddChild(p.Node);
             _plumes.Add(p);
         }

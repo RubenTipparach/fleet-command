@@ -149,12 +149,12 @@ what else can we do?"). Measured by the still tool's `--frame-ms` (a measurement
 v-sync off and the time a frame read by the clock; the battle stands still, so the CPU's share is small; Godot's GPU
 timer reads nothing on Metal), ms a frame at 1920 x 1080 on the M4 Max:
 
-| View | No cloud | Volume, 128 steps | 64 steps, each longer | and the decks baked | Billboards |
-|---|---|---|---|---|---|
-| `concord_heavy`, wide (zoom 1.5, pitch 0.15) | 5.9 | 11.9 | 9.8 | 6.2 | 6.3 |
-| `concord_heavy`, the chase camera | 5.9 | 21.7 | 17.0 | 10.4 | 6.5 |
-| `kelvane_heavy`, in the storm | 10.1 | 17.4 | 14.0 | 10.8 | 10.8 |
-| `ssarith_heavy`, low | 3.6 | 7.3 | 6.9 | 3.9 | 3.8 |
+| View | No cloud | Volume, 128 steps | 64 steps, each longer | and the decks baked | and each column's shadow baked | Billboards |
+|---|---|---|---|---|---|---|
+| `concord_heavy`, wide (zoom 1.5, pitch 0.15) | 5.9 | 11.9 | 9.8 | 6.2 | 6.1 | 6.3 |
+| `concord_heavy`, the chase camera | 5.9 | 21.7 | 17.0 | 10.4 | 8.9 | 6.5 |
+| `kelvane_heavy`, in the storm | 10.1 | 17.4 | 14.0 | 10.8 | 10.7 | 10.8 |
+| `ssarith_heavy`, low | 3.6 | 7.3 | 6.9 | 3.9 | 3.9 | 3.8 |
 
 - **64 steps**: 64 plain steps cut the march short of the far side of a column (it showed thinner, with a hard outline);
   each step half again as long (`FINE` 0.028 to 0.05 radii) reaches as far, and looks the same beside 128.
@@ -163,6 +163,14 @@ timer reads nothing on Metal), ms a frame at 1920 x 1080 on the M4 Max:
   light step). The funnels, the edge and the colours are now worked out once, when the columns are placed, into four
   256-texel textures over the field (`DeckField.Bake`), and the shader reads them. The puffs read the same field, so the
   deck's colour rule has one home again.
+- **Each column's shadow baked** (owner: "do 1 first, skip 2, and try the half resolution trick with 128"): the battle's
+  sun holds still, so the march toward it is done once when the plume is built, through the baked shape, into a 32-voxel
+  texture (`NebulaPlume.ShadowTexture`: the cloud toward the sun, times the billows' mean share); the shader reads it in
+  one fetch and keeps one near step through the noise for the billows' fine shadow on themselves. Three of the four
+  noise reads of a step were the march toward the sun.
+- **Half resolution at 128 steps, estimated** (the whole 3D view at half scale, which shrinks the ships too, so a cost
+  estimate only), the chase view over its 5.7 ms floor: 64 steps 4.7 ms at full resolution and about 0.4 at half; 128
+  steps 9.5 at full and about 2.4 at half.
 
 - **Steps**: 64 along the view ray and 3 toward the sun on Forward+; 44 and 2 on Compatibility (phones), with the wisp
   octaves dropped. The phone path compiles from the same file but is not yet run or timed on a phone (task 2.10; survey
