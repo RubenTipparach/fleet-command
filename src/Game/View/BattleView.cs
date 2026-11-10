@@ -121,6 +121,7 @@ public sealed partial class BattleView : Node3D
     public void Rebuild()
     {
         foreach (Node3D n in _models.Values) n.QueueFree();
+        foreach (ShipDamage d in _damage.Values) d.FreeDebris();
         _models.Clear();
         _strobes.Clear();
         _damage.Clear();
