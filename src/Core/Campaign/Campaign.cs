@@ -37,14 +37,15 @@ public sealed class Campaign
     // ---- Building and saving ---------------------------------------------------------------------------------------------
 
     /// <summary>A new campaign for a side: the map from the data (territory grown from seeds, jittered by the seed), one ship
-    /// of the side's smallest tier with marines aboard, standing, freighters, officers and the first missions.</summary>
-    public static Campaign New(CampaignData data, string side, uint? seed = null)
+    /// of the side's smallest tier with marines aboard, standing, freighters, officers and the first missions. Without
+    /// unfinished, the factions with no territory on the map (CampaignData.Finished) are left out of it.</summary>
+    public static Campaign New(CampaignData data, string side, uint? seed = null, bool unfinished = true)
     {
         if (!data.Factions.TryGetValue(side, out CampFaction? fac) || !fac.Playable) throw new ArgumentException($"'{side}' is not a playable faction");
         CampRules ru = data.Rules;
         MapDef md = data.Map;
         uint sd = seed ?? (uint)ru.Seed;
-        var s = new CampaignState { Side = side, Seed = sd, Rng = sd, Cols = ru.Cols, Rows = ru.Rows };
+        var s = new CampaignState { Side = side, Seed = sd, Rng = sd, Cols = ru.Cols, Rows = ru.Rows, Unfinished = unfinished };
         var c0 = new Campaign(data, s);
         Mulberry32 R = c0.R;
         for (int c = 0; c < ru.Cols; c++)
@@ -84,7 +85,7 @@ public sealed class Campaign
         s.Credits = ru.StartCredits;
         s.Mp = ru.MovePoints;
         s.Dir = Math.PI / 2;
-        foreach (string f in data.Factions.Keys.Where(f => f != "neutral"))
+        foreach (string f in data.Factions.Keys.Where(f => f != "neutral" && (unfinished || data.Finished(f))))
             s.Standing[f] = f == side ? ru.StandingOwn : f == fac.Rival ? ru.StandingRival : 0;
         CampShip first = c0.NewShip(data.HullsOf(side).First().Id, fac.Prefix + fac.Names[0]);
         first.Supplies["marines"] = Math.Min(ru.StartMarines, c0.SupplyMax(first, "marines"));

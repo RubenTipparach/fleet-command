@@ -1,26 +1,47 @@
 // planet.gdshader: a planet's ground in the battle, drawn procedurally (owner, 2026-11-08: "In game Planets: pull in planets
-// from godot-sandbox and falchion ... Also just zooming down to planets is supper cool"). One shader for every kind of world;
-// a kind's look is uniforms set from data/space/planets.json (PlanetLooks.Apply), never written here.
+// from godot-sandbox and falchion ... Also just zooming down to planets is supper cool"). One shader for every rocky and
+// lava world (a gas giant's tops are planet_gas.gdshader); a kind's look is uniforms set from data/space/planets.json
+// (PlanetLooks.Apply), never written here.
 //
 // Ported from Falchion (RubenTipparach/falchion at 5d128af8): src/render/planets/PlanetMaterial.ts (the fragment shader:
-// rocky, gas and lava surfaces, seas, caps, clouds, night lights and the relief bump), noise.glsl.ts (Ashima Arts / Stefan
-// Gustavson's 3D simplex noise, MIT, with fbm and ridged sums), relief.glsl.ts (craters, canyons and volcanoes) and
+// rocky and lava surfaces, seas, caps, clouds, night lights and the relief bump), noise.glsl.ts (Ashima Arts / Stefan
+// Gustavson's 3D simplex noise, MIT, with fbm and ridged sums), relief.glsl.ts (craters and volcanoes) and
 // atmosphere.glsl.ts (cloud cover). Changes for Fleet Command: Godot's shading language (no #defines: each feature is a
-// uniform, off at 0); the night lights are procedural on the land (Falchion bakes a light map from its settlements); the
-// noise gains octaves as the camera comes down (octaves, close, set by BattleView's planet view), so the ground stays
-// sharp right down to the surface; and the installations a scan has found glow on the ground in their state's colour
-// (site_dir, site_col), each a pool of light with a scatter of lit buildings round it, the close-up's settlements in
-// small. Unshaded and lit here by the battle's sun (sun_dir), the same in Forward+ and Compatibility.
+// uniform, off at 0); the noise gains octaves as the camera comes down (octaves, close, set by BattleView's planet view),
+// so the ground stays sharp right down to the surface; and the installations a scan has found glow on the ground in their
+// state's colour (site_dir, site_col), each a pool of light with a scatter of lit buildings round it. Unshaded and lit
+// here by the battle's sun (sun_dir), the same in Forward+ and Compatibility.
+//
+// Made to read as a real world, not as noise in a palette (owner, 2026-11-10: "make planets more realistic please"):
+//  - the land is coloured by its climate where the kind has one (climate): forest where it rains, dry land in the belts a
+//    third of the way to the poles and in the rain's gaps, tundra toward the caps, bare rock high up; a world with no sea
+//    runs all four of its colours by height and by broad regions (a moon's dark plains and bright highlands);
+//  - mountain ranges (mountains) are ridged peaks in belts, and the terrain shades by its slope from afar, not only close;
+//  - the sea is dark and deep, pale only on the shelves by a coast, with a tight glint of the sun inside a broad one;
+//  - canyons are a few great rifts, each an arc that wanders, widest in its middle and pinched out at its ends (Falchion's
+//    iso-lines of noise drew closed worms); an ice shell's long cracks (lineae) are the same arcs, longer and thinner;
+//  - the night side's lights are clustered where people would live (lowlands and coasts, in a few regions), small
+//    patches from afar that break into points as the camera comes down;
+//  - a lava world is a dark crust of plates whose joints glow where the ground is hot, round molten lowlands with
+//    floes of crust on them, and its volcanoes run a few broad flows, not rays;
+//  - the day holds bright up to a strong terminator, a few degrees wide and reddened under air, a hard line on a world
+//    with none (pn_day_air), and the land's relief moves its own terminator: a slope toward the sun is lit a little past
+//    it, one turned away is in night a little before (terminator_relief), so low light picks the ranges out; the night
+//    side keeps a minimal fill, enough to make its features out under its lights (PN_NIGHT_FILL), and the air's rim is
+//    only a trace round it (pn_rim).
 shader_type spatial;
 render_mode unshaded, shadows_disabled, cull_back;
 
-uniform int surface = 0;   // 0 rocky, 1 gas, 2 lava (PlanetLooks.Surfaces)
+#include "res://src/Game/View/planet_noise.gdshaderinc"
+
+uniform int surface = 0;   // 0 rocky, 2 lava (PlanetLooks.Surfaces; 1 is a gas giant, planet_gas.gdshader)
 uniform vec3 c0 : source_color = vec3(0.04, 0.15, 0.32);
 uniform vec3 c1 : source_color = vec3(0.12, 0.44, 0.65);
 uniform vec3 c2 : source_color = vec3(0.25, 0.49, 0.22);
 uniform vec3 c3 : source_color = vec3(0.55, 0.48, 0.35);
 uniform float sea = 0.02;
 uniform float ice_lat = 0.8;
+uniform float terminator_relief = 0.7;   // how far a slope moves its own terminator (times its turn from the sphere)
 uniform float clouds = 0.5;
 uniform vec3 cloud_color : source_color = vec3(1.0);
 uniform vec3 atmo : source_color = vec3(0.44, 0.71, 1.0);
@@ -28,6 +49,12 @@ uniform float atmo_strength = 0.9;
 uniform float detail = 1.6;
 uniform float craters = 0.0;
 uniform float canyons = 0.0;
+uniform float mountains = 0.0;
+uniform float climate = 0.0;
+uniform vec3 arid : source_color = vec3(0.72, 0.58, 0.38);
+uniform vec3 tundra : source_color = vec3(0.42, 0.40, 0.33);
+uniform float lineae = 0.0;
+uniform vec3 lineae_color : source_color = vec3(0.45, 0.30, 0.24);
 uniform vec3 glow : source_color = vec3(1.0, 0.8, 0.48);
 uniform vec3 city_glow : source_color = vec3(1.0, 0.8, 0.48);
 uniform float cities = 0.0;
@@ -106,12 +133,12 @@ float fbm_n(vec3 p, float oct) {
 	}
 	return v;
 }
+// ridges: 1 on a crest, falling away either side, three octaves (0 to about 0.875)
 float ridged(vec3 p) {
 	float v = 0.0, a = 0.5;
-	for (int i = 0; i < 4; i++) { v += a * (1.0 - abs(snoise(p))); p *= 2.1; a *= 0.5; }
+	for (int i = 0; i < 3; i++) { v += a * (1.0 - abs(snoise(p))); p = p * 2.1 + vec3(4.1, 1.3, 7.7); a *= 0.5; }
 	return v;
 }
-float hash13(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
 
 // ---- Landforms (Falchion's relief.glsl.ts) ---------------------------------------------------------------------------
 float r_perm(float x) { return m289f(m289f(x * 34.0 + 1.0) * x); }
@@ -156,15 +183,6 @@ float crater_sum(vec3 p, float oct) {
 	if (w5 > 0.0) { h += w5 * 0.05 * crater_layer(p * 41.0, 151.0, 0.9); }
 	return h;
 }
-float canyon_cut(vec3 p, float strength) {
-	float wide = clamp(strength - 1.0, 0.0, 1.0);
-	vec3 w = vec3(snoise(p * 0.7 + vec3(11.0)), snoise(p * 0.7 + vec3(23.0)), snoise(p * 0.7 + vec3(37.0)));
-	float valley = 1.0 - smoothstep(0.0, 0.2 + 0.1 * wide, abs(snoise(p * 0.9 + w * 0.6)));
-	float tribs = 1.0 - smoothstep(0.0, 0.11, abs(snoise(p * 2.3 + w * 0.8 + vec3(5.0))));
-	float mask = smoothstep(-0.25 - wide, 0.3 - wide, snoise(p * 0.45 + vec3(71.0)));
-	return max(valley, tribs * 0.55) * mask;
-}
-float canyon_depth(float cut, float strength) { return strength * (0.55 * cut + 0.35 * smoothstep(0.45, 0.9, cut)); }
 vec2 volcano_field(vec3 p, vec3 c, float rad) {
 	vec3 q = p * 0.9;
 	vec3 fq = floor(q);
@@ -188,13 +206,79 @@ vec2 volcano_field(vec3 p, vec3 c, float rad) {
 				float caldera = 1.0 - smoothstep(0.1, 0.2, d);
 				h += r * (1.4 * cone - 0.45 * caldera);
 				vec3 u = dv / max(len, 1e-6);
-				float ring = max(exp(-pow((d - 0.17) / 0.06, 2.0)), 0.8 * (1.0 - smoothstep(0.08, 0.12, d)));
-				float river = (1.0 - smoothstep(0.0, 0.07, abs(snoise(vec3(u.x * 4.0 + a, u.y * 4.0, u.z * 4.0))))) * smoothstep(0.12, 0.2, d) * (1.0 - smoothstep(0.35, 0.9, d));
-				lava = max(lava, max(ring, river * 0.85));
+				// a lake of lava in the caldera, the ground warm round it, and one or two tongues of lava down the flanks:
+				// lobes with ragged edges, each to its own reach, brightest at the vent and cooling to a dull red at the toe
+				float lake = 1.0 - smoothstep(0.07, 0.13, d);
+				float warm = 0.1 * pow(1.0 - smoothstep(0.08, 0.5, d), 2.0);
+				float way = snoise(u * 0.9 + vec3(a)) + 0.22 * snoise(q * 7.0 + vec3(a)) + 0.1 * snoise(q * 19.0 + vec3(a));
+				float reach = 0.35 + 0.5 * (snoise(u * 1.7 + vec3(a + 5.0)) * 0.5 + 0.5);
+				float t = clamp(d / reach, 0.0, 1.0);
+				float flow = smoothstep(0.25, 0.4, way) * smoothstep(0.08, 0.14, d) * (1.0 - smoothstep(0.75, 1.0, t)) * mix(0.9, 0.3, t);
+				lava = max(lava, max(lake, max(flow, warm)));
 			}
 		}
 	}
 	return vec2(h, lava);
+}
+
+// the gap between a point's nearest two cell centres (0 on the joint between two cells): the plates of a cooling crust
+float plate_gap(vec3 q) {
+	vec3 c = floor(q), f = q - c;
+	float d1 = 8.0, d2 = 8.0;
+	for (int k = -1; k <= 1; k++) {
+		for (int j = -1; j <= 1; j++) {
+			for (int i = -1; i <= 1; i++) {
+				vec3 o = vec3(float(i), float(j), float(k));
+				vec3 r = o + pn_hash33(c + o) - f;
+				float d = dot(r, r);
+				if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) { d2 = d; }
+			}
+		}
+	}
+	return sqrt(d2) - sqrt(d1);
+}
+// long cracks across the world: count arcs of great circles, each about its own axis and centred on its own point, half
+// as long as half_len (radians, drawn per arc between its two ends), as wide at its middle as width (radians) and pinched
+// out at its ends; wander moves every arc off its circle (the caller's noise), px is a pixel's size on the sphere (the
+// edge is widened by it and the arc thinned to match, so a crack finer than a pixel fades and does not sparkle). 1 in
+// the crack's floor, 0 outside it.
+float arcs(vec3 d, float wander, float px, int count, float salt, vec2 half_len, vec2 width) {
+	float best = 0.0;
+	for (int i = 0; i < 16; i++) {
+		if (i >= count) { break; }
+		vec3 ha = pn_hash33(vec3(float(i), salt, seed.x));
+		vec3 hb = pn_hash33(vec3(float(i), salt + 3.0, seed.y));
+		vec3 axis = normalize(ha - 0.5);
+		vec3 centre = normalize(cross(axis, normalize(hb - 0.5)));
+		float t = (1.0 - dot(d, centre)) / (1.0 - cos(mix(half_len.x, half_len.y, hb.x)));
+		if (t >= 1.0) { continue; }
+		float wd = mix(width.x, width.y, ha.x) * (1.0 - t * t);
+		float dist = abs(dot(d, axis) + wander);
+		best = max(best, (1.0 - smoothstep(wd * 0.5 - px, wd + px, dist)) * wd / (wd + px));
+	}
+	return best;
+}
+// the lit points of a town in one size of cell: a point in about half the cells, 1 at its middle
+float town_points(vec3 q) {
+	vec3 c = floor(q);
+	vec3 r = pn_hash33(c + vec3(17.0));
+	vec3 dv = q - c - (0.3 + 0.4 * r);
+	float rad = 0.06 + 0.12 * r.z;
+	return step(0.5, pn_hash31(c + vec3(3.0))) * exp(-dot(dv, dv) / (rad * rad));
+}
+// a town's grain: 1 from afar (its points finer than a pixel, so the patch glows evenly), and as the camera comes down
+// the points themselves, at three sizes, each size showing once a pixel is finer than its cells
+// (px is the fragment's footprint, taken by the caller outside any branch: a derivative taken inside the land's branch
+// is undefined along the coast, and drew the coast as a line of lights)
+float town_grain(vec3 d, float px) {
+	float g = smoothstep(0.25, 0.9, px * 220.0);
+	g += (1.0 - smoothstep(0.25, 0.9, px * 220.0)) * town_points(d * 220.0 + seed) * 2.2;
+	g += (1.0 - smoothstep(0.25, 0.9, px * 700.0)) * town_points(d * 700.0 + seed.zxy) * 1.8;
+	g += (1.0 - smoothstep(0.25, 0.9, px * 2300.0)) * town_points(d * 2300.0 + seed.yzx) * 1.4;
+	return g;
+}
+vec3 ramp4(vec3 a, vec3 b, vec3 c, vec3 d, float t) {
+	return t < 0.3333 ? mix(a, b, t * 3.0) : (t < 0.6667 ? mix(b, c, t * 3.0 - 1.0) : mix(c, d, t * 3.0 - 2.0));
 }
 
 // Falchion's CRATER_DEPTH and VOLCANO_HEIGHT (src/core/surface/Terrain.ts)
@@ -212,72 +296,154 @@ void fragment() {
 	vec3 p = v_obj * detail + seed;
 	float lat = abs(v_obj.y);
 	float ndl = dot(n, L);
-	float day = smoothstep(-0.12, 0.35, ndl);
-	vec3 col = vec3(0.0);
+	float air = step(0.001, atmo_strength);
+	float day = pn_day_air(ndl, air);
+	float px = length(fwidth(v_obj));
+	bool dry = sea < -1.5;   // a world with no sea
 	vec3 emissive = vec3(0.0);
 	float spec = 0.0;
-	float h_rel = 0.0;
-	float land = 0.0;
-	float h = 0.0;
 
-	if (surface == 1) {
-		// a gas giant: warped latitude bands with a storm
-		float warp = fbm(vec3(v_obj.x * 2.0, v_obj.y * 9.0, v_obj.z * 2.0) + seed + vec3(TIME * 0.01, 0.0, 0.0));
-		float b = v_obj.y * 7.0 + warp * 1.6;
-		float t1 = 0.5 + 0.5 * sin(b * 3.1);
-		float t2 = 0.5 + 0.5 * sin(b * 7.3 + 1.7);
-		col = mix(c0, c1, t1);
-		col = mix(col, c2, smoothstep(0.55, 0.95, t2) * 0.7);
-		vec3 storm_c = normalize(vec3(0.7, -0.35, 0.6));
-		float storm = smoothstep(0.22, 0.0, distance(v_obj, storm_c) + snoise(p * 4.0) * 0.04);
-		col = mix(col, c3, storm * 0.85);
-	} else {
-		// the ground's height, at more octaves as the camera comes down
-		h = fbm_n(p, octaves);
-		float crater = craters > 0.5 ? crater_sum(p, octaves) : 0.0;
-		h += crater * CRATER_DEPTH;
-		float cut = canyons > 0.0 ? canyon_cut(p, canyons) : 0.0;
-		h -= canyon_depth(cut, canyons);
-		vec2 volc = volcanoes > 0.5 ? volcano_field(p, seed, detail) : vec2(0.0);
-		h += volc.x * VOLCANO_HEIGHT;
-		h_rel = crater * CRATER_DEPTH - canyon_depth(cut, canyons) + volc.x * VOLCANO_HEIGHT;
-		if (h < sea) {
-			col = mix(c0, c1, smoothstep(sea - 0.45, sea, h));
-			spec = 1.0;
-		} else {
-			land = 1.0;
-			float e = smoothstep(sea, sea + 0.7, h);
-			col = mix(c2, c3, e);
-			col *= 0.85 + 0.3 * snoise(p * 6.0) * 0.5;
+	// ---- the ground's height: continents (their coasts drawn out by a broad warp), at more octaves as the camera comes
+	// down; ranges of ridged peaks in belts on the land; craters, rifts and volcanoes
+	vec3 warp = vec3(snoise(p * 0.55 + vec3(31.0)), snoise(p * 0.55 + vec3(57.0)), snoise(p * 0.55 + vec3(83.0)));
+	vec3 pw = p + warp * 0.22;
+	float h = fbm_n(pw, octaves);
+	float h_base = h;
+	float mtn = 0.0;
+	if (mountains > 0.0) {
+		float belt = smoothstep(0.0, 0.45, snoise(pw * 0.7 + vec3(41.0)));
+		float shore = dry ? 1.0 : smoothstep(sea - 0.04, sea + 0.14, h);
+		mtn = belt * shore * pow(smoothstep(0.48, 0.84, ridged(pw * 2.4 + vec3(13.0))), 1.6);
+		h += mountains * 0.3 * mtn;
+	}
+	float crater = craters > 0.5 ? crater_sum(p, octaves) : 0.0;
+	h += crater * CRATER_DEPTH;
+	float cut = 0.0, lin = 0.0;
+	if (canyons > 0.0 || lineae > 0.0) {
+		float wander = 0.035 * snoise(v_obj * 3.1 + seed) + 0.009 * snoise(v_obj * 13.0 + seed.zxy);
+		if (canyons > 0.0) {
+			// the walls ragged: side canyons bite into the rim
+			float rag = 0.006 * snoise(v_obj * 47.0 + seed.yzx);
+			cut = arcs(v_obj, wander + rag, px, 3 + int(canyons * 6.0), 23.0, vec2(0.22, 0.6), vec2(0.012, 0.03));
 		}
-		// craters read by their albedo: dark floors, bright rims
-		col *= 1.0 + clamp(crater * 1.6, -0.4, 0.35);
+		if (lineae > 0.0) {
+			lin = arcs(v_obj, wander * 0.5, px, int(lineae * 16.0), 61.0, vec2(0.5, 1.5), vec2(0.0035, 0.009));
+		}
+	}
+	float cut_depth = canyons * 0.55 * cut;
+	h -= cut_depth;
+	vec2 volc = volcanoes > 0.5 ? volcano_field(p, seed, detail) : vec2(0.0);
+	h += volc.x * VOLCANO_HEIGHT;
+
+	// ---- its colour
+	vec3 col;
+	float land = 1.0, molten = 0.0;
+	float e = dry ? 0.0 : smoothstep(sea, sea + 0.7, h);   // the way up from the shore
+	float cold = 0.0;
+	if (surface == 2) {
+		// a lava world: a crust in the palette by height, darkest in the low ground
+		col = ramp4(c0, c1, c2, c3, smoothstep(-0.6, 0.7, h));
+		col *= 0.8 + 0.4 * (snoise(p * 5.0) * 0.5 + 0.5);
+		// the crust is plates, great ones broken into small, their edges bent off the straight: the joints glow only
+		// where the ground is hot (broad regions, and the low ground), wider the hotter; the lowest ground is molten,
+		// dark floes of crust on it with bright gaps between. A joint finer than a pixel fades and does not sparkle.
+		vec3 bend = vec3(snoise(p * 2.3 + vec3(7.0)), snoise(p * 2.3 + vec3(29.0)), snoise(p * 2.3 + vec3(53.0)));
+		vec3 pp = p + warp * 0.3 + bend * 0.12;
+		float gap = plate_gap(pp * 3.1);
+		float gap_s = plate_gap(pp * 9.7 + vec3(11.0));
+		float heat = smoothstep(0.05, 0.6, snoise(p * 0.8 + vec3(5.0)) * 0.7 + 0.3 * warp.z - h * 0.9);
+		molten = dry ? 0.0 : 1.0 - smoothstep(sea - 0.03, sea + 0.04, h);
+		float pxc = px * detail * 3.1, pxs = px * detail * 9.7;
+		float wj = 0.012 + 0.05 * heat * heat;
+		float joint = (1.0 - smoothstep(wj * 0.4, wj + pxc, gap)) * smoothstep(0.0, 0.3, heat) * wj / (wj + pxc);
+		float fine = (1.0 - smoothstep(0.0, 0.03 + pxs, gap_s)) * heat * heat * 0.6 * 0.03 / (0.03 + pxs);
+		float melt = 1.0 - smoothstep(0.02, 0.16 + pxs, gap_s + 0.08 * snoise(p * 9.0));
+		float hot = max(max(joint, fine) * (1.0 - molten), molten * mix(0.1, 1.0, melt));
+		hot = max(hot, volc.y);
+		col = mix(col, c0 * 0.6, molten * (1.0 - melt));
+		col = mix(col, c3 * 1.2 + vec3(0.03), clamp(volc.x * 1.2, 0.0, 0.5));
+		col = mix(col, glow * 0.35, hot * 0.7);
+		// hottest in the middle of a flow: the glow's own colour, toward yellow white at its core
+		emissive += glow * hot * 1.4 + vec3(1.0, 0.72, 0.3) * pow(hot, 4.0) * 0.7;
+		land = 1.0 - molten;
+	} else if (dry) {
+		// no sea: all four colours by height and by broad regions (dark plains, bright highlands)
+		float region = snoise(p * 0.75 + vec3(47.0));
+		col = ramp4(c0, c1, c2, c3, smoothstep(-0.75, 0.75, h_base * 0.85 + region * 0.55 + mtn * 0.15));
+		col *= 0.88 + 0.24 * (snoise(p * 6.0) * 0.5 + 0.5);
+	} else {
+		// land and sea, the coast between them never sharper than a pixel
+		float coast = h - sea;
+		float aw = fwidth(h) * 0.75 + 0.003;
+		land = smoothstep(-aw, aw, coast);
+		vec3 ground = mix(c2, c3, e);
+		float mottle = snoise(p * 6.0) * 0.5 + 0.5;
+		if (climate > 0.0) {
+			// rain falls on the equator and the middle latitudes and misses the belts between; it thins inland and uphill,
+			// and the biomes' edges are ragged (two finer fields move them)
+			float rain = snoise(p * 1.3 + vec3(19.0)) * 0.5 + 0.5;
+			float belts = cos(lat * 9.0) * (1.0 - smoothstep(0.7, 0.92, lat));
+			float wet = clamp(rain * 0.85 + 0.3 * belts + 0.12 - e * 0.3 + 0.16 * (mottle - 0.5)
+				+ 0.09 * snoise(p * 17.0 + vec3(71.0)), 0.0, 1.0);
+			vec3 green = mix(c2, c2 * vec3(0.5, 0.68, 0.5), smoothstep(0.5, 0.82, wet));
+			vec3 low = mix(arid, green, smoothstep(0.26, 0.5, wet));
+			cold = smoothstep(ice_lat - 0.34, ice_lat - 0.03, lat + e * 0.22 + 0.06 * warp.x);
+			low = mix(low, tundra, cold * 0.9);
+			vec3 clim = mix(low, c3, smoothstep(0.45, 0.9, e + mtn * 0.6));
+			ground = mix(ground, clim, climate);
+			// a pale strand along the shore
+			ground = mix(ground, arid * 1.08, climate * 0.35 * (1.0 - smoothstep(0.0, 0.016, coast)));
+		}
+		ground *= 0.86 + 0.28 * mottle;
+		// the sea: pale only on the shelves by a coast, dark out in the deep, its colour drifting a little
+		float depth = max(-coast, 0.0);
+		vec3 water = mix(c0, c1, 0.8 * exp(-depth / 0.05));
+		water = mix(water, c0 * 0.55, smoothstep(0.15, 0.8, depth));
+		water *= 0.9 + 0.2 * mottle;
+		col = mix(water, ground, land);
+		spec = 1.0 - land;
+	}
+	if (surface != 2) {
+		// craters by their relief, a little by their albedo: a fresh rim is paler, a floor a shade darker
+		col *= 1.0 + clamp(crater * 0.9, -0.16, 0.3);
 		col = mix(col, c3 * 1.25 + vec3(0.04), clamp(volc.x * 1.2, 0.0, 0.6));
-		col *= 1.0 - cut * (0.3 + 0.12 * sin(h * 40.0));
 		emissive += glow * volc.y * 1.8;
 		col = mix(col, glow * 0.5, volc.y * 0.6);
-		if (surface == 2) {
-			float cracks = smoothstep(0.82, 0.97, ridged(p * 1.3 + vec3(0.0, TIME * 0.01, 0.0)));
-			emissive += glow * cracks * 2.2;
-			col = mix(col, glow * 0.4, cracks * 0.5);
-		}
-		float caps = smoothstep(ice_lat, ice_lat + 0.06, lat + h * 0.12);
-		col = mix(col, vec3(0.93, 0.96, 1.0), caps);
-		spec *= 1.0 - caps;
-		// the night side's lights: towns on the land, in clusters (Falchion bakes these from its settlements)
-		float region = smoothstep(0.1, 0.55, snoise(p * 2.3 + vec3(3.0)) * 0.5 + 0.5);
-		float towns = smoothstep(0.62, 0.9, snoise(p * 38.0 + vec3(9.0)) * 0.5 + 0.5);
-		float lights = cities * region * towns * land * (1.0 - caps);
-		col = mix(col, vec3(0.42, 0.42, 0.4), lights * 0.35);
-		emissive += city_glow * lights * (1.0 - smoothstep(-0.18, 0.08, ndl)) * 1.4;
-		// up close the fine terrain shades too
-		h_rel += close * h * 0.5;
 	}
-	// clouds drift slowly
-	float cloud = surface == 1 ? 0.0 : smoothstep(0.05, 0.55, fbm(v_obj * (detail * 1.4) + seed.zxy + vec3(TIME * 0.015, 0.0, TIME * 0.008))) * clouds;
-	col = mix(col, cloud_color, cloud);
-	spec *= 1.0 - cloud;
-	emissive *= 1.0 - cloud * 0.5;
+	// the ground's own grain, once the camera is close enough to see it
+	if (close > 0.0 && surface != 2) {
+		col *= 1.0 + close * land * 0.2 * (0.6 * snoise(p * 43.0 + vec3(3.0)) + 0.4 * snoise(p * 131.0 + vec3(9.0)));
+	}
+	col *= 1.0 - cut * 0.32;
+	col = mix(col, lineae_color, lin * 0.75);
+	// the caps, their edge broken by the terrain; snow on the peaks where it is cold enough
+	float caps = smoothstep(ice_lat, ice_lat + 0.05, lat + h_base * 0.1 + 0.05 * warp.y);
+	float peaks = ice_lat > 1.0 ? 0.0 : smoothstep(0.55, 0.9, mtn) * smoothstep(ice_lat - 0.75, ice_lat - 0.2, lat + mtn * 0.35);
+	float snow = max(caps, peaks);
+	col = mix(col, vec3(0.93, 0.96, 1.0), snow * (1.0 - molten));
+	spec *= 1.0 - caps * 0.85;
+	// the night side's lights: where people would live (a few regions, the low ground, the coasts, never the ice), in
+	// patches that are small from afar and break into points as the camera comes down
+	if (cities > 0.0 && land > 0.5) {
+		float night = 1.0 - smoothstep(-0.1, 0.0, ndl);
+		if (night > 0.0) {
+			float region = smoothstep(0.3, 0.72, snoise(p * 1.9 + vec3(3.0)) * 0.5 + 0.5);
+			float low = 1.0 - smoothstep(0.04, 0.5, h - (dry ? -0.3 : sea));
+			float metro = smoothstep(0.5, 0.82, snoise(p * 6.5 + vec3(9.0)) * 0.5 + 0.5);
+			float urban = 0.45 * snoise(p * 23.0 + vec3(5.0)) + 0.55 * snoise(p * 71.0 + vec3(8.0));
+			float lived = (0.2 + 0.8 * region) * low * (0.1 + 0.9 * metro) * (1.0 - snow) * (1.0 - cold * 0.8);
+			float patch_k = smoothstep(0.72 - 0.34 * min(1.0, cities * 2.5) * lived, 0.86, urban * 0.5 + 0.5) * lived;
+			emissive += city_glow * patch_k * town_grain(v_obj, px) * smoothstep(0.5, 1.0, land) * night * 1.9 * min(1.0, cities * 4.0);
+		}
+	}
+	// painted clouds (a kind with no cloud layer of its own): they drift slowly
+	float cloud = 0.0;
+	if (clouds > 0.0) {
+		cloud = smoothstep(0.05, 0.55, fbm(v_obj * (detail * 1.4) + seed.zxy + vec3(TIME * 0.015, 0.0, TIME * 0.008))) * clouds;
+		col = mix(col, cloud_color, cloud);
+		spec *= 1.0 - cloud;
+		emissive *= 1.0 - cloud * 0.5;
+	}
 
 	// the installations a scan has found: a pool of light in the state's colour, and lit buildings scattered round it
 	for (int i = 0; i < 8; i++) {
@@ -289,13 +455,17 @@ void fragment() {
 		float pool = exp(-ang2 / (rad * rad));
 		// the buildings: small lit cells, faded where they would be finer than a pixel
 		vec3 q = v_obj / (rad * 0.05);
-		float lit = step(0.9, hash13(floor(q) + vec3(float(i) * 7.0))) * exp(-ang2 / (rad * rad * 6.0));
+		float lit = step(0.9, pn_hash31(floor(q) + vec3(float(i) * 7.0))) * exp(-ang2 / (rad * rad * 6.0));
 		lit *= 1.0 - smoothstep(0.3, 1.0, length(fwidth(q)));
 		emissive += sc.rgb * sc.a * (pool * 0.9 + lit * 0.8) * (1.0 - cloud * 0.6);
 	}
 
-	// relief: the height shades the ground by its screen-space slope (Falchion's bump)
+	// relief: the height shades the ground by its screen-space slope (Falchion's bump). The landforms at their full
+	// height, the broad terrain at a share of it (more up close), so ranges and basins read from afar
+	float h_rel = crater * CRATER_DEPTH - cut_depth + volc.x * VOLCANO_HEIGHT + mountains * 0.3 * mtn + lin * 0.05
+		+ (0.2 + 0.3 * close) * h_base;
 	float relief = 1.0;
+	float day_land = day;
 	vec3 dpx = dFdx(VERTEX), dpy = dFdy(VERTEX);
 	float R = length(dpx) / max(length(dFdx(v_obj)), 1e-7);
 	float bh = h_rel * 0.045 * R;
@@ -303,16 +473,21 @@ void fragment() {
 	float det = dot(dpx, r1);
 	vec3 grad = sign(det) * (dFdx(bh) * r1 + dFdy(bh) * r2);
 	float sharp = 1.0 - smoothstep(0.15, 0.4, fwidth(h_rel));
-	if (surface != 1 && spec < 0.5) {
+	if (land > 0.0) {
+		// (eased in over the coast with the land itself, so the shore is not a line where the relief switches on)
 		vec3 nb = normalize(abs(det) * n - grad);
-		relief = mix(1.0, clamp(1.0 + (dot(nb, L) - ndl) * 1.8, 0.35, 1.5), sharp);
+		float turn = (dot(nb, L) - ndl) * sharp * land;
+		relief = clamp(1.0 + turn * 1.8, 0.35, 1.5);
+		// and the day itself taken on the slope: along the terminator a face toward the sun is lit, one turned away is night
+		// (by no more than a slope can: a ridge catches the sun a little past the terminator, never deep in the night)
+		day_land = pn_day_air(ndl + clamp(turn * terminator_relief, -0.05, 0.04), air);
 	}
-	vec3 H = normalize(L + V);
-	float sp = pow(max(dot(n, H), 0.0), 40.0) * spec * day;
+	// the sun on the sea: a tight glint inside a broad sheen
+	float ndh = max(dot(n, normalize(L + V)), 0.0);
+	float sp = (pow(ndh, 200.0) * 0.45 + pow(ndh, 24.0) * 0.09) * spec * day;
 	vec3 sun = sun_color * sun_energy;
-	vec3 lit_col = col * (0.03 + 0.97 * day * relief) * sun + sp * 0.6 * sun + emissive;
+	vec3 lit_col = pn_lit(col, day_land * relief, ndl, air, sun) + sp * sun * pn_twilight(ndl, air) + emissive;
 	// the air's rim, seen from afar (from inside the air, coming down, the shell scatters instead)
-	float rim = pow(1.0 - max(dot(n, V), 0.0), 2.5) * (1.0 - close);
-	lit_col += atmo * rim * atmo_strength * (0.15 + 0.85 * smoothstep(-0.3, 0.6, ndl)) * sun_energy;
+	lit_col += pn_rim(atmo, atmo_strength, dot(n, V), ndl, close) * sun_energy;
 	ALBEDO = lit_col;
 }

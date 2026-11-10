@@ -30,7 +30,7 @@ public sealed record PlanetDef(string Id, string Name, double XM, double ZM, dou
     /// <summary>Someone on the surface waiting to be beamed up (an envoy or a research team to extract), or null.</summary>
     public string? Waiting { get; init; }
     /// <summary>The planet kinds the view can draw.</summary>
-    public static readonly string[] Kinds = { "terran", "ocean", "desert", "ice", "lava", "barren", "gas" };
+    public static readonly string[] Kinds = { "terran", "ocean", "desert", "ice", "lava", "barren", "gas", "ice_giant", "toxic" };
 }
 
 /// <summary>Something on a planet's surface: a name, its kind (outpost, lab, ruin, mine, city, battery or wreck), where it

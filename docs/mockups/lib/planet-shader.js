@@ -46,11 +46,12 @@
   }
 
   const VERT = `
-    uniform float uWidth; varying vec2 vUv;
+    uniform float uWidth, uSink; varying vec2 vUv;
     void main() {
       vUv = uv;
       vec4 mv = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);   // a billboard: the quad laid in the view plane at its origin
       mv.xy += vec2(position.x, position.y + 0.5) * uWidth;    // its foot on the origin
+      mv.y -= uSink;                                            // lowered on screen (a disc resting on a post)
       gl_Position = projectionMatrix * mv;
     }`;
   const FRAG = `
@@ -179,7 +180,7 @@
     const K = KINDS[kind] || KINDS.terran, R = rng(seed), g = K.ground || K.bands, s = K.sea || g, b = K.bands || g.concat(g.slice(0, 2));
     const u = {
       uLat: { value: latticeTex(THREE) }, uTime: { value: 0 }, uPixels: { value: pixels }, uSteps: { value: steps },
-      uSeed: { value: R() * 40 }, uTilt: { value: tilt ?? (R() - 0.5) * 0.7 }, uSpin: { value: spin }, uWidth: { value: 1 },
+      uSeed: { value: R() * 40 }, uTilt: { value: tilt ?? (R() - 0.5) * 0.7 }, uSpin: { value: spin }, uWidth: { value: 1 }, uSink: { value: 0 },
       uKind: { value: ['terran', 'desert', 'ice', 'lava', 'gas', 'moon'].indexOf(kind) }, uRing: { value: ring ? 1 : 0 },
       uClouds: { value: K.clouds || 0 }, uLand: { value: K.land ?? 0.5 }, uCaps: { value: K.caps ? 1 : 0 },
       uCloud: { value: hex(THREE, K.cloud || '#f4efe2') }, uAtmo: { value: K.atmo ? hex(THREE, K.atmo) : new THREE.Color(0, 0, 0) },

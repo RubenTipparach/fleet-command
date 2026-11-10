@@ -43,6 +43,12 @@ public sealed partial class Main : Node
     public override void _Ready()
     {
         ParseArgs();
+        // the planet gallery (the planet-shaders skill's stills): every planet and rock kind alone, then quit
+        if (_args.TryGetValue("planet-gallery", out string? gallery))
+        {
+            AddChild(new PlanetGallery { Out = gallery.Length > 0 ? gallery : "docs/screenshots/game/planets" });
+            return;
+        }
         // the player's window mode (borderless fullscreen unless they chose a window); a scripted run keeps the window it
         // was started in
         if (!_args.ContainsKey("playtest") && !_args.ContainsKey("still") && !_args.ContainsKey("layout-test")) DisplaySettings.ApplySaved();

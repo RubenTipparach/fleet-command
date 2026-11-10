@@ -334,7 +334,7 @@ public sealed partial class OptionsCard : ConsolePanel
     {
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("opt.block", new Rect2(Vector2.Zero, Size));
-        float w = Math.Min(640, Size.X - 32), h = 64 + 56 * AudioSettings.Buses.Length + 72 + 48;
+        float w = Math.Min(640, Size.X - 32), h = 64 + 56 * AudioSettings.Buses.Length + 72 + 72 + 48;
         var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
         Shapes.RoundRect(this, new Rect2(at.Position, new Vector2(w - 21, h)), Sk.R.Sheet, 24, 0, 0, 24);
         Rect2 b = Frame(at, "Options", false);
@@ -358,6 +358,13 @@ public sealed partial class OptionsCard : ConsolePanel
         float hw = (bw - 8) / 2;
         Tab("opt.full", new Rect2(bx, y, hw, 44), "Fullscreen", () => { if (!DisplaySettings.Fullscreen) X.Act.Fullscreen(); }, DisplaySettings.Fullscreen);
         Tab("opt.window", new Rect2(bx + hw + 8, y, hw, 44), "Window", () => { if (DisplaySettings.Fullscreen) X.Act.Fullscreen(); }, !DisplaySettings.Fullscreen);
+        y += 72;
+        // unfinished factions, off by default; a campaign keeps the setting it was started with (GameSettings)
+        Ui.Reg("opt.unfinished", new Rect2(b.Position.X, y, lw - 12, 44), null, null, new Tip("Unfinished factions", new (string, string, Color?)[] { ("Off", "the factions in the game", null), ("On", "every faction, finished or not", null), ("Saves", "keep their own setting", null) }));
+        Text("UNFINISHED FACTIONS", b.Position.X, y + 29, 17, C.Lilac, HorizontalAlignment.Left, lw - 12, 600, 1);
+        bool un = GameSettings.UnfinishedFactions;
+        Tab("opt.unfinished.off", new Rect2(bx, y, hw, 44), "Off", () => GameSettings.UnfinishedFactions = false, !un);
+        Tab("opt.unfinished.on", new Rect2(bx + hw + 8, y, hw, 44), "On", () => GameSettings.UnfinishedFactions = true, un);
         y += 72;
         Button("opt.done", new Rect2(b.End.X - 200, y, 200, 48), "Done", X.Act.Options);
     }

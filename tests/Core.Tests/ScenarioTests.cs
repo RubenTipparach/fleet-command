@@ -117,7 +117,9 @@ public class ScenarioTests
         string root = Path.GetDirectoryName(TestData.DataDir)!;
         using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "assets", "ships", "manifest.json")));
         var freighters = new[] { ("fr", "freighter_concord"), ("krai_fr", "freighter_krai"), ("hunt_fr", "freighter_ssarith"), ("kelvane_fr", "freighter_kelvane") };
-        double warship = TestData.Data.Classes.Values.Where(c => c.Shape != "station" && !freighters.Any(f => f.Item1 == c.Id)).Max(c => c.LengthM);
+        // stations, yards and bases are fixed in place (no speed) and outsize every hull (owner, 2026-11-09: "Space station
+        // models need to be bigger"), so only the classes that move are measured against
+        double warship = TestData.Data.Classes.Values.Where(c => c.SpeedMaxMS > 0 && !freighters.Any(f => f.Item1 == c.Id)).Max(c => c.LengthM);
         foreach (var (cls, slug) in freighters)
         {
             ShipClass c = TestData.Data.Classes[cls];

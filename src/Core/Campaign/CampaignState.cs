@@ -206,6 +206,9 @@ public sealed class CampaignState
 {
     public int Version { get; set; } = 1;
     public string Side { get; set; } = "";
+    /// <summary>Whether this campaign holds the unfinished factions (the Options setting when it was started; owner,
+    /// 2026-11-09: "this flag is override by any save"). A save from before the setting had every faction, so true.</summary>
+    public bool Unfinished { get; set; } = true;
     public uint Seed { get; set; }
     public uint Rng { get; set; }
     public int Cols { get; set; }
