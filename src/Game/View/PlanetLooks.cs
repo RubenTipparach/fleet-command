@@ -37,7 +37,7 @@ public sealed record PlanetLook(int Surface, Color[] Palette, float Sea, float I
     /// <summary>An archipelago (0 to 1): the continents sunk to shoals and chains of small islands raised.</summary>
     public float Islands { get; init; }
     /// <summary>What stands on the ground (an index into <see cref="PlanetLooks.Patterns"/>; 0 nothing), and the colour of
-    /// it: a city's open ground, the ruins' metal, the bones.</summary>
+    /// it: the glass of a city's tall towers, the ruins' metal, the bones.</summary>
     public int Pattern { get; init; }
     public Color PatternColor { get; init; } = new(0.8f, 0.8f, 0.8f);
 }

@@ -432,7 +432,8 @@ void fragment() {
 	float rise = 0.0;
 	if (pattern > 0 && surface != 2) {
 		float gone = max(smoothstep(0.01, 0.06, -crater), cut);
-		col = pp_surface(v_obj, px, h_base, col, close, 1.0 - smoothstep(-0.16, -0.02, ndl), 1.0 - gone, emissive, rise, spec);
+		vec3 sun_m = normalize(inverse(mat3(MODEL_MATRIX)) * normalize(sun_dir));
+		col = pp_surface(v_obj, px, h_base, col, close, 1.0 - smoothstep(-0.16, -0.02, ndl), 1.0 - gone, sun_m, emissive, rise, spec);
 	}
 	// the ground's own grain, once the camera is close enough to see it
 	if (close > 0.0 && surface != 2) {

@@ -121,7 +121,7 @@ Four kinds after Falchion's world types (`src/content/planetLooks.ts`, `src/rend
 
 | Kind | In `planets.json` | From |
 |---|---|---|
-| `city` | `"pattern":"city"` | Falchion's `ecumenopolis` (its PATTERN 1), ported |
+| `city` | `"pattern":"city"` | Falchion's `ecumenopolis` (its PATTERN 1), ported, then built over whole (owner, 2026-11-10: "City planet should just be covered in cities... Some islands of really tall buildings otherwise it's cities with buildings of various heights"): no open ground, every plot a building of its own height, islands of far taller towers |
 | `archipelago` | `"islands":1.0` | New here (Falchion has none by the name): chains of small islands along ridged crests, in shoals |
 | `fossil` | `"pattern":"bones"` | Falchion's `bones` row for the ground (its PATTERN 4); the skeletons are new here (Falchion's bones are props) |
 | `ruins` | `"pattern":"ruins"` | New here, after Falchion's `deadtech` (dying lamps) and `choir` (the pulse). Tied to no faction: who built it is the owner's to say (CLAUDE.md section 1) |
@@ -130,7 +130,7 @@ A pattern is a rocky ground's last coat (`pp_surface`, called before the grain):
 emission and gives a `rise` that joins the relief. Craters and canyons cut through it (`clear`). The rules it is drawn by:
 
 1. **A cube, even in angle.** Cells sit on the six faces of a cube (`pp_cube`: the tangent undone, so a block at a face's
-   corner is the size of one at its middle; `pp_dir` goes back). Every cell count is a whole number to the cube unit, so
+   corner is the size of one at its middle). Every cell count is a whole number to the cube unit, so
    cells meet the faces' edges.
 2. **The pixel's size is passed in** (`px`, taken once by the caller outside any branch), never `fwidth` inside a
    pattern: a derivative across a face's edge or inside a loop is wrong or undefined.
@@ -142,13 +142,20 @@ emission and gives a `rise` that joins the relief. Craters and canyons cut throu
    sizes, the ring works in four), so there is always something a few pixels wide from orbit down to the planet view's
    closest.
 5. **A grid must not read as a grid from orbit.** The city's avenues are bent by a low noise (zero at the faces' edges,
-   so they still meet), its open ground is chosen block by block from a noise, its districts differ in tone. A regular
-   cube grid read as a disco ball.
+   so they still meet), its roads from orbit are darker seams in the roofs and not black lines, its blocks differ in tone,
+   and its islands of towers end in single blocks standing in the low city (`pp_isle_block`), never along a line. A
+   regular cube grid read as a disco ball.
 6. **Emission is bright under the game's glow.** The city's night is about a third of Falchion's strength, and its
    lights follow a density (thick round old cores, thin between), or the night side is one saturated sheet.
 7. **A thing has a state, not only a shape**: each arc of a ring work stands or has fallen by its own number, the ruins
    are buried by a drift mask and broken by a crumble noise, the skeletons are half in the ground. Whole clean shapes read
    as a blueprint.
+8. **A height seen from above reads by its shadow and its tone, not by the relief.** The ground's relief is a
+   derivative of the height and is switched off where the height steps (a building's edge would light itself), so the
+   city's heights are drawn: each building throws a shadow toward the far side from the sun over the roofs and streets
+   behind it (`pp_city_roof` looked up at six lengths along the plots, the sun never taken higher than about thirty
+   degrees so a shadow always has a length), its sunward wall is lit, a tall roof is paler and glass, and from orbit an
+   island's skyline throws one soft shadow.
 
 No frame time has been taken for the patterns on a phone.
 
