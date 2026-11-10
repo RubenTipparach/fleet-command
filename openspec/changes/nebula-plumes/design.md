@@ -126,6 +126,24 @@ Measured on the owner's Mac (Apple M4 Max, 1920 x 1080, Forward+), `concord_heav
 | Two plumes, the shape baked (this design) | 8.2 to 8.6 ms (116 to 122 fps) |
 | The whole of a played battle in a window (the scripted captain, 173 s, through the storm and the plume, fighters, missiles and all) | median 11.8 ms (85 fps); slowest second 16.7 ms (60 fps); fastest 9.7 ms (103 fps) |
 
+**The styles compared** (2026-11-10, after the decks, forms and fog; the same Mac, a 1920 x 1080 window, v-sync off,
+`--print-fps`; the scripted captain playing each heavy battle through, 150 to 260 s; eleven plumes and both decks;
+`none` draws no cloud, a measurement instrument only):
+
+| Battle, renderer | No cloud | Billboards | Volume |
+|---|---|---|---|
+| `concord_heavy`, Forward+ | median 80 fps (12.5 ms), slowest 58 | median 80 fps (12.5 ms), slowest 54 | median 37 fps (27.0 ms), p10 30, slowest 18 |
+| `kelvane_heavy`, Forward+ | | median 80 fps, p10 58 | median 36 fps (27.8 ms), p10 30 |
+| `concord_heavy`, Compatibility (the phones' renderer, on the Mac) | median 80 fps, slowest 46 | median 76 fps (13.2 ms), p10 67 | median 61 fps (16.4 ms), p10 52 |
+
+Every battle tops out at 80 fps with no cloud at all: the frame is held up on the CPU (the simulation, the console, the
+scripted captain), and GPU work under about 12 ms hides beneath it. So the billboards cost nothing measurable here,
+while the volume adds at least 14.5 ms a frame on Forward+ and at least 4 ms on Compatibility. As built, the volume does
+not hold 60 fps even on the M4 Max with eleven plumes and both decks: as a high setting it needs its march at half
+resolution, or fewer steps on the decks (task 2.21). The billboards are the low setting the owner asked for (owner,
+2026-11-10: "we could save puffs for a lower end setting device like phones"), and on this evidence the default too until
+the volume is cheaper.
+
 - **Steps**: 128 along the view ray and 3 toward the sun on Forward+; 44 and 2 on Compatibility (phones), with the wisp
   octaves dropped. The phone path compiles from the same file but is not yet run or timed on a phone (task 2.10; survey
   T3 asks 60 fps of a mid-range 2022 phone, and a plume filling the screen is the worst case for it).

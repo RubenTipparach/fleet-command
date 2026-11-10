@@ -81,6 +81,8 @@ public sealed partial class BattleView
             _decks = NebulaDeck.Build(_plumes, b.Planets.Select(p => (p.X, p.Z, p.RadiusM)), deckSeed, MPerU);
             _nebula.AddChild(_decks.Node);
         }
+        else if (style == "none")
+            foreach (NebulaPlume p in _plumes) p.Node.Visible = false;
         else
         {
             // the plumes stay for the lightning's places, unseen

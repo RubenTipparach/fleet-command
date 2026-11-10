@@ -38,7 +38,11 @@
 - [ ] 2.18 The frame time with the decks and eleven plumes, on the Mac and on the phone, for each style
 - [x] 2.19 Varying density inside the cloud (`contrast`), the nebula's fog, and the three styles (`volume`, `meshes`,
   `billboards`) on one switch, side by side in `nebula-styles.png`
-- [ ] 2.20 Keep the style the owner picks (survey NP12) and delete the others, with the deck colour's second copy
+- [ ] 2.20 Keep the volume as the high setting and the billboards as the low one (owner, 2026-11-10: "geometry version
+  sucks lol", "we could save puffs for a lower end setting device like phones"); delete the meshes; a graphics setting
+  picks the style, the billboards on phones
+- [ ] 2.21 The volume at 60 fps: march the plumes and decks at half resolution and upsample, or fewer deck steps; measured
+  again against the table in the design (Forward+ median 37 fps today)
 
 ## 3. Mockup sync (CLAUDE.md section 4)
 

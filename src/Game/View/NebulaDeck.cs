@@ -26,8 +26,9 @@ public sealed record DeckLook(float UndersideKm, float ThicknessKm, float HangKm
     private static DeckLook? _look;
 
     /// <summary>How a nebula is drawn (owner, 2026-11-10: "lets see how all one or the other looks"): marched cloud, puffs
-    /// of displaced mesh, or Crab Breeze's lit billboards.</summary>
-    public static readonly string[] Styles = { "volume", "meshes", "billboards" };
+    /// of displaced mesh, or Crab Breeze's lit billboards; "none" draws no cloud at all (the fog stays), a measurement
+    /// instrument only: the frame time of a battle without its cloud, against which each style's cost is read.</summary>
+    public static readonly string[] Styles = { "volume", "meshes", "billboards", "none" };
 
     /// <summary>Where a column flares into a deck, km off the plane: the deck's face where it reaches down round a column's
     /// root.</summary>
