@@ -66,3 +66,22 @@ Breakers' recipe, with no repeating tile as the main colour map and no black und
 #### Scenario: The manifest
 - **WHEN** `assets/ships/vos/baked/manifest.json` is read
 - **THEN** it lists `vos_cutter` and `vos_twin_boom`, each with a 2048 px texture size
+
+### Requirement: Every Vos specialist has a room plan that fits inside its parts
+
+Each of the six specialists SHALL have a room plan (`data/ships/vos/<ship>_plan.json`) whose every room, grown by the
+plan's clearance and structure, lies inside the parts the ship is built from, with every room on a corridor and no two
+rooms of a deck overlapping.
+
+#### Scenario: The page's room check
+- **WHEN** `window.MOCKUP_ROOMS(n)` runs on mockup 37 for each of 3, 8, 9, 10, 11 and 12
+- **THEN** it reports no room outside and no plan failure
+
+### Requirement: A conversion's taken parts keep their makers' looks
+
+When a Vos conversion is detailed, each part taken from another faction's ship SHALL be painted in that faction's look,
+dulled, and the Syndicate's own metal in the Breakers' recipe, and its windows SHALL come from its room plan.
+
+#### Scenario: The Saucer runner
+- **WHEN** the Saucer runner is shown in Painted or PBR on mockup 37
+- **THEN** its drive block wears the Hunt's freighter look, its taken body the Concord's, both dulled, its collar and flight deck the Vos's rust plate, and its windows are where its crew and command rooms meet the hull

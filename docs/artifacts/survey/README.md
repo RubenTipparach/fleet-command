@@ -64,3 +64,4 @@
 - 2026-11-10, cloud session: version 39, version id `1794310789-1b0e`: section Y for mockup 37 v5: Y5 decided (no class ladder), Y6 dropped, Y8 (trades on hulls), Y9 (the disguise), Y10 (rock breaking).
 - 2026-11-10, cloud session: version 40, version id `1794315325-f882`: Y11, which fighter the Vos fly (mockup 37 v6).
 - 2026-11-10, cloud session: version 41, version id `1794327653-77e1`: Y11 decided (the Cutter the standard fighter, the Twin boom the shuttle stand-in and bomber); Y12, whether a Vos craft is patched unevenly side to side (mockup 37 v7).
+- 2026-11-10, cloud session: version 42, version id `1794334502-c09a`: Y13 (whether a taken part keeps its maker's plating, not only its paint) and Y14 (what the Vos fly the Stack as), for mockup 37 v8.

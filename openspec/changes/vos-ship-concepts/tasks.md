@@ -52,10 +52,19 @@
 - [x] 1g.4 Survey Y12 (patched evenly or unevenly side to side)
 - [ ] 1g.5 The owner's look at the detailed fighters, and Y12's answer
 
+## 1h. Version 8: rooms, and the Saucer runner detailed
+
+- [x] 1h.1 A room plan for each of the six specialists (`data/ships/vos/<ship>_plan.json`, D16), fitted inside their parts
+- [x] 1h.2 The page's room check (`MOCKUP_ROOMS`) and the Rooms view with deck plans; all six pass
+- [x] 1h.3 The Saucer runner exported, unwrapped and baked onto its own UVs at 2048 px, its taken parts in their makers' looks (D17)
+- [ ] 1h.4 The owner's look at the Saucer runner, before the other five are detailed
+- [ ] 1h.5 If wanted: each taken part plated in its maker's own way, not only painted
+- [ ] 1h.6 The other five specialists detailed the same way
+
 ## 2. After the picks
 
-- [ ] 2.1 Each ship's rooms first, then its parts fitted round them (Ship Design Bible)
-- [ ] 2.2 Detail, the ship's own unwrap and bake (`ship-detailing`)
+- [x] 2.1 Each ship's rooms (done as 1h.1: fitted into the parts, since a conversion's hull comes first)
+- [ ] 2.2 Detail, the ship's own unwrap and bake (`ship-detailing`): the fighters and the Saucer runner done; the other five in 1h.6
 - [ ] 2.3 Rock breaking as its own change (asteroids that split, a blast that hurts every ship near), after
   `campaign-space` 2.3
 - [ ] 2.4 The disguise as its own change (how a Vos ship reads as a freighter until it acts)

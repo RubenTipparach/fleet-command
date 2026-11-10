@@ -1,0 +1,694 @@
+{
+ "schema": "fleetcommand.ship-plan/1",
+ "_doc": "A Vos specialist's rooms as blocks (Ship Design Bible chapter 2), laid out inside the parts it is built from, since a Vos ship is a conversion: the hull came first and the rooms are fitted into it, the opposite of a warship designed inside out. Frame: the page's build frame (mockup 37, window.MOCKUP_PARTS): +X port, +Y up, +Z bow, metres, the drive block's stern at z = 0. Functional rooms only, in our own words; what the Syndicate calls them is the owner's (survey U7). A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top); deck_floor_m each deck's floor, headroom_m its clear height, clearance_m and structure_m the air and plating between a room and the outside, which the page checks against every part. The Ram: a Krai freighter's drive block and a short spine with a welded hammer head. The crew sit out a breaking behind the head's armour, in the blast shelter; the charges ride in the two containers and the driver is in the head's flat face.",
+ "ship": "vos_ram",
+ "crew": 40,
+ "deck_floor_m": [
+  16.1,
+  12.6,
+  9.1,
+  5.6,
+  2.1,
+  -1.4,
+  -4.9,
+  -8.4,
+  -11.9,
+  -15.4
+ ],
+ "headroom_m": 2.8,
+ "clearance_m": 0.45,
+ "structure_m": 0.6,
+ "nose_m": 4,
+ "tail_m": 4,
+ "rooms": [
+  {
+   "id": "engineering",
+   "name": "Engineering (the freighter's drive)",
+   "kind": "engineering",
+   "decks": [
+    6,
+    7
+   ],
+   "x_m": [
+    -10.5,
+    10.5
+   ],
+   "z_m": [
+    8,
+    26
+   ]
+  },
+  {
+   "id": "reactor",
+   "name": "Reactor",
+   "kind": "engineering",
+   "decks": [
+    8,
+    9
+   ],
+   "x_m": [
+    -4,
+    4
+   ],
+   "z_m": [
+    10,
+    26
+   ]
+  },
+  {
+   "id": "bridge",
+   "name": "Bridge",
+   "kind": "command",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -12,
+    12
+   ],
+   "z_m": [
+    28,
+    44
+   ]
+  },
+  {
+   "id": "corr_4",
+   "name": "Corridor, deck E",
+   "kind": "corridor",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    14,
+    28
+   ]
+  },
+  {
+   "id": "corr_5",
+   "name": "Corridor, deck F",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    14,
+    46
+   ]
+  },
+  {
+   "id": "corr_6",
+   "name": "Corridor, deck G",
+   "kind": "corridor",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    46
+   ]
+  },
+  {
+   "id": "corr_7",
+   "name": "Corridor, deck H",
+   "kind": "corridor",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    46
+   ]
+  },
+  {
+   "id": "corr_8",
+   "name": "Corridor, deck I",
+   "kind": "corridor",
+   "decks": [
+    8
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    46
+   ]
+  },
+  {
+   "id": "corr_9",
+   "name": "Corridor, deck J",
+   "kind": "corridor",
+   "decks": [
+    9
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    46
+   ]
+  },
+  {
+   "id": "bunks_e_p",
+   "name": "Crew bunks, port",
+   "kind": "crew",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    1.2,
+    13.5
+   ],
+   "z_m": [
+    14,
+    28
+   ]
+  },
+  {
+   "id": "bunks_e_s",
+   "name": "Crew bunks, starboard",
+   "kind": "crew",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -13.5,
+    -1.2
+   ],
+   "z_m": [
+    14,
+    28
+   ]
+  },
+  {
+   "id": "mess",
+   "name": "Mess",
+   "kind": "crew",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    15
+   ],
+   "z_m": [
+    14,
+    46
+   ]
+  },
+  {
+   "id": "medbay",
+   "name": "Medbay",
+   "kind": "crew",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -15,
+    -1.2
+   ],
+   "z_m": [
+    14,
+    46
+   ]
+  },
+  {
+   "id": "hold_p",
+   "name": "Hold (taken goods), port",
+   "kind": "systems",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    1.2,
+    14.5
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "hold_s",
+   "name": "Hold (taken goods), starboard",
+   "kind": "systems",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -14.5,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "stores_p",
+   "name": "Stores and air, port",
+   "kind": "systems",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    1.2,
+    11
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "stores_s",
+   "name": "Stores and air, starboard",
+   "kind": "systems",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    -11,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "magazine_p",
+   "name": "Magazine, port",
+   "kind": "weapons",
+   "decks": [
+    8
+   ],
+   "x_m": [
+    1.2,
+    7.5
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "magazine_s",
+   "name": "Magazine, starboard",
+   "kind": "weapons",
+   "decks": [
+    8
+   ],
+   "x_m": [
+    -7.5,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "bunks_j_p",
+   "name": "Crew bunks, keel, port",
+   "kind": "crew",
+   "decks": [
+    9
+   ],
+   "x_m": [
+    1.2,
+    4
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "bunks_j_s",
+   "name": "Crew bunks, keel, starboard",
+   "kind": "crew",
+   "decks": [
+    9
+   ],
+   "x_m": [
+    -4,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "spine_5",
+   "name": "Spine corridor, deck F",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    46,
+    120
+   ]
+  },
+  {
+   "id": "spine_6",
+   "name": "Spine corridor, deck G",
+   "kind": "corridor",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    46,
+    120
+   ]
+  },
+  {
+   "id": "to_charges_p",
+   "name": "Passage to the charges, port",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    10.4
+   ],
+   "z_m": [
+    70.8,
+    73.2
+   ]
+  },
+  {
+   "id": "to_charges_s",
+   "name": "Passage to the charges, starboard",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -10.4,
+    -1.2
+   ],
+   "z_m": [
+    70.8,
+    73.2
+   ]
+  },
+  {
+   "id": "charges_p",
+   "name": "Breaking charges (a container), port",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    10.4,
+    20
+   ],
+   "z_m": [
+    61.4,
+    82.6
+   ]
+  },
+  {
+   "id": "charges_s",
+   "name": "Breaking charges (a container), starboard",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    -20,
+    -10.4
+   ],
+   "z_m": [
+    61.4,
+    82.6
+   ]
+  },
+  {
+   "id": "head_2",
+   "name": "Head corridor, deck C",
+   "kind": "corridor",
+   "decks": [
+    2
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    94,
+    132
+   ]
+  },
+  {
+   "id": "head_3",
+   "name": "Head corridor, deck D",
+   "kind": "corridor",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    94,
+    132
+   ]
+  },
+  {
+   "id": "shelter_p",
+   "name": "Blast shelter (behind the head's armour), port",
+   "kind": "crew",
+   "decks": [
+    2,
+    3
+   ],
+   "x_m": [
+    1.2,
+    23.5
+   ],
+   "z_m": [
+    104,
+    130
+   ]
+  },
+  {
+   "id": "shelter_s",
+   "name": "Blast shelter (behind the head's armour), starboard",
+   "kind": "crew",
+   "decks": [
+    2,
+    3
+   ],
+   "x_m": [
+    -23.5,
+    -1.2
+   ],
+   "z_m": [
+    104,
+    130
+   ]
+  },
+  {
+   "id": "head_4",
+   "name": "Head corridor, deck E",
+   "kind": "corridor",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    94,
+    130
+   ]
+  },
+  {
+   "id": "crew_head_p",
+   "name": "Breaker crew bunks, port",
+   "kind": "crew",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    1.2,
+    24
+   ],
+   "z_m": [
+    104,
+    130
+   ]
+  },
+  {
+   "id": "crew_head_s",
+   "name": "Breaker crew bunks, starboard",
+   "kind": "crew",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -24,
+    -1.2
+   ],
+   "z_m": [
+    104,
+    130
+   ]
+  },
+  {
+   "id": "driver",
+   "name": "Breaker driver",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    -8,
+    8
+   ],
+   "z_m": [
+    120,
+    136
+   ]
+  },
+  {
+   "id": "head_machinery_p",
+   "name": "Head machinery, port",
+   "kind": "engineering",
+   "decks": [
+    5,
+    6,
+    7
+   ],
+   "x_m": [
+    1.2,
+    24
+   ],
+   "z_m": [
+    104,
+    120
+   ]
+  },
+  {
+   "id": "head_machinery_s",
+   "name": "Head machinery, starboard",
+   "kind": "engineering",
+   "decks": [
+    5,
+    6,
+    7
+   ],
+   "x_m": [
+    -24,
+    -1.2
+   ],
+   "z_m": [
+    104,
+    120
+   ]
+  },
+  {
+   "id": "head_7",
+   "name": "Head corridor, deck H",
+   "kind": "corridor",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    94,
+    136
+   ]
+  },
+  {
+   "id": "head_stores_p",
+   "name": "Head stores, port",
+   "kind": "systems",
+   "decks": [
+    8,
+    9
+   ],
+   "x_m": [
+    1.2,
+    16
+   ],
+   "z_m": [
+    104,
+    132
+   ]
+  },
+  {
+   "id": "head_stores_s",
+   "name": "Head stores, starboard",
+   "kind": "systems",
+   "decks": [
+    8,
+    9
+   ],
+   "x_m": [
+    -16,
+    -1.2
+   ],
+   "z_m": [
+    104,
+    132
+   ]
+  },
+  {
+   "id": "head_8",
+   "name": "Head corridor, deck I",
+   "kind": "corridor",
+   "decks": [
+    8
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    94,
+    132
+   ]
+  }
+ ]
+}

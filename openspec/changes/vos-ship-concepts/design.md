@@ -383,6 +383,70 @@ and luck, verdigris is the spoils kept. The tradition is the Breakers' (the salv
   Vos emblem (a placeholder), and anything in the game: the bakes sit in `assets/ships/vos/baked/`, which Godot does not
   import, until the fighters are approved for implementation.
 
+## Version 8: the specialists' rooms, and the Saucer runner detailed (owner, 2026-11-10)
+
+The owner, asked whether the six specialists were detailed too: "ok go ahead, room plan should be included in that
+detailing". So: a room plan for each of the six, then the Saucer runner detailed with its rooms (windows where its people
+are), shown before the other five are detailed.
+
+### D16. A conversion's rooms are fitted into its hull
+
+A warship is designed inside out: rooms first, the hull fitted round them (Ship Design Bible chapter 2, H1). A Vos ship is
+the other way round: the hull is a freighter's drive block and parts taken from other ships, which exist before anyone
+plans a room in them. So each plan (`data/ships/vos/<ship>_plan.json`, the same schema as the Concord's and Krai's) lays
+its rooms out inside the parts, in the page's build frame (the drive block's stern at z = 0).
+
+- **Measured, not guessed.** The parts are not boxes. Slicing them on the page (`window.MOCKUP_INSIDE`) showed the Hunt
+  block is 48 m across at the top and 34 m below the waist; the Krai block is a long octagon with a ridge where its deck D
+  would be; the Concord block has a tower 24 m across from z 20 to 44; the Petrel's body, where the Saucer runner took it,
+  is 20 m across and two decks deep; the Hunt prow on the Boarder is a blade 8 m across, too slim for any room.
+- **The check.** `window.MOCKUP_ROOMS(n)` grows every room by the plan's clearance and structure (1.05 m) and tests 26
+  points on it against every part (a ray-parity test per part, three directions, a majority); with the shared
+  `FCShipPlan.check`, every room is on a corridor and none overlap. All six pass: 0 rooms outside, 0 plan failures.
+- **The fitter** (`tools/mockups/fit_rooms.mjs`, a measurement instrument) trimmed each room's outer edge or ends until it
+  fitted; the plan files are the source. Where a room could not fit it was redrawn by hand (the Boarder's tube through the
+  prow was dropped; the Drum's bridge moved into the block's tower; the Krai blocks' bridges moved down a deck).
+- **Functional rooms only**, in our own words: bridge, crew bunks, mess, medbay, engineering, reactor, hold for taken goods,
+  stores, magazine, and each trade's rooms. What the Syndicate calls them is the owner's (survey U7).
+
+| Ship | Crew | Rooms | Its trade's rooms |
+|---|---|---|---|
+| 8 Saucer runner | 70 | 51 | Fighter workshop, ready room, ordnance and deck crew under the flight deck; spares and fuel in the two containers; the Petrel's body re-laid as flight control, pilots' quarters, briefing room, its old shuttle bay, its reactor still running the saucer |
+| 3 Boarder | 90 | 33 | Armoury, brig, muster rooms; boarding crews quartered in the two containers; the boarding lock and grapple control in the collar behind the prow |
+| 10 Drum | 40 | 39 | Mine workshop and magazine inside the two rings; mine control in the bow cap. The twelve containers are racks, not rooms |
+| 11 Cross | 45 | 39 | Tractor control, emitter power, the beam crews and field coil stores in the hub; crawlways out along the side arms |
+| 12 Ram | 40 | 41 | Breaking charges in the two containers; in the head a blast shelter behind its armour, the breaker crews, head machinery and the breaker driver in its flat face |
+| 9 Broadside | 60 | 64 | Eight gun houses in the containers, each with its crew's bunks and shell rooms in the spine beside it |
+
+- **On the page**: a Rooms button on each specialist shows its rooms as blocks in their kinds' colours inside a see-through
+  hull, with its deck plans drawn in the panel.
+
+### D17. The Saucer runner, detailed
+
+The first specialist detailed, on D15's Breakers' recipe at a warship's scale, with what a conversion adds:
+
+| Technique | Setting | From |
+|---|---|---|
+| Hull form | The page's parts as built, exported by `export_blockouts.mjs`: 3,498 triangles. Its containers stay the game's placed cargo (as on the freighters) and its six Cutters are their own bakes | D7, D13 |
+| Taken parts in their makers' looks | Each part is exported with its maker (`hull_<maker>_*`), baked into a maker pass on the low-poly, and painted in that faction's freighter look (`painted_bake.py` `makers`, `look_paint`), dulled 0.4 to 0.45 | D6 ("origin stays readable"), survey Y3 |
+| Vos metal (collar, flight deck) | The Breakers' patchwork at 5 to 14 m stations, 0.35 m plate, welds 0.25 to 0.5 m, one cut in eight a trench with bare machinery | D15, principles 1, 2, 4 |
+| Windows | From the room plan: every crew and command room meeting the hull gets a row of lit windows at eye height, a quarter dark | Ship Design Bible W1 |
+| The Petrel's shuttle bay | A door on each flank of the saucer body, 7 by 2.2 m | its room plan |
+| Flight deck lights | Five amber lamps down each edge of the deck | D12 (fighter launching) |
+| Brass | One band at the collar, where the Vos welded the Petrel on | principle 3 |
+| Emblem | None | principle 4 |
+
+- **Measured.** 3,498 triangles, unchanged; 42,499 faces of detail; one 2048 px map set at 216 m of hull a UV unit (about
+  10.5 cm a texel, coarser than the fighters' 1.2 cm: a 3072 px set, as the Krai's large ships have, is the step up if it
+  reads soft close in); 80 panes (78 windows and the two bay doors); 25 minutes a bake on 4 cloud cores, 40 s a repaint.
+  The page grew to 9.1 MB.
+- **Tuned after the first bake.** The Concord body read near white, so a taken part's dulling now pulls toward a darker grey
+  (`dull` in `painted_bake.py`) and the Petrel's look is dulled 0.6; its floods burnt out on the pale body at night, so the
+  ship's light map is scaled to 3.5.
+- **One plating layout.** The detail layer cuts every part the same way; a taken part differs by its paint, not by its
+  plate shapes. Giving each maker its own plating (the Concord's large panels, the Hunt's chevrons) is a later step if the
+  owner wants it (task 1h.5).
+
 ## Open questions
 
 | # | Question | Provisional answer |
@@ -395,6 +459,8 @@ and luck, verdigris is the spoils kept. The tradition is the Breakers' (the salv
 | Y9 | Is the disguise a trade of one ship or a trait of all? | A trait of all, with the Broadside best at it |
 | Y10 | How does rock breaking work? | A slow charged shot at a rock; the rock splits, and everything within reach takes heavy damage |
 | Y12 | Should a Vos craft be patched unevenly side to side? | Mirrored, as now (provisional) |
+| Y13 | Should a taken part keep its maker's plating, not only its paint? | Paint only, as now (provisional) |
+| Y14 | What do the Vos fly the Stack as? | A heavy fighter (provisional) |
 
 Decided (owner, 2026-11-10): Y2, the picks (3, 8, 9, 10, 11, with 12 added by us for the rock breaker); Y5, no class
 ladder: every ship about cruiser size, a weaker hull, one trade each.

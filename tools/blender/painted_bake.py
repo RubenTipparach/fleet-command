@@ -333,8 +333,12 @@ def bake_ship(slug, px, samples, panes_only=False):
     obs = sorted((o for o in sc.objects if o.type == "MESH"), key=lambda o: o.name)
     img = bpy.data.images.new(slug + "_bake", px, px, alpha=True, float_buffer=True); img.colorspace_settings.name = "Non-Color"
     lo_hull, lo_glow, lo_well = lo_material(img, "lo_hull"), lo_material(img, "lo_glow"), lo_material(img, "lo_well")
+    lo_maker = {}   # hull_<maker>_* a part taken from another faction's ship (a Vos conversion): its own material, so its maker is baked
     for o in obs:   # glow_* the light strips, well_* dark glass (hull_detail keeps both bare of armour), the rest the hull
-        o.data.materials.clear(); o.data.materials.append(lo_glow if o.name.startswith("glow") else lo_well if o.name.startswith("well") else lo_hull)
+        mk = o.name.split("_")[1] if o.name.startswith("hull_") and o.name.split("_")[1] in MAKERS else None
+        if mk and mk not in lo_maker:
+            lo_maker[mk] = lo_material(img, "lo_hull_" + mk)
+        o.data.materials.clear(); o.data.materials.append(lo_glow if o.name.startswith("glow") else lo_well if o.name.startswith("well") else lo_maker[mk] if mk else lo_hull)
     bpy.ops.object.select_all(action="DESELECT")
     for o in obs:
         o.select_set(True)
@@ -413,6 +417,17 @@ def bake_ship(slug, px, samples, panes_only=False):
     lightp = bake("DIFFUSE", "light", pass_filter={"DIRECT"})[:, :, :3]
     lightp = np.dstack([blur(lightp[..., c], 1) for c in range(3)])   # the emissive faces' sampling speckle out
     passes = {"data": data, "glowp": glowp, "P": P, "nor": nor, "nts": nts, "ao": ao, "sunp": sunp, "lightp": lightp}
+    if lo_maker:   # which maker each texel's part came from: the low-poly's own faces, each maker's material glowing its index
+        for m in ship.data.materials:
+            mk = m.name[len("lo_hull_"):] if m.name.startswith("lo_hull_") else None
+            bsdf = m.node_tree.nodes.get("Principled BSDF")
+            bsdf.inputs["Emission Color"].default_value = ((MAKERS.index(mk) if mk else 0) / 8.0, 0.0, 0.0, 1.0)
+            bsdf.inputs["Emission Strength"].default_value = 1.0
+        bpy.ops.object.select_all(action="DESELECT"); ship.select_set(True); bpy.context.view_layer.objects.active = ship
+        img.pixels.foreach_set(np.zeros(px * px * 4, np.float32))
+        bpy.ops.object.bake(type="EMIT", margin=8, use_selected_to_active=False)
+        passes["maker"] = np.rint(img_array(img)[:, :, 0] * 8.0).astype(np.int8)
+        print(f"  makers: {sorted(lo_maker)}", flush=True)
     np.savez_compressed(passes_path(slug), **passes)   # kept (a build intermediate), so --repaint repaints without a bake
     paint_and_write(slug, D, S, passes)
     lref = D["defaults"]["light_ref"]
@@ -452,6 +467,18 @@ def paint_and_write(slug, D, S, ps):
     faction = D.get("faction", FACTION)
     col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction)
     pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction)
+    if "maker" in ps and S.get("makers"):   # a conversion's taken parts in their makers' looks, dulled (S["makers"])
+        keep, mk = dict(PT), ps["maker"]
+        for name, Z in S["makers"].items():
+            m = mk == MAKERS.index(name)
+            if not m.any():
+                continue
+            PT.clear(); PT.update({**keep, **look_paint(Z["look"]), **Z.get("paint", {})})
+            c2, e2 = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction)
+            p2, o2 = paint_pbr(data, P, nor, ao, cover, S, faction)
+            d = Z.get("dull", 0.0)
+            col[m], emit[m], pbr[m], orm[m] = dull(c2, d)[m], e2[m], dull(p2, d)[m], o2[m]
+        PT.clear(); PT.update(keep)
     lref = D["defaults"]["light_ref"]
     lmap = half(np.clip(lightp / lref, 0, 1) ** (1 / 1.6))   # stored with a gentle curve; the page and game undo it
     os.makedirs(ships_out(), exist_ok=True)
@@ -470,6 +497,28 @@ def paint_and_write(slug, D, S, ps):
         under = np.any([is_(k) for k in ("sub", "under", "greeble", "machine", "slat", "vent")], axis=0).astype(np.float32)
         K.save_png(os.path.join(ships_out(), f"{slug}_mask.png"), half(np.dstack([plate, under, np.zeros_like(plate)])))
     print(f"  light map: 99th percentile {np.percentile(lightp[cover].max(axis=1), 99):.3f} against light_ref {lref}", flush=True)
+
+
+MAKERS = ("none", "vos", "concord", "krai", "ssarith", "kelvane")   # the maker pass's indices (a hull_<maker>_* part)
+
+
+def look_paint(name):
+    """A faction's look by name, the freighters' list of looks (data/ships/freighters/hull_detail.json "looks"), so a taken part
+    wears the same look its maker's freighters do (CLAUDE.md 6.1): its paint, from the faction's own file where the look says so."""
+    L = json.load(open(os.path.join(ROOT, "data", "ships", "freighters", "hull_detail.json")))["looks"][name]
+    if "from" in L:
+        return json.load(open(os.path.join(ROOT, "data", "ships", L["from"], "hull_detail.json")))["paint"]
+    return L["paint"]
+
+
+def dull(c, d):
+    """A colour dulled by d (0 to 1): toward its own grey, darkened a little and warmed, as paint goes under grime and years."""
+    if not d:
+        return c
+    g = c[..., :3].mean(axis=-1, keepdims=True)
+    out = c.copy()
+    out[..., :3] = c[..., :3] * (1 - d) + (g * 0.62 + np.array([0.04, 0.025, 0.01], np.float32)) * d
+    return out
 
 
 def repaint_main(slugs):
