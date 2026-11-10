@@ -65,8 +65,9 @@ public sealed class NebulaDeck
 {
     /// <summary>A deck's place in the draw order: after every planet layer, before the plumes (NebulaPlume.Priority).</summary>
     public const int Priority = -2;
-    /// <summary>The columns and planets a deck knows of (the shader's arrays).</summary>
-    public const int Columns = 16, Planets = 4;
+    /// <summary>The texels a side of the baked field (DeckField.Bake) over the deck's square: about 2 km a texel over a
+    /// field of 500 km, finer than any funnel or colour patch.</summary>
+    public const int FieldTexels = 256;
 
     public readonly Node3D Node;
     private readonly ShaderMaterial[] _mats;
@@ -74,36 +75,12 @@ public sealed class NebulaDeck
 
     private NebulaDeck(Node3D node, ShaderMaterial[] mats) { Node = node; _mats = mats; }
 
-    /// <summary>The two decks over a battle's plumes (at most <see cref="Columns"/> of them, the widest first), clear round
-    /// its planets (x, z and radius, metres), at <paramref name="mPerU"/> metres to the scene's unit; seed (three numbers 0
-    /// to 1) cuts them from their own place in the noise.</summary>
-    public static NebulaDeck Build(IReadOnlyList<NebulaPlume> plumes, IEnumerable<(double X, double Z, double R)> planets, Vector3 seed, float mPerU)
+    /// <summary>The two decks over a battle's field (DeckField: its funnels, edge and colours, baked into textures here);
+    /// seed (three numbers 0 to 1) cuts them from their own place in the noise.</summary>
+    public static NebulaDeck Build(DeckField f, Vector3 seed)
     {
-        DeckLook k = DeckLook.Get();
-        float u = 1000f / mPerU;   // scene units a km
-        NebulaPlume[] cols = plumes.OrderByDescending(p => p.Def.RM).Take(Columns).ToArray();
-        // the field: round the columns' middle, whole a margin past the outermost
-        var centre = new Vector2((float)cols.Average(p => p.Def.XM), (float)cols.Average(p => p.Def.ZM)) / mPerU;
-        float fieldR = cols.Max(p => new Vector2((float)p.Def.XM, (float)p.Def.ZM).DistanceTo(centre * mPerU) + (float)p.Def.RM) / mPerU + k.MarginKm * u;
-        float fadeR = fieldR + k.FadeKm * u;
-        var column = new Vector4[Columns];
-        var lit = new Color[Columns];
-        var deep = new Color[Columns];
-        var glow = new Color[Columns];
-        for (int i = 0; i < cols.Length; i++)
-        {
-            // w: which decks reach down to meet it (1 the one above, 2 the one below, 3 both)
-            column[i] = new Vector4((float)(cols[i].Def.XM / mPerU), (float)(cols[i].Def.ZM / mPerU), cols[i].RadiusU, (cols[i].JoinsAbove ? 1 : 0) + (cols[i].JoinsBelow ? 2 : 0));
-            lit[i] = cols[i].Look.Lit;
-            deep[i] = cols[i].Look.Deep;
-            glow[i] = cols[i].Look.Glow;
-        }
-        Color Mean(Color[] c) { var m = new Color(0, 0, 0, 1); for (int i = 0; i < cols.Length; i++) m += c[i] / cols.Length; return m; }
-        var planet = new Vector4[Planets];
-        int np = 0;
-        foreach ((double x, double z, double r) in planets.OrderBy(p => (p.X / mPerU - centre.X) * (p.X / mPerU - centre.X) + (p.Z / mPerU - centre.Y) * (p.Z / mPerU - centre.Y)).Take(Planets))
-            planet[np++] = new Vector4((float)(x / mPerU), (float)(z / mPerU), (float)(r / mPerU) * k.PlanetClearX, 0);
-
+        DeckLook k = f.Look;
+        float u = f.U;
         _shader ??= GD.Load<Shader>("res://src/Game/View/nebula_deck.gdshader");
         var root = new Node3D { Name = "Decks" };
         var mats = new ShaderMaterial[2];
@@ -111,18 +88,21 @@ public sealed class NebulaDeck
         for (int s = 0; s < 2; s++)
         {
             float side = s == 0 ? 1 : -1;
+            (ImageTexture shape, ImageTexture lit, ImageTexture deep, ImageTexture glow) = f.Bake(side, FieldTexels);
             var m = new ShaderMaterial { Shader = _shader, RenderPriority = Priority };
             m.SetShaderParameter("noise_tex", NebulaPlume.Noise());
+            m.SetShaderParameter("field_shape", shape);
+            m.SetShaderParameter("field_lit", lit);
+            m.SetShaderParameter("field_deep", deep);
+            m.SetShaderParameter("field_glow", glow);
             m.SetShaderParameter("side", side);
             m.SetShaderParameter("underside", k.UndersideKm * u);
             m.SetShaderParameter("thickness", k.ThicknessKm * u);
             m.SetShaderParameter("hang", k.HangKm * u);
             m.SetShaderParameter("join", k.JoinKm * u);
-            m.SetShaderParameter("funnel", k.FunnelKm * u);
-            m.SetShaderParameter("centre", centre);
-            m.SetShaderParameter("field_r", fieldR);
-            m.SetShaderParameter("fade_r", fadeR);
-            m.SetShaderParameter("reach", fadeR * 2.5f);
+            m.SetShaderParameter("centre", f.Centre);
+            m.SetShaderParameter("fade_r", f.FadeR);
+            m.SetShaderParameter("reach", f.FadeR * 2.5f);
             m.SetShaderParameter("coverage", k.Coverage);
             m.SetShaderParameter("absorption", k.AbsorptionPerKm / u);
             m.SetShaderParameter("base_scale", 1f / (k.BaseKm * u));
@@ -133,28 +113,17 @@ public sealed class NebulaDeck
             m.SetShaderParameter("glow_strength", k.GlowStrength);
             m.SetShaderParameter("fill", k.Fill);
             m.SetShaderParameter("column_shade", k.ColumnShade);
-            m.SetShaderParameter("variety", k.Variety);
             m.SetShaderParameter("far_from", k.FarFromKm * u);
             m.SetShaderParameter("far_to", k.FarToKm * u);
             m.SetShaderParameter("seed", seed + new Vector3(0.37f, 0.11f, 0.73f) * s);
-            m.SetShaderParameter("columns", cols.Length);
-            m.SetShaderParameter("column", column);
-            m.SetShaderParameter("column_lit", lit);
-            m.SetShaderParameter("column_deep", deep);
-            m.SetShaderParameter("column_glow", glow);
-            m.SetShaderParameter("mean_lit", Mean(lit));
-            m.SetShaderParameter("mean_deep", Mean(deep));
-            m.SetShaderParameter("mean_glow", Mean(glow));
-            m.SetShaderParameter("planets", np);
-            m.SetShaderParameter("planet", planet);
             mats[s] = m;
             root.AddChild(new MeshInstance3D
             {
                 Name = s == 0 ? "Above" : "Below", MaterialOverride = m, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-                Mesh = new BoxMesh { Size = new Vector3(2 * fadeR, yOut - yIn, 2 * fadeR) },
-                Position = new Vector3(centre.X, side * (yIn + yOut) / 2, centre.Y),
+                Mesh = new BoxMesh { Size = new Vector3(2 * f.FadeR, yOut - yIn, 2 * f.FadeR) },
+                Position = new Vector3(f.Centre.X, side * (yIn + yOut) / 2, f.Centre.Y),
                 // the box bounds the march only; the culler must not drop it when the camera is between the decks
-                ExtraCullMargin = fadeR,
+                ExtraCullMargin = f.FadeR,
             });
         }
         return new NebulaDeck(root, mats);

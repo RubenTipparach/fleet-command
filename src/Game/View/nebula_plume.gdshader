@@ -32,10 +32,10 @@ const int LIGHT_STEPS = 2;
 const float LIGHT_REACH = 0.1;  // radii: the first step toward the sun; each one after is twice the last
 const float FINE = 0.07;        // radii a step inside the cloud
 #else
-const int STEPS = 128;
+const int STEPS = 64;
 const int LIGHT_STEPS = 3;
 const float LIGHT_REACH = 0.07;
-const float FINE = 0.028;
+const float FINE = 0.05;
 #endif
 const float COARSE = 4.0;       // steps in clear space are this many fine ones
 const int FLASHES = 4;

@@ -76,9 +76,10 @@ public sealed partial class BattleView
         if (_plumes.Count == 0) return;
         var deckSeed = new Vector3((float)looks.Next(), (float)looks.Next(), (float)looks.Next());
         string style = DeckLook.Get().Style;
+        var field = new DeckField(_plumes, b.Planets.Select(p => (p.X, p.Z, p.RadiusM)), b.Scenario.Seed, MPerU);
         if (style == "volume")
         {
-            _decks = NebulaDeck.Build(_plumes, b.Planets.Select(p => (p.X, p.Z, p.RadiusM)), deckSeed, MPerU);
+            _decks = NebulaDeck.Build(field, deckSeed);
             _nebula.AddChild(_decks.Node);
         }
         else if (style == "none")
@@ -87,7 +88,7 @@ public sealed partial class BattleView
         {
             // the plumes stay for the lightning's places, unseen
             foreach (NebulaPlume p in _plumes) p.Node.Visible = false;
-            _puffs = NebulaPuffs.Build(_plumes, b.Planets.Select(p => (p.X, p.Z, p.RadiusM)), b.Scenario.Seed, MPerU, style == "billboards");
+            _puffs = NebulaPuffs.Build(_plumes, field, b.Scenario.Seed, style == "billboards");
             _nebula.AddChild(_puffs.Node);
         }
         // the haze of the nebula the battle is fought in: the distance fades into it, in the plumes' own colour

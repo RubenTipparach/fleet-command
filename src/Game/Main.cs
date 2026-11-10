@@ -506,7 +506,8 @@ public sealed partial class Main : Node
     };
 
     /// <summary>Plays the battle for --steps (default 600) as the mockup's scripted shots do (target locked, intercepting), sets the console as asked
-    /// (--station, --page, --tab (Transport), --cargo-view, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor, --target-view: the camera glided
+    /// (--frame-ms=seconds: hold the view and print the time a frame, a measurement instrument;
+    /// --station, --page, --tab (Transport), --cargo-view, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor, --target-view: the camera glided
     /// to the target; --in-plume=n starts your ship in the scene's nth nebula plume, --strike has a storm's lightning strike it
     /// on the last step and --flicker has every storm flicker in the shot), saves a PNG and quits. The window size is
     /// Godot's own --resolution flag.</summary>
@@ -548,6 +549,23 @@ public sealed partial class Main : Node
         for (int i = 0; i < (tview ? 120 : 4); i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         Relayout();
         for (int i = 0; i < 4; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        // --frame-ms=seconds: a measurement instrument (CLAUDE.md 4): hold the shot's view that long and print the time a
+        // frame by the clock (run with --disable-vsync). The still's battle stands still, so the CPU's share is small and a
+        // shader's cost shows (Godot's GPU timer reads nothing on Metal)
+        if (_args.TryGetValue("frame-ms", out string? fs))
+        {
+            var ms = new System.Collections.Generic.List<double>();
+            ulong until = Time.GetTicksMsec() + (ulong)(double.Parse(fs, System.Globalization.CultureInfo.InvariantCulture) * 1000), last = Time.GetTicksUsec();
+            while (Time.GetTicksMsec() < until)
+            {
+                await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+                ulong now = Time.GetTicksUsec();
+                ms.Add((now - last) / 1000.0);
+                last = now;
+            }
+            ms.Sort();
+            GD.Print($"FRAME_MS median {ms[ms.Count / 2]:0.00} p90 {ms[ms.Count * 9 / 10]:0.00} frames {ms.Count}");
+        }
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         Image img = GetViewport().GetTexture().GetImage();
         Error err = img.SavePng(path);

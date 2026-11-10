@@ -41,8 +41,9 @@
 - [ ] 2.20 Keep the volume as the high setting and the billboards as the low one (owner, 2026-11-10: "geometry version
   sucks lol", "we could save puffs for a lower end setting device like phones"); delete the meshes; a graphics setting
   picks the style, the billboards on phones
-- [ ] 2.21 The volume at 60 fps: march the plumes and decks at half resolution and upsample, or fewer deck steps; measured
-  again against the table in the design (Forward+ median 37 fps today)
+- [x] 2.21 The volume cheaper: 64 longer steps, the decks' field baked (`DeckField`); the chase view 21.7 to 10.4 ms
+- [ ] 2.22 Next: the columns' march at half resolution, fewer steps for a far or small column, 2 light steps; the whole
+  battle played again for its frame rate
 
 ## 3. Mockup sync (CLAUDE.md section 4)
 

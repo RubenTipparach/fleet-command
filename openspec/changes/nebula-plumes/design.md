@@ -144,7 +144,27 @@ resolution, or fewer steps on the decks (task 2.21). The billboards are the low 
 2026-11-10: "we could save puffs for a lower end setting device like phones"), and on this evidence the default too until
 the volume is cheaper.
 
-- **Steps**: 128 along the view ray and 3 toward the sun on Forward+; 44 and 2 on Compatibility (phones), with the wisp
+**Making the volume cheaper** (2026-11-10; owner: "optimize ray march some more? 64 samples instead of 128 first. then
+what else can we do?"). Measured by the still tool's `--frame-ms` (a measurement instrument: the view held for 6 s with
+v-sync off and the time a frame read by the clock; the battle stands still, so the CPU's share is small; Godot's GPU
+timer reads nothing on Metal), ms a frame at 1920 x 1080 on the M4 Max:
+
+| View | No cloud | Volume, 128 steps | 64 steps, each longer | and the decks baked | Billboards |
+|---|---|---|---|---|---|
+| `concord_heavy`, wide (zoom 1.5, pitch 0.15) | 5.9 | 11.9 | 9.8 | 6.2 | 6.3 |
+| `concord_heavy`, the chase camera | 5.9 | 21.7 | 17.0 | 10.4 | 6.5 |
+| `kelvane_heavy`, in the storm | 10.1 | 17.4 | 14.0 | 10.8 | 10.8 |
+| `ssarith_heavy`, low | 3.6 | 7.3 | 6.9 | 3.9 | 3.8 |
+
+- **64 steps**: 64 plain steps cut the march short of the far side of a column (it showed thinner, with a hard outline);
+  each step half again as long (`FINE` 0.028 to 0.05 radii) reaches as far, and looks the same beside 128.
+- **The decks baked** (`DeckField`): measured with the decks off, the columns were about 3 ms of the chase view and the
+  decks about 8. A deck sample looped over all sixteen columns three times (the funnel, the colour, and again in each
+  light step). The funnels, the edge and the colours are now worked out once, when the columns are placed, into four
+  256-texel textures over the field (`DeckField.Bake`), and the shader reads them. The puffs read the same field, so the
+  deck's colour rule has one home again.
+
+- **Steps**: 64 along the view ray and 3 toward the sun on Forward+; 44 and 2 on Compatibility (phones), with the wisp
   octaves dropped. The phone path compiles from the same file but is not yet run or timed on a phone (task 2.10; survey
   T3 asks 60 fps of a mid-range 2022 phone, and a plume filling the screen is the worst case for it).
 - **Memory**: the shared noise 1 MB once; each plume's shape 196 KB (64 x 48 x 64 bytes). A scene with two plumes: 1.4 MB.

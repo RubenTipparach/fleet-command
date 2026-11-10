@@ -2,15 +2,11 @@
 // would have to be clouds too or everything is geometry. lets try both", "third technique to try out: crab-breezes cloud
 // system", "cheap 3d billboards with lighting"; data/space/nebula_decks.json style). The one placement of the puffs for
 // both styles: each plume's column filled with puffs inside its own shape (NebulaPlume.Cover, the volume's shape), and
-// the two decks laid as a field of puffs over the same ground as the marched decks (NebulaDeck's numbers: the face, its
-// hang, the funnel round each column that reaches it, whole to a margin past the outermost column and thinning to its
-// edge, clear round every planet), every puff's colour set when it is placed from the columns round it (the looks of the
-// columns placed there, varied in broad patches). The styles differ only in how a puff is drawn: a camera-facing quad
+// the two decks laid as a field of puffs over the same ground as the marched decks (DeckField, the one implementation of
+// the funnels, the edge and the colours the columns set: the marched decks bake it, the puffs read it where they are
+// placed). The styles differ only in how a puff is drawn: a camera-facing quad
 // (nebula_billboard.gdshader, Crab Breeze's) or a displaced ball (nebula_mesh.gdshader). One MultiMesh, sorted far to
 // near on the CPU when the camera has moved, one draw. The view only.
-//
-// While the owner compares the styles, the deck's colour rule is written twice: here for a puff, and in
-// nebula_deck.gdshader for the marched deck (deck_colors). Once a style is chosen the other goes, and the copy with it.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,17 +41,17 @@ public sealed class NebulaPuffs
     }
 
     /// <summary>The puffs of a battle's plumes and decks, drawn as billboards or as meshes (DeckLook.Style).</summary>
-    public static NebulaPuffs Build(IReadOnlyList<NebulaPlume> plumes, IEnumerable<(double X, double Z, double R)> planets, ulong seed, float mPerU, bool billboards)
+    public static NebulaPuffs Build(IReadOnlyList<NebulaPlume> plumes, DeckField field, ulong seed, bool billboards)
     {
-        Puff[] puffs = Place(plumes, planets, seed, mPerU).ToArray();
-        DeckLook k = DeckLook.Get();
+        Puff[] puffs = Place(plumes, field, seed).ToArray();
+        DeckLook k = field.Look;
         var mat = new ShaderMaterial
         {
             Shader = GD.Load<Shader>(billboards ? "res://src/Game/View/nebula_billboard.gdshader" : "res://src/Game/View/nebula_mesh.gdshader"),
             RenderPriority = Priority,
         };
         mat.SetShaderParameter("noise_tex", NebulaPlume.Noise());
-        mat.SetShaderParameter("underside", k.UndersideKm * 1000f / mPerU);
+        mat.SetShaderParameter("underside", k.UndersideKm * field.U);
         var mm = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, UseColors = true, UseCustomData = true,
@@ -77,10 +73,10 @@ public sealed class NebulaPuffs
     }
 
     // Every puff: the columns', then the decks'.
-    private static IEnumerable<Puff> Place(IReadOnlyList<NebulaPlume> plumes, IEnumerable<(double X, double Z, double R)> planetsM, ulong seed, float mPerU)
+    private static IEnumerable<Puff> Place(IReadOnlyList<NebulaPlume> plumes, DeckField f, ulong seed)
     {
-        DeckLook k = DeckLook.Get();
-        float u = 1000f / mPerU;
+        DeckLook k = f.Look;
+        float u = f.U;
         // each column: puffs inside its own shape, most in its outer shell (the inside is hidden), from its own fork
         for (int i = 0; i < plumes.Count; i++)
         {
@@ -99,36 +95,23 @@ public sealed class NebulaPuffs
             }
         }
 
-        // the decks: a jittered field of puffs, where the marched deck's cloud would be
-        NebulaPlume[] cols = plumes.OrderByDescending(p => p.Def.RM).Take(NebulaDeck.Columns).ToArray();
-        var centre = new Vector2((float)cols.Average(p => p.Def.XM), (float)cols.Average(p => p.Def.ZM)) / mPerU;
-        float fieldR = cols.Max(p => new Vector2((float)p.Def.XM, (float)p.Def.ZM).DistanceTo(centre * mPerU) + (float)p.Def.RM) / mPerU + k.MarginKm * u;
-        float fadeR = fieldR + k.FadeKm * u, step = k.DeckPuffKm * u;
-        (Vector2 At, float Clear)[] planets = planetsM.Select(q => (new Vector2((float)(q.X / mPerU), (float)(q.Z / mPerU)), (float)(q.R / mPerU) * k.PlanetClearX)).ToArray();
-        var field = new FastNoiseLite { NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex, Seed = (int)(seed % int.MaxValue), Frequency = 1f / (k.BaseKm * u) };
-        var tint = new FastNoiseLite { NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex, Seed = (int)(seed % int.MaxValue) + 7, Frequency = 0.18f / (k.BaseKm * u) };
+        // the decks: a jittered field of puffs, where the marched deck's cloud would be, from the same field (DeckField)
+        var cover = new FastNoiseLite { NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex, Seed = (int)(seed % int.MaxValue), Frequency = 1f / (k.BaseKm * u) };
         Rng rd = Rng.Fork(seed, "puffs-decks");
-        int cells = (int)Math.Ceiling(fadeR / step);
+        float step = k.DeckPuffKm * u;
+        int cells = (int)Math.Ceiling(f.FadeR / step);
         for (int gz = -cells; gz <= cells; gz++)
             for (int gx = -cells; gx <= cells; gx++)
             {
-                var q = centre + new Vector2(gx + (float)rd.Next() - 0.5f, gz + (float)rd.Next() - 0.5f) * step;
-                float e = 1 - Smooth(fieldR, fadeR, q.DistanceTo(centre));
-                foreach ((Vector2 at, float clear) in planets) e *= Smooth(0.75f, 1f, q.DistanceTo(at) / clear);
-                float v = (field.GetNoise2D(q.X, q.Y) + 1) / 2;
+                var q = f.Centre + new Vector2(gx + (float)rd.Next() - 0.5f, gz + (float)rd.Next() - 0.5f) * step;
+                float e = f.Edge(q);
+                float v = (cover.GetNoise2D(q.X, q.Y) + 1) / 2;
                 if (e <= 0.02f || v < 1 - k.Coverage) continue;
-                (Color lit, Color deep) = DeckColor(cols, q, k, u, tint.GetNoise2D(q.X, q.Y), tint.GetNoise2D(q.Y + 913, q.X));
+                (Color lit, Color deep, Color _) = f.Colors(q);
                 for (int s = 0; s < 2; s++)
                 {
                     float side = s == 0 ? 1 : -1;
-                    float pull = 0;
-                    foreach (NebulaPlume c in cols)
-                        if (side > 0 ? c.JoinsAbove : c.JoinsBelow)
-                        {
-                            float dd = Math.Max(q.DistanceTo(new Vector2((float)(c.Def.XM / mPerU), (float)(c.Def.ZM / mPerU))) - c.RadiusU, 0) / (k.FunnelKm * u);
-                            pull = Math.Max(pull, Mathf.Exp(-dd * dd * 2.5f));
-                        }
-                    float face = (k.UndersideKm - k.HangKm * (2 * v - 0.7f)) * u - k.JoinKm * u * pull;
+                    float face = (k.UndersideKm - k.HangKm * (2 * v - 0.7f)) * u - k.JoinKm * u * f.Pull(q, side);
                     // one big puff at the face and one deeper behind it
                     for (int layer = 0; layer < 2; layer++)
                     {
@@ -138,32 +121,6 @@ public sealed class NebulaPuffs
                     }
                 }
             }
-    }
-
-    // A deck puff's colour at q (the plane, scene units): each column's look over its funnel and round it, their mean far
-    // from any, varied in broad patches toward the glow, toward the other looks, lighter and darker (nebula_deck.gdshader's
-    // deck_colors and its variety, for a puff).
-    private static (Color Lit, Color Deep) DeckColor(NebulaPlume[] cols, Vector2 q, DeckLook k, float u, float t1, float t2)
-    {
-        float wsum = 0.05f;
-        Color mean = new(0, 0, 0), meanDeep = new(0, 0, 0), lit = new(0, 0, 0), deep = new(0, 0, 0), glow = new(0, 0, 0);
-        foreach (NebulaPlume c in cols) { mean += c.Look.Lit / cols.Length; meanDeep += c.Look.Deep / cols.Length; }
-        lit += mean * wsum; deep += meanDeep * wsum;
-        Color meanGlow = new(0, 0, 0);
-        foreach (NebulaPlume c in cols) meanGlow += c.Look.Glow / cols.Length;
-        glow += meanGlow * wsum;
-        foreach (NebulaPlume c in cols)
-        {
-            float d = Math.Max(q.DistanceTo(new Vector2(c.Node.Position.X, c.Node.Position.Z)) - c.RadiusU, 0) / (c.RadiusU * 1.5f + k.FunnelKm * u);
-            float w = Mathf.Exp(-d * d * 2) * 20 + Mathf.Exp(-d * 0.7f);
-            lit += c.Look.Lit * w; deep += c.Look.Deep * w; glow += c.Look.Glow * w;
-            wsum += w;
-        }
-        lit /= wsum; deep /= wsum; glow /= wsum;
-        float a = (t1 + 1) / 2, b = (t2 + 1) / 2;
-        lit = lit.Lerp(glow, k.Variety * 0.55f * Smooth(0.3f, 0.8f, a)).Lerp(mean, k.Variety * 0.5f * Smooth(0.35f, 0.85f, b));
-        float shade = Mathf.Lerp(1 - k.Variety * 0.45f, 1 + k.Variety * 0.3f, Smooth(0.2f, 0.8f, (a + b) / 2));
-        return (new Color(lit.R * shade, lit.G * shade, lit.B * shade), new Color(deep.R * shade, deep.G * shade, deep.B * shade));
     }
 
     /// <summary>The sun and the battle's clock; the puffs sorted far to near again once the camera has moved.</summary>
