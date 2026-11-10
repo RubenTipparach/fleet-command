@@ -127,14 +127,13 @@ void fragment() {
 	float turn = dot(n_world, L) - ndl_g;
 	// (the day taken on the top's own slope, so along the terminator the sunward side of a cloud is lit and its far side
 	// is in night: the relief the low light picks out)
-	float day = pn_day(ndl_g + clamp(turn * terminator_relief, -0.12, 0.05)) * (0.5 + 0.75 * smoothstep(-0.7, 0.55, turn));
+	float day = pn_day(ndl_g + clamp(turn * terminator_relief, -0.06, 0.03)) * (0.5 + 0.75 * smoothstep(-0.7, 0.55, turn));
 	// thin tops glow where the sun comes through them, just past the terminator
-	float back = backlight_amount * (1.0 - core_mask * 0.6) * smoothstep(-0.1, 0.0, ndl_g) * (1.0 - smoothstep(0.0, 0.2, ndl_g));
+	float back = backlight_amount * (1.0 - core_mask * 0.6) * smoothstep(-0.05, 0.0, ndl_g) * (1.0 - smoothstep(0.0, 0.1, ndl_g));
 	// thin cloud in the base colour, thick in the lit one, the tallest towers a little brighter still
 	vec3 col = mix(color_base, color_lit, core_mask) * (0.92 + 0.1 * smoothstep(t_core, t_core + 0.25, n));
 	vec3 sun = sun_color * sun_energy;
-	float rim = pow(1.0 - max(dot(normalize(NORMAL), normalize(-VERTEX)), 0.0), 2.5) * (1.0 - close);
 	ALBEDO = pn_lit(col, day + back, ndl_g, 1.0, sun)
-		+ atmo * rim * atmo_strength * (0.15 + 0.85 * smoothstep(-0.3, 0.6, ndl_g)) * sun_energy;
+		+ pn_rim(atmo, atmo_strength, dot(normalize(NORMAL), normalize(-VERTEX)), ndl_g, close) * sun_energy;
 	ALPHA = mix(edge_mask * fringe_opacity, cloud_opacity, core_mask);
 }

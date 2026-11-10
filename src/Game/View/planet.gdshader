@@ -24,10 +24,11 @@
 //    patches from afar that break into points as the camera comes down;
 //  - a lava world is a dark crust of plates whose joints glow where the ground is hot, round molten lowlands with
 //    floes of crust on them, and its volcanoes run a few broad flows, not rays;
-//  - the light falls off toward the terminator, soft and reddened under air, hard on a world with none (pn_day_air),
-//    and the land's relief moves its own terminator: a slope toward the sun is lit a little past it, one turned away is
-//    in night a little before (terminator_relief), so low light picks the ranges out; the night side is black but for
-//    its lights.
+//  - the day holds bright up to a strong terminator, a few degrees wide and reddened under air, a hard line on a world
+//    with none (pn_day_air), and the land's relief moves its own terminator: a slope toward the sun is lit a little past
+//    it, one turned away is in night a little before (terminator_relief), so low light picks the ranges out; the night
+//    side keeps a minimal fill, enough to make its features out under its lights (PN_NIGHT_FILL), and the air's rim is
+//    only a trace round it (pn_rim).
 shader_type spatial;
 render_mode unshaded, shadows_disabled, cull_back;
 
@@ -424,7 +425,7 @@ void fragment() {
 	// the night side's lights: where people would live (a few regions, the low ground, the coasts, never the ice), in
 	// patches that are small from afar and break into points as the camera comes down
 	if (cities > 0.0 && land > 0.5) {
-		float night = 1.0 - smoothstep(-0.2, 0.02, ndl);
+		float night = 1.0 - smoothstep(-0.1, 0.0, ndl);
 		if (night > 0.0) {
 			float region = smoothstep(0.3, 0.72, snoise(p * 1.9 + vec3(3.0)) * 0.5 + 0.5);
 			float low = 1.0 - smoothstep(0.04, 0.5, h - (dry ? -0.3 : sea));
@@ -479,7 +480,7 @@ void fragment() {
 		relief = clamp(1.0 + turn * 1.8, 0.35, 1.5);
 		// and the day itself taken on the slope: along the terminator a face toward the sun is lit, one turned away is night
 		// (by no more than a slope can: a ridge catches the sun a little past the terminator, never deep in the night)
-		day_land = pn_day_air(ndl + clamp(turn * terminator_relief, -0.1, 0.08), air);
+		day_land = pn_day_air(ndl + clamp(turn * terminator_relief, -0.05, 0.04), air);
 	}
 	// the sun on the sea: a tight glint inside a broad sheen
 	float ndh = max(dot(n, normalize(L + V)), 0.0);
@@ -487,7 +488,6 @@ void fragment() {
 	vec3 sun = sun_color * sun_energy;
 	vec3 lit_col = pn_lit(col, day_land * relief, ndl, air, sun) + sp * sun * pn_twilight(ndl, air) + emissive;
 	// the air's rim, seen from afar (from inside the air, coming down, the shell scatters instead)
-	float rim = pow(1.0 - max(dot(n, V), 0.0), 2.5) * (1.0 - close);
-	lit_col += atmo * rim * atmo_strength * (0.15 + 0.85 * smoothstep(-0.3, 0.6, ndl)) * sun_energy;
+	lit_col += pn_rim(atmo, atmo_strength, dot(n, V), ndl, close) * sun_energy;
 	ALBEDO = lit_col;
 }

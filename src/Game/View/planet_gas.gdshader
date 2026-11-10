@@ -122,7 +122,6 @@ void fragment() {
 	float limb = mix(0.55, 1.0, pow(max(dot(n, V), 0.0), 0.45));
 	vec3 sun = sun_color * sun_energy;
 	vec3 lit = pn_lit(col, day * ring_shade, ndl, 1.0, sun) * limb;
-	float rim = pow(1.0 - max(dot(n, V), 0.0), 2.5) * (1.0 - close);
-	lit += atmo * rim * atmo_strength * (0.15 + 0.85 * smoothstep(-0.3, 0.6, ndl)) * sun_energy;
+	lit += pn_rim(atmo, atmo_strength, dot(n, V), ndl, close) * sun_energy;
 	ALBEDO = lit;
 }

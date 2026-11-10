@@ -57,19 +57,30 @@ no other. A new kind is a new name there and a new row there, nothing else.
 6. **One sun, one light.** Every layer is `unshaded` and lit by the same `sun_dir` uniform (toward the sun, world space)
    and `sun_energy`, set every frame by `PlanetBody.Sync` from the battle's `DirectionalLight3D`. That keeps Forward+ and
    Compatibility identical. The light itself is one function, `pn_lit(col, day, ndl, air, sun)`, which the ground, the
-   clouds and the gas tops all call: the day term (`pn_day_air`: a soft terminator under air, a hard one on an airless
-   world), a narrow, lightly reddened band at the terminator where there is air (`pn_twilight`), and a night side that is
-   night: a trace far below anything lit (it is linear light, and a hundredth of the day already shows as a tenth grey),
-   so only the city lights, the lava and the rim of air show there. On the day side a relief may shade a layer, never
+   clouds and the gas tops all call: the day term (`pn_day_air`), a narrow, lightly reddened band at the terminator where there is air (`pn_twilight`), and
+   the night side's fill (`PN_NIGHT_FILL`). On the day side a relief may shade a layer, never
    black it: shade relative to the sphere's own light (the clouds), or multiply by the ratio of the slope's day term over
    the plain's (the crater shell).
+   **The terminator is a strong line, made in the shader** (owner, 2026-11-10: "Stronger terminator lines. i would prefer
+   it be done in the shader"). Two things make it one, both in `pn_day_air`: the band is narrow (a few degrees under air,
+   under one on an airless world), and the day's body is already at two fifths of full day at the line
+   (`0.42 + 0.58 * pow(ndl, 0.6)`), so the fall into night is a step and not a long fade. A wide band or a day that dims
+   toward the line reads as a soft gradient however dark the night is.
+   **The night keeps a minimal fill** (owner, 2026-11-10: "keep fill.lights please. Just minimal. But I'd like to somewhat
+   be able to make out features"): a cold light of about a two hundredth of the day, enough to make out land, seas,
+   weather and bands in the dark and no more. It is linear light (a hundredth of the day already shows as a tenth grey),
+   and it multiplies the surface's colour, so a bright world (ice, cloud decks) shows it more than a dark one. Check it by
+   measuring night-side pixels in the crescents: a few units of 255 on a dark world, under about 20 on the brightest.
+   **The air's rim is one function, `pn_rim`**, on the ground, the cloud tops and the gas tops alike, and it follows the
+   day: bright on the lit limb, fading through the terminator, a trace (a twentieth) round the night side (owner,
+   2026-11-10: "The fresnel on dark sides of planets is a little too strong"). Never write a rim inline in a layer.
    **Relief moves the terminator** (owner, 2026-11-10, with a photograph of a crescent Earth: "terminator line, normal
    maps? do we have those?"). The normals are each layer's own height field differenced (rule 3), never a texture, and
    the day term is steepest at the terminator, so a layer with relief gives `pn_day_air` its slope's own light:
    `ndl + clamp(turn * terminator_relief, lo, hi)`, where `turn` is the relief normal's light less the sphere's. Along
    the terminator a face toward the sun is lit and one turned away is in night, which is what picks out crater rims,
-   ranges and cloud tops there. Clamp the shift (ground -0.1 to 0.08, clouds -0.12 to 0.05), or lit islands float deep in
-   the night. The ground's gain stays moderate (0.7): its bump is a screen-space derivative of its height, and the
+   ranges and cloud tops there. Clamp the shift to about the band's own width (ground -0.05 to 0.04, clouds -0.06 to 0.03), or lit islands float deep
+   in the night and holes open in the day. The ground's gain stays moderate (0.7): its bump is a screen-space derivative of its height, and the
    noise's lattice shows as blocks when it is pushed. Ease the relief in over the coast with the land mask, never
    switch it on at a threshold. **Take `fwidth`, `dFdx` and `dFdy` outside any branch** and pass them in: inside
    `if (land > 0.5)` they are undefined along the branch's edge, which drew every night coast as a line of city lights.
@@ -133,6 +144,7 @@ The gallery saves every kind from afar, up close and as a crescent (the sun roun
 view) and every rock kind, through `PlanetBody` itself, with a third of each disc in night from afar. Its folder is under `res://`, so give it a path inside the repository. A shader that fails to compile may
 print nothing: the stills are the check. Look at each still
 (make a contact sheet) for: seams or pinched poles, sparkle at the limb, a black patch in a lit layer, bands that repeat,
-a ring shadow on the wrong side, rocks that read as balls; and in the crescents, a night side that is not black, lit
+a ring shadow on the wrong side, rocks that read as balls; and in the crescents, a terminator that fades instead of stepping, a night side that is
+black (no features to make out) or brighter than a faint fill, a rim glowing round the dark limb, lit
 patches floating in the night, a coast outlined in lights, blocks or stripes along the terminator. Then the battle stills, which show the same planets under a
 battle's sun and in the planet view down to the surface.

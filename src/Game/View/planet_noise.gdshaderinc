@@ -95,24 +95,40 @@ vec3 pn_fib_dir(float i, float n) {
 // this, so they all turn to night together. It is steepest at the terminator, so a layer with relief gives it the
 // slope's own ndl (its relief normal against the sun): there a slope facing the sun is lit and one turned away is in
 // night, which is what picks the relief out along the terminator (owner, 2026-11-10, with a photograph of a crescent
-// Earth: "terminator line, normal maps? do we have those?").
+// Earth: "terminator line, normal maps? do we have those?"). The line is strong (owner, 2026-11-10: "Stronger
+// terminator lines. i would prefer it be done in the shader"): the band is a few degrees wide under air and under one on
+// a world with none, and the ground just inside it is already at two fifths of full day, so the fall into night is a
+// step, not a long fade.
 float pn_day_air(float ndl, float air) {
-	float edge = smoothstep(mix(-0.01, -0.06, air), mix(0.04, 0.16, air), ndl);
-	return edge * (0.26 + 0.74 * pow(clamp(ndl, 0.0, 1.0), 0.55));
+	float edge = smoothstep(mix(-0.004, -0.025, air), mix(0.02, 0.07, air), ndl);
+	return edge * (0.42 + 0.58 * pow(clamp(ndl, 0.0, 1.0), 0.6));
 }
 float pn_day(float ndl) { return pn_day_air(ndl, 1.0); }
 
 // the sun's colour through the air at the terminator: reddened in the narrow band where its light comes in low (nothing
 // on an airless world)
 vec3 pn_twilight(float ndl, float air) {
-	return mix(vec3(1.0), vec3(1.0, 0.8, 0.62), air * (1.0 - smoothstep(-0.05, 0.1, ndl)));
+	return mix(vec3(1.0), vec3(1.0, 0.8, 0.62), air * (1.0 - smoothstep(-0.03, 0.06, ndl)));
 }
 
-// a surface of colour col under a sun: day is its share of the sun's light (pn_day_air, times any shade of its own), and
-// the night side is night: only the faintest cold trace, far below anything lit (a photograph of a planet shows its
-// night side black)
+// the night side's fill: a minimal cold light, enough to make out the land, the seas and the weather in the dark and no
+// more (owner, 2026-11-10: "keep fill.lights please. Just minimal. But I'd like to somewhat be able to make out
+// features"). Linear light: this is a two hundredth of the day and shows as a few percent grey.
+const vec3 PN_NIGHT_FILL = vec3(0.0036, 0.0044, 0.006);
+
+// a surface of colour col under a sun: day is its share of the sun's light (pn_day_air, times any shade of its own), over
+// the night side's fill
 vec3 pn_lit(vec3 col, float day, float ndl, float air, vec3 sun) {
-	return col * (vec3(0.0010, 0.0013, 0.002) + day * pn_twilight(ndl, air)) * sun;
+	return col * (PN_NIGHT_FILL + day * pn_twilight(ndl, air)) * sun;
+}
+
+// the air's rim seen from afar, on the ground, the cloud tops and a gas giant alike (ndv: the sphere's normal against the
+// view; from inside the air, close 1, the shell scatters instead). It follows the day: bright on the lit limb, fading
+// through the terminator, and only a trace round the night side (owner, 2026-11-10: "The fresnel on dark sides of
+// planets is a little too strong").
+vec3 pn_rim(vec3 atmo, float strength, float ndv, float ndl, float close) {
+	float limb = pow(1.0 - max(ndv, 0.0), 2.5) * (1.0 - close);
+	return atmo * (strength * limb * (0.05 + 0.95 * smoothstep(-0.08, 0.4, ndl)));
 }
 
 // A ring system's density at radius r (the planet's radius is 1) between inner and outer: ringlets at three scales, a
