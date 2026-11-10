@@ -73,7 +73,7 @@ Measured on the owner's Mac (Apple M4 Max, 1920 x 1080, Forward+), `concord_heav
 | The same battle type without plumes (`concord_battle`) | 5.7 ms (175 fps) |
 | Two plumes, the shape computed in the shader every step (first build) | 14.5 to 24 ms (69 to 42 fps) |
 | Two plumes, the shape baked (this design) | 8.2 to 8.6 ms (116 to 122 fps) |
-| The camera inside a plume, in a played battle | IN_PLUME_MS |
+| The whole of a played battle in a window (the scripted captain, 173 s, through the storm and the plume, fighters, missiles and all) | median 11.8 ms (85 fps); slowest second 16.7 ms (60 fps); fastest 9.7 ms (103 fps) |
 
 - **Steps**: 128 along the view ray and 3 toward the sun on Forward+; 44 and 2 on Compatibility (phones), with the wisp
   octaves dropped. The phone path compiles from the same file but is not yet run or timed on a phone (task 2.10; survey
