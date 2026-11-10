@@ -2,15 +2,17 @@
 // falchion, city planet, archipelego, fossil planet (lots of bones). and an old alien ruins planet"). Included by
 // planet.gdshader after its noise (it uses snoise and ridged, and the uniforms seed, detail, c0 to c3, glow, pattern and
 // pattern_color), and drawn over the ground's colour where a kind has a pattern (PlanetLooks.Patterns):
-//   1 city    a world built over: districts on avenues that wander off the grid, blocks split into streets again and
-//             again, round plaza districts, diagonal boulevards, open ground block by block, and its lights over the
-//             night side, thick round the old cores and thin between them
+//   1 city    a world built over, all of it: districts on avenues that wander off the grid, blocks split into streets
+//             again and again, round plaza districts, diagonal boulevards, every plot a building of its own height,
+//             islands of far taller towers, the shadows they throw, and its lights over the night side, blazing in the
+//             islands and thinner between them
 //   2 ruins   what an old people left: great ring works, the footprints of towns, broken causeways, most of it under the
 //             dust, a few lamps still lit
 //   3 bones   a graveyard: skeletons from the size of a province down to a hill, half buried, over dead forests and salt
 //
 // After Falchion (RubenTipparach/falchion at 5d128af8, src/render/planets/patterns.glsl.ts and the cubeUV of
-// atmosphere.glsl.ts): the city is a port of its PATTERN 1 (the ecumenopolis); the bones' ground (dead forests, salt flats,
+// atmosphere.glsl.ts): the city began as a port of its PATTERN 1 (the ecumenopolis: the bent grid, the streets split again and again, the plazas
+// and boulevards are its; the heights, islands and shadows are new here); the bones' ground (dead forests, salt flats,
 // ash) is its PATTERN 4; the ruins take its dead machine world's dying lamps (PATTERN 2) and its choir world's pulse
 // (PATTERN 3). New here: the skeletons (Falchion's bones are props on its ground), the ring works, towns and causeways,
 // and these changes to the method:
@@ -33,18 +35,6 @@ vec3 pp_cube(vec3 d) {
 	else { cu = vec3(d.xy / a.z, d.z > 0.0 ? 4.0 : 5.0); }
 	cu.xy = atan(cu.xy) * PP_PER_RAD;
 	return cu;
-}
-// the direction at a place on a face: pp_cube's inverse
-vec3 pp_dir(vec2 xy, float face) {
-	vec2 t = tan(xy / PP_PER_RAD);
-	vec3 v;
-	if (face < 0.5) { v = vec3(1.0, t.y, t.x); }
-	else if (face < 1.5) { v = vec3(-1.0, t.y, t.x); }
-	else if (face < 2.5) { v = vec3(t.x, 1.0, t.y); }
-	else if (face < 3.5) { v = vec3(t.x, -1.0, t.y); }
-	else if (face < 4.5) { v = vec3(t.x, t.y, 1.0); }
-	else { v = vec3(t.x, t.y, -1.0); }
-	return normalize(v);
 }
 // a cell's own number, 0 to 1 (salt picks which of its numbers), different on every face and every planet
 float pp_hash(vec2 cell, float face, float salt) { return pn_hash31(vec3(cell, face + salt * 8.0) + floor(seed)); }
@@ -70,9 +60,39 @@ float pp_seg(vec2 q, vec2 a, vec2 b) {
 }
 
 // ---- 1: the city world ------------------------------------------------------------------------------------------------
+// The whole world is built over (owner, 2026-11-10: "City planet should just be covered in cities... Some islands of
+// really tall buildings otherwise it's cities with buildings of various heights"): no open ground anywhere, every plot a
+// building of its own height, and here and there an island of towers many times taller than the city round it.
+
+// how deep in an island of towers a place is, 0 to 1 (a low noise, so an island is a few blocks to a district across)
+float pp_isle(vec3 d) {
+	return smoothstep(0.6, 0.72, pn_vnoise3(d * 10.0 + seed.zxy + 11.0) * 0.7 + pn_vnoise3(d * 27.0 + seed + 5.0) * 0.3);
+}
+// the same for one block (gb: the block grid): in an island's middle every block is towers, toward its edge fewer and
+// fewer, so an island ends in single blocks of towers standing in the low city, never along a line
+float pp_isle_block(vec2 gb, float face, float isle) {
+	return isle * step(pp_hash(floor(gb), face, 31.0), isle * 1.5);
+}
+// the height of the building on a plot, in plot widths (g2: the plot grid, eight plots to a block's side): low and
+// middling over most of the city, each block with its own habit, and in an island every plot a tower, a few far above
+// the rest
+float pp_city_height(vec2 g2, float face, float isle) {
+	float t = pp_hash(floor(g2), face, 13.0);
+	float habit = pp_hash(floor(g2 / 8.0), face, 0.0);
+	return mix(0.15, 1.3, t * t) * (0.5 + habit) + pp_isle_block(g2 / 8.0, face, isle) * mix(1.5, 8.0, t * t * t);
+}
+// the same, with the alleys between plots and the streets between blocks open to the ground: what a shadow's ray meets
+float pp_city_roof(vec2 g2, float face, float isle) {
+	vec2 a = abs(g2 - floor(g2 + 0.5));
+	vec2 gb = g2 / 8.0;
+	vec2 b = abs(gb - floor(gb + 0.5));
+	return pp_city_height(g2, face, isle) * step(0.08, min(a.x, a.y)) * step(0.045, min(b.x, b.y));
+}
+
 // h: the ground's height (the old terrain still shows as a shade under the city); near: how close the camera is; night: 1
-// on the night side. Adds its lights to emit, gives the roofs' height in rise and the glass's glint in spec.
-vec3 pp_city(vec3 d, vec3 cu, float pxc, float h, float near, float night, inout vec3 emit, out float rise, inout float spec) {
+// on the night side; sun_m: toward the sun, model space. Adds its lights to emit, gives the roofs' height in rise and
+// the glass's glint in spec.
+vec3 pp_city(vec3 d, vec3 cu, float pxc, float h, float near, float night, vec3 sun_m, inout vec3 emit, out float rise, inout float spec) {
 	float face = cu.z;
 	// the avenues wander, as roads laid over old country do (straight again at a face's edge, where the grids meet)
 	vec2 e = cu.xy * cu.xy;
@@ -83,21 +103,20 @@ vec3 pp_city(vec3 d, vec3 cu, float pxc, float h, float near, float night, inout
 	float fA = pxc * 6.0, fB = pxc * 24.0;
 	vec2 dA = floor(gA);
 	float dh = pp_hash(dA, face, 19.0);
-	// open ground (parkland, reservoirs, landing fields), dark at night: the country the city never built over, its edge
-	// following the blocks, and a block here and there besides
-	vec3 bd = pp_dir((floor(g) + 0.5) / 24.0 - bend, face);
-	float open = max(step(0.655, pn_fbm3(bd * 4.5 + seed.zxy + 11.0)), step(pp_hash(floor(g), face, 23.0), 0.03));
 	float bh = pp_soft(pp_hash(floor(g), face, 0.0), fB);
+	float isle = pp_isle(d);
+	// (from afar, where a block is finer than a pixel, the share of an island's blocks that are towers)
+	float isle_b = mix(pp_isle_block(g, face, isle), isle * min(isle * 1.5, 1.0), smoothstep(0.35, 0.9, fB));
 	// the old cores: denser, paler, brighter at night
 	float dense = pn_fbm3(d * 3.0 + seed);
 	float core = smoothstep(0.42, 0.7, dense);
 	vec3 block = mix(c1, c3, bh) * (0.8 + 0.35 * pp_soft(pp_hash(floor(g * 3.0), face, 7.0), fB * 3.0));
 	block = mix(block, mix(c2, vec3(0.62, 0.6, 0.55), 0.4), core * 0.5);
 	// every district its own age and trade, and whole regions darker or paler
-	block *= mix(0.78, 1.1, pp_hash(dA, face, 29.0)) * (0.78 + 0.44 * pn_fbm3(d * 1.7 + seed.yzx));
+	block *= mix(0.93, 1.05, pp_hash(dA, face, 29.0)) * (0.78 + 0.44 * pn_fbm3(d * 1.7 + seed.yzx));
 	block *= 0.82 + 0.3 * smoothstep(-0.5, 0.5, h);
-	float street = max(pp_line(g.x, 0.07, fB), pp_line(g.y, 0.07, fB));
-	float avenue = max(pp_line(gA.x, 0.026, fA), pp_line(gA.y, 0.026, fA));
+	float street = max(pp_line(g.x, 0.045, fB), pp_line(g.y, 0.045, fB));
+	float avenue = max(pp_line(gA.x, 0.016, fA), pp_line(gA.y, 0.016, fA));
 	// streets within streets: at each finer level a block whose number says so is split by its midlines, down to the
 	// lanes a camera over the roofs can see
 	float split_lines = 0.0, lvl = 1.0;
@@ -115,24 +134,26 @@ vec3 pp_city(vec3 d, vec3 cu, float pxc, float h, float near, float night, inout
 	// a district laid out round a plaza (rings and spokes), another cut by diagonal boulevards
 	vec2 q = fract(gA) - 0.5;
 	float rA = length(q);
-	float circ = step(0.8, dh) * (1.0 - open);
-	float ring_roads = max(pp_band(abs(rA - 0.18), 0.012, fA), pp_band(abs(rA - 0.34), 0.012, fA));
-	float spokes = pp_band(abs(sin(atan(q.y, q.x) * 4.0)) * rA * 0.25, 0.008, fA) * step(0.08, rA) * step(rA, 0.46);
+	float circ = step(0.9, dh);
+	float ring_roads = max(pp_band(abs(rA - 0.18), 0.007, fA), pp_band(abs(rA - 0.34), 0.007, fA));
+	float spokes = pp_band(abs(sin(atan(q.y, q.x) * 4.0)) * rA * 0.25, 0.005, fA) * step(0.08, rA) * step(rA, 0.46);
 	float plaza = 1.0 - smoothstep(0.08 - fA, 0.08 + fA, rA);
 	float radial = circ * max(ring_roads, spokes);
-	float diag = step(dh, 0.12) * (1.0 - open) * max(pp_line(gA.x + gA.y, 0.03, fA * 1.414), pp_line(gA.x - gA.y, 0.03, fA * 1.414));
+	float diag = step(dh, 0.06) * max(pp_line(gA.x + gA.y, 0.014, fA * 1.414), pp_line(gA.x - gA.y, 0.014, fA * 1.414));
 	// (inside a round district the plain grid gives way to the rings)
 	float inner = circ * (1.0 - smoothstep(0.3, 0.42, rA));
 	street *= 1.0 - inner;
 	split_lines *= 1.0 - inner;
-	// close up, every block is towers and alleys, and every tower's roof its own
+	// close up, every block is plots and alleys, every plot a building of its own height, and every roof its own
 	float alley = 0.0, tower = 0.5, roof = 1.0;
+	// (from afar a plot is finer than a pixel: the ground is as tall as its plots' mean)
+	float tall = 0.6 + isle_b * 3.1;
 	float fine = pp_fade(fB * 8.0);
+	vec2 g2 = g * 8.0;
 	if (fine > 0.0) {
-		vec2 g2 = g * 8.0;
 		alley = max(pp_line(g2.x, 0.08, fB * 8.0), pp_line(g2.y, 0.08, fB * 8.0)) * fine;
 		tower = pp_hash(floor(g2), face, 13.0);
-		roof = mix(1.0, 0.75 + 0.5 * tower, fine);
+		tall = mix(tall, pp_city_height(g2, face, isle), fine);
 		float finer = pp_fade(fB * 64.0);
 		if (finer > 0.0) {
 			vec2 g3 = g * 64.0;
@@ -140,27 +161,62 @@ vec3 pp_city(vec3 d, vec3 cu, float pxc, float h, float near, float night, inout
 			alley = max(alley, max(pp_line(g3.x, 0.06, fB * 64.0), pp_line(g3.y, 0.06, fB * 64.0)) * finer * 0.6 * step(0.4, tower));
 		}
 	}
-	block *= roof;
+	// a tall roof stands in clearer light than a low one, and the towers are glass
+	block *= roof * (0.74 + 0.13 * min(tall, 5.0));
+	block = mix(block, pattern_color * (0.55 + 0.08 * min(tall, 5.0)), smoothstep(1.3, 3.2, tall) * 0.6);
 	block = mix(block, mix(c3, vec3(0.7, 0.68, 0.62), 0.5), circ * plaza * 0.6);
 	float roads = max(max(max(street * 0.8, avenue), max(radial, diag)), max(alley * 0.7, split_lines));
-	roads = mix(roads, avenue, open);
-	vec3 col = mix(block, c0, roads);
-	col = mix(col, pattern_color * (0.8 + 0.4 * pn_vnoise3(d * 140.0 + seed)), open * (1.0 - avenue));
-	spec = 0.25 * (1.0 - open);
-	rise = (1.0 - roads) * (1.0 - open) * (bh - 0.5 + (tower - 0.5) * fine * 0.5) * 0.09;
+	// (a road from orbit is a darker seam in the roofs, not a black line: only close up is its bed seen)
+	vec3 col = mix(block, mix(block * 0.5, c0, 0.35 + 0.65 * fine), roads);
+	// shadows, which are how a height reads from above. An island's skyline throws one long shadow over the low city on
+	// its far side (the island's own depth looked up a shadow's length toward the sun) ...
+	float sun_up = dot(d, sun_m);
+	float tan_e = max(sun_up, 0.0) / sqrt(max(1.0 - sun_up * sun_up, 1e-4));
+	vec3 lt = sun_m - d * sun_up;
+	float low = length(lt);
+	float reach = min(0.016 / max(tan_e, 0.15), 0.08);
+	float shadow = clamp((pp_isle(normalize(d + lt / max(low, 1e-4) * reach)) - isle) * 1.1, 0.0, 1.0) * smoothstep(0.02, 0.2, low);
+	// ... and close up every building throws its own over the roofs and streets behind it (four looks toward the sun
+	// along the plots; none within a hair of a face's edge, where the plots' grid turns)
+	float own = tall * (1.0 - roads);
+	float sunlit = 0.0;
+	if (fine > 0.0 && sun_up > 0.0) {
+		vec3 cs = pp_cube(normalize(d + lt * 0.002));
+		vec2 sd = cs.xy - cu.xy;
+		float sl = length(sd);
+		if (cs.z == face && sl > 1e-6) {
+			sd /= sl;
+			// (the sun never taken higher than about thirty degrees here, nor lower than seven: a shadow always has a
+			// length to be read by, and never runs off past the looks)
+			float tan_s = clamp(tan_e, 0.12, 0.55);
+			float cast = 0.0;
+			for (int i = 0; i < 6; i++) {
+				float s = i == 0 ? 0.6 : (i == 1 ? 1.3 : (i == 2 ? 2.4 : (i == 3 ? 4.0 : (i == 4 ? 6.5 : 10.0))));
+				cast = max(cast, smoothstep(0.0, 0.4, pp_city_roof(g2 + sd * s, face, isle) - own - s * tan_s));
+			}
+			shadow = max(shadow, cast * fine);
+			// the sunward wall of a building that stands above what is in front of it, seen a little from the side
+			sunlit = smoothstep(0.15, 1.2, own - pp_city_roof(g2 + sd * 0.2, face, isle)) * fine;
+		}
+	}
+	col *= (1.0 - 0.78 * shadow) * (1.0 + 0.4 * sunlit * (1.0 - shadow));
+	spec = 0.25 + 0.35 * isle_b;
+	// (the islands stand as low hills of roofs, so the relief lights their sunward side from afar)
+	rise = (1.0 - roads) * ((bh - 0.5) * 0.09 + (tall - 0.6 - isle_b * 3.1) * 0.02 * fine) + isle * 0.12;
 	// the lights. From afar the whole night glows (lit windows, finer than a pixel, and the roads); close in, the glow
 	// draws in to the streets, and a wide road is dark with threads of light down it, not a glowing plain
-	// bright where the city is oldest and thickest, a thin web between: never one even sheet of light
-	float lit = min(mix(0.06, 1.0, smoothstep(0.38, 0.7, dense)) * (0.5 + pn_fbm3(d * 12.0 + seed.yzx)), 1.0);
-	float windows = mix(step(1.0 - 0.6 * lit, pp_hash(floor(g * 4.0), face, 3.0)), 0.6 * lit, smoothstep(0.35, 0.9, fB * 4.0));
+	// bright where the city is oldest and thickest and blazing in the islands, a thinner web between: never one even
+	// sheet of light
+	float lit = min(mix(0.05, 0.9, smoothstep(0.36, 0.7, dense)) * (0.4 + 1.2 * pn_fbm3(d * 12.0 + seed.yzx)) + isle_b * 0.9, 1.0);
+	float windows = mix(0.3 * lit + 0.7 * step(1.0 - 0.6 * lit, pp_hash(floor(g2), face, 3.0)), 0.72 * lit, smoothstep(0.2, 0.7, fB * 8.0));
 	float away = 1.0 - near * 0.8;
 	float threads = max(pp_line(g.x, 0.004, fB), pp_line(g.y, 0.004, fB)) * (1.0 - inner);
 	float av_threads = max(pp_line(gA.x, 0.003, fA), pp_line(gA.y, 0.003, fA));
-	float built = windows * (0.3 + 0.25 * core) * away + step(0.8, tower) * fine * 0.35 * away * lit + circ * plaza * 0.5
-		+ (mix(street * 0.4 + (radial + diag) * 0.8, threads * 1.2 + (radial + diag) * 0.25, near) * mix(1.0, 0.5, near)
+	float built = windows * (0.26 + 0.2 * core + 0.7 * isle_b) * away + step(0.8, tower) * fine * 0.35 * away * lit + circ * plaza * 0.5
+		+ (mix(street * 0.2 + (radial + diag) * 0.3, threads * 1.2 + (radial + diag) * 0.25, near) * mix(1.0, 0.5, near)
 		+ split_lines * 0.4 + alley * 0.2) * (0.25 + 0.75 * lit);
-	float highways = mix(avenue * 0.9, av_threads * 1.2, near) * mix(1.0, 0.5, near);
-	emit += glow * (built * (1.0 - open) + highways * max(lit, 0.25)) * (night * 0.5 + 0.01);
+	float highways = mix(avenue * 0.35, av_threads * 1.2, near) * mix(1.0, 0.5, near);
+	emit += glow * (built + highways * max(lit, 0.25)) * (night * 0.5 + 0.01);
 	return col;
 }
 
@@ -383,10 +439,10 @@ vec3 pp_bones(vec3 d, vec3 cu, float pxc, float h, vec3 col, float clear, out fl
 // taken outside any branch); h: the ground's height; near: how close the camera is (0 to 1); night: 1 on the night side;
 // clear: 0 where a crater or a rift has cut the ground since. Adds the pattern's own lights to emit, gives its height
 // (the ground's units) in rise, and may set the glint (spec).
-vec3 pp_surface(vec3 d, float px, float h, vec3 col, float near, float night, float clear, inout vec3 emit, out float rise, inout float spec) {
+vec3 pp_surface(vec3 d, float px, float h, vec3 col, float near, float night, float clear, vec3 sun_m, inout vec3 emit, out float rise, inout float spec) {
 	vec3 cu = pp_cube(d);
 	float pxc = px * PP_PER_RAD;
-	if (pattern == 1) { return pp_city(d, cu, pxc, h, near, night, emit, rise, spec); }
+	if (pattern == 1) { return pp_city(d, cu, pxc, h, near, night, sun_m, emit, rise, spec); }
 	if (pattern == 2) { return pp_ruins(d, cu, pxc, col, night, clear, emit, rise); }
 	return pp_bones(d, cu, pxc, h, col, clear, rise);
 }
