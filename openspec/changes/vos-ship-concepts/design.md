@@ -237,12 +237,35 @@ Measured from the built geometry (`window.MOCKUP_MEASURE`).
   is a picture of a sailing ship, though Broadside and Castle borrow those words for what the layouts do.
 - **Rough.** These are massings: the Drum's containers and the Cross's arms are placed by rule, and none has rooms yet.
 
+## Version 4: blunt noses, and the picks (owner, 2026-11-10)
+
+The owner, on version 3: "10,9,11 and 15, why did you get rid of 5 and 6? I also dont like pointy noses, please fix
+that".
+
+- **Picks.** 9 Broadside, 10 Drum and 11 Cross go on. There is no 15 on the board; which ship was meant is survey Y6.
+  Until it is answered 12 Ram, 13 Castle and 14 Delta all stay on the page.
+- **5 and 6 were never removed.** They were last on the board and in the list, where they were easy to miss. They now
+  come first, each marked "(kept)".
+- **No pointed bows (a rule for every Vos ship from here on).** Every bow the Syndicate welds ends in a flat face:
+  - 9 Broadside, 13 Castle and 14 Delta: a blunt armoured bulkhead, tapered only a little from the section behind it;
+  - 10 Drum and 11 Cross: a flat glazed face;
+  - 12 Ram: no longer a wedge to a point but a hammer head, a block 64 m across with a flat face 52 m wide.
+- **Not changed.** 5 Twin haul's bows are its Concord freighters' own tapered ends, and 6 Prize frigate's is the Krai
+  frigate's own needle. Both are taken parts the owner had already called "cool" as they are, so they are left;
+  whether a crew cuts them blunt too is survey Y7.
+
+Sizes after the change, in metres: 9 Broadside 271 x 56 x 46; 10 Drum 190 x 58 x 62; 11 Cross 234 x 135 x 134;
+12 Ram 212 x 79 x 47; 13 Castle 264 x 44 x 108; 14 Delta 274 x 158 x 32.
+
 ## Open questions
 
 | # | Question | Provisional answer |
 |---|---|---|
 | Y1 | Is this how the Vos get their ships: freighter parts and taken parts rearranged, nothing built from new? | Yes |
-| Y2 | Which battle freighters go on, beside 5 and 6? | 9 Broadside, 10 Drum, 12 Ram, 13 Castle |
 | Y3 | Do taken parts keep their makers' colours, with Vos metal in rust and brass? | Yes, dulled, with clan paint added in detail |
 | Y4 | May a Vos ship carry parts of any faction, or only its neighbours'? | Any faction the clan could have raided |
-| Y5 | Which becomes which class? | Prize frigate the small ship, Ram and Drum the middle, Broadside and Castle the capitals, Twin haul the clan's home ship |
+| Y5 | Which becomes which class? | Prize frigate the small ship, Drum the middle, Broadside and Cross the capitals, Twin haul the clan's home ship |
+| Y6 | Which ship is "15"? | 14 Delta |
+| Y7 | Do the taken bows on 5 and 6 get cut blunt too? | No: they are the makers' own |
+
+Decided: Y2, the picks (owner, 2026-11-10): 5, 6, 9, 10 and 11, and one more (Y6).

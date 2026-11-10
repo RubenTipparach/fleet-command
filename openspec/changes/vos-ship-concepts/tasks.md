@@ -22,7 +22,13 @@
 - [x] 1c.1 `base()`: a freighter's drive block and spine cut to length; guns, beams and single containers
 - [x] 1c.2 Six battle freighters (9 to 14) in the Syndicate's own layouts, beside 5 and 6; shots looked at; DOM fit passes
 - [x] 1c.3 Survey section Y updated
-- [ ] 1c.4 The owner's picks
+- [x] 1c.4 The owner's picks (2026-11-10): 9, 10, 11 and "15" (which is survey Y6), with 5 and 6
+
+## 1d. Version 4
+
+- [x] 1d.1 No pointed bows: every welded bow ends in a flat face; the Ram a hammer head
+- [x] 1d.2 5 and 6 first on the board and in the list, marked kept
+- [ ] 1d.3 The owner's answer to Y6 and Y7
 
 ## 2. After the picks
 

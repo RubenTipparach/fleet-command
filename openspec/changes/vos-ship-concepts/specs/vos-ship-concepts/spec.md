@@ -26,3 +26,11 @@ and SHALL cover each cut it closes.
 #### Scenario: A cut bow
 - **WHEN** a freighter's bow is cut away
 - **THEN** a collar a little larger than the measured section covers the cut
+
+### Requirement: No Vos-made bow ends in a point
+
+Every bow the Syndicate welds SHALL end in a flat face.
+
+#### Scenario: The Ram
+- **WHEN** the Ram is seen from above
+- **THEN** its head ends in a flat face 52 m wide, not a point

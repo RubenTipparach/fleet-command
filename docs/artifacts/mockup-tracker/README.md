@@ -157,3 +157,4 @@
 - Version 162 published 2026-11-10, cloud session, version id `1794302230-2d50`: M37 Vos Syndicate ships added to the Vos card; the survey at v35; the repository's newer entries (M30 v2, the Missions guide v4) now live.
 - Version 163 published 2026-11-10, cloud session, version id `1794303421-b3f0`: M37 at v2 (conversions); the survey at v36.
 - Version 164 published 2026-11-10, cloud session, version id `1794304097-cf0c`: M37 at v3 (battle freighters); the survey at v37.
+- Version 165 published 2026-11-10, cloud session, version id `1794305341-ed9c`: M37 at v4 (blunt noses); the survey at v38.
