@@ -1,8 +1,10 @@
 // BattleView.Nebula: a battle's nebula plumes and ion storms in 3D (openspec/changes/nebula-plumes; owner, 2026-11-10:
 // "write up some shaders for nebula too", "entering a column of nebula plume can hide you from enemies", "some nebulas are
 // ion storms, which will have cool lightning", "which can strike ships, and cause a temprorary shut down of the reactor
-// core, the ship loosing power for a few seconds completely"). Each plume of the scenario (Rules.Nebulae, the list the
-// rules test) is a NebulaPlume, the one builder, in its look. An ion storm has lightning of two kinds:
+// core, the ship loosing power for a few seconds completely", "make a cloud mesh for top and bottom of nebula and fade out
+// the edges, so it looks like the nebula columns are connected to a larger structure above and below the map"). Each plume
+// of the scenario (Rules.Nebulae, the list the rules test) is a NebulaPlume, the one builder, in its look, a column rising
+// between the two decks of a NebulaDeck. An ion storm has lightning of two kinds:
 // - the cloud's own flicker, the view's: bolts between two points of the storm's head and sheet lightning inside it, as
 //   often as the look says (plumes.json flashes_per_min), drawn from the view's own fork of the scenario's seed and
 //   timed on the battle's clock, so it stops with a pause and the simulation never hears of it;
@@ -41,6 +43,8 @@ public sealed partial class BattleView
     private Battle? _nebulaFor;
     private Node3D? _nebula;
     private readonly List<NebulaPlume> _plumes = new();
+    private NebulaDeck? _decks;
+    private NebulaPuffs? _puffs;
     private readonly List<Bolt> _bolts = new();
     private readonly HashSet<LightningHit> _seenHits = new();
     private double[] _nextFlashS = Array.Empty<double>();
@@ -55,6 +59,7 @@ public sealed partial class BattleView
         _nebula?.QueueFree();
         _plumes.Clear(); _bolts.Clear(); _seenHits.Clear(); _lamps.Clear(); _dark.Clear();
         _nebula = new Node3D { Name = "Nebulae" };
+        _env.FogEnabled = false;
         AddChild(_nebula);
         Rng looks = Rng.Fork(b.Scenario.Seed, "plume-look");
         _boltRng = Rng.Fork(b.Scenario.Seed, "plume-lightning");
@@ -65,7 +70,40 @@ public sealed partial class BattleView
             _plumes.Add(p);
         }
         _nextFlashS = _plumes.Select(p => b.T + FlashWait(p)).ToArray();
+        // the decks the columns rise between, cut from their own place in the noise; or the whole nebula as puffs
+        _decks = null;
+        _puffs = null;
+        if (_plumes.Count == 0) return;
+        var deckSeed = new Vector3((float)looks.Next(), (float)looks.Next(), (float)looks.Next());
+        string style = DeckLook.Get().Style;
+        if (style == "volume")
+        {
+            _decks = NebulaDeck.Build(_plumes, b.Planets.Select(p => (p.X, p.Z, p.RadiusM)), deckSeed, MPerU);
+            _nebula.AddChild(_decks.Node);
+        }
+        else
+        {
+            // the plumes stay for the lightning's places, unseen
+            foreach (NebulaPlume p in _plumes) p.Node.Visible = false;
+            _puffs = NebulaPuffs.Build(_plumes, b.Planets.Select(p => (p.X, p.Z, p.RadiusM)), b.Scenario.Seed, MPerU, style == "billboards");
+            _nebula.AddChild(_puffs.Node);
+        }
+        // the haze of the nebula the battle is fought in: the distance fades into it, in the plumes' own colour
+        (Color fog, float density) = NebulaDeck.Fog(_plumes, MPerU);
+        _env.FogEnabled = true;
+        _env.FogMode = Godot.Environment.FogModeEnum.Exponential;
+        _env.FogLightColor = fog;
+        _env.FogDensity = density;
+        _env.FogSkyAffect = DeckLook.Get().FogSky;
+        _env.FogSunScatter = 0;
+        _env.FogAerialPerspective = 0;
+        foreach (NebulaPlume p in _plumes) p.SetFog(fog, density);
+        _decks?.SetFog(fog, density);
     }
+
+    // where a storm's lightning plays, in its radii: the column's head, below the deck it runs into (a narrow column is many
+    // radii tall, and a bolt up in the deck would be out of sight)
+    private static float StormHead(NebulaPlume p) => Math.Min(p.HeadR * 0.9f, 2.4f);
 
     /// <summary>Every storm of the battle flickers now (the still tool's: a still's battle stands still, so it would wait
     /// for no flicker of its own).</summary>
@@ -103,14 +141,22 @@ public sealed partial class BattleView
             if (bolt.Mat != null) bolt.Mat.AlbedoColor = new Color(2.6f * e, 2.6f * e, 2.6f * e, Math.Min(1f, e * 1.5f));
         }
         Vector3 sun = _sun.GlobalTransform.Basis.Z.Normalized();
+        Vector3 cam = _cam.GlobalPosition;
         foreach (NebulaPlume p in _plumes)
         {
-            var flashes = new Color[NebulaPlume.Flashes];
+            // drawn far to near by the nearest side of each column, not its middle: two wide columns one behind the other
+            // overlap on the screen, and the farther drawn over the nearer shows as a hard seam
+            Vector3 at = p.Node.GlobalPosition;
+            float nearest = Math.Max(new Vector2(cam.X - at.X, cam.Z - at.Z).Length() - p.RadiusU, 0);
+            p.Node.SortingOffset = cam.DistanceTo(at) - nearest;
+            var flashes = new Vector4[NebulaPlume.Flashes];
             int n = 0;
             foreach (Bolt bolt in _bolts.Where(x => x.Plume == p).OrderByDescending(x => x.Strength * Restrike(b.T - x.Born)).Take(NebulaPlume.Flashes))
-                flashes[n++] = new Color(bolt.At.X, bolt.At.Y, bolt.At.Z, bolt.Strength * Restrike(b.T - bolt.Born));
+                flashes[n++] = new Vector4(bolt.At.X, bolt.At.Y, bolt.At.Z, bolt.Strength * Restrike(b.T - bolt.Born));
             p.Sync(sun, _sun.LightEnergy, b.T, flashes);
         }
+        _decks?.Sync(sun, _sun.LightEnergy, b.T);
+        _puffs?.Sync(sun, _sun.LightEnergy, b.T, cam);
         foreach (Ship s in b.Ships)
         {
             bool down = s.Alive && s.CoreDown;
@@ -150,7 +196,7 @@ public sealed partial class BattleView
     // A storm's own flicker: a bolt between two points of its head, or (one time in three) sheet lightning inside it.
     private void CloudLightning(NebulaPlume p, double born)
     {
-        float top = p.Look.HeightR, ang = (float)(_boltRng.Next() * Math.Tau), rad = 0.75f * Mathf.Sqrt((float)_boltRng.Next());
+        float top = StormHead(p), ang = (float)(_boltRng.Next() * Math.Tau), rad = 0.75f * Mathf.Sqrt((float)_boltRng.Next());
         var a = new Vector3(Mathf.Cos(ang) * rad, top * (0.3f + 0.55f * (float)_boltRng.Next()), Mathf.Sin(ang) * rad);
         float strength = 3f + 3f * (float)_boltRng.Next();
         if (_boltRng.Next() < 0.34)
@@ -172,7 +218,7 @@ public sealed partial class BattleView
         if (p == null) return;
         float lift = _models.ContainsKey(h.ShipId) ? LiftOf(h.ShipId) : 0;
         Vector3 ship = p.Local(new Vector3((float)(h.XM / MPerU), lift, (float)(h.ZM / MPerU)));
-        Vector3 from = new Vector3(ship.X * 0.6f + Sym() * 0.25f, p.Look.HeightR * (0.6f + 0.25f * (float)_boltRng.Next()), ship.Z * 0.6f + Sym() * 0.25f);
+        Vector3 from = new Vector3(ship.X * 0.6f + Sym() * 0.25f, StormHead(p) * (0.6f + 0.25f * (float)_boltRng.Next()), ship.Z * 0.6f + Sym() * 0.25f);
         AddBolt(p, from, ship, 1.7f, StrikeFlash, StrikeLifeS, 4, h.T);
     }
 

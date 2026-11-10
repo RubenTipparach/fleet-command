@@ -3,13 +3,11 @@
 // nebula plume can hide you from enemies", "some nebulas are ion storms, which will have cool lightning"). One mesh a plume
 // (NebulaPlume), a bounding column drawn by its far faces so it draws from inside as well as out; every fragment casts the
 // camera's ray through the column and marches the cloud along it, front to back:
-// - the shape is a column of towers (NebulaPlume.Cover: a stem that narrows below the battle plane, a waist, a head that
-//   spreads, towers of different heights that round over, a foot that hangs to different depths, leaning and lobed so no
-//   two plumes stand alike), baked into a small 3D texture a plume, and exactly the rule's circle on the plane (radius 1
-//   in the mesh's units is NebulaDef.RM: a ship the picture shows inside is inside);
-// - the cloud is the noise's Perlin-Worley channel cut by that shape (solid in the heart, billows at the edge), its edges
-//   eaten by the Worley channels at a finer scale, the way real-time cloud renderers do (Schneider and Vos, "The Real-time
-//   Volumetric Cloudscapes of Horizon Zero Dawn", SIGGRAPH 2015; the texture is tools/space/plume_noise.py's);
+// - the shape is a column that rises from the deck of cloud below the battle to the deck above (NebulaPlume.Cover: it
+//   wanders and bulges as it climbs, narrows at its waist, flares into each deck and thins away inside it, lobed so no two
+//   plumes stand alike), baked into a small 3D texture a plume, and exactly the rule's circle on the plane (radius 1 in the
+//   mesh's units is NebulaDef.RM: a ship the picture shows inside is inside);
+// - the cloud is the noise cut by that shape, and each sample lit, by nebula_cloud.gdshaderinc (the decks' too);
 // - each sample is lit by the battle's one sun through the cloud between (a few samples toward it, each twice as far as
 //   the last; Beer's law with a slower fall for light scattered many times), by the cloud's own dim light, by the glow
 //   of its thin edges, and in an ion storm by up to four lightning flashes inside it;
@@ -23,9 +21,10 @@
 // It draws after the planets' layers and before every glow, beam and shield (render priority, NebulaPlume), so those show
 // in the cloud and it shows over a planet behind it. The look's numbers are data/space/plumes.json (PlumeLooks).
 shader_type spatial;
-render_mode unshaded, shadows_disabled, depth_draw_never, depth_test_disabled, blend_mix, cull_front;
+render_mode unshaded, shadows_disabled, depth_draw_never, depth_test_disabled, blend_mix, cull_front, fog_disabled;
 
 #include "planet_noise.gdshaderinc"
+#include "nebula_cloud.gdshaderinc"
 
 #if CURRENT_RENDERER == RENDERER_COMPATIBILITY
 const int STEPS = 44;
@@ -52,19 +51,24 @@ uniform vec3 color_deep : source_color = vec3(0.13, 0.07, 0.27);
 uniform vec3 color_glow : source_color = vec3(0.48, 0.27, 0.94);
 uniform float glow_strength = 0.5;
 uniform float density = 1.0;        // the plume's own (NebulaDef.Density)
-uniform float top = 1.2;            // the column's height over the plane, radii
-uniform float bottom = -0.45;       // how far it hangs below the plane, radii (NebulaPlume.Bottom)
+uniform float top = 1.2;            // how far the column reaches into the decks above and below the plane, radii (NebulaPlume.TopR)
+uniform float bottom = -1.2;        // its foot: -top
+uniform float flare = 1.0;          // where it flares into each deck, radii (NebulaPlume.FlareR)
+uniform float deck_fill = 0.3;      // the decks' fill (data/space/nebula_decks.json fill): the shade it climbs into
 uniform float bound = 2.1;          // the bounding column's radius, radii (NebulaPlume.Bound)
 uniform float clear = 0.8;          // the cloud thins from here in to the camera, radii
 uniform float absorption = 2.4;
 uniform float base_scale = 0.85;
 uniform float detail_scale = 3.4;
 uniform float erosion = 0.38;
+uniform float contrast = 0.7;       // how far the density varies inside the cloud (nb_vary)
 uniform float drift = 0.006;
 uniform vec3 seed = vec3(0.0);
 uniform float plume_time = 0.0;     // battle seconds: the cloud holds still while the battle is paused
 uniform vec4 flash[4];              // lightning: where (the mesh's units) and how bright now
 uniform vec3 flash_color : source_color = vec3(0.8, 0.88, 1.0);
+uniform vec3 fog_color = vec3(0.0);   // the battle's haze (NebulaDeck.Fog), laid on at the cloud's own depth
+uniform float fog_density = 0.0;      // a scene unit
 
 varying vec3 v_local;
 varying vec3 v_cam;
@@ -120,18 +124,17 @@ float plume_cloud(vec3 p, float cover, bool wisps, out float tint, out float sof
 	vec4 n = textureLod(noise_tex, q, 0.0);
 	tint = n.g;
 	soft = 0.0;
-	float low = n.g * 0.625 + n.b * 0.25 + n.a * 0.125;
-	float body = clamp((n.r - (low - 1.0)) / (2.0 - low), 0.0, 1.0);
-	float d = clamp((body - (1.0 - cover)) / max(cover, 1.0e-3), 0.0, 1.0);
+	float d = nb_body(n, cover);
 	if (d <= 0.0) return 0.0;
+	// dense cores, veils and holes inside it, by a broader noise drifting slower
+	vec3 qv = p * base_scale * 0.43 + seed.yzx;
+	qv.y -= plume_time * drift * 0.5;
+	d *= nb_vary(textureLod(noise_tex, qv, 0.0), contrast);
 #if CURRENT_RENDERER != RENDERER_COMPATIBILITY
 	if (wisps) {
 		vec3 q2 = p * detail_scale + seed.zxy;
 		q2.y -= plume_time * drift * 2.5;
-		vec4 m = textureLod(noise_tex, q2, 0.0);
-		// (the two coarser channels only: wisps finer than a step of the march would show as grain)
-		float e = erosion * (1.0 - (m.g * 0.75 + m.b * 0.25)) * (1.0 - smoothstep(0.0, 0.6, d));
-		d = clamp((d - e) / (1.0 - e), 0.0, 1.0);
+		d = nb_erode(d, textureLod(noise_tex, q2, 0.0), erosion);
 	}
 #endif
 	soft = d;
@@ -145,25 +148,18 @@ void fragment() {
 	if (!plume_bounds(ro, rd, t0, t1)) discard;
 
 	// the nearest solid along this ray, in radii: the march stops there
-	float depth = texture(depth_texture, SCREEN_UV).x;
-#if CURRENT_RENDERER == RENDERER_COMPATIBILITY
-	vec3 ndc = vec3(SCREEN_UV, depth) * 2.0 - 1.0;
-#else
-	vec3 ndc = vec3(SCREEN_UV * 2.0 - 1.0, depth);
-#endif
-	vec4 view = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
-	float solid = abs(view.w) > 1.0e-9 ? length(view.xyz / view.w) / v_scale : 1.0e9;
+	float solid = nb_solid(depth_texture, SCREEN_UV, INV_PROJECTION_MATRIX) / v_scale;
 	t0 = max(t0, 0.0);
 	t1 = min(t1, solid);
 	if (t1 <= t0) discard;
 
 	float t = t0 + FINE * pn_hash31(vec3(FRAGCOORD.xy, 1.0));
 	vec3 sun_l = normalize(sun_dir);
-	float sun_k = 0.35 + 1.0 * min(sun_energy, 1.5);
-	// a silver lining: the cloud between the camera and the sun scatters forward
-	float phase = 0.8 + 1.1 * pow(max(dot(rd, sun_l), 0.0), 6.0);
+	float sun_k = nb_sun_k(sun_energy);
+	float phase = nb_phase(rd, sun_l);
 	vec3 lit = vec3(0.0);
 	float through = 1.0;
+	float first = -1.0;   // where along the ray the cloud begins, radii
 	int empty = 8;   // fine samples since the last one in the column: past a few, the march strides
 	bool skin = false;   // the last sample was in cloud
 	bool back = false;   // the last sample went back half a step
@@ -198,6 +194,7 @@ void fragment() {
 		back = false;
 		float dt = FINE * (soft < 0.45 ? 0.5 : 1.0);
 		if (d > 0.002) {
+			if (first < 0.0) first = t;
 			// the cloud between this point and the sun
 			float shade = 0.0;
 			float reach = LIGHT_REACH;
@@ -209,17 +206,16 @@ void fragment() {
 				if (lc > 0.002) shade += plume_cloud(lp, lc, false, lt, ls) * reach;
 				reach *= 2.0;
 			}
-			// Beer's law, with a second, slower fall for the light scattered many times on its way in
-			float sun_t = max(exp(-absorption * shade), 0.24 * exp(-absorption * 0.3 * shade));
-			// and less light comes back out of a thin edge than out of a full billow, so creases between billows read
-			sun_t *= mix(1.0, smoothstep(0.0, 0.7, soft), 0.45);
+			float sun_t = nb_sun_through(shade, absorption, soft);
 			float height = clamp((p.y - bottom) / (top - bottom), 0.0, 1.0);
-			float thin = 1.0 - smoothstep(0.0, 0.8, soft);
 			// the bays between billows lie deeper in the column than their tips, and take less of the sky's light
 			float open = mix(1.0, 0.55, smoothstep(0.15, 0.7, cover));
-			vec3 s = color_deep * (0.4 + 0.8 * height) * open
-				+ mix(color_lit, color_glow, 0.45 * smoothstep(0.35, 0.75, tint)) * sun_k * phase * sun_t * open * (0.7 + 0.4 * height)
-				+ color_glow * glow_strength * thin * thin;
+			// climbing into the deck that lies between it and the sun, the column goes into that deck's shadow, to the
+			// deck's own shade where they meet (the deck's fill)
+			float under_deck = p.y * sun_l.y > 0.0 ? smoothstep(0.35 * flare, flare, abs(p.y)) : 0.0;
+			sun_t = mix(sun_t, sun_t * 0.08, under_deck);
+			vec3 s = nb_light(color_deep, color_lit, color_glow, glow_strength, height, open, tint, sun_k, phase, sun_t, soft);
+			s += color_lit * deck_fill * sun_k * under_deck * 0.6;
 			for (int f = 0; f < FLASHES; f++) {
 				if (flash[f].w <= 0.0) continue;
 				vec3 dv = p - flash[f].xyz;
@@ -238,6 +234,6 @@ void fragment() {
 	}
 	float alpha = 1.0 - through;
 	if (alpha < 0.003) discard;
-	ALBEDO = lit / alpha;
+	ALBEDO = mix(lit / alpha, fog_color, 1.0 - exp(-max(first, 0.0) * v_scale * fog_density));
 	ALPHA = alpha;
 }

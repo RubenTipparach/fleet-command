@@ -187,7 +187,8 @@ Owner, 2026-11-10: "something like a 3d noise texture would be cool? something l
 draw call, marched in `nebula_plume.gdshader`.
 
 - **The shape is C#, baked; the detail is noise.** `NebulaPlume.Cover` is the one implementation of the column's shape
-  (the lean, the anvil, towers of different heights, a hanging foot), baked per plume into a 64 x 48 x 64 texture. The
+  (its wander, bulges, waist and lobes, each of its own size from the seed; a flare into each deck it reaches, or a head
+  of towers short of one: the four `NebulaDef.Forms`), baked per plume into a 64 x 64 x 64 texture. The
   shader multiplies it by the shared tiling noise (`assets/space/plume_noise.bin`, written by
   `tools/space/plume_noise.py` from a seeded generator; `--check` proves the file is the generator's). Computing the shape
   in the shader at every step cost twice the frame: never move it back.
@@ -195,6 +196,13 @@ draw call, marched in `nebula_plume.gdshader`.
   opaque; a short second march toward the sun for the cloud's own shadow. 128 and 3 steps on Forward+, 44 and 2 on
   Compatibility.
 - **The same sun as the planets** (rule 6): `sun_dir` and `sun_energy` from `BattleView`, the cloud `unshaded`.
+- **One cloud, two shaders**: `nebula_cloud.gdshaderinc` is how a nebula's cloud is made from the noise and lit; the plume
+  and the decks (`nebula_deck.gdshader`, `NebulaDeck`, `data/space/nebula_decks.json`: the slabs above and below the
+  battle the columns run into) both include it, so a deck and its columns take one colour from one look. Pass a look's
+  `Color` to a shader as it is: Godot turns it to linear light itself, and converting it again in C# drew the decks a
+  saturated red beside their columns.
+- **Draw order among see-through volumes**: planets -10 to -6, decks -2, plumes -1; plumes among themselves by the nearest
+  side of each column (`SortingOffset` each frame), since two wide columns overlap on the screen.
 - **From inside, the picture thins toward the camera** (`clear_km`), so the captain's ship stays in sight. The rules do
   not thin.
 - **A storm's lightning**: flickers in the cloud are the view's (seeded, `flashes_per_min`); the bolt onto a ship is the

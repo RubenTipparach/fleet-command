@@ -76,7 +76,7 @@ public sealed partial class Battle
             if (t != null && t.Side != s.Side && !CanLock(s, t))
             {
                 s.Target = null;
-                if (s == Player) Say("Science", $"Lost lock on {t.Name}: {(t.Cloaked ? "it has cloaked. Sweep to find it" : "the nebula hides it")}.");
+                if (s == Player) Say("Science", $"Lost lock on {t.Name}: {(t.Cloaked ? "it has cloaked. Sweep to find it" : "the nebula is between us")}.");
             }
             if (t != null && s.Side != Player.Side) s.LastSeen = (t.X, t.Z);
         }
@@ -128,10 +128,10 @@ public sealed partial class Battle
     public bool Detected(Ship s, Ship t) =>
         !t.Absent && (t.Side == s.Side || !t.Cloaked || (s.Side < t.SeenBy.Length && t.SeenBy[s.Side] > 0) || Rules.DistKm(s, t) <= Cs.Cloak.DetectKm);
 
-    /// <summary>Whether s can lock t: seen, and not hidden by a nebula (in one, beyond its lock range, unless s's ECCM beats
-    /// t's ECM).</summary>
+    /// <summary>Whether s can lock t: seen, and not hidden by a nebula (any plume on the sight line between them, either
+    /// ship's included: Rules.NebulaOnLine), beyond its lock range, unless s's ECCM beats t's ECM.</summary>
     public bool CanLock(Ship s, Ship t) =>
-        Detected(s, t) && !(Rules.NebulaAt(t.X, t.Z) > 0 && Rules.DistKm(s, t) > Cs.Nebula.LockKm && s.Eccm <= t.Ecm);
+        Detected(s, t) && !(Rules.NebulaOnLine(s, t) > 0 && Rules.DistKm(s, t) > Cs.Nebula.LockKm && s.Eccm <= t.Ecm);
 
     /// <summary>The enemies s can see (the contact lists, the radar, the markers and the AI's choice of target).</summary>
     public IEnumerable<Ship> SeenFoes(Ship s) => EnemiesOf(s).Where(o => Detected(s, o));

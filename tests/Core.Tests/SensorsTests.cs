@@ -73,7 +73,7 @@ public class SensorsTests
         Assert.False(b.CanLock(b.Player, t));
         b.Lock("b");
         Assert.Null(b.Player.Target);
-        Assert.Contains(b.Log, l => l.Text.StartsWith("No lock: the nebula hides it"));
+        Assert.Contains(b.Log, l => l.Text.StartsWith("No lock: the nebula is between us"));
         b.SetEw(true, 3);
         Assert.False(b.CanLock(b.Player, t));   // equal is not enough
         b.SetEw(true, 4);
