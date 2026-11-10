@@ -25,7 +25,7 @@ public sealed partial class PlanetGallery : Node3D
         AddChild(new WorldEnvironment { Environment = env });
         _sun = new DirectionalLight3D { LightEnergy = 1.2f, LightColor = new Color(1, 0.96f, 0.9f) };
         AddChild(_sun);
-        _sun.LookAt(new Vector3(1, -0.2f, 0.45f), Vector3.Up);   // the sun on the left and a little behind: a third of each disc in night
+        _sun.LookAt(new Vector3(1, -0.2f, -0.45f), Vector3.Up);   // the sun on the left and a little in front: a third of each disc in night
         _cam = new Camera3D { Fov = 35, Current = true };
         AddChild(_cam);
         Vector3 toSun = _sun.GlobalTransform.Basis.Z.Normalized();

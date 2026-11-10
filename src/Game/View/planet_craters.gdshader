@@ -9,7 +9,9 @@
 // (wider in the big ones) with a central peak in the biggest, a wall steepest just under the rim, a sharp rim crest, and
 // outside it the ejecta blanket falling away and fading into the ground; the rim wanders off the circle by a low noise;
 // the floor takes the ground's own colours and a fine rubble relief, finer as the camera comes down; the walls are shaded
-// by their turn from the ground's own light, never black on a lit face.
+// by their turn from the ground's own light, never black on a lit face. A crater is shallower the bigger it is (owner,
+// 2026-11-10: "make planets more realistic please"): a real basin's floor is wide and lies a small share of its radius
+// down, so its far wall is a band of shade and never a dark disc; only the small bowls are deep for their size.
 shader_type spatial;
 render_mode unshaded, shadows_disabled, depth_draw_never, blend_mul, cull_back, fog_disabled;
 
@@ -30,6 +32,7 @@ uniform float crater_relief = 1.0;
 uniform float relief_max_slope = 2.5;
 uniform float rubble = 0.3;              // the fine relief on floors and walls
 uniform float seed = 0.0;
+uniform float air = 0.0;          // 1 where the world has air (a soft terminator), 0 where it has none (PlanetBody)
 uniform vec3 sun_dir = vec3(0.4, 0.7, 0.6);
 uniform float sun_energy = 1.0;   // set with the other layers'; the multiple needs only the sun's direction
 
@@ -45,9 +48,9 @@ void vertex() {
 
 // the profile's slope at x radii out (height in radii): a flat floor to floor_x with a peak of peak_h at the centre, a
 // wall rising as the square of the way across it (gentle at the foot, steepest under the crest), and outside the crest
-// the blanket falling off
-float crater_dhdx(float x, float floor_x, float peak_h) {
-	float total = crater_depth + crater_rim_height;
+// the blanket falling off; deep scales the whole profile (1 a small bowl, less for a basin)
+float crater_dhdx(float x, float floor_x, float peak_h, float deep) {
+	float total = (crater_depth + crater_rim_height) * deep;
 	if (x < floor_x) {
 		const float pw = 0.16;
 		return peak_h * exp(-(x * x) / (pw * pw)) * (-2.0 * x / (pw * pw));
@@ -57,12 +60,12 @@ float crater_dhdx(float x, float floor_x, float peak_h) {
 		return total * 2.0 * t / (1.0 - floor_x);
 	}
 	const float k = 4.5;
-	return -crater_rim_height * k * exp(-(x - 1.0) * k);
+	return -crater_rim_height * deep * k * exp(-(x - 1.0) * k);
 }
 
 // (tint, 0, 0, cover) of the nearest crater of a layer, its slope (model space, along the sphere) in grad_out, and in
 // floor_out how far inside its wall the point is (1 on the floor, 0 at the crest and outside)
-vec4 crater_layer(vec3 nd, int count, vec2 size_range, float layer, float floor_x, float peak_h, out vec3 grad_out, out float floor_out) {
+vec4 crater_layer(vec3 nd, int count, vec2 size_range, float layer, float floor_x, float peak_h, float deep, out vec3 grad_out, out float floor_out) {
 	float fcount = float(count);
 	float best_d = 1e9, best_r = 1.0, best_id = -1.0;
 	vec3 best_c = vec3(0.0, 1.0, 0.0);
@@ -88,7 +91,7 @@ vec4 crater_layer(vec3 nd, int count, vec2 size_range, float layer, float floor_
 	if (al > 1e-6) {
 		vec3 dirn = away / al;
 		vec3 t = dirn - nd * dot(dirn, nd);
-		grad_out = t * crater_dhdx(x, floor_x, peak_h);
+		grad_out = t * crater_dhdx(x, floor_x, peak_h, deep);
 	}
 	float inside = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, x);
 	floor_out = 1.0 - smoothstep(floor_x, 1.0, x);
@@ -112,9 +115,9 @@ void fragment() {
 	vec3 nd = normalize(mpos);
 	vec3 g0, g1, g2;
 	float f0, f1, f2;
-	vec4 l0 = crater_layer(nd, BIG_COUNT, big_size, 3.0, 0.42, 0.14, g0, f0);
-	vec4 l1 = crater_layer(nd, MED_COUNT, med_size, 57.0, 0.3, 0.0, g1, f1);
-	vec4 l2 = crater_layer(nd, SMALL_COUNT, small_size, 131.0, 0.12, 0.0, g2, f2);
+	vec4 l0 = crater_layer(nd, BIG_COUNT, big_size, 3.0, 0.56, 0.05, 0.36, g0, f0);
+	vec4 l1 = crater_layer(nd, MED_COUNT, med_size, 57.0, 0.34, 0.0, 0.62, g1, f1);
+	vec4 l2 = crater_layer(nd, SMALL_COUNT, small_size, 131.0, 0.12, 0.0, 1.0, g2, f2);
 	float cover = max(l0.a, max(l1.a, l2.a));
 	if (cover <= 0.001) { discard; }
 	float tint = mix(1.0, l0.r, l0.a);
@@ -138,13 +141,13 @@ void fragment() {
 	if (gl > 1.0) { gr /= gl; }
 	n_model = normalize(n_model - rough * 0.6 * (gr.x * ta + gr.y * tb));
 
-	// the ground's light turned by the slope, as a multiple of what the plain already has: a wall facing the sun brighter,
-	// one turned from it in shade, and a wall turned right away from a low sun black (its own shadow); past the terminator
-	// the plain is night and the multiple does nothing to it
+	// the ground's light turned by the slope, as a multiple of what the plain already has: the same day term the ground
+	// uses (pn_day_air), taken on the slope's normal over the plain's, so a wall facing the sun is brighter, one turned
+	// from it in shade, a flat floor exactly as lit as the plain round it; past the terminator the plain is night and the
+	// multiple does nothing to it
 	vec3 L = normalize(sun_dir);
 	float ndl = dot(normalize(MODEL_NORMAL_MATRIX * n_model), L);
 	float ndl_g = dot(normalize(MODEL_NORMAL_MATRIX * nd), L);
-	float turn = clamp(1.0 + 1.8 * (ndl - ndl_g), 0.1, 1.7);
-	float shade = mix(1.0, smoothstep(-0.12, 0.1, ndl), smoothstep(0.0, 0.12, ndl_g));
-	ALBEDO = vec3(mix(1.0, turn * shade * tint, cover));
+	float turn = clamp(pn_day_air(ndl, air) / max(pn_day_air(ndl_g, air), 0.03), 0.06, 2.4);
+	ALBEDO = vec3(mix(1.0, turn * tint, cover));
 }

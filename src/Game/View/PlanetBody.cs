@@ -5,13 +5,14 @@
 //   Ground   planet.gdshader (rocky and lava worlds, after Falchion) or planet_gas.gdshader (gas giants), radius 1
 //   Craters  planet_craters.gdshader, 1.004, where the kind has a crater cover
 //   Clouds   planet_clouds.gdshader, a little under the air's top, where the kind has a cloud layer (the ground's own
-//            painted clouds are then off, so there is one weather)
+//            painted clouds are then off, so there is one weather; the deck wears the air's rim, as the ground does)
 //   Rings    planet_rings.gdshader, a flat square in the equator plane cut to the annulus, where the kind has rings
 //   Air      planet_atmosphere.gdshader (godot-sandbox's single scattering shell), 1 + the kind's atmosphere height
 // Every layer but the ground is under Body, which leans by the kind's axial tilt (so the rings, the ring shadow and the
 // installations all share the planet's own frame). Root is the planet's place and scale (its radius in scene units),
 // which the caller sets. Each frame Sync gives every layer the battle's sun and the ground its detail by the camera's
-// height (Falchion's octaves: more as the camera comes down). The look's numbers are data (PlanetLooks), never here.
+// height (Falchion's octaves: more as the camera comes down; and how close it is, which adds grain to the ground and
+// fades the rim of air on the ground and the clouds). The look's numbers are data (PlanetLooks), never here.
 using System.Collections.Generic;
 using Godot;
 
@@ -29,6 +30,7 @@ public sealed class PlanetBody
     public readonly ShaderMaterial? Air;
     public readonly PlanetLook Look;
     private readonly List<ShaderMaterial> _lit = new();
+    private readonly ShaderMaterial? _cloudMat;
 
     private PlanetBody(string name, PlanetLook look, Vector3 seed)
     {
@@ -56,17 +58,20 @@ public sealed class PlanetBody
             var m = Lit(_craters, 1);
             m.SetShaderParameter("coverage", look.CraterCover);
             m.SetShaderParameter("seed", seed.X);
+            m.SetShaderParameter("air", look.AtmosphereStrength > 0 ? 1f : 0f);
             Body.AddChild(Mesh("Craters", _craterMesh, m));
         }
         if (look.CloudLayer is { } cl)
         {
-            var m = Lit(_clouds, 2);
+            var m = _cloudMat = Lit(_clouds, 2);
             m.SetShaderParameter("coverage", cl.Cover);
             m.SetShaderParameter("pattern_scale", cl.Scale);
             m.SetShaderParameter("color_lit", cl.Lit);
             m.SetShaderParameter("color_base", cl.Base);
             m.SetShaderParameter("cloud_opacity", cl.Opacity);
             m.SetShaderParameter("fringe_opacity", cl.Opacity * 0.55f);
+            m.SetShaderParameter("atmo", look.Atmosphere);
+            m.SetShaderParameter("atmo_strength", look.AtmosphereStrength);
             m.SetShaderParameter("seed", seed);
             float top = 1 + look.AtmosphereHeight * 0.35f;
             Body.AddChild(Mesh("Clouds", new SphereMesh { Radius = top, Height = 2 * top, RadialSegments = 128, Rings = 64 }, m));
@@ -102,14 +107,16 @@ public sealed class PlanetBody
     private static MeshInstance3D Mesh(string name, Mesh mesh, Material mat) =>
         new() { Name = name, Mesh = mesh, MaterialOverride = mat, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
 
-    /// <summary>Every layer's sun (the direction toward it, world space, and its strength), and the ground's detail for a
-    /// camera <paramref name="alt"/> radii above the surface.</summary>
+    /// <summary>Every layer's sun (the direction toward it, world space, and its strength), and the ground's detail and
+    /// the ground's and clouds' closeness for a camera <paramref name="alt"/> radii above the surface.</summary>
     public void Sync(Vector3 sunDir, float sunEnergy, float alt)
     {
         Ground.SetShaderParameter("sun_dir", sunDir);
         Ground.SetShaderParameter("sun_energy", sunEnergy);
         Ground.SetShaderParameter("octaves", Mathf.Clamp(6 + 0.75f * Mathf.Log(0.6f / alt) / Mathf.Log(2), 6, 10.5f));
-        Ground.SetShaderParameter("close", 1 - Mathf.SmoothStep(0.02f, 0.4f, alt));
+        float close = 1 - Mathf.SmoothStep(0.02f, 0.4f, alt);
+        Ground.SetShaderParameter("close", close);
+        _cloudMat?.SetShaderParameter("close", close);
         Air?.SetShaderParameter("sun_dir", sunDir);
         Air?.SetShaderParameter("sun_energy", sunEnergy);
         foreach (ShaderMaterial m in _lit)

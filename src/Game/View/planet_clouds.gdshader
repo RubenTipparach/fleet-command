@@ -6,6 +6,10 @@
 // a finer billow on it), differenced into a normal. Changes for Fleet Command: unshaded and lit here by the battle's sun
 // (sun_dir), as the ground is, the same in Forward+ and Compatibility; the sun through thin tops at the terminator
 // (backlight) is that light's own term here; each planet's seed moves its weather; PCG noise (planet_noise.gdshaderinc).
+// Made to read as weather, not as blobs (owner, 2026-11-10: "make planets more realistic please"): great systems whose
+// edges a finer layer erodes into streets and wisps; more cloud along the equator and in the middle latitudes, clear
+// skies in the dry belts between and thin toward the poles; a few storms in the middle latitudes that wind the cover
+// round them into spirals; and the low sun reddening the tops at the terminator (pn_twilight).
 shader_type spatial;
 render_mode unshaded, shadows_disabled, depth_draw_never, blend_mix, cull_back;
 
@@ -18,19 +22,27 @@ uniform float coverage = 0.5;
 uniform vec3 wind_axis = vec3(0.15, 1.0, 0.0);
 uniform float wind_speed = 0.01;   // radians a second
 uniform float relief_step = 0.06;
-uniform float cloud_relief = 0.9;
+uniform float cloud_relief = 0.6;
 uniform float relief_max_slope = 2.5;
-uniform float backlight_amount = 0.35;
+uniform float backlight_amount = 0.12;
 uniform float cloud_opacity = 0.9;
 uniform float fringe_opacity = 0.5;
-uniform float dome_height = 1.4;
+uniform float dome_height = 0.55;
 uniform float billow_scale = 6.0;
-uniform float billow_strength = 0.4;
+uniform float billow_strength = 0.12;
 uniform float edge_softness = 0.09;
+uniform float erosion = 0.52;       // how far the fine layer eats the systems' edges
+uniform float belts = 0.045;        // the cover's lean by latitude
+uniform float storm_twist = 2.4;    // radians a storm winds its middle
 uniform vec3 seed = vec3(0.0);
 uniform vec3 sun_dir = vec3(0.4, 0.7, 0.6);   // toward the sun, world space
 uniform vec3 sun_color : source_color = vec3(1.0, 0.96, 0.9);
 uniform float sun_energy = 1.0;
+uniform vec3 atmo : source_color = vec3(0.44, 0.71, 1.0);   // the air's rim over the tops, as on the ground under them
+uniform float atmo_strength = 0.0;
+uniform float close = 0.0;        // 0 from afar, 1 down in the air (PlanetBody.Sync)
+
+const int STORMS = 6;
 
 varying vec3 mpos;
 
@@ -38,16 +50,45 @@ void vertex() {
 	mpos = VERTEX;
 }
 
-float cloud_density(vec3 nd) {
-	vec3 ax = normalize(wind_axis);
-	vec3 p1 = pn_rot(nd, ax, TIME * wind_speed) * pattern_scale + seed;
-	vec3 p2 = pn_rot(nd, ax, -TIME * wind_speed * 0.6) * pattern_scale * 1.9 + seed.zxy + 37.0;
-	vec3 warp = vec3(pn_fbm3(p1 * 0.5 + 7.7), pn_fbm3(p1 * 0.5 - 3.1), pn_fbm3(p1 * 0.5 + 2.4)) - 0.5;
-	return pn_fbm3(p1 + warp * 1.6) * 0.72 + pn_fbm3(p2) * 0.28;
+// two octaves, about 0 to 1: the broad field that bends the weather
+float fbm2(vec3 p) { return pn_vnoise3(p) * 0.66 + pn_vnoise3(p * 2.05 + vec3(17.3, 9.1, 4.7)) * 0.34; }
+
+// the storms: the direction turned about a few centres in the middle latitudes (north one way, south the other), most
+// at each centre and dying away from it, so the cover there winds into a spiral
+vec3 swirl(vec3 d) {
+	for (int i = 0; i < STORMS; i++) {
+		vec3 h = pn_hash33(vec3(float(i), 71.0, seed.x));
+		float side = (i % 2 == 0) ? 1.0 : -1.0;
+		float sl = mix(0.38, 0.78, h.x) * side;
+		float lon = h.y * 6.2832;
+		float cl = sqrt(1.0 - sl * sl);
+		vec3 ctr = vec3(cl * cos(lon), sl, cl * sin(lon));
+		float r = mix(0.14, 0.26, h.z);
+		float k = exp(-2.0 * (1.0 - dot(d, ctr)) / (r * r));
+		if (k > 0.01) { d = pn_rot(d, ctr, k * storm_twist * side); }
+	}
+	return d;
 }
 
-float cloud_height(vec3 d, float t_edge) {
-	float body = max(cloud_density(d) - t_edge, 0.0);
+// near (0 to 1) adds the small puffs a camera coming down can see
+float cloud_density(vec3 nd, float near) {
+	vec3 ax = normalize(wind_axis);
+	vec3 q = swirl(pn_rot(nd, ax, TIME * wind_speed));
+	vec3 p1 = q * pattern_scale + seed;
+	vec3 p2 = pn_rot(q, ax, -TIME * wind_speed * 1.6) * pattern_scale * 3.4 + seed.zxy + 37.0;
+	vec3 warp = vec3(fbm2(p1 * 0.5 + 7.7), fbm2(p1 * 0.5 - 3.1), fbm2(p1 * 0.5 + 2.4)) - 0.5;
+	float big = pn_fbm3(p1 + warp * 1.6);
+	// the fine layer, bent by the same field, eats into the systems' edges
+	float fine = pn_fbm3(p2 + warp * 2.6);
+	float lat = abs(nd.y);
+	float belt = cos(lat * 9.0) * (1.0 - smoothstep(0.62, 0.95, lat)) - 0.6 * smoothstep(0.8, 1.0, lat);
+	float dens = big * 0.74 + 0.134 + (fine - 0.515) * erosion + belt * belts;
+	if (near > 0.0) { dens += (pn_fbm3(q * pattern_scale * 14.0 + seed.yzx) - 0.515) * 0.14 * near; }
+	return dens;
+}
+
+float cloud_height(vec3 d, float t_edge, float near) {
+	float body = max(cloud_density(d, near) - t_edge, 0.0);
 	float dome = sqrt(body) * dome_height;
 	float billow = (pn_fbm3(d * pattern_scale * billow_scale + seed) - 0.5) * billow_strength;
 	return dome + billow * smoothstep(0.0, 0.06, body);
@@ -55,7 +96,9 @@ float cloud_height(vec3 d, float t_edge) {
 
 void fragment() {
 	vec3 nd = normalize(mpos);
-	float n = cloud_density(nd);
+	float footprint = max(length(dFdx(nd)), length(dFdy(nd)));
+	float near = 1.0 - smoothstep(0.0006, 0.0025, footprint);
+	float n = cloud_density(nd, near);
 	float t_edge = 1.0 - coverage * 0.72;
 	float t_core = t_edge + edge_softness * 0.5;
 	float edge_mask = smoothstep(t_edge, t_edge + edge_softness, n);
@@ -64,11 +107,13 @@ void fragment() {
 
 	vec3 ta, tb;
 	pn_frame(nd, ta, tb);
-	float footprint = max(length(dFdx(nd)), length(dFdy(nd)));
-	float eps = max(relief_step, footprint * 1.5);
-	float ha = cloud_height(normalize(nd + ta * eps), t_edge) - cloud_height(normalize(nd - ta * eps), t_edge);
-	float hb = cloud_height(normalize(nd + tb * eps), t_edge) - cloud_height(normalize(nd - tb * eps), t_edge);
-	vec3 n_model = pn_relief(nd, ta, tb, ha, hb, eps, cloud_relief, relief_max_slope);
+	// (the relief's step finer as the camera comes down, so the small puffs have tops too)
+	float eps = max(relief_step * mix(1.0, 0.45, near), footprint * 1.5);
+	float ha = cloud_height(normalize(nd + ta * eps), t_edge, near) - cloud_height(normalize(nd - ta * eps), t_edge, near);
+	float hb = cloud_height(normalize(nd + tb * eps), t_edge, near) - cloud_height(normalize(nd - tb * eps), t_edge, near);
+	// the slope eased toward its cap, never cut at it: a cut leaves every steep top the same flat tone, hard edged
+	float ease = 1.0 / (1.0 + length(vec2(ha, hb)) / (2.0 * eps * relief_max_slope));
+	vec3 n_model = pn_relief(nd, ta, tb, ha * ease, hb * ease, eps, cloud_relief, relief_max_slope);
 	n_model = normalize(mix(nd, n_model, edge_mask));
 
 	vec3 L = normalize(sun_dir);
@@ -77,11 +122,15 @@ void fragment() {
 	// the sphere's own light, which the relief shades and lights by its turn from it (a cloud is never black by its slope
 	// alone: the relief tipping a top away from the sun only shades it)
 	float ndl_g = dot(g_world, L);
-	float day = pn_day(ndl_g) * clamp(0.8 + 0.9 * (dot(n_world, L) - ndl_g), 0.45, 1.25);
+	// (eased at both ends, never clamped: a clamp leaves flat grey patches with hard edges)
+	float day = pn_day(ndl_g) * (0.5 + 0.75 * smoothstep(-0.7, 0.55, dot(n_world, L) - ndl_g));
 	// thin tops glow where the sun comes through them, just past the terminator
 	float back = backlight_amount * (1.0 - core_mask * 0.6) * smoothstep(-0.25, 0.0, ndl_g) * (1.0 - smoothstep(0.0, 0.3, ndl_g));
-	vec3 col = mix(color_base, color_lit, core_mask);
+	// thin cloud in the base colour, thick in the lit one, the tallest towers a little brighter still
+	vec3 col = mix(color_base, color_lit, core_mask) * (0.92 + 0.1 * smoothstep(t_core, t_core + 0.25, n));
 	vec3 sun = sun_color * sun_energy;
-	ALBEDO = col * (0.02 + 0.98 * day + back) * sun;
+	float rim = pow(1.0 - max(dot(normalize(NORMAL), normalize(-VERTEX)), 0.0), 2.5) * (1.0 - close);
+	ALBEDO = pn_lit(col, day + back, ndl_g, 1.0, sun)
+		+ atmo * rim * atmo_strength * (0.15 + 0.85 * smoothstep(-0.3, 0.6, ndl_g)) * sun_energy;
 	ALPHA = mix(edge_mask * fringe_opacity, cloud_opacity, core_mask);
 }

@@ -54,11 +54,42 @@ no other. A new kind is a new name there and a new row there, nothing else.
 5. **A cloud has tops**: its height is the square root of the density above the edge (fast climb at the rim, round
    over the top) plus a finer billow inside; its edge thins over a soft fringe, never a cut line. Two layers turn against
    each other about a wind axis.
-6. **One sun.** Every layer is `unshaded` and lit by the same `sun_dir` uniform (toward the sun, world space) and
-   `sun_energy`, with the same soft terminator (`pn_day`), set every frame by `PlanetBody.Sync` from the battle's
-   `DirectionalLight3D`. That keeps Forward+ and Compatibility identical. A relief may shade a layer, never black it: shade
-   relative to the sphere's own light (see the clouds).
+6. **One sun, one light.** Every layer is `unshaded` and lit by the same `sun_dir` uniform (toward the sun, world space)
+   and `sun_energy`, set every frame by `PlanetBody.Sync` from the battle's `DirectionalLight3D`. That keeps Forward+ and
+   Compatibility identical. The light itself is one function, `pn_lit(col, day, ndl, air, sun)`, which the ground, the
+   clouds and the gas tops all call: the day term (`pn_day_air`: a soft terminator under air, a hard one on an airless
+   world), a narrow reddened band at the terminator where there is air (`pn_twilight`), and a cold trace of light on the
+   night side so it is never pure black. A relief may shade a layer, never black it: shade relative to the sphere's own
+   light (the clouds), or multiply by the ratio of the slope's day term over the plain's (the crater shell).
 7. **Hashes are PCG on the float's bits** (`pn_hash31`), never `fract(sin)` or a fract-multiply hash (CLAUDE.md 10).
+
+## Realism (owner, 2026-11-10: "make planets more realistic please")
+
+What makes a world read as a place and not a painted ball. Each of these was a fault found in a still first.
+
+- **Land and sea are one branch, and the coast is never sharper than a pixel**: `land = smoothstep(-aw, aw, h - sea)` with
+  `aw` from `fwidth(h)`. The sea darkens with depth (a pale shelf at the shore, deep water at 0.55 of its colour), and only
+  water takes the sun's glint (a tight lobe and a faint wide one, tinted at the terminator).
+- **Biomes come from climate, not from height alone** (`climate` in the look): rainfall is a low noise plus belts by
+  latitude, less on high ground; wet land is the palette's green, dry land `arid`, cold land `tundra`, with a dry band at
+  the coast. Greens stay muted (`#3a6331`, not a lawn's). A dry world (`climate` 0) keeps the old height ramp.
+- **Mountains are ridged ranges** (`mountains`), which carry the snow line; **rifts are arcs and `lineae`** (thin cracks on
+  an ice world), not a noise threshold.
+- **Night lights are small tight clusters** near coasts and lowlands, never a glowing continent.
+- **Lava**: a dark crust broken into bent plates at two scales, its joints glowing only where the heat field says so,
+  molten lowlands below `sea`, and each volcano a lake in its caldera with one or two broad tongues that cool along their
+  reach. Rings round a volcano read as a bullseye and noise worms read as spiders: both were tried and thrown out.
+- **Craters are shallower the bigger they are** (`deep`: big 0.36, medium 0.62, small 1), as real ones are.
+- **Clouds have body, and their slopes are eased, never cut**: `ease = 1 / (1 + g / max)` before `pn_relief`. A slope cut
+  at a cap gives every steep top one flat tone with a hard edge. Fine billows stay small (`billow_strength` 0.12), the
+  relief step narrows only when the camera is near, weather follows belts by latitude with twisted storms, and the deck
+  wears the same rim of air as the ground under it (`atmo`, `atmo_strength`), or the ground's rim shows through as patches.
+- **Up close** (`close`, from `PlanetBody.Sync`) the ground gains two octaves of grain and the rim of air fades, so the
+  surface is not a smooth gradient under the planet view.
+- **Colour is restrained.** Palettes are the dusty, desaturated colours of real worlds; the looks' numbers are all in
+  `data/space/planets.json` (its `_doc` names each), never in a shader.
+
+Not measured: the ground shader costs more than it did, and no phone frame time has been taken for it yet.
 
 ## Gas giants and rings
 
@@ -83,10 +114,12 @@ scene's lights like ships (not unshaded). Seeds go through FNV-1a so neighbourin
 
 ```sh
 .tools/godot/Godot_mono.app/Contents/MacOS/Godot --path . --resolution 1280x800 -- --planet-gallery=docs/screenshots/game/planets
-scripts/game-stills.sh docs/screenshots/game ms-planet-gas,ms-planet-terran,ms-planet-surface,kelvane-ui-tractor
+scripts/game-stills.sh docs/screenshots/game ms-planet-battle,ms-planet-terran,ms-planet-ocean,ms-planet-desert,ms-planet-ice,ms-planet-lava,ms-planet-barren,ms-planet-gas,ms-planet-ice_giant,ms-planet-toxic,ms-planet-surface,ms-planet-sites,ms-planet-sites-close
 ```
 
-The gallery saves every kind from afar and up close and every rock kind, through `PlanetBody` itself. Look at each still
+The gallery saves every kind from afar and up close and every rock kind, through `PlanetBody` itself, with a third of each
+disc in night. Its folder is under `res://`, so give it a path inside the repository. A shader that fails to compile may
+print nothing: the stills are the check. Look at each still
 (make a contact sheet) for: seams or pinched poles, sparkle at the limb, a black patch in a lit layer, bands that repeat,
 a ring shadow on the wrong side, rocks that read as balls. Then the battle stills, which show the same planets under a
 battle's sun and in the planet view down to the surface.

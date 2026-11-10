@@ -24,6 +24,16 @@ public sealed record PlanetLook(int Surface, Color[] Palette, float Sea, float I
     public GasLook? Gas { get; init; }
     /// <summary>The axis's lean from the battle's up, degrees (a ringed world shows its rings open).</summary>
     public float TiltDeg { get; init; }
+    /// <summary>How far the land is coloured by its climate (0 to 1): forest where it rains, <see cref="Arid"/> ground in
+    /// the dry belts, <see cref="Tundra"/> toward the caps.</summary>
+    public float Climate { get; init; }
+    public Color Arid { get; init; } = new(0.72f, 0.58f, 0.38f);
+    public Color Tundra { get; init; } = new(0.42f, 0.40f, 0.33f);
+    /// <summary>The height of the mountain ranges (0 for none, 1 tall).</summary>
+    public float Mountains { get; init; }
+    /// <summary>How many long cracks cross an ice shell (0 for none, 1 for sixteen), and their colour.</summary>
+    public float Lineae { get; init; }
+    public Color LineaeColor { get; init; } = new(0.45f, 0.30f, 0.24f);
 }
 
 /// <summary>A cloud layer (planet_clouds.gdshader): its cover 0 to 1, its scale (cloud systems round the world), the colour
@@ -83,7 +93,13 @@ public static class PlanetLooks
         {
             CraterCover = o.Has("crater_cover") ? Range(o, "crater_cover", 0, 1) : 0,
             TiltDeg = o.Has("tilt_deg") ? Range(o, "tilt_deg", -90, 90) : 0,
+            Climate = o.Has("climate") ? Range(o, "climate", 0, 1) : 0,
+            Mountains = o.Has("mountains") ? Range(o, "mountains", 0, 1) : 0,
+            Lineae = o.Has("lineae") ? Range(o, "lineae", 0, 1) : 0,
         };
+        if (o.Has("arid")) look = look with { Arid = Col(o, "arid") };
+        if (o.Has("tundra")) look = look with { Tundra = Col(o, "tundra") };
+        if (o.Has("lineae_color")) look = look with { LineaeColor = Col(o, "lineae_color") };
         if (o.ObjOrNull("cloud_layer") is { } c)
         {
             look = look with { CloudLayer = new CloudLook(Range(c, "cover", 0, 1), Range(c, "scale", 0.5, 20), Col(c, "lit"), Col(c, "base"), Range(c, "opacity", 0, 1)) };
@@ -153,6 +169,12 @@ public static class PlanetLooks
             ground.SetShaderParameter("detail", l.Detail);
             ground.SetShaderParameter("craters", l.Craters ? 1f : 0f);
             ground.SetShaderParameter("canyons", l.Canyons);
+            ground.SetShaderParameter("mountains", l.Mountains);
+            ground.SetShaderParameter("climate", l.Climate);
+            ground.SetShaderParameter("arid", l.Arid);
+            ground.SetShaderParameter("tundra", l.Tundra);
+            ground.SetShaderParameter("lineae", l.Lineae);
+            ground.SetShaderParameter("lineae_color", l.LineaeColor);
             ground.SetShaderParameter("glow", l.Glow);
             ground.SetShaderParameter("city_glow", l.CityGlow);
             ground.SetShaderParameter("cities", l.Cities);
