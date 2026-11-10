@@ -154,3 +154,4 @@
 - Artifact version 159 (2026-11-08, cloud session, version id `1794141153-189d`): M36 at v2.
 - Artifact version 160 (2026-11-08, cloud session, version id `1794141174-ee48`): the Faction readiness page added to the misc list.
 - Version 161 published 2026-11-08, version id `1794141205-9779`: M1 v30, M34 v8 (approved for implementation in the owner's words, recorded in the tracker's reviews), merged onto the live version (M4 v33, M36 Placeholder fleets, the Faction readiness page).
+- Version 162 published 2026-11-10, cloud session, version id `1794302230-2d50`: M37 Vos Syndicate ships added to the Vos card; the survey at v35; the repository's newer entries (M30 v2, the Missions guide v4) now live.
