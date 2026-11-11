@@ -25,7 +25,7 @@ loudness strip (`inspect_sfx.py inventory`, `envelope`), and the built set judge
 | Group | Cues | Placed |
 | --- | --- | --- |
 | Weapons | `lance_fire` (0.55 s), `disruptor_fire` (0.55 s), `torpedo_launch` (0.9 s), `overload_charge` (loops), `missile_launch` (1.2 s), `pd_burst` (0.5 s) | at the mount node |
-| Impacts | `shield_hit`, `hull_hit`, `torpedo_detonate`, `explosion_small`, each with a short alternative (`*_short`, 0.6-1.1 s), and `ship_destroyed` | where the hit lands |
+| Impacts | `shield_hit` (an energy field: a whump, a fizz and a crackle, nothing that rings), `hull_hit`, `torpedo_detonate`, `explosion_small`, each with a short alternative (`*_short`, 0.6-1.1 s), and `ship_destroyed` | where the hit lands |
 | Ship | `engine_hum` (loops), `reactor_hum` (loops), `thruster_burst`, `shields_raise`, `shields_collapse` | at the ship |
 | Console | `ui_chirp` (Concord), `ui_clunk` (the metal skins), `ui_confirm`, `ui_deny`, `weapon_charged`, `target_lock`, `hail`, `pause_on`, `pause_off` | no |
 | Alerts | `red_alert` (loops; alternatives `red_alert_twotone`, `red_alert_wail`), `shields_failing`, `hull_critical`, `core_breach` | no |
@@ -95,9 +95,11 @@ Size: 29 mono cues 604 KB and the bed 120 KB as OGG, about 0.7 MB in all.
 
 ## 3. Playing them in the game (after approval)
 
-- **One cue table**, `data/audio/sfx.json`: per cue its file, `bus` (`effects`, `console`, `alerts`, `ambience`),
-  `volume_db`, `placed` (bool), `max_distance_u` (game units), `pitch_jitter` (0 to 0.1, seeded), validated on load like
-  every data file (CLAUDE.md section 6.4). A skin names its key cue in its kit manifest (survey U6).
+- **One cue table**, `data/audio/cues.json` (built 2026-11-07): per cue its file, bus (Master, Music, Effects) and
+  `volume_db`, validated on load like every data file (CLAUDE.md section 6.4). A skin names its key cue in its style
+  (survey U6). **Which battle event plays which cue** is `data/audio/events.json` (`SoundMap`, read by `BattleSounds`
+  and played by `BattleAudio`): a shot's kind to its firing cue, a hit's kind to its cue, lightning, the lock, the
+  critical hull and the pause, and the window a cue does not repeat in.
 - **Sounds read the battle's own events, the ones the effects draw from** (CLAUDE.md section 6.1): `Battle.Hits`
   (`HitEvent`: kind, shield absorbed, hull damage, destroyed) and the shots fired, so a sound can never disagree with
   what the view shows. A mapping in the cue table says which event plays which cue: a hit with `Absorbed > 0` and no hull
@@ -118,3 +120,11 @@ Size: 29 mono cues 604 KB and the bed 120 KB as OGG, about 0.7 MB in all.
 | S2 | Do rival empires get their own music? (and so their own key sounds) | Open (survey), recommendation: not until the owner sets each culture |
 | S4 | How does a battle sound in silent space? | Open (survey), recommendation provisional here: classic space opera, every sound placed in 3D, duller with distance |
 | - | The set itself | Waiting on the owner's ears (the Sounds page, the tracker) |
+
+**A shield cannot ding** (owner, 2026-11-11: "sheild ht STILL HAS THE DING IN FRONT, IT IS NOT GLASS< NOT CERAMIC< NOT
+METAL< IT CANNOT DING", "what METAL PANELS< IT HAS NONE< IT IS ELECTROMAGNETIC"). A shield is an electromagnetic field:
+no surface, no panels, nothing to strike. Its sounds are noise and electricity (a whump of absorbed energy, a fizz, a
+crackle), never a tone that rings after the hit. Measured with `inspect_sfx.py`'s ringing (the share of energy in a few
+sharp peaks 60-400 ms after the attack): the old shield hit rang 66%, its "glassy shimmer" layer 96%, every take in the
+"space ship shield sounds" pack 58-100%; the new one 7%. The check refuses `shield_hit` over 15%.
+

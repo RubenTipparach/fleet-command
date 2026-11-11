@@ -1,6 +1,6 @@
 # Fleet Command Sounds (mockup 17; drafted as 16, renumbered on merging main, where 16 is the special weapons range)
 
-- Link: https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW (published from the cloud session's account, which cannot open the tracker or the survey)
+- Link: https://claude.ai/artifact/7zWthg14SmsRfaFZpj1vAE (published 2026-11-10 from the desktop session's account; versions 1-10 below were at https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW, made from the cloud session's account, which this account cannot update)
 - Shows: the first 30 sound effects with play buttons and waveform strips, grouped as the game uses them.
 - Made by: `tools/audio/render_sfx.sh` (which runs `tools/audio/gen_sfx_page.py`) into `docs/mockups/sounds.html`; the
   page's look is `tools/audio/audio_page.py`. The page (40 KB) names each sound's MP3 share copy under `output/`, and the
@@ -37,3 +37,18 @@
 - Version 10 published 2026-11-07, version id `1793956237-fd25`: the brown-noise bed is the bridge (owner: "delete
   amb_bridge, use amb_bridge_brown"); the space ambience removed, and with it the only CC-BY pack.
 - 2026-11-11, recorded from the live tracker by the Vos ships session: another session republished the page at a new link, https://claude.ai/artifact/7zWthg14SmsRfaFZpj1vAE (version 3, "36 cues, the weapons redone and every sound in the game"); its own record of that publish is on that session's branch.
+- Version 11 of the first artifact (the cloud account's, https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW) published
+  2026-11-11, version id `1794381223-1d29`: the shield hit without its ding (owner: "IT IS ELECTROMAGNETIC"): a field whump,
+  fizz and crackle; the ringing shield takes and the glassy shimmer removed. Merged into main with PR #78: the long
+  `shield_hit` and `shields_collapse` are these; the short shield hit the game plays is the desktop artifact's T1-T3.
+- Version 11 ready to publish 2026-11-10, not yet published (the artifact tools stopped working in the desktop session that
+  made it): the weapons redone without the arcade lasers (owner: "Sfx are really goofy for the weapons. We need to fix
+  that"), the doomsday laser cannon and a ship's cannon in the Lance, Disruptor and Pulse torpedo, the missile's ignition
+  thump, point defence darkened. The page was rebuilt on the Mac by `tools/audio/render_sfx.sh` (sources in a scratch
+  folder, `SFX_SRC`); its MP3s are in `output/sfx` there. The account that published versions 1-10 is the cloud session's,
+  so this goes out as a new artifact from the desktop account; record its link here and in the tracker.
+- 2026-11-10, desktop session (owner: "Can you update and publish the sfx artifact? There's some changes I want to suggest", "Publish new artifact"): published as a NEW artifact, https://claude.ai/artifact/7zWthg14SmsRfaFZpj1vAE, version 1, version id `1794367132-8556`, with its 36 MP3s beside it (`docs/mockups/sounds.files.json`). The page's text brought up to date: the weapons redone without the arcade lasers, every sound now in the game, no CC-BY pack in use. The tracker, `docs/design/README.md` and `mockup-work.md` point at the new link.
+- 2026-11-11, desktop session (owner: "Shield hit bad, target select bad. Fix those"): version 2, version id `1794377172-fe48`: `shield_hit_short` and `target_lock` redone (commit `27ad65de`), their MP3s replaced at their served paths, the page's fingerprints updated; the other 34 sounds unchanged.
+
+- 2026-11-11, desktop session (owner: "Shield hit still has an artificial retro game ding that's very out of place. It needs to sound like a low thump hit"): version 3, version id `1794377757-1d58`: `shield_hit_short` redone as a low thump with no ring (commit `8d41a92c`), its MP3 replaced at its served path, the page's fingerprint updated; the other 35 sounds unchanged.
+- 2026-11-11, desktop session (owner: "Any variation of t1,t,2 and 3 are fine..we can use them all to give the.sound variety"): version 4, version id `1794382867-79b5`: 38 sounds, the shield hit's second and third takes (`shield_hit_short_2`, `shield_hit_short_3`, commit `c3838071`) added at their served paths beside the first.

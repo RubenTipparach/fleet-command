@@ -22,6 +22,7 @@ uniform float clouds = 0.0;
 uniform float land = 0.5;
 uniform float caps = 0.0;
 uniform float width = 1.0;  // the quad's width, map units: its foot (bottom edge) at the node's origin
+uniform float sink = 0.0;   // map units the quad is lowered on screen, so a disc's lowest point sits on the origin at any camera angle
 uniform vec3 g0; uniform vec3 g1; uniform vec3 g2; uniform vec3 g3;
 uniform vec3 s0; uniform vec3 s1; uniform vec3 s2; uniform vec3 s3;
 uniform vec3 b0; uniform vec3 b1; uniform vec3 b2; uniform vec3 b3; uniform vec3 b4; uniform vec3 b5;
@@ -35,6 +36,7 @@ void vertex() {
 	// a billboard: the quad laid in the view plane at the node's origin, its foot there
 	vec4 mv = MODELVIEW_MATRIX * vec4(0.0, 0.0, 0.0, 1.0);
 	mv.xy += vec2(VERTEX.x, VERTEX.y + 0.5) * width;
+	mv.y -= sink;
 	VERTEX = mv.xyz;
 	NORMAL = vec3(0.0, 0.0, 1.0);
 }

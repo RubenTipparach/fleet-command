@@ -118,6 +118,8 @@
   { "script": "standing-concord", "play": "campaign" },
   { "script": "standing-krai", "play": "campaign" },
   { "script": "standings", "play": "campaign" },
+  { "script": "chart-search", "play": "campaign" },
+  { "script": "stacking", "play": "concord_battle" },
   { "script": "weapons", "play": "weapon_lance" },
   { "script": "weapons", "play": "weapon_disruptor" },
   { "script": "weapons", "play": "weapon_torpedo" },
@@ -125,6 +127,10 @@
   { "script": "weapons", "play": "weapon_pd" },
   { "script": "weapons", "play": "weapon_chorus" },
   { "script": "weapons", "play": "weapon_quell" },
-  { "script": "weapons", "play": "weapon_forge" }
+  { "script": "weapons", "play": "weapon_forge" },
+  { "script": "heavy-fleet", "play": "concord_heavy" },
+  { "script": "heavy-fleet", "play": "krai_heavy" },
+  { "script": "heavy-fleet", "play": "kelvane_heavy" },
+  { "script": "heavy-fleet", "play": "ssarith_heavy" }
  ]
 }

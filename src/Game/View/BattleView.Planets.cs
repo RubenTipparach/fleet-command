@@ -2,7 +2,7 @@
 // 2026-11-08: "In game Planets: pull in planets from godot-sandbox and falchion. Falchion will especially be important for
 // us to beam down or examine planetary installations for exploratory or tactical purposes. Also just zooming down to
 // planets is supper cool"). Each planet is its ground (planet.gdshader, after Falchion's planet material) and its air
-// (planet_atmosphere.gdshader, after godot-sandbox's scattering shell) in its kind's look (data/space/planets.json,
+// (planet_atmosphere.gdshader, after godot-sandbox's scattering shell), and where its kind has them craters, a cloud layer and rings, built by PlanetBody in its kind's look (data/space/planets.json,
 // PlanetLooks), sunk a little below the battle plane at its radius (Planet.RadiusM). The installations a scan has found
 // (Installation.Known) stand on its surface at their latitude and longitude: a small structure, a glow over it and a pool
 // of light on the ground, in their state's colour (hostile Alert, held Accord, lost Caution, else Sky); an away team down
@@ -34,7 +34,8 @@ public sealed partial class BattleView
     {
         public required Planet P;
         public required Node3D Root;
-        public required ShaderMaterial Ground, Air;
+        public required PlanetBody Look;
+        public ShaderMaterial Ground => Look.Ground;
         public readonly List<SiteNode> Sites = new();
     }
 
@@ -49,8 +50,6 @@ public sealed partial class BattleView
 
     private Node3D? _planetRoot;
     private readonly List<PlanetNode> _planetNodes = new();
-    private static Shader? _groundShader, _airShader;
-    private static SphereMesh? _groundMesh;
 
     /// <summary>The camera is on a planet (the planet view), not the ship.</summary>
     public bool PlanetView { get; private set; }
@@ -65,27 +64,17 @@ public sealed partial class BattleView
         PlanetView = PlanetView && b.Planets.Any(p => p.Id == _viewPlanet);
         _planetRoot = new Node3D { Name = "Planets" };
         AddChild(_planetRoot);
-        _groundShader ??= GD.Load<Shader>("res://src/Game/View/planet.gdshader");
-        _airShader ??= GD.Load<Shader>("res://src/Game/View/planet_atmosphere.gdshader");
-        _groundMesh ??= new SphereMesh { Radius = 1, Height = 2, RadialSegments = 160, Rings = 80 };
         foreach (Planet p in b.Planets)
         {
-            PlanetLook look = PlanetLooks.For(p.Kind);
-            var ground = new ShaderMaterial { Shader = _groundShader };
-            var air = new ShaderMaterial { Shader = _airShader };
-            PlanetLooks.Apply(look, PlanetLooks.SeedOf(p.Id), ground, air);
-            float r = (float)(p.RadiusM / MPerU);
-            var root = new Node3D { Name = p.Id, Position = PlanetCentre(p), Scale = Vector3.One * r };
+            // its layers (ground, craters, clouds, rings, air) in its kind's look: PlanetBody, the one builder
+            PlanetBody body = PlanetBody.Build(p.Id, p.Kind, PlanetLooks.SeedOf(p.Id));
+            Node3D root = body.Root;
+            root.Position = PlanetCentre(p);
+            root.Scale = Vector3.One * (float)(p.RadiusM / MPerU);
             _planetRoot.AddChild(root);
-            root.AddChild(new MeshInstance3D { Name = "Ground", Mesh = _groundMesh, MaterialOverride = ground, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off });
-            if (look.AtmosphereStrength > 0)
-            {
-                float top = 1 + look.AtmosphereHeight;
-                root.AddChild(new MeshInstance3D { Name = "Air", Mesh = new SphereMesh { Radius = top, Height = 2 * top, RadialSegments = 96, Rings = 48 },
-                    MaterialOverride = air, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off });
-            }
-            var pn = new PlanetNode { P = p, Root = root, Ground = ground, Air = air };
-            foreach (Installation i in p.Installations) pn.Sites.Add(Site(root, i));
+            var pn = new PlanetNode { P = p, Root = root, Look = body };
+            // the sites stand in the planet's own (leaning) frame, as its ground does
+            foreach (Installation i in p.Installations) pn.Sites.Add(Site(body.Body, i));
             _planetNodes.Add(pn);
         }
     }
@@ -148,12 +137,7 @@ public sealed partial class BattleView
         {
             float r = pn.Root.Scale.X;
             float alt = Math.Max(1e-4f, (cam.DistanceTo(pn.Root.Position) - r) / r);
-            pn.Ground.SetShaderParameter("sun_dir", sun);
-            pn.Ground.SetShaderParameter("sun_energy", _sun.LightEnergy);
-            pn.Ground.SetShaderParameter("octaves", Mathf.Clamp(6 + 0.75f * Mathf.Log(0.6f / alt) / Mathf.Log(2), 6, 10.5f));
-            pn.Ground.SetShaderParameter("close", 1 - Mathf.SmoothStep(0.02f, 0.4f, alt));
-            pn.Air.SetShaderParameter("sun_dir", sun);
-            pn.Air.SetShaderParameter("sun_energy", _sun.LightEnergy);
+            pn.Look.Sync(sun, _sun.LightEnergy, alt);
             var dirs = new Color[MaxSites];
             var cols = new Color[MaxSites];
             int n = 0;

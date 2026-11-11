@@ -1,5 +1,5 @@
 {
- "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet. The Hunt (concord_hunt) puts the Ssarith Hunt's approved ships against the Concord (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"); the Hunt is played as the Concord or the Krai there. Once the Hunt's console was built (mockup 15), the Ssarith are a side of their own (ssarith_battle, ssarith_duel, ssarith_arming: the Hunt's approved ships against the Concord's and the Krai's). The allied scenes (*_allied, *_four_races; the battle console mockup's Allied fleet and Four races, openspec/changes/fleet-skins) put a Concord, a Krai and a Ssarith ship in one fleet to hop between (the Fleet key, keys 1 to 9), the console wearing the skin of the ship you command; in them alone the foes are the mockup's Kethran and Vos stand-ins (no Krai or Concord stand-in anywhere), and Four races adds the Kelvane Institute's research cruiser Patience, as the mockup does. Once the Institute's ships were approved for the game (mockup 23; owner, 2026-11-07: \"perfect, implment these ships in game\"), The Institute and Institute wrecks put its line against the Concord or the Krai, as The Hunt and Hunt wrecks do, the damage ranges stand its five classes in a row of their own, and the Institute is a side of its own (kelvane_battle, kelvane_duel, kelvane_arming, kelvane_four_races), the Patience its captain's ship; its ships' names are its classes' names and its captains are \"Institute captain\" until its culture is set (survey C4), but the mockup's Dr. Orrel of the Patience. The Hunt is a side of its own too, in Battle, Duel, Arming and the allied scenes, and in every general scene the Concord plays but The Hunt and Hunt wrecks (ssarith_wrecks, ssarith_range, ssarith_institute, ssarith_institute_wrecks here, the rest in data/battle/scenes; 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its Hunt Cruiser the captain's ship, its ships named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4). The weapon scenes (weapon_*; owner, 2026-11-06: \"Make some test scenes for weapons at 1/4 speed and render mp4 for different weapons types\") play at a quarter speed (time_scale) with the player's ship armed with one weapon type (arm_only) against a held target 20 km ahead, all under one sky so the weapons are seen against the same backdrop, and each fielded only by the side that has the weapon; Point defence turns it round, the foe firing torpedoes and missiles at a ship armed with point defence alone.",
+ "_doc": "The scenarios, in menu order (the battle console mockup's test scenes, owner 2026-11-04: \"make scenarios for both sides (concord and Krai)\"). Every scenario is the Krai Warhost against the Concord with the approved ships, no stand-ins (owner, 2026-11-04: \"NO PLACE HOLDERS SHOULD BE USED FOR KRAI VS CONCORD\"). side is the faction the player commands (its console skin is the faction's skin); the first ship is the player's. Positions in metres, heading in degrees clockwise from north (-z). Optional per ship, a captain's standing orders: stance (attack, escort, hold), range (close, mid, long), erratic, hold_fire, hull_frac, shields_frac. Battle is the mockup's Battle scene with the Krai line as the foe; Duel is one cruiser against one; Arming is the mockup's Arming scene without proximity torpedoes, which the game does not have yet. The Hunt (concord_hunt) puts the Ssarith Hunt's approved ships against the Concord (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"); the Hunt is played as the Concord or the Krai there. Once the Hunt's console was built (mockup 15), the Ssarith are a side of their own (ssarith_battle, ssarith_duel, ssarith_arming: the Hunt's approved ships against the Concord's and the Krai's). The allied scenes (*_allied, *_four_races; the battle console mockup's Allied fleet and Four races, openspec/changes/fleet-skins) put a Concord, a Krai and a Ssarith ship in one fleet to hop between (the Fleet key, keys 1 to 9), the console wearing the skin of the ship you command; in them alone the foes are the mockup's Kethran and Vos stand-ins (no Krai or Concord stand-in anywhere), and Four races adds the Kelvane Institute's research cruiser Patience, as the mockup does. Once the Institute's ships were approved for the game (mockup 23; owner, 2026-11-07: \"perfect, implment these ships in game\"), The Institute and Institute wrecks put its line against the Concord or the Krai, as The Hunt and Hunt wrecks do, the damage ranges stand its five classes in a row of their own, and the Institute is a side of its own (kelvane_battle, kelvane_duel, kelvane_arming, kelvane_four_races), the Patience its captain's ship; its ships' names are its classes' names and its captains are \"Institute captain\" until its culture is set (survey C4), but the mockup's Dr. Orrel of the Patience. The Hunt is a side of its own too, in Battle, Duel, Arming and the allied scenes, and in every general scene the Concord plays but The Hunt and Hunt wrecks (ssarith_wrecks, ssarith_range, ssarith_institute, ssarith_institute_wrecks here, the rest in data/battle/scenes; 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its Hunt Cruiser the captain's ship, its ships named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4). The weapon scenes (weapon_*; owner, 2026-11-06: \"Make some test scenes for weapons at 1/4 speed and render mp4 for different weapons types\") play at a quarter speed (time_scale) with the player's ship armed with one weapon type (arm_only) against a held target 20 km ahead, all under one sky so the weapons are seen against the same backdrop, and each fielded only by the side that has the weapon; Point defence turns it round, the foe firing torpedoes and missiles at a ship armed with point defence alone. The heavy fleets (*_heavy, 2026-11-10, owner: \"record a battle with cruisers/carriers a larger fleet of 3 v 3 ships on each side\", \"your pick on oponents\"): three heavy ships a side and nothing lighter, the Concord against the Krai, the Krai against the Institute, the Institute against the Hunt and the Hunt against the Concord, so each of the four is played once and fought once. Every ship of the player's fleet carries missiles and disguised shuttles besides its class's mines and fighters (kit), for a captain to use everything aboard (the all_out beat); wingmen and foes close to short range.",
  "scenarios": [
   {
    "id": "concord_battle",
@@ -5924,6 +5924,861 @@
      "speed_m_s": 0,
      "stance": "hold",
      "hold_fire": true
+    }
+   ]
+  },
+  {
+   "id": "concord_heavy",
+   "sky": "heavy_garnet_front",
+   "name": "Heavy fleets",
+   "side": "concord",
+   "seed": 20261421,
+   "objective": "Destroy the Krai heavy squadron",
+   "say": [
+    "Comms",
+    "Krai heavy ships ahead, three of them. Every bay, rack and pad is yours."
+   ],
+   "ships": [
+    {
+     "id": "resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "missiles": 6,
+      "shuttles": 1
+     }
+    },
+    {
+     "id": "steadfast",
+     "name": "Steadfast",
+     "captain": "Capt. Rhee",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": -9000,
+     "z_m": 6000,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "missiles": 6,
+      "shuttles": 1
+     },
+     "range": "close"
+    },
+    {
+     "id": "vigilant",
+     "name": "Vigilant",
+     "captain": "Capt. Soren",
+     "class": "ca",
+     "faction": "concord",
+     "side": 0,
+     "x_m": 9000,
+     "z_m": 7000,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "missiles": 6,
+      "shuttles": 1
+     },
+     "range": "close"
+    },
+    {
+     "id": "e_draxx",
+     "name": "Draxx",
+     "captain": "High Warlord Zhen",
+     "class": "krai_dn",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -14000,
+     "z_m": -98000,
+     "heading_deg": 176,
+     "speed_m_s": 1500,
+     "range": "close"
+    },
+    {
+     "id": "e_kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 10000,
+     "z_m": -112000,
+     "heading_deg": 184,
+     "speed_m_s": 1500,
+     "range": "close"
+    },
+    {
+     "id": "e_gorrh",
+     "name": "Gorrh",
+     "captain": "Warlord Ghast",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 32000,
+     "z_m": -102000,
+     "heading_deg": 192,
+     "speed_m_s": 1500,
+     "range": "close"
+    }
+   ],
+   "planets": [
+    {
+     "id": "harrow",
+     "name": "Harrow",
+     "x_m": 118000,
+     "z_m": -176000,
+     "radius_m": 44000,
+     "color": "#c9a26b",
+     "kind": "gas"
+    },
+    {
+     "id": "cinder_moon",
+     "name": "Emberfall",
+     "x_m": -96000,
+     "z_m": -64000,
+     "radius_m": 12000,
+     "color": "#b5482a",
+     "kind": "lava"
+    }
+   ],
+   "nebulae": [
+    {
+     "x_m": 4000,
+     "z_m": -52000,
+     "r_m": 25000,
+     "density": 1,
+     "look": "cinder",
+     "storm": true
+    },
+    {
+     "x_m": -44000,
+     "z_m": -84000,
+     "r_m": 30000,
+     "density": 0.9,
+     "look": "garnet"
+    },
+    {
+     "x_m": -62000,
+     "z_m": -16000,
+     "r_m": 9000,
+     "density": 0.9,
+     "form": "column",
+     "look": "garnet"
+    },
+    {
+     "x_m": 58000,
+     "z_m": -34000,
+     "r_m": 14000,
+     "density": 0.9,
+     "form": "rising",
+     "look": "garnet"
+    },
+    {
+     "x_m": -36000,
+     "z_m": -150000,
+     "r_m": 18000,
+     "density": 0.9,
+     "form": "column",
+     "look": "garnet"
+    },
+    {
+     "x_m": 78000,
+     "z_m": -112000,
+     "r_m": 10000,
+     "density": 0.9,
+     "form": "hanging",
+     "look": "cinder"
+    },
+    {
+     "x_m": -120000,
+     "z_m": -118000,
+     "r_m": 7000,
+     "density": 0.9,
+     "form": "puff",
+     "look": "garnet"
+    },
+    {
+     "x_m": -26000,
+     "z_m": -62000,
+     "r_m": 4000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "garnet"
+    },
+    {
+     "x_m": 30000,
+     "z_m": -72000,
+     "r_m": 5000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "garnet"
+    },
+    {
+     "x_m": -80000,
+     "z_m": 12000,
+     "r_m": 4000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "garnet"
+    },
+    {
+     "x_m": 104000,
+     "z_m": -92000,
+     "r_m": 6000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "garnet"
+    }
+   ]
+  },
+  {
+   "id": "krai_heavy",
+   "sky": "heavy_brass_squall",
+   "name": "Heavy fleets",
+   "side": "krai",
+   "seed": 20261422,
+   "objective": "Destroy the Institute heavy squadron",
+   "say": [
+    "Comms",
+    "Institute heavy ships ahead, three of them. Every bay, rack and pad is yours."
+   ],
+   "ships": [
+    {
+     "id": "draxx",
+     "name": "Draxx",
+     "captain": "High Warlord Zhen",
+     "class": "krai_dn",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "mines": 4,
+      "fighters": 6,
+      "missiles": 9,
+      "shuttles": 1
+     }
+    },
+    {
+     "id": "kharz",
+     "name": "Kharz",
+     "captain": "Warlord Utrek",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": -9000,
+     "z_m": 6000,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "missiles": 6,
+      "shuttles": 1
+     },
+     "range": "close"
+    },
+    {
+     "id": "gorrh",
+     "name": "Gorrh",
+     "captain": "Warlord Ghast",
+     "class": "krai_ca",
+     "faction": "krai",
+     "side": 0,
+     "x_m": 9000,
+     "z_m": 7000,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "missiles": 6,
+      "shuttles": 1
+     },
+     "range": "close"
+    },
+    {
+     "id": "e_patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 1,
+     "x_m": -14000,
+     "z_m": -98000,
+     "heading_deg": 176,
+     "speed_m_s": 1500,
+     "range": "close"
+    },
+    {
+     "id": "e_curiosity",
+     "name": "Curiosity",
+     "captain": "Institute captain",
+     "class": "kelvane_cv",
+     "faction": "kelvane",
+     "side": 1,
+     "x_m": 10000,
+     "z_m": -112000,
+     "heading_deg": 184,
+     "speed_m_s": 1500,
+     "range": "close"
+    },
+    {
+     "id": "e_rigour",
+     "name": "Rigour",
+     "captain": "Institute captain",
+     "class": "kelvane_bc",
+     "faction": "kelvane",
+     "side": 1,
+     "x_m": 32000,
+     "z_m": -102000,
+     "heading_deg": 192,
+     "speed_m_s": 1500,
+     "range": "close"
+    }
+   ],
+   "planets": [
+    {
+     "id": "dun",
+     "name": "Dun",
+     "x_m": -112000,
+     "z_m": -150000,
+     "radius_m": 30000,
+     "color": "#c8a060",
+     "kind": "desert"
+    },
+    {
+     "id": "old_works",
+     "name": "The Old Works",
+     "x_m": 92000,
+     "z_m": -58000,
+     "radius_m": 13000,
+     "color": "#8d8674",
+     "kind": "ruins"
+    }
+   ],
+   "nebulae": [
+    {
+     "x_m": -3000,
+     "z_m": -50000,
+     "r_m": 26000,
+     "density": 1,
+     "look": "brass"
+    },
+    {
+     "x_m": 40000,
+     "z_m": -86000,
+     "r_m": 24000,
+     "density": 1,
+     "look": "slate",
+     "storm": true
+    },
+    {
+     "x_m": -60000,
+     "z_m": -20000,
+     "r_m": 10000,
+     "density": 0.9,
+     "form": "column",
+     "look": "brass"
+    },
+    {
+     "x_m": 52000,
+     "z_m": -28000,
+     "r_m": 8000,
+     "density": 0.9,
+     "form": "rising",
+     "look": "brass"
+    },
+    {
+     "x_m": -40000,
+     "z_m": -132000,
+     "r_m": 16000,
+     "density": 0.9,
+     "form": "column",
+     "look": "brass"
+    },
+    {
+     "x_m": 84000,
+     "z_m": -128000,
+     "r_m": 13000,
+     "density": 0.9,
+     "form": "hanging",
+     "look": "slate"
+    },
+    {
+     "x_m": 130000,
+     "z_m": -10000,
+     "r_m": 7000,
+     "density": 0.9,
+     "form": "puff",
+     "look": "brass"
+    },
+    {
+     "x_m": -26000,
+     "z_m": -62000,
+     "r_m": 4000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "brass"
+    },
+    {
+     "x_m": 30000,
+     "z_m": -72000,
+     "r_m": 5000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "brass"
+    },
+    {
+     "x_m": -80000,
+     "z_m": 12000,
+     "r_m": 4000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "brass"
+    },
+    {
+     "x_m": 104000,
+     "z_m": -92000,
+     "r_m": 6000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "brass"
+    }
+   ]
+  },
+  {
+   "id": "kelvane_heavy",
+   "sky": "heavy_teal_anvil",
+   "name": "Heavy fleets",
+   "side": "kelvane",
+   "seed": 20261423,
+   "objective": "Destroy the Hunt heavy squadron",
+   "say": [
+    "Comms",
+    "Hunt heavy ships ahead, three of them. Every bay, rack and pad is yours."
+   ],
+   "ships": [
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "fighters": 4,
+      "missiles": 6,
+      "shuttles": 1
+     }
+    },
+    {
+     "id": "curiosity",
+     "name": "Curiosity",
+     "captain": "Institute captain",
+     "class": "kelvane_cv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": -9000,
+     "z_m": 6000,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "missiles": 9,
+      "shuttles": 1
+     },
+     "range": "close"
+    },
+    {
+     "id": "rigour",
+     "name": "Rigour",
+     "captain": "Institute captain",
+     "class": "kelvane_bc",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 9000,
+     "z_m": 7000,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "fighters": 4,
+      "missiles": 6,
+      "shuttles": 1
+     },
+     "range": "close"
+    },
+    {
+     "id": "e_sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 1,
+     "x_m": -14000,
+     "z_m": -98000,
+     "heading_deg": 176,
+     "speed_m_s": 1500,
+     "range": "close"
+    },
+    {
+     "id": "e_hunt_carrier",
+     "name": "Hunt Carrier",
+     "captain": "Hunt commander",
+     "class": "hunt_cv",
+     "faction": "ssarith",
+     "side": 1,
+     "x_m": 10000,
+     "z_m": -112000,
+     "heading_deg": 184,
+     "speed_m_s": 1500,
+     "range": "close"
+    },
+    {
+     "id": "e_hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 1,
+     "x_m": 32000,
+     "z_m": -102000,
+     "heading_deg": 192,
+     "speed_m_s": 1500,
+     "range": "close"
+    }
+   ],
+   "planets": [
+    {
+     "id": "pale",
+     "name": "Pale",
+     "x_m": 124000,
+     "z_m": -150000,
+     "radius_m": 40000,
+     "color": "#7fc4d8",
+     "kind": "ice_giant"
+    },
+    {
+     "id": "shoals",
+     "name": "The Shoals",
+     "x_m": -94000,
+     "z_m": -70000,
+     "radius_m": 14000,
+     "color": "#3f86b0",
+     "kind": "archipelago"
+    }
+   ],
+   "nebulae": [
+    {
+     "x_m": -6000,
+     "z_m": -48000,
+     "r_m": 26000,
+     "density": 1,
+     "look": "slate",
+     "storm": true
+    },
+    {
+     "x_m": 38000,
+     "z_m": -88000,
+     "r_m": 28000,
+     "density": 0.9,
+     "look": "teal"
+    },
+    {
+     "x_m": -58000,
+     "z_m": -14000,
+     "r_m": 8000,
+     "density": 0.9,
+     "form": "column",
+     "look": "teal"
+    },
+    {
+     "x_m": 60000,
+     "z_m": -32000,
+     "r_m": 13000,
+     "density": 0.9,
+     "form": "rising",
+     "look": "teal"
+    },
+    {
+     "x_m": -30000,
+     "z_m": -148000,
+     "r_m": 17000,
+     "density": 0.9,
+     "form": "column",
+     "look": "teal"
+    },
+    {
+     "x_m": 70000,
+     "z_m": -100000,
+     "r_m": 9000,
+     "density": 0.9,
+     "form": "hanging",
+     "look": "teal"
+    },
+    {
+     "x_m": -130000,
+     "z_m": -20000,
+     "r_m": 7000,
+     "density": 0.9,
+     "form": "puff",
+     "look": "slate"
+    },
+    {
+     "x_m": -26000,
+     "z_m": -62000,
+     "r_m": 4000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "teal"
+    },
+    {
+     "x_m": 30000,
+     "z_m": -72000,
+     "r_m": 5000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "teal"
+    },
+    {
+     "x_m": -80000,
+     "z_m": 12000,
+     "r_m": 4000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "teal"
+    },
+    {
+     "x_m": 104000,
+     "z_m": -92000,
+     "r_m": 6000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "teal"
+    }
+   ]
+  },
+  {
+   "id": "ssarith_heavy",
+   "sky": "heavy_orchid_wall",
+   "name": "Heavy fleets",
+   "side": "ssarith",
+   "seed": 20261424,
+   "objective": "Destroy the Concord heavy squadron",
+   "say": [
+    "Comms",
+    "Concord heavy ships ahead, three of them. Every bay, rack and pad is yours."
+   ],
+   "ships": [
+    {
+     "id": "sskarr",
+     "name": "Sskarr",
+     "captain": "Stalker Vesh-Orr",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "fighters": 4,
+      "missiles": 6,
+      "shuttles": 1
+     }
+    },
+    {
+     "id": "hunt_carrier",
+     "name": "Hunt Carrier",
+     "captain": "Hunt commander",
+     "class": "hunt_cv",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": -9000,
+     "z_m": 6000,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "fighters": 12,
+      "missiles": 9,
+      "shuttles": 1
+     },
+     "range": "close"
+    },
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 9000,
+     "z_m": 7000,
+     "heading_deg": 0,
+     "speed_m_s": 1200,
+     "kit": {
+      "fighters": 4,
+      "missiles": 6,
+      "shuttles": 1
+     },
+     "range": "close"
+    },
+    {
+     "id": "e_resolute",
+     "name": "Resolute",
+     "captain": "Capt. Ardent",
+     "class": "ca",
+     "faction": "concord",
+     "side": 1,
+     "x_m": -14000,
+     "z_m": -98000,
+     "heading_deg": 176,
+     "speed_m_s": 1500,
+     "range": "close"
+    },
+    {
+     "id": "e_steadfast",
+     "name": "Steadfast",
+     "captain": "Capt. Rhee",
+     "class": "ca",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 10000,
+     "z_m": -112000,
+     "heading_deg": 184,
+     "speed_m_s": 1500,
+     "range": "close"
+    },
+    {
+     "id": "e_vigilant",
+     "name": "Vigilant",
+     "captain": "Capt. Soren",
+     "class": "ca",
+     "faction": "concord",
+     "side": 1,
+     "x_m": 32000,
+     "z_m": -102000,
+     "heading_deg": 192,
+     "speed_m_s": 1500,
+     "range": "close"
+    }
+   ],
+   "planets": [
+    {
+     "id": "lattice",
+     "name": "Lattice",
+     "x_m": -116000,
+     "z_m": -160000,
+     "radius_m": 28000,
+     "color": "#9aa3b8",
+     "kind": "city"
+    },
+    {
+     "id": "ossuary",
+     "name": "Ossuary",
+     "x_m": 96000,
+     "z_m": -62000,
+     "radius_m": 13000,
+     "color": "#cbbfa4",
+     "kind": "fossil"
+    }
+   ],
+   "nebulae": [
+    {
+     "x_m": 5000,
+     "z_m": -46000,
+     "r_m": 24000,
+     "density": 1,
+     "look": "orchid"
+    },
+    {
+     "x_m": -36000,
+     "z_m": -80000,
+     "r_m": 25000,
+     "density": 1,
+     "look": "cinder",
+     "storm": true
+    },
+    {
+     "x_m": -64000,
+     "z_m": -22000,
+     "r_m": 9000,
+     "density": 0.9,
+     "form": "column",
+     "look": "orchid"
+    },
+    {
+     "x_m": 56000,
+     "z_m": -30000,
+     "r_m": 12000,
+     "density": 0.9,
+     "form": "rising",
+     "look": "orchid"
+    },
+    {
+     "x_m": 40000,
+     "z_m": -150000,
+     "r_m": 18000,
+     "density": 0.9,
+     "form": "column",
+     "look": "orchid"
+    },
+    {
+     "x_m": -74000,
+     "z_m": -112000,
+     "r_m": 11000,
+     "density": 0.9,
+     "form": "hanging",
+     "look": "cinder"
+    },
+    {
+     "x_m": 130000,
+     "z_m": 10000,
+     "r_m": 7000,
+     "density": 0.9,
+     "form": "puff",
+     "look": "orchid"
+    },
+    {
+     "x_m": -26000,
+     "z_m": -62000,
+     "r_m": 4000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "orchid"
+    },
+    {
+     "x_m": 30000,
+     "z_m": -72000,
+     "r_m": 5000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "orchid"
+    },
+    {
+     "x_m": -80000,
+     "z_m": 12000,
+     "r_m": 4000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "orchid"
+    },
+    {
+     "x_m": 104000,
+     "z_m": -92000,
+     "r_m": 6000,
+     "density": 0.8,
+     "form": "puff",
+     "look": "orchid"
     }
    ]
   },

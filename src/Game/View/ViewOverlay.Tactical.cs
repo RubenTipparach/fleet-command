@@ -61,14 +61,14 @@ public sealed partial class ViewOverlay
         {
             Ship? pt = b.PinTarget(m), tt = pt ?? t;
             string a2 = pt != null ? m.Pin!.Aim : aim;
-            bool arc = tt != null && Rules.InArc(s, m, tt), ok = arc && tt != null && Rules.InRange(s, m, tt);
+            bool arc = tt != null && Rules.InArc(s, m, tt), ok = arc && tt != null && b.Rules.InRange(s, m, tt);
             double hc = ok ? b.Rules.HitChance(s, m, tt, a2) : 0;
             string on = tt == null || !ok || a2 == "hull" ? "--" : !m.Weapon.Precise ? "By arc"
                 : !Strike.Exposed(b.ExposureFrom(tt, s), a2) ? "Not exposed" : $"{Math.Round(b.DirectHitChance(s, m, tt, a2) * 100)} %";
             string[] cells =
             {
                 $"{m.Label} {m.Weapon.Name}{(m.State != Arming.Normal ? " · " + m.State : "")}", Rules.AimsBy(m), arc ? "Yes" : "No",
-                tt != null ? $"{Rules.DistKm(s, tt):0.0}/{Rules.Mode(m).RangeKm:0.#} km" : "--", ok ? $"{Math.Round(hc * 100)} %" : "--", on, pt?.Name ?? "--",
+                tt != null ? $"{Rules.DistKm(s, tt):0.0}/{b.Rules.RangeKm(s, m, tt):0.#} km" : "--", ok ? $"{Math.Round(hc * 100)} %" : "--", on, pt?.Name ?? "--",
             };
             for (int i = 0; i < cells.Length; i++)
             {

@@ -34,6 +34,15 @@ public sealed partial class CampaignMap : Node3D
     private readonly List<(Vector3 Pos, Vector2 Size, float Seed, Color Tint)> _puffList = new();
     private Vector3 _puffEye = new(1e9f, 0, 0);
     private readonly List<Label3D> _labels = new();
+    // the ships' names, each with the sector it stands in: shown only while that sector is hovered or picked (owner,
+    // 2026-11-09, of the star chart: "remove ship names, show only if I hover over it or target it")
+    private readonly List<(Label3D Tag, int C, int R)> _shipTags = new();
+    private (int C, int R)? _hoverAt, _selAt;
+    private readonly List<(string Name, string Fac, int C, int R)> _shown = new();
+
+    /// <summary>Every ship the chart shows (your fleet's, the fleets and freighters your ships see), with its faction and
+    /// sector: what the search box finds.</summary>
+    public IReadOnlyList<(string Name, string Fac, int C, int R)> ShipsShown => _shown;
     private readonly List<Node3D> _spin = new();
     // the fog of war as last drawn: the sectors seen, and a key of what was known and seen, so the board is rebuilt only
     // when the fog changes
@@ -56,6 +65,8 @@ public sealed partial class CampaignMap : Node3D
         public float T;
         public float EndDir;
         public float Lift;
+        /// <summary>The ship's name, shown while its sector is hovered or picked.</summary>
+        public Label3D? Tag;
         /// <summary>The model's heading when its flight began (radians), where its first turn starts from.</summary>
         public float Yaw0;
     }
@@ -170,6 +181,8 @@ public sealed partial class CampaignMap : Node3D
         _sky?.Follow(_cam.GlobalPosition);
         bool far = Dist > FarDist;
         foreach (Label3D l in _labels) if (IsInstanceValid(l)) l.Visible = !far;
+        foreach (var (tag, c, r) in _shipTags)
+            if (IsInstanceValid(tag)) tag.Visible = _hoverAt == (c, r) || _selAt == (c, r);
         foreach (Node3D s in _spin) if (IsInstanceValid(s)) s.RotateY(dt * 0.15f);
         foreach (ShaderMaterial pm in _planets) pm.SetShaderParameter("time_s", _time);   // the drawn worlds turn
         SortPuffs();
@@ -209,12 +222,14 @@ public sealed partial class CampaignMap : Node3D
 
     public void Select((int C, int R)? at)
     {
+        _selAt = at;
         _ring.Visible = at != null;
         if (at is { } a) _ring.Position = HexPos(a.C, a.R) + new Vector3(0, 0.02f, 0);
     }
 
     public void Hover((int C, int R)? at)
     {
+        _hoverAt = at;
         _hover.Visible = at != null;
         if (at is { } a) _hover.Position = HexPos(a.C, a.R) + new Vector3(0, 0.018f, 0);
     }
@@ -507,11 +522,15 @@ public sealed partial class CampaignMap : Node3D
             if (h.Planet != null && Paper)
             {
                 // a drawn world on a hexagon flight stand in its holder's colour (owner, 2026-11-08: "give planets those
-                // hexagon standees as well"), the disc on the post's top (the page's makeStandee planet)
+                // hexagon standees as well"), the disc resting on the post's top (owner, 2026-11-09: "planets should be on
+                // the stand not floating above it"): the disc sits centred in a quad twice its size, so the quad, its foot on
+                // the post's top, is lowered on screen by half a disc (lowered in the world it fell short as the camera looks
+                // down) (the page's makeStandee planet)
                 const float size = 1.15f, post = 0.42f * size, disc = 0.5f * size;
                 g.AddChild(MapPieces.FlightStand(col, post, size, false));
                 var (planet, mat) = ChartRoom.Planet(h.Planet, col, disc);
-                planet.Position = new Vector3(0, 0.06f + post + 0.02f - disc / 2 * 0.55f, 0);
+                planet.Position = new Vector3(0, 0.06f + post, 0);
+                mat.SetShaderParameter("sink", disc / 2);
                 g.AddChild(planet);
                 _planets.Add(mat);
             }
@@ -655,9 +674,9 @@ public sealed partial class CampaignMap : Node3D
         }
         Label3D tag = MapPieces.Label(label, col.Lightened(0.15f));
         tag.Position = new Vector3(0, -0.05f, 0.1f);
+        tag.Visible = false;
         g.AddChild(tag);
-        _labels.Add(tag);
-        return new Piece { Node = g, Model = model, EndDir = dir, Lift = 0.06f + 0.46f * size };
+        return new Piece { Node = g, Model = model, EndDir = dir, Lift = 0.06f + 0.46f * size, Tag = tag };
     }
 
     /// <summary>Redraws every piece from the campaign. The fleets that moved (and the player's, with ownSteps) fly their
@@ -672,6 +691,9 @@ public sealed partial class CampaignMap : Node3D
         foreach (Node n in _routes.GetChildren()) { _routes.RemoveChild(n); n.QueueFree(); }
         _fleets.Clear();
         _labels.RemoveAll(l => !IsInstanceValid(l) || !l.IsInsideTree());
+        _shipTags.Clear();
+        _shown.Clear();
+        foreach (CampShip sh in _c.S.Fleet) _shown.Add((sh.Name, _c.S.Side, _c.S.AtC, _c.S.AtR));
 
         // the player's fleet: the flagship's own hull on a gold stand, with the fleet's strength
         CampShip flagship = _c.S.Fleet[0];
@@ -679,6 +701,7 @@ public sealed partial class CampaignMap : Node3D
         own.Node.Position = Slot("fleet", _c.S.AtC, _c.S.AtR);
         _pieces.AddChild(own.Node);
         _fleets["__own"] = own;
+        _shipTags.Add((own.Tag!, _c.S.AtC, _c.S.AtR));
 
         // other fleets only where you can see them now (the fog's visible sectors)
         foreach (FactionFleet g in _c.S.Groups.Where(g => _vis.Contains((g.C, g.R))))
@@ -687,6 +710,8 @@ public sealed partial class CampaignMap : Node3D
             p.Node.Position = Slot("ship", g.C, g.R);
             _pieces.AddChild(p.Node);
             _fleets[g.Name] = p;
+            _shipTags.Add((p.Tag!, g.C, g.R));
+            _shown.Add((g.Name, g.Fac, g.C, g.R));
         }
 
         // the ports move to their slot when a sector fills, and back to the centre when it empties
@@ -720,8 +745,10 @@ public sealed partial class CampaignMap : Node3D
             g.AddChild(mh);
             Label3D tag = MapPieces.Label("Freighter " + f.Name, FacColor(f.Fac).Lightened(0.15f));
             tag.Position = new Vector3(0, -0.05f, 0.1f);
+            tag.Visible = false;
             g.AddChild(tag);
-            _labels.Add(tag);
+            _shipTags.Add((tag, f.Route[f.I][0], f.Route[f.I][1]));
+            _shown.Add(("Freighter " + f.Name, f.Fac, f.Route[f.I][0], f.Route[f.I][1]));
             g.Position = Slot("freighter", f.Route[f.I][0], f.Route[f.I][1]);
             _pieces.AddChild(g);
             _fleets["freighter:" + f.Name] = new Piece { Node = g, Model = mh, EndDir = (float)f.Dir, Lift = 0.32f };

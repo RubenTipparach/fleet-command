@@ -15,7 +15,15 @@ public class AudioCueTests
     {
         Assert.NotEmpty(TestData.Data.Audio.Cues);
         foreach (AudioCue c in TestData.Data.Audio.Cues.Values)
-            Assert.True(File.Exists(Path.Combine(Repo, c.File)), $"{c.Id}: {c.File} is missing");
+            foreach (string f in c.Files)
+                Assert.True(File.Exists(Path.Combine(Repo, f)), $"{c.Id}: {f} is missing");
+    }
+
+    [Fact]
+    public void The_shield_hit_has_three_takes_to_vary_between()
+    {
+        // owner, 2026-11-11: "Any variation of t1,t,2 and 3 are fine..we can use them all to give the.sound variety"
+        Assert.Equal(3, TestData.Data.Audio.Get("shield_hit_short").Files.Count);
     }
 
     [Fact]

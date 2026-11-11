@@ -111,13 +111,24 @@ shot kelvane-phone-portrait-station 390x844 --steps=600 --scenario=kelvane_battl
 # sensors, and each placeholder stand-in (into docs/screenshots/game/mission-systems/ when run with that folder)
 MS="--scenario=concord_relief --steps=60"
 shot ms-planet-battle 1920x1080 $MS --select-planet
-for k in terran ocean desert ice lava barren gas; do shot "ms-planet-$k" 1920x1080 $MS --planet-kind=$k --planet-view=1.4 --yaw=1.9 --pitch=0.3; done
+# a ship beside a station at their battle sizes, the shields drawn round each (owner, 2026-11-10: "Show me a ship to station comparison")
+shot ms-station-compare 1920x1080 $MS --target=harbor --zoom=2.2
+for k in terran ocean desert ice lava barren gas ice_giant toxic city archipelago fossil ruins; do shot "ms-planet-$k" 1920x1080 $MS --planet-kind=$k --planet-view=1.4 --yaw=1.9 --pitch=0.3; done
 shot ms-planet-surface 1920x1080 $MS --planet-view=0.012 --pitch=0.35
+# the worlds with something standing on the ground, from low over it (the pattern's finest levels)
+for k in city fossil ruins; do shot "ms-planet-low-$k" 1920x1080 $MS --planet-kind=$k --planet-view=0.05 --pitch=0.35; shot "ms-planet-surface-$k" 1920x1080 $MS --planet-kind=$k --planet-view=0.012 --pitch=0.35; done
 shot ms-planet-sites 1920x1080 $MS --sites --survey --secure --near-planet --beam --planet-view=0.5 --yaw=0 --pitch=0.42
 shot ms-planet-sites-close 1920x1080 $MS --sites --survey --secure --near-planet --beam --planet-view=0.12 --yaw=-0.05 --pitch=0.3
 shot ms-science-planet 1920x1080 $MS --sites --near-planet --select-planet --station=science
 shot ms-transport-sites 1920x1080 $MS --sites --survey --secure --near-planet --beam --select-planet --station=transport --tab=cargo --cargo-view=sites
+# nebula plumes and an ion storm (change nebula-plumes): the columns from across the field, a storm with its lightning, the
+# view from inside a plume, a strike that trips the core, and the plumes on the tactical map
+shot nebula-plume 1920x1080 --scenario=concord_heavy --steps=60 --zoom=9 --pitch=0.2 --yaw=1.2
+shot nebula-storm 1920x1080 --scenario=kelvane_heavy --steps=60 --zoom=14 --pitch=0.3 --flicker
+shot nebula-inside 1920x1080 --scenario=krai_heavy --steps=60 --in-plume=0
+shot nebula-strike 1920x1080 --scenario=concord_heavy --in-plume=0 --steps=150 --strike --flicker --zoom=4 --pitch=0.25
+shot nebula-map 1920x1080 --scenario=concord_heavy --steps=60 --expand=radar
 shot ms-unknown-contact 1920x1080 --steps=10
-for c in yd:krai ab:krai op:krai pb:krai mon:fauna pod:krai; do
+for c in sb:krai yd:krai ab:krai op:krai pb:krai mon:fauna pod:krai; do
   shot "ms-standin-${c%%:*}" 1920x1080 --steps=300 --swap=kharz:$c --target=kharz --target-view --zoom=0.5
 done

@@ -79,9 +79,9 @@ public sealed partial class StationPanel : ConsolePanel
         Lbl("Runs and evasion", xr, y + 12, 0, null, HorizontalAlignment.Left, lbl);
         y += 18 * k;
         float y0 = y;
-        double span = B.Tuning.HoldMaxKm - B.Tuning.HoldMinKm;
-        float Frac(double v) => (float)((v - B.Tuning.HoldMinKm) / span);
-        double Val(float f) => B.Tuning.HoldMinKm + f * span;
+        // the range sliders' scale (HelmRange): the first half 5 to 15 km, the second 15 km up in 5 km steps
+        float Frac(double v) => (float)HelmRange.ToFrac(v, B.Tuning);
+        double Val(float f) => HelmRange.FromFrac(f, B.Tuning);
         HelmKey("helm.int", x0, y, ts, "intercept", "Intercept", () => B.HelmOrder("intercept"), ordOn("intercept")(), noT);
         HelmKey("helm.trail", x0 + ts + tg, y, ts, "trail", "Trail and match speed", () => B.HelmOrder("trail"), ordOn("trail")(), noT);
         y += ts + tg;

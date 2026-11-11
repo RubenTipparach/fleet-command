@@ -34,5 +34,7 @@
  "output/sfx/explosion_small_short.mp3": "output/sfx/explosion_small_short.mp3",
  "output/sfx/red_alert.mp3": "output/sfx/red_alert.mp3",
  "output/sfx/red_alert_twotone.mp3": "output/sfx/red_alert_twotone.mp3",
- "output/sfx/red_alert_wail.mp3": "output/sfx/red_alert_wail.mp3"
+ "output/sfx/red_alert_wail.mp3": "output/sfx/red_alert_wail.mp3",
+ "output/sfx/shield_hit_short_2.mp3": "output/sfx/shield_hit_short_2.mp3",
+ "output/sfx/shield_hit_short_3.mp3": "output/sfx/shield_hit_short_3.mp3"
 }

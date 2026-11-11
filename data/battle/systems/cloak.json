@@ -1,11 +1,17 @@
 {
  "_doc": "The numbers of cloaking, sensors with ECM and ECCM, nebulae and boarding defence (src/Core/Data/SystemsDef.Cloak.cs reads them, strictly), from the battle console mockup's NEBULA, CLOAK, AI_CLOAK, SECURITY, ROOM_SYSTEM and the Science station's scan (docs/mockups/battle-console.html; openspec/changes/cloaking and boarding-defence). Units are in the keys.",
  "nebula": {
-  "_doc": "Inside a nebula, at its density (0 to 1, thinning by edge_thin_frac at its edge): every shot loses hit_penalty x density, ECM and ECCM count ew_gain_x x density more, and a ship in it cannot be locked from beyond lock_km unless the locker's ECCM beats its ECM.",
-  "hit_penalty": 0.3,
+  "_doc": "Inside a nebula plume, at its density (0 to 1, thinning by edge_thin_frac at its edge; the denser of where the shooter and the target are): a shot keeps hit_x of its chance to hit at full density (1 - (1 - hit_x) x density of it at less), a weapon whose kind is in energy_kinds keeps energy_range_x of its range the same way, a missile flying in one or after a ship in one loses its target with a chance of missile_lost_per_s x density each second and flies on straight, a barrage's missiles take hit_x too, ECM and ECCM count ew_gain_x x density more, and a ship cannot lock another through a plume (any plume on the sight line between them, either ship's own included) from beyond lock_km unless its ECCM beats the other's ECM (owner, 2026-11-10: 'ships whose targeting raycasts goes through a cloud looses target locks'; lock_km 15, the owner's: 'nebula battles - 15km is now max lockon range, so any ships below that threashold can lock on and shoot eachother inside a cloud column'). Owner, 2026-11-10: 'entering a column of nebula plume can hide you from enemies. weapons have difficulty targetting, missiles dont quite work, energy weapons 1/2 range', 'and 1/2 acuracy to hit' (openspec/changes/nebula-plumes). An ion storm is a plume a scenario marks storm: lightning finds each ship in it storm_strikes_per_min times a minute at full density (x the density at less); a strike trips the ship's reactor core for storm_shutdown_s seconds (no power: no drive, no charging, no fire, no shields, no cloak, no tractor, no repair) and does no damage, and no bolt finds that ship again for storm_grace_s seconds after its core restarts. Owner, 2026-11-10: 'some nebulas are ion storms, which will have cool lightning', 'which can strike ships, and cause a temprorary shut down of the reactor core, the ship loosing power for a few seconds completely'.",
+  "hit_x": 0.5,
+  "energy_range_x": 0.5,
+  "energy_kinds": ["beam", "bolt"],
+  "missile_lost_per_s": 0.08,
   "ew_gain_x": 2,
-  "lock_km": 60,
-  "edge_thin_frac": 0.3
+  "lock_km": 15,
+  "edge_thin_frac": 0.3,
+  "storm_strikes_per_min": 3,
+  "storm_shutdown_s": 5,
+  "storm_grace_s": 15
  },
  "cloak": {
   "_doc": "A fitted ship fades out over fade_s and back in over fade_s; cloaking or cloaked it draws cost_e, its shields neither hold nor regenerate, and it cannot fire. Fully cloaked it is seen only by its own side, from within detect_km, or once a sweep of the seer's side reveals it. A sweep spends sweep_e of the battery and reveals every cloaked ship of the other side within base_km + per_eccm_km a point of ECCM (and the science officer's officer_sweep_km a level) for reveal_s; again after sweep_cool_s. A revealed cloaked ship is hit at hit_penalty less. fitted: the classes that carry a cloak (the mockup's ca, dd, kdd and kff, the Krai line's cruiser and frigate built on ca and dd, the Hunt, built to wait unseen, and, provisionally until the owner says (survey K1), the Kelvane cruiser and destroyer, whose mounts are laid out as ca's and dd's). own_alpha: how much of a cloaked ship still shows as a shimmer, to its own side and once revealed; sweep_fx_s: how long a sweep's ring takes to spread.",

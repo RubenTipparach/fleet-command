@@ -24,13 +24,13 @@ namespace FleetCommand.Game;
 public sealed partial class Main : Node
 {
     private ConsoleContext _x = null!;
+    private bool _pausedHeard;
     private BattleView _view = null!;
     private ViewOverlay _overlay = null!;
     private Control _root = null!;
     private ColumnBacking _column = null!;
     private MenuCard _menu = null!;
     private OptionsCard _options = null!;
-    private MusicPlayer _music = null!;
     /// <summary>The cue table, set before the first skin is made, so each skin's key sound is checked as it is.</summary>
     private AudioCues _audio = AudioCues.Empty;
     private readonly Dictionary<Region, ConsolePanel> _panels = new();
@@ -43,6 +43,12 @@ public sealed partial class Main : Node
     public override void _Ready()
     {
         ParseArgs();
+        // the planet gallery (the planet-shaders skill's stills): every planet and rock kind alone, then quit
+        if (_args.TryGetValue("planet-gallery", out string? gallery))
+        {
+            AddChild(new PlanetGallery { Out = gallery.Length > 0 ? gallery : "docs/screenshots/game/planets" });
+            return;
+        }
         // the player's window mode (borderless fullscreen unless they chose a window); a scripted run keeps the window it
         // was started in
         if (!_args.ContainsKey("playtest") && !_args.ContainsKey("still") && !_args.ContainsKey("layout-test")) DisplaySettings.ApplySaved();
@@ -117,8 +123,6 @@ public sealed partial class Main : Node
         _options.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         _options.Visible = false;
         optLayer.AddChild(_options);
-        _music = new MusicPlayer();
-        AddChild(_music);
 
         // the game flow (menus, campaign, missions) unless the run is one of the battle's own checks or a scenario asked for
         // a playtest whose script plays the campaign ("flow": true) runs the flow too, saving apart from the player's campaign
@@ -241,10 +245,15 @@ public sealed partial class Main : Node
         if (_x == null) return;
         _menu.Visible = _x.State.MenuOpen;
         _options.Visible = _x.State.OptionsOpen;
-        _music.Play(_flow == null || _flow.Screen == FlowScreen.Battle ? "battle" : "main_theme");
         // the bridge bed under a battle, silent on the menus and the map
         _x.Sounds.Bed(_flow == null || _flow.Screen == FlowScreen.Battle ? "amb_bridge" : null);
         if (_flow != null && _flow.Screen != FlowScreen.Battle) return;
+        // the pause key's sound, on and off (data/audio/events.json)
+        if (_x.State.Paused != _pausedHeard)
+        {
+            _pausedHeard = _x.State.Paused;
+            _x.Sounds.Key(_pausedHeard ? _x.Data.Sounds.PauseOn : _x.Data.Sounds.PauseOff);
+        }
         FollowCommand();
         if (_x.State.Paused || _x.State.MenuOpen || _args.ContainsKey("still")) return;
         double step = _x.Data.Tuning.StepS;
@@ -500,8 +509,10 @@ public sealed partial class Main : Node
     };
 
     /// <summary>Plays the battle for --steps (default 600) as the mockup's scripted shots do (target locked, intercepting), sets the console as asked
-    /// (--station, --page, --tab (Transport), --cargo-view, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor, --target-view: the camera glided
-    /// to the target), saves a PNG and quits. The window size is
+    /// (--frame-ms=seconds: hold the view and print the time a frame, a measurement instrument;
+    /// --station, --page, --tab (Transport), --cargo-view, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor, --target-view: the camera glided
+    /// to the target; --in-plume=n starts your ship in the scene's nth nebula plume, --strike has a storm's lightning strike it
+    /// on the last step and --flicker has every storm flicker in the shot), saves a PNG and quits. The window size is
     /// Godot's own --resolution flag.</summary>
     private async System.Threading.Tasks.Task Still(string path)
     {
@@ -513,8 +524,18 @@ public sealed partial class Main : Node
         if ((_args.GetValueOrDefault("target") ?? b.EnemiesOf(b.Player).FirstOrDefault()?.Id) is { } tgt) b.Lock(tgt);
         b.HelmOrder("intercept");
         b.SetSpeed(b.Rules.MaxSpeed(b.Player));
+        if (_args.TryGetValue("in-plume", out string? ip) && int.Parse(ip) is var pi && pi >= 0 && pi < b.Rules.Nebulae.Count)
+        {
+            b.Player.X = b.Rules.Nebulae[pi].XM; b.Player.Z = b.Rules.Nebulae[pi].ZM;
+        }
         for (int i = 0; i < steps; i++) { b.Step(); if (i == steps - 6) b.Fire(); }
         await StillField(b);
+        if (_args.ContainsKey("strike")) b.LightningStrike(b.Player);
+        if (_args.ContainsKey("flicker"))
+        {
+            await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            _view.Flicker();
+        }
         if (_args.TryGetValue("station", out string? st)) _x.State.Station = st;
         if (_args.TryGetValue("page", out string? pg)) _x.State.ShipPage = pg;
         if (_args.TryGetValue("tab", out string? tb)) _x.State.TransportTab = tb;
@@ -531,6 +552,23 @@ public sealed partial class Main : Node
         for (int i = 0; i < (tview ? 120 : 4); i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
         Relayout();
         for (int i = 0; i < 4; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        // --frame-ms=seconds: a measurement instrument (CLAUDE.md 4): hold the shot's view that long and print the time a
+        // frame by the clock (run with --disable-vsync). The still's battle stands still, so the CPU's share is small and a
+        // shader's cost shows (Godot's GPU timer reads nothing on Metal)
+        if (_args.TryGetValue("frame-ms", out string? fs))
+        {
+            var ms = new System.Collections.Generic.List<double>();
+            ulong until = Time.GetTicksMsec() + (ulong)(double.Parse(fs, System.Globalization.CultureInfo.InvariantCulture) * 1000), last = Time.GetTicksUsec();
+            while (Time.GetTicksMsec() < until)
+            {
+                await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+                ulong now = Time.GetTicksUsec();
+                ms.Add((now - last) / 1000.0);
+                last = now;
+            }
+            ms.Sort();
+            GD.Print($"FRAME_MS median {ms[ms.Count / 2]:0.00} p90 {ms[ms.Count * 9 / 10]:0.00} frames {ms.Count}");
+        }
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         Image img = GetViewport().GetTexture().GetImage();
         Error err = img.SavePng(path);

@@ -9,13 +9,38 @@ using System.Linq;
 
 namespace FleetCommand.Data;
 
-/// <summary>Inside a nebula (the mockup's NEBULA): its density costs every shot HitPenalty x density, ECM and ECCM count
-/// EwGainX x density more, and a ship in it cannot be locked from beyond LockKm unless the locker's ECCM beats its ECM.
-/// The density thins by EdgeThinFrac from the middle to the edge.</summary>
-public sealed record NebulaRules(double HitPenalty, double EwGainX, double LockKm, double EdgeThinFrac);
+/// <summary>Inside a nebula plume (openspec/changes/nebula-plumes; owner, 2026-11-10: "entering a column of nebula plume
+/// can hide you from enemies. weapons have difficulty targetting, missiles dont quite work, energy weapons 1/2 range",
+/// "and 1/2 acuracy to hit"). At full density a shot from or at a ship in one keeps HitX of its chance to hit, a weapon of
+/// one of EnergyKinds keeps EnergyRangeX of its range, and a missile after a ship in one (or flying through one) loses
+/// its target with a chance of MissileLostPerS a second; at a lesser density each is that much nearer to no effect. ECM
+/// and ECCM count EwGainX x density more, and a ship cannot lock another through a plume (any plume on the sight line
+/// between them, Rules.NebulaOnLine; owner, 2026-11-10: "ships whose targeting raycasts goes through a cloud looses target
+/// locks") from beyond LockKm unless its ECCM beats the other's ECM. The density thins by EdgeThinFrac from the middle to the edge.
+/// <para>An ion storm is a plume with lightning (owner, 2026-11-10: "some nebulas are ion storms, which will have cool
+/// lightning", "which can strike ships, and cause a temprorary shut down of the reactor core, the ship loosing power for a
+/// few seconds completely"). A ship in one is struck StormStrikesPerMin times a minute at full density; a strike trips its
+/// core for StormShutdownS seconds, and no bolt finds it again for StormGraceS seconds after the core restarts.</para></summary>
+public sealed record NebulaRules(double HitX, double EnergyRangeX, IReadOnlySet<string> EnergyKinds, double MissileLostPerS, double EwGainX, double LockKm, double EdgeThinFrac,
+    double StormStrikesPerMin, double StormShutdownS, double StormGraceS);
 
-/// <summary>A nebula in a scenario: its middle and radius on the battle plane (metres) and its density at the middle.</summary>
-public sealed record NebulaDef(double XM, double ZM, double RM, double Density);
+/// <summary>A nebula plume in a scenario: its middle and radius on the battle plane (metres), its density at the middle, and
+/// which of <see cref="Looks"/> the view draws it in (data/space/plumes.json), whether it is an ion storm (lightning that
+/// trips a ship's core, NebulaRules), and which of <see cref="Forms"/> its cloud takes in the view (the rules test only its
+/// circle on the plane, which every form covers).</summary>
+public sealed record NebulaDef(double XM, double ZM, double RM, double Density, string Look = "violet", bool Storm = false, string Form = "column")
+{
+    /// <summary>The forms a plume's cloud takes (owner, 2026-11-10: "some nebula clouds can just be scattered puffs, or
+    /// columns that dont quite connect, to give it a more varied look"): a column from the deck below into the deck above,
+    /// one rising from the deck below to a head short of the deck above, one hanging from the deck above to a foot short of
+    /// the deck below, and a puff joined to neither.</summary>
+    public static readonly string[] Forms = { "column", "rising", "hanging", "puff" };
+    /// <summary>Every look a plume may have; data/space/plumes.json holds one for each and no other. The last two are the
+    /// storm heads: a storm with no look named takes the first of them.</summary>
+    public static readonly string[] Looks = { "violet", "garnet", "brass", "teal", "orchid", "slate", "cinder" };
+    /// <summary>The look of a storm that names none.</summary>
+    public const string StormLook = "slate";
+}
 
 /// <summary>The cloak and the sweep (the mockup's CLOAK; openspec/changes/cloaking).</summary>
 public sealed record CloakRules(double CostE, double FadeS, double DetectKm, double SweepE, double BaseKm, double PerEccmKm, double OfficerSweepKm,
@@ -58,7 +83,8 @@ public sealed partial class SystemsDef
         int Whole(StrictJson j, string k) { int v = j.Int(k); if (v < 1) throw new DataError($"{j.Where}.{k}: at least 1"); return v; }
 
         StrictJson n = o.Obj("nebula");
-        var nebula = new NebulaRules(Frac(n, "hit_penalty"), Non(n, "ew_gain_x"), Pos(n, "lock_km"), Frac(n, "edge_thin_frac"));
+        var nebula = new NebulaRules(Frac(n, "hit_x"), Frac(n, "energy_range_x"), new HashSet<string>(n.StrList("energy_kinds")), Non(n, "missile_lost_per_s"), Non(n, "ew_gain_x"), Pos(n, "lock_km"),
+            Frac(n, "edge_thin_frac"), Non(n, "storm_strikes_per_min"), Pos(n, "storm_shutdown_s"), Non(n, "storm_grace_s"));
         n.Done();
 
         StrictJson c = o.Obj("cloak");

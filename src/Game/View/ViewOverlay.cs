@@ -46,6 +46,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
 
     /// <summary>A screen point in this control's coordinates, from the view's console coordinates.</summary>
     private Vector2? Local(double xm, double zm) => _view.ScreenOf(xm, zm) is { } p ? p - Position : null;
+    // a ship where it is drawn: lifted over a larger one it overlaps (BattleView.Stack)
+    private Vector2? Local(Ship s) => _view.ScreenOf(s.X, s.Z, _view.LiftOf(s.Id)) is { } p ? p - Position : null;
 
     private Ship? ShipAt(Vector2 local)
     {
@@ -54,7 +56,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         foreach (Ship s in B.Ships)
         {
             if (!s.Alive || s == B.Player || !B.Detected(B.Player, s)) continue;   // a cloaked ship unseen cannot be picked
-            if (Local(s.X, s.Z) is not { } p) continue;
+            if (Local(s) is not { } p) continue;
             float d = p.DistanceTo(local);
             if (d < bestD) { bestD = d; best = s; }
         }
@@ -182,7 +184,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         foreach (Ship s in b.Ships)
         {
             if (!s.Alive || s == me || !b.Detected(me, s)) continue;   // a cloaked ship unseen is not marked (Battle.Detected)
-            Vector2? lp = Local(s.X, s.Z);
+            Vector2? lp = Local(s);
             bool locked = s == t;
             if (lp is not { } p || !view.Grow(-4).HasPoint(p))
             {
@@ -259,7 +261,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         DrawComms(f); DrawTractor(f); DrawReactor(f); DrawCloak(f); DrawTactical(f);
 
         // your own hull under your ship
-        if (me.Alive && Local(me.X, me.Z) is { } mp) HullBar(mp.X, mp.Y + 74, me);
+        if (me.Alive && Local(me) is { } mp) HullBar(mp.X, mp.Y + 74, me);
 
         if (big) { f.Draw(this, "LIVE · TAP TO RETURN", Size.X / 2, 28, 18, C.Sky, HorizontalAlignment.Center, 0, 600, 1); return; }
 
@@ -277,7 +279,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         float ry = Size.Y - 16, mw = Size.X * 0.6f;
         if (t != null)
         {
-            Mount[] arc = me.Mounts.Where(m => !m.Weapon.IsPointDefence && m.State != Arming.Offline && Rules.InArc(me, m, t) && Rules.InRange(me, m, t)).ToArray();
+            Mount[] arc = me.Mounts.Where(m => !m.Weapon.IsPointDefence && m.State != Arming.Offline && Rules.InArc(me, m, t) && b.Rules.InRange(me, m, t)).ToArray();
             f.DrawRich(this, new[] { (Aiming.ContactName(b, t), C.Sky), ($" {Aiming.ContactClass(b, t)} · range ", C.Lilac), ($"{Rules.DistKm(me, t):0.0} km", C.Sky), (" · speed ", C.Lilac), (Math.Round(t.V).ToString(), C.Sky) }, 18, ry - 28, 22, mw);
             f.DrawRich(this, new[] { ("in arc ", C.Lilac), (arc.Length.ToString(), C.Sky), (" · charged ", C.Lilac), (arc.Count(Rules.Ready).ToString(), C.Sky) }, 18, ry, 22, mw);
         }
@@ -358,7 +360,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         Ship? t = B.TargetOf(B.Player);
         // the locked ship's bracket is a control too: a click in it fires at the plating there (a click anywhere on a ship's
         // plating does, through LeftClick; this makes the locked one a control the scripted captain can find and click)
-        if (t != null && Local(t.X, t.Z) is { } tp)
+        if (t != null && Local(t) is { } tp)
             _ui.Reg("v.range.hull", new Rect2(tp - new Vector2(46, 36), new Vector2(92, 72)), at => RangeClick(at), null, new Tip("Click the plating to fire"));
         void Head(string text) { _x.Fonts.Draw(this, text, x + 4, y + 16, 14, C.Lilac, HorizontalAlignment.Left, RangeW - 8, 600, 1); y += RangeHeadH; }
         void Grid(int i, string id, string label, Action click, bool on, string tip)

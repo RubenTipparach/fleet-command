@@ -9,7 +9,7 @@ A cloud session cannot listen, so choosing a recording and judging a cut are don
 - envelope REF ...: a 0.1 s loudness strip per 'pack:file' (the cc0_cues.json form), with the share
   of energy under 250 Hz and over 4 kHz, to find a take's start, its shots and its weight;
 - check: every built cue in output/sfx: no clipping, no non-finite samples, loop seams no bigger than
-  a few ordinary sample steps, and a spectrogram contact sheet (output/sfx/sheet.png) to look at
+  a few ordinary sample steps, how much it rings (a shield, an energy field, may not ring: NO_RING), and a spectrogram contact sheet (output/sfx/sheet.png) to look at
   before a set is called done.
 
 Written in this repository (2026-11-04) beside the tools ported from Crab Breeze.
@@ -83,6 +83,32 @@ def envelope(src: str, refs) -> int:
     return 0
 
 
+def ringing(x: np.ndarray, rate: int) -> float:
+    """How much a sound rings after its attack, 0 to 1: in the window 60-400 ms after its peak, the share of energy (over
+    150 Hz) in its eight strongest narrow spectral peaks. A thud, a whump or noise scores low; a struck plate, glass or a
+    bell scores high (owner, 2026-11-11, of the shield hit: "IT IS NOT GLASS< NOT CERAMIC< NOT METAL< IT CANNOT DING")."""
+    i = int(np.argmax(np.abs(x)))
+    seg = x[i + int(0.06 * rate): i + int(0.4 * rate)]
+    if len(seg) < 1000:
+        return 0.0
+    sp = np.abs(np.fft.rfft(seg * np.hanning(len(seg)))) ** 2
+    f = np.fft.rfftfreq(len(seg), 1 / rate)
+    m = f > 150
+    s, ff = sp[m], f[m]
+    taken, e = [], 0.0
+    for j in np.argsort(s)[::-1]:
+        if all(abs(ff[j] - t) > 40 for t in taken):
+            taken.append(ff[j])
+            e += s[max(0, j - 2): j + 3].sum()
+        if len(taken) == 8:
+            break
+    return float(e / (s.sum() or 1.0))
+
+
+# cues that are fields, not things: they must not ring (more than this share is refused)
+NO_RING = {"shield_hit": 0.15, "shield_hit_short": 0.35, "shields_collapse": 0.4}
+
+
 def check(out: str) -> int:
     manifest = {m["name"]: m for m in json.load(open(os.path.join(out, "sfx.json")))}
     status = 0
@@ -99,7 +125,10 @@ def check(out: str) -> int:
             step = np.median(np.abs(np.diff(x, axis=0))) or 1.0
             if seam > 6 * step:
                 problems.append(f"loop seam {seam:.0f} against a typical step of {step:.0f}")
-        print(f"{name:20} {len(x) / 44100:4.1f} s  {'ok' if not problems else '; '.join(problems)}")
+        ring = ringing(x.mean(axis=1) / 32768.0, 44100)
+        if name in NO_RING and ring > NO_RING[name]:
+            problems.append(f"rings ({100 * ring:.0f}%, at most {100 * NO_RING[name]:.0f}%): an energy field cannot ding")
+        print(f"{name:20} {len(x) / 44100:4.1f} s  ringing {100 * ring:4.1f}%  {'ok' if not problems else '; '.join(problems)}")
         status |= bool(problems)
     cells = os.path.join(out, "sheet")
     os.makedirs(cells, exist_ok=True)

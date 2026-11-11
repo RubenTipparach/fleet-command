@@ -653,6 +653,7 @@ Before claiming anything is done, run what applies:
 | `krita-brushwork` | Hand-drawn pieces (the Vos skin's ink, washes, claw tags) painted by script with Krita's brush engines, headless (sections 7, 10). |
 | `painted-bake` | Hull textures that read drawn on: a high-poly tile's occlusion, normals, edges and plate ids rendered in Blender and painted over (flat plates, painted light, inked crevices, lit edges, glow), after the reference games' look, never their art (section 10). |
 | `ship-detailing` | Detailing a ship from blockout to game-ready textures: the hull grown as one structure, its own unwrap, a modelled detail layer (layered armour, machinery, domes, vents, lamps, windows, emblem, liveries, light fixtures), mirrored and never repeated, baked onto its UVs and painted into a painted map and a PBR set with emission and a hull-light map, with image samples (section 10). |
+| `planet-shaders` | Planets and asteroids, godot-sandbox's way: a stack of seamless shells (ground, craters, clouds, rings, air) on the sphere's direction, relief differenced into normals, gas giants with rings, procedural rocks, detail by distance, the planet gallery's stills (section 10). |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 

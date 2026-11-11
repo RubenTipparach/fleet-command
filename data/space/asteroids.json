@@ -1,0 +1,35 @@
+{
+ "_doc": "How each kind of asteroid is drawn (src/Game/View/Asteroids.cs into src/Game/View/asteroid.gdshader; owner, 2026-11-09: \"We also need shaders for proc gen asteroids too\"). color_a and color_b are the two rock colours a low noise runs between, color_dust the paler dust on the high ground; lumpiness is the body's swing as a share of the radius (0 to 0.6), facets the broad split faces (0 to 0.5), craters the share of the crater lattice stamped (0 to 1). stone is the default (a battle's rocks).",
+ "stone": {
+  "color_a": "#6e665e",
+  "color_b": "#4a443f",
+  "color_dust": "#968b7d",
+  "lumpiness": 0.32,
+  "facets": 0.18,
+  "craters": 0.5
+ },
+ "carbon": {
+  "color_a": "#3a3633",
+  "color_b": "#262422",
+  "color_dust": "#5a534c",
+  "lumpiness": 0.26,
+  "facets": 0.1,
+  "craters": 0.7
+ },
+ "metal": {
+  "color_a": "#7c7570",
+  "color_b": "#5a4e46",
+  "color_dust": "#a08a74",
+  "lumpiness": 0.2,
+  "facets": 0.28,
+  "craters": 0.3
+ },
+ "ice": {
+  "color_a": "#b9cad6",
+  "color_b": "#7f95a6",
+  "color_dust": "#e8f2f8",
+  "lumpiness": 0.36,
+  "facets": 0.12,
+  "craters": 0.35
+ }
+}

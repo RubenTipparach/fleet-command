@@ -26,6 +26,9 @@ public sealed partial class FactionStage : Node3D
         public SpotLight3D Lamp = null!;
         public ShaderMaterial Beam = null!, Dust = null!;
         public float On, Yaw, Pitch;
+        public Vector3 Home;   // its place on the full table
+        public Node3D? Inlay;  // its brass ring in the table (table.glb's inlay_<faction>), and that ring's place
+        public Vector3 InlayHome;
     }
 
     private readonly List<Slot> _slots = new();
@@ -46,6 +49,11 @@ public sealed partial class FactionStage : Node3D
     /// <summary>A still: time stands at 6 s and every level and turn is where it is heading (the page's factionShot).</summary>
     public bool Frozen;
     public IReadOnlyList<string> Factions => _slots.ConvertAll(s => s.Fac);
+    /// <summary>Which badges stand on the table (Options, unfinished factions: off shows the factions in the game, owner
+    /// 2026-11-09). The rest are hidden, and the shown ones moved so their rows sit round the table's middle.</summary>
+    public Func<string, bool> Keep = _ => true;
+    /// <summary>Whether a badge is on the table now.</summary>
+    public bool Shown(int i) => i >= 0 && i < _slots.Count && _slots[i].Root.Visible;
 
     public void Build()
     {
@@ -111,6 +119,8 @@ public sealed partial class FactionStage : Node3D
         {
             string fac = s.GetProperty("faction").GetString()!;
             var slot = new Slot { Fac = fac, Root = new Node3D { Name = fac, Position = new Vector3(s.GetProperty("x").GetSingle(), 0, s.TryGetProperty("z", out JsonElement z) ? z.GetSingle() : 0) } };
+            slot.Home = slot.Root.Position;
+            if (tbl.FindChild("inlay_" + fac, true, false) is Node3D inl) { slot.Inlay = inl; slot.InlayHome = inl.Position; }
             AddChild(slot.Root);
             slot.Holder = new Node3D { Name = "Holder", Position = new Vector3(0, _float, 0) };
             slot.Root.AddChild(slot.Holder);
@@ -233,11 +243,31 @@ public sealed partial class FactionStage : Node3D
     /// <summary>Where a faction's badge sits on a screen of this size: a square round its centre, or null behind the camera.</summary>
     public Rect2? ScreenRect(int i, Vector2 size)
     {
-        if (i < 0 || i >= _slots.Count) return null;
+        if (!Shown(i)) return null;
         Vector3 c = _slots[i].Holder.GlobalPosition;
         if (Project(c, size) is not { } p || Project(c + _cam.GlobalBasis.X * 0.62f, size) is not { } e) return null;
         float r = p.DistanceTo(e);
         return new Rect2(p - new Vector2(r, r), new Vector2(2 * r, 2 * r));
+    }
+
+    // the badges Keep allows on the table, their rows moved so the middle of them is the table's middle
+    private void Restage()
+    {
+        float zMid = 0;
+        int n = 0;
+        foreach (Slot s in _slots) if (Keep(s.Fac)) { zMid += s.Home.Z; n++; }
+        zMid = n > 0 ? zMid / n : 0;
+        foreach (Slot s in _slots)
+        {
+            s.Root.Visible = Keep(s.Fac);
+            s.Root.Position = s.Home - new Vector3(0, 0, zMid);
+            if (s.Inlay is { } inl)
+            {
+                inl.Visible = s.Root.Visible;
+                // the ring moves with its badge, in the table's own space (the inlay is the table's child)
+                inl.Position = s.InlayHome - inl.GetParent<Node3D>().GlobalBasis.Inverse() * new Vector3(0, 0, zMid);
+            }
+        }
     }
 
     public override void _Process(double delta)
@@ -248,6 +278,7 @@ public sealed partial class FactionStage : Node3D
         Vector2 vp = ScreenSize.X >= 1 && ScreenSize.Y >= 1 ? ScreenSize : GetViewport().GetVisibleRect().Size;
         if (vp.X < 1 || vp.Y < 1) vp = new Vector2(1920, 1080);
         FitCamera(vp.X / vp.Y);
+        Restage();
         int chosen = Picked == null ? -1 : _slots.FindIndex(s => s.Fac == Picked);
         for (int i = 0; i < _slots.Count; i++)
         {
