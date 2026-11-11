@@ -24,9 +24,6 @@ public sealed partial class PlatePanel : ConsolePanel
         int i = Array.IndexOf(fleet, Me);
         Button("fleet", new Rect2(Size.X - 90, 6, 86, 30), $"Fleet {i + 1}/{fleet.Length}", () => B.TakeCommand(fleet[(i + 1) % fleet.Length].Id),
             tip: new Tip("Take command of the next ship"), shortLabel: $"{i + 1}/{fleet.Length}");
-        // co-op: the captain's menu (the bridge crew), left of the Fleet key
-        if (X.Coop != null)
-            Button("crew", new Rect2(Size.X - 168, 6, 74, 30), "Crew", () => X.CrewOpen = !X.CrewOpen, X.CrewOpen, tip: new Tip("The bridge crew: who holds which station"));
     }
 }
 

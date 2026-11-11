@@ -70,13 +70,13 @@ public sealed partial class ScriptedCaptain
             if (!_directed && co.Crew.Ships.Count > 0)
             {
                 _directed = true;
-                if (await OpenCrew() == null)
+                // each crew member's ship on the Fleet station: its tab, then Attack my target
+                if (await Click("st.fleet") == null)
                 {
-                    foreach (int m in co.Crew.Ships.Values.Distinct().ToList())
-                        if (await Click($"crew.dir.{m}.attack") == null) GD.Print($"PLAYTEST_COOP directed {co.Crew.NameOf(m)} to attack the {t.Name}");
+                    foreach (var (ship, m) in co.Crew.Ships.ToList())
+                        if (await Click($"fl.{ship}") == null && await Click("fl.dir.attack") == null) GD.Print($"PLAYTEST_COOP directed {co.Crew.NameOf(m)} to attack the {t.Name}");
                     await Frames(20);
-                    await Snap("crew-manifest");
-                    await Click("crew.done");
+                    await Snap("fleet-station");
                     // the targeting station's crew strip (change bridge, lock for), as the admiral sees it
                     if (await Click("st.tactical") == null) { await Frames(10); await Snap("crew-strip"); }
                 }
@@ -134,15 +134,16 @@ public sealed partial class ScriptedCaptain
                     if (i < 0 || i >= others.Length) return $"crew_ship: the fleet has {others.Length} ships besides the flagship";
                     what = others[i].Id;
                 }
-                string? open = await OpenCrew();
+                // a role in the captain's menu; a ship on the Fleet station, its tab, then its captain's key
+                string? open = b.Do == "crew_role" ? await OpenCrew() : await Click("st.fleet") ?? await Click($"fl.{what}");
                 if (open != null) return open;
-                string id = b.Do == "crew_role" ? $"crew.role.{what}.{to}" : $"crew.ship.{what}.{to}";
+                string id = b.Do == "crew_role" ? $"crew.role.{what}.{to}" : $"fl.cap.{what}.{to}";
                 // a role held by the member already is a lit box: pressing it would hand it back, so leave it
                 bool held = b.Do == "crew_role" && co.Crew.HolderOf(co.Crew.BridgeOf(co.Me), what) == to;
                 string? st = held ? null : await Click(id);
                 await Frames(20);
                 await Snap($"crew-{b.Do}-{what}");
-                await Click("crew.done");
+                if (b.Do == "crew_role" && _x.CrewOpen) await Click("crew.done");
                 GD.Print($"PLAYTEST_COOP {b.Do} {what} to {co.Crew.NameOf(to)}: bridge of {co.Crew.NameOf(to)} is {co.Crew.BridgeOf(to)}");
                 return st;
             }
@@ -152,11 +153,12 @@ public sealed partial class ScriptedCaptain
         return null;
     }
 
-    // the captain's menu: from the name plate's Crew key in a battle, from the menu on the map
+    // the roles grid: in a battle the Comms station's Crew key, on the map the menu's Crew (the captain's menu)
     private async Task<string?> OpenCrew()
     {
         if (_x.CrewOpen) return null;
-        if (_flow is { Screen: FlowScreen.Battle } || _flow == null) return await Click("crew");
+        if (_flow is { Screen: FlowScreen.Battle } || _flow == null)
+            return await Click("st.comms") ?? (_x.State.CrewShown ? null : await Click("com.crew"));
         return await Click("top.menu") ?? await Click("m.crew");
     }
 
