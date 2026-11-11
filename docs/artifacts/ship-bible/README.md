@@ -32,3 +32,6 @@
   v8: `kelvane_lineup`, `kelvane_inside`, `kelvane_carrier`, `kelvane_craft`, published as supporting files); the checklist
   is now chapter 18 with a KI line.
 - 2026-11-11, cloud session (Vos ships thread; owner: "the ship guide should clearly state that there should be noface that is completely devoid of detail"): version 3 at the main account's link (the tracker's), version id `1794390029-4d38`, which had stood at version 2; brought up to date with chapters 13 to 18 and the four Institute captures as supporting files, and T9 (no face without detail), T10 (ordered machinery panels), T11 (masts with mass) and T12 (colour fields and pale edges, not built yet) added from the owner's reference ships, in our own words. The cloud account's copy (4nhxxo...) is no longer reachable from this account.
+- 2026-11-11, cloud session: version 4, version id `1794400281-6daa`: T13 (no two antennas the same shape, a mirrored pair being one design) and dishes under T11 (owner: "No two antenna cam be the same shape. Also need dishes as well").
+- 2026-11-11, cloud session: version 5, version id `1794401940-2f75`: T13 corrected, a port and starboard pair of antennas differ too, overriding T7's symmetry for antennas and dishes.
+- 2026-11-11, cloud session: version 6, version id `1794403496-09be`: T13 adds no two antennas the same length (at least 12% apart, measured whole).

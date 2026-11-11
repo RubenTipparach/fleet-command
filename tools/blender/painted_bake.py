@@ -541,6 +541,9 @@ def repaint_main(slugs):
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(ships_out(), f), "rb").read()).hexdigest()}
         print(f"repainted {slug}", flush=True)
+    D_ = json.load(open(detail_path()))
+    if D_.get("maps_dir"):   # as ship_main: the page's maps written beside it as files (inline_data.py)
+        man["maps_dir"] = D_["maps_dir"]
     with open(mpath, "w") as fh:
         json.dump(man, fh, separators=(",", ":"), sort_keys=True)
         fh.write("\n")

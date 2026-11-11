@@ -164,3 +164,7 @@
 - Version 170 published 2026-11-10, cloud session, version id `1794334506-418f`: M37 at v8 (rooms, the Saucer runner detailed); the survey at v42.
 - Version 174 published 2026-11-11, cloud session, version id `1794382796-b81d`: merged onto another session's version (M17 sounds at its new link, v3); M37 at v9; the survey at v44.
 - Version 177 published 2026-11-11, cloud session, version id `1794390066-cec8`: merged onto another session's version (M17 v4, M37F Fractal vessels, the survey at v46); M37 at v10; the Ship Design Bible at v3.
+- Version 178 published 2026-11-11, cloud session, version id `1794400287-3029`: M37 at v11; the Ship Design Bible at v4.
+- Version 179 published 2026-11-11, cloud session, version id `1794401946-a2fe`: M37 at v12; the Ship Design Bible at v5.
+- Version 180 published 2026-11-11, cloud session, version id `1794401964-7472`: M37 at v13.
+- Version 181 published 2026-11-11, cloud session, version id `1794403501-a5be`: M37 at v14; the Ship Design Bible at v6.

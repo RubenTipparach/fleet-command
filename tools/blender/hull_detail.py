@@ -1343,9 +1343,19 @@ def fx_antenna(F, M, cutters, T):
     each end, a dish of dish_m when given, a red lamp at the tip) is written to MASTS with its frame, and the page and the
     game build it as geometry (docs/mockups/lib/baked-ship.js masts)."""
     r = F.get("r_m", 0.07)
-    MASTS.append({"m": [round(M[i][k], 5) for i in range(4) for k in range(4)], "h_m": F.get("h_m", 3.0), "w_m": F.get("w_m", 1.2),
-                  "r_m": r, "dish_m": F.get("dish_m", 0.0), "base_m": r * 2.5})
+    MASTS.append({"kind": "antenna", "style": F["_style"], "m": [round(M[i][k], 5) for i in range(4) for k in range(4)], "h_m": F.get("h_m", 3.0),
+                  "w_m": F.get("w_m", 1.2), "r_m": r, "dish_m": F.get("dish_m", 0.0), "base_m": r * 2.5})
     return [(place(bm_cyl(r * 4.5, r * 2.5, 16), M), "greeble")]
+
+
+def fx_dish(F, M, cutters, T):
+    """A dish on a pedestal (owner, 2026-11-11: "need dishes as well"): d_m across, its yoke and feed built as geometry by
+    the page and the game from MASTS (it stands off the hull, so it cannot be baked); its footing is baked here. Each dish,
+    like each antenna, takes its own design from its style (no two the same shape: owner, 2026-11-11)."""
+    d = F.get("d_m", 3.0)
+    MASTS.append({"kind": "dish", "style": F["_style"], "m": [round(M[i][k], 5) for i in range(4) for k in range(4)], "d_m": d,
+                  "h_m": F.get("h_m", d * 0.6), "base_m": d * 0.06})
+    return [(place(bm_cyl(d * 0.2, d * 0.06, 20), M), "greeble")]
 
 
 def fx_machinery(F, M, cutters, T):
@@ -1384,7 +1394,7 @@ def fx_machinery(F, M, cutters, T):
     return parts
 
 
-FIXTURES_KIT = {"deflector": fx_deflector, "launcher": fx_launcher, "intake": fx_intake, "antenna": fx_antenna, "machinery": fx_machinery}
+FIXTURES_KIT = {"deflector": fx_deflector, "launcher": fx_launcher, "intake": fx_intake, "antenna": fx_antenna, "dish": fx_dish, "machinery": fx_machinery}
 
 
 # ----------------------------------------------------------------------------- the whole layer
@@ -1393,6 +1403,9 @@ def build(lo, S, D, seed):
     defaults). Returns the high-poly objects to bake from."""
     rng = random.Random(seed)
     PANES.clear(); PADS.clear(); MASTS.clear()
+    for i, F in enumerate([F for F in S.get("fixtures", []) if F["kind"] in ("antenna", "dish")]):
+        F["_style"] = i   # its fixture's number; the page gives each mast its own design by its place in MASTS, so a port and
+        # starboard pair differ too (owner, 2026-11-11: "I literally just told you no two antenna should look the same on a starship")
     LAMP_RGB["strip"] = tuple(D.get("strip_rgb", (0.1, 1.0, 0.24)))   # the faction's strip light (the Hunt's green unless given)
     mats = {k: kind_material(k) for k in ("under", "machine", "greeble", "sub", "armour", "dome", "slat", "vent", "glass")}
     lamps = {c: kind_material("lamp", c) for c in LAMP_RGB}

@@ -510,6 +510,31 @@ written into the Ship Design Bible in our own words (T9 to T12).
   a dish over flight control) in the shared `baked-ship.js`. The game will build them the same way from the manifest.
 - **Not built yet**: T12, colour in large fields with the edges picked out in a pale line, is the painter's next step.
 
+### D20. Every antenna its own, dishes, containers, and the whole line textured (owner, 2026-11-11)
+
+The owner: "Very nice. Another rule. No two antenna cam be the same shape. Also need dishes as well. Containers need
+materials. We can reuse that from freighters. And we should begin texture work on all other ships".
+
+- **No two antennas the same shape** (Ship Design Bible T13, the skill's rule 9, CLAUDE.md section 10). The bake numbers each
+  antenna and dish fixture of a ship (`style`); the page builds each from a distinct entry of the list of every combination
+  of head (box, drum, fork, ball, plate), cross arms (none, one, two), segments (two to four) and a side dish (90 in all):
+  its place in the ship's list times 37 plus 11, modulo 90, 37 being coprime with 90, so no two share a design. A port
+  and starboard pair differ too: the first version made a mirrored pair one design, under T7, and the owner corrected it
+  ("I literally just told you no two antenna should look the same on a starship"), so T13 overrides T7 for antennas and
+  dishes. No two the same length either (owner: "Antenna need to also be different lengths. No two antenna shall have
+  same length"): each length steps up 13% until it is at least 12% from every other length on the ship.
+- **Dishes** (`fixtures` kind `dish`): a bowl on a pedestal and yoke, with its feed, its size from the data and its tilt
+  and turn from its style; built as geometry from the manifest like the masts, its footing baked.
+- **Containers** wear the freighters' container (`assets/containers/`, baked from a CC0 set) through a new shared module,
+  `docs/mockups/lib/container.js`, lifted from the freighters page, at the game's 12 by 12 by 24 m, in two tints. The
+  freighters page still carries its own copy until it next moves onto the module (task 1k.3; CLAUDE.md 6.1: reported, not
+  left).
+- **The whole line textured**: the Boarder, the Drum, the Cross, the Ram, the Broadside and the Stack, each on its own
+  unwrap with the Deck runner's recipe: its freighter parts in their makers' looks dulled, the militia's welds in rust,
+  windows from its room plan, machinery on every bare face, inset machinery panels, antennas and a dish of its own design,
+  a brass band where the militia welded its trade on, a red beacon. The Stack is a fighter, on the Cutter's small-scale
+  recipe; its job is still survey Y14 (a heavy fighter, provisional).
+
 ## Open questions
 
 | # | Question | Provisional answer |

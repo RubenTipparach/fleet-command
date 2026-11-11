@@ -60,7 +60,7 @@
 - [x] 1h.3b The owner's note (2026-11-11): seams too harsh and crossing; narrower, lighter, square seams, rebaked
 - [ ] 1h.4 The owner's look at the detailed specialist (now the Deck runner, 1i), before the other five are detailed
 - [ ] 1h.5 If wanted: each taken part plated in its maker's own way, not only painted
-- [ ] 1h.6 The other five specialists detailed the same way
+- [x] 1h.6 The other five specialists detailed the same way (1k.4)
 
 ## 1i. Version 9: freighter hulls only
 
@@ -77,6 +77,16 @@
 - [x] 1j.3 Masts as geometry from the bake's manifest (`antenna`, `baked-ship.js` masts)
 - [ ] 1j.4 Colour fields and pale edge lines in the painter (T12)
 - [ ] 1j.5 The game builds the masts from the manifest when the Vos ships are implemented
+
+## 1k. Antennas, dishes, containers, the whole line
+
+- [x] 1k.1 No two antennas the same shape (T13): a distinct design per style; dishes as a fixture
+- [x] 1k.2 Containers in the freighters' material, through `docs/mockups/lib/container.js`
+- [ ] 1k.3 The freighters page moved onto `lib/container.js` (its own copy removed) at its next republish
+- [x] 1k.4 The Boarder, Drum, Cross, Ram, Broadside and Stack baked at 2048 px and shown
+- [x] 1k.4b Every antenna its own design and its own length, a port and starboard pair included (T13; `tools/mockups/mast_check.mjs`)
+- [ ] 1k.5 A full bake (with the breakup field) of each before implementation
+- [ ] 1k.6 The busiest faces (the Ram's hammer face, the Cross's hub) read thick with machinery: lighter greebles on large bare faces if the owner agrees
 
 ## 2. After the picks
 

@@ -43,6 +43,12 @@ Bible (`docs/design/ship-bible.html`): chapters 7 (windows), 9 (hull lighting), 
    take no plating (`shell_groups` leaves them bare), so give them machinery (`greebles_per_m2`, which lands only where the
    plating leaves the hull bare), antennas (`fixtures` kind `antenna`), lamps or features. Orbit the bake all round before
    calling it done.
+9. **No two antennas the same shape** (owner, 2026-11-11: "No two antenna cam be the same shape. Also need dishes as well";
+   Ship Design Bible T11, T13). Antennas and dishes (`fixtures` kinds `antenna`, `dish`) are built as geometry from the
+   manifest's `masts`, never baked; each takes a distinct design from its place in the list, so a port and starboard pair
+   differ too (owner: "I literally just told you no two antenna should look the same on a starship"). This overrides
+   rule 2's symmetry for antennas and dishes. No two the same length either (owner: "No two antenna shall have same
+   length"): every antenna, measured whole as built, at least 12% from every other (`baked-ship.js` masts stretches them to it).
 
 ## The method: culture, then principles, then the recipe
 
