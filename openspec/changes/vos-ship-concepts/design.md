@@ -429,7 +429,7 @@ The first specialist detailed, on D15's Breakers' recipe at a warship's scale, w
 |---|---|---|
 | Hull form | The page's parts as built, exported by `export_blockouts.mjs`: 3,498 triangles. Its containers stay the game's placed cargo (as on the freighters) and its six Cutters are their own bakes | D7, D13 |
 | Taken parts in their makers' looks | Each part is exported with its maker (`hull_<maker>_*`), baked into a maker pass on the low-poly, and painted in that faction's freighter look (`painted_bake.py` `makers`, `look_paint`), dulled 0.4 to 0.45 | D6 ("origin stays readable"), survey Y3 |
-| Vos metal (collar, flight deck) | The Breakers' patchwork at 5 to 14 m stations, 0.35 m plate, welds 0.25 to 0.5 m, one cut in eight a trench with bare machinery | D15, principles 1, 2, 4 |
+| Vos metal (collar, flight deck) | The Breakers' patchwork at 5 to 14 m stations, 0.25 m plate, square cuts, seams 8 to 14 cm (after the owner's note, below) | D15, principles 1, 2 |
 | Windows | From the room plan: every crew and command room meeting the hull gets a row of lit windows at eye height, a quarter dark | Ship Design Bible W1 |
 | The Petrel's shuttle bay | A door on each flank of the saucer body, 7 by 2.2 m | its room plan |
 | Flight deck lights | Five amber lamps down each edge of the deck | D12 (fighter launching) |
@@ -443,9 +443,51 @@ The first specialist detailed, on D15's Breakers' recipe at a warship's scale, w
 - **Tuned after the first bake.** The Concord body read near white, so a taken part's dulling now pulls toward a darker grey
   (`dull` in `painted_bake.py`) and the Petrel's look is dulled 0.6; its floods burnt out on the pale body at night, so the
   ship's light map is scaled to 3.5.
+- **Softer, ordered seams** (owner, 2026-11-11, of the first bake: "lihnes are too harsh, and hull plating lines are
+  crossing over each other"). The first bake's welds were 0.25 to 0.5 m wide over a near-black under layer, its flank cuts
+  were raked up to 0.3 so a seam along the plating overran them, and one cut in eight was a trench showing the sub-armour's
+  own cuts beneath. Now: seams 8 to 14 cm, every cut square to the ship so a seam ends on the cut it meets, no trenches, plate
+  0.25 m standing proud by up to 0.12 m, and the seams' under layer a rust (or the maker's mid tone) a little darker than the
+  plate, with the cavity ink and the deepest AO lightened (`ink_k` 0.12, `ao_floor` 0.55). The Breakers' unevenness is now
+  in the stations' spacing, the plates' lift and the patchwork, not in crooked cuts (principle 6 of the skill: order, not
+  noise).
 - **One plating layout.** The detail layer cuts every part the same way; a taken part differs by its paint, not by its
   plate shapes. Giving each maker its own plating (the Concord's large panels, the Hunt's chevrons) is a later step if the
   owner wants it (task 1h.5).
+
+## Version 9: freighter hulls only (owner, 2026-11-11)
+
+The owner, on the Saucer runner's bake: "lihnes are too harsh, and hull plating lines are crossing over each other", then
+"other than freighter hulls lets not reuse any other ships hulls too" and "I dont like that they have military ship parts,
+the vos would be sort of a militia organzide from various traders".
+
+### D18. A militia of traders flies no warship parts
+
+**Culture, accepted** (owner, 2026-11-11): the Vos Syndicate is a militia organised from various traders. This is the
+first culture the owner has set for the Vos beyond the console's palette, and it replaces D6's "parts taken from other
+factions' ships": a trader's militia fights in its members' own freighters, refitted in its own yards. So:
+
+- **Hulls are freighters' only**: the game's four freighters (drive blocks, spines, bows and containers), cut and joined.
+  Nothing from a warship, of any faction.
+- **What is added is welded in the militia's own yards** (`made`, `beam`, `gun` on `hull-grow.js`): collars, decks, hubs,
+  arms, heads, pods, guns. Every welded bow ends in a flat face (D10).
+- **Its fighters were already its own** (D13) and are unchanged.
+
+| Ship | Was | Now |
+|---|---|---|
+| 8 | Saucer runner: a Concord Petrel's hull and command deck on a Hunt freighter's drive block | **Deck runner**: two Hunt freighters cut and joined, one's drive block and the other's bow end, cut 20 m short of its taper and capped flat. Renamed, since it has no saucer |
+| 3 Boarder | A Hunt frigate's forked prow | A welded lock house with a glazed door and a grapple fork of two blunt arms either side of it |
+| 12 Ram | Two nacelles of a Concord Albatross | Two welded drive pods, a salvaged freighter engine recessed in each stern |
+
+The Drum, the Cross and the Broadside were freighters, containers and welded parts already, and are unchanged.
+
+- **Rooms.** The Deck runner's and the Boarder's plans were redrawn for their new parts (the bow end is about 18 m across
+  and two decks deep, too slim past z 135; the lock and grapple control are in the lock house) and refitted; all six pass
+  the room check again.
+- **The Deck runner's detail** keeps D17's recipe with the softer, square seams, its windows from its new plan, and one
+  maker: both freighter parts wear the Hunt freighters' look, dulled. The Petrel's bay doors are gone.
+- **Provisional:** whose colours a ship wears (survey Y15), and whether the console's palette meanings (rust as salvage)
+  still read right for a militia of traders.
 
 ## Open questions
 
@@ -454,12 +496,12 @@ The first specialist detailed, on D15's Breakers' recipe at a warship's scale, w
 | Y1 | Is this how the Vos get their ships: freighter parts and taken parts rearranged, nothing built from new? | Yes |
 | Y3 | Do taken parts keep their makers' colours, with Vos metal in rust and brass? | Yes, dulled, with clan paint added in detail |
 | Y4 | May a Vos ship carry parts of any faction, or only its neighbours'? | Any faction the clan could have raided |
-| Y7 | Is the Boarder's taken fork cut blunt? | No: it is the tool the ship is for |
 | Y8 | Is each trade on the right hull? | As drawn |
 | Y9 | Is the disguise a trade of one ship or a trait of all? | A trait of all, with the Broadside best at it |
 | Y10 | How does rock breaking work? | A slow charged shot at a rock; the rock splits, and everything within reach takes heavy damage |
 | Y12 | Should a Vos craft be patched unevenly side to side? | Mirrored, as now (provisional) |
-| Y13 | Should a taken part keep its maker's plating, not only its paint? | Paint only, as now (provisional) |
+| Y13 | Should a freighter part keep its maker's plating, not only its paint? | Paint only, as now (provisional) |
+| Y15 | Whose colours does a militia ship wear? | Its trade house's freighter look, dulled, with the militia's rust and brass on what it welded on (provisional) |
 | Y14 | What do the Vos fly the Stack as? | A heavy fighter (provisional) |
 
 Decided (owner, 2026-11-10): Y2, the picks (3, 8, 9, 10, 11, with 12 added by us for the rock breaker); Y5, no class

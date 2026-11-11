@@ -57,9 +57,18 @@
 - [x] 1h.1 A room plan for each of the six specialists (`data/ships/vos/<ship>_plan.json`, D16), fitted inside their parts
 - [x] 1h.2 The page's room check (`MOCKUP_ROOMS`) and the Rooms view with deck plans; all six pass
 - [x] 1h.3 The Saucer runner exported, unwrapped and baked onto its own UVs at 2048 px, its taken parts in their makers' looks (D17)
-- [ ] 1h.4 The owner's look at the Saucer runner, before the other five are detailed
+- [x] 1h.3b The owner's note (2026-11-11): seams too harsh and crossing; narrower, lighter, square seams, rebaked
+- [ ] 1h.4 The owner's look at the detailed specialist (now the Deck runner, 1i), before the other five are detailed
 - [ ] 1h.5 If wanted: each taken part plated in its maker's own way, not only painted
 - [ ] 1h.6 The other five specialists detailed the same way
+
+## 1i. Version 9: freighter hulls only
+
+- [x] 1i.1 The owner's culture (2026-11-11): a militia organised from various traders; no warship parts on any Vos ship (D18)
+- [x] 1i.2 Saucer runner rebuilt as the Deck runner (two Hunt freighters joined); Boarder's prow a welded grapple fork; Ram's nacelles welded drive pods
+- [x] 1i.3 The Deck runner's and Boarder's rooms redrawn and refitted; all six pass the room check
+- [ ] 1i.4 The Deck runner baked with the softer, square seams and shown
+- [ ] 1i.5 Survey Y15 (whose colours a ship wears)
 
 ## 2. After the picks
 

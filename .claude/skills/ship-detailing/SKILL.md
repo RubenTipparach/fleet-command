@@ -101,7 +101,7 @@ What follows is how each tool works, first built for the Hunt. Where it gives nu
 | 3. Lay out its detail | `data/ships/<faction>/hull_detail.json` | where every dome, vent, lamp, window row, flood and logo sits |
 | 4. The emblem | `tools/mockups/emblem_masks.mjs <faction>` | `assets/emblems/<faction>/hull_mask.{png,json}` from `docs/mockups/lib/emblems.js` |
 | 5. Unwrap, build, bake, paint | `tools/blender/painted_bake.py --ship` with `tools/blender/hull_detail.py` | `assets/ships/<faction>/<ship>_{albedo,base,orm,normal,emit,light,ao}.png` and `manifest.json` |
-| 5a. Look at the model first | `painted_bake.py --ship <slug> --preview <dir>` | the high-poly itself rendered in its palette colours (quarter, top, close, aft), minutes before an hour's bake |
+| 5a. Iterate fast | `painted_bake.py --ship <slug> --repaint` (paint only, about 40 s, no Cycles); `--px 1024 --samples 16 --quick` (a bake without the breakup field, most of a large ship's time) | colour, seam and AO changes in seconds; plate cuts and gaps in minutes, judged on the page. (A `--preview` render of the high-poly was planned here but never built.) |
 | 6. Show it | `tools/mockups/inline_data.py` on the page (a manifest with `maps_dir` writes its maps beside the page as WebP files, published with it, for 4096 px maps) | the page's Painted, PBR and Clay looks under Studio or Night light |
 
 ```sh

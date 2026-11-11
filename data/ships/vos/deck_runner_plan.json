@@ -1,7 +1,7 @@
 {
  "schema": "fleetcommand.ship-plan/1",
- "_doc": "A Vos specialist's rooms as blocks (Ship Design Bible chapter 2), laid out inside the parts it is built from, since a Vos ship is a conversion: the hull came first and the rooms are fitted into it, the opposite of a warship designed inside out. Frame: the page's build frame (mockup 37, window.MOCKUP_PARTS): +X port, +Y up, +Z bow, metres, the drive block's stern at z = 0. Functional rooms only, in our own words; what the Syndicate calls them is the owner's (survey U7). A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top); deck_floor_m each deck's floor, headroom_m its clear height, clearance_m and structure_m the air and plating between a room and the outside, which the page checks against every part. The Saucer runner: a Hunt freighter's drive block with a Concord Petrel's saucer and command deck welded on. Its crew live in the block; the Petrel's body is 20 m across and two decks deep where the Vos took it, so its rooms are re-laid in it, its bridge now flight control for the six fighters on the deck above the block.",
- "ship": "vos_saucer_runner",
+ "_doc": "A Vos specialist's rooms as blocks (Ship Design Bible chapter 2), laid out inside the parts it is built from, since a Vos ship is a conversion: the hull came first and the rooms are fitted into it, the opposite of a warship designed inside out. Frame: the page's build frame (mockup 37, window.MOCKUP_PARTS): +X port, +Y up, +Z bow, metres, the drive block's stern at z = 0. Functional rooms only, in our own words; what the Syndicate calls them is the owner's (survey U7). A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top); deck_floor_m each deck's floor, headroom_m its clear height, clearance_m and structure_m the air and plating between a room and the outside, which the page checks against every part. The Deck runner: two Hunt freighters cut and joined, one's drive block and the other's bow end, with a welded collar between and a flight deck welded over the drive block. Its crew live in the block; the pilots and flight control are in the bow end.",
+ "ship": "vos_deck_runner",
  "crew": 70,
  "deck_floor_m": [
   12.1,
@@ -483,8 +483,8 @@
     1.2
    ],
    "z_m": [
-    56,
-    104.4
+    54,
+    124
    ]
   },
   {
@@ -499,8 +499,8 @@
     1.2
    ],
    "z_m": [
-    56,
-    104.4
+    54,
+    132
    ]
   },
   {
@@ -570,249 +570,57 @@
    ]
   },
   {
-   "id": "saucer_3",
-   "name": "Saucer corridor",
-   "kind": "corridor",
-   "decks": [
-    3
-   ],
-   "x_m": [
-    -1.2,
-    1.2
-   ],
-   "z_m": [
-    104.4,
-    166
-   ]
-  },
-  {
-   "id": "saucer_4",
-   "name": "Saucer corridor, lower",
-   "kind": "corridor",
-   "decks": [
-    4
-   ],
-   "x_m": [
-    -1.2,
-    1.2
-   ],
-   "z_m": [
-    104.4,
-    176
-   ]
-  },
-  {
    "id": "flight_control",
-   "name": "Flight control (the Petrel's bridge)",
+   "name": "Flight control",
    "kind": "command",
-   "decks": [
-    3
-   ],
-   "x_m": [
-    -5,
-    5
-   ],
-   "z_m": [
-    166,
-    178
-   ]
-  },
-  {
-   "id": "pilots_p",
-   "name": "Pilots' quarters (the Petrel's officers'), port",
-   "kind": "crew",
-   "decks": [
-    3
-   ],
-   "x_m": [
-    1.2,
-    8.5
-   ],
-   "z_m": [
-    146,
-    166
-   ]
-  },
-  {
-   "id": "pilots_s",
-   "name": "Pilots' quarters (the Petrel's officers'), starboard",
-   "kind": "crew",
-   "decks": [
-    3
-   ],
-   "x_m": [
-    -8.5,
-    -1.2
-   ],
-   "z_m": [
-    146,
-    166
-   ]
-  },
-  {
-   "id": "briefing",
-   "name": "Briefing room (the Petrel's ready room)",
-   "kind": "command",
-   "decks": [
-    3
-   ],
-   "x_m": [
-    1.2,
-    9
-   ],
-   "z_m": [
-    126,
-    146
-   ]
-  },
-  {
-   "id": "saucer_mess",
-   "name": "Pilots' mess",
-   "kind": "crew",
-   "decks": [
-    3
-   ],
-   "x_m": [
-    -9,
-    -1.2
-   ],
-   "z_m": [
-    126,
-    146
-   ]
-  },
-  {
-   "id": "sensors_p",
-   "name": "Sensor room (the Petrel's), port",
-   "kind": "systems",
-   "decks": [
-    3
-   ],
-   "x_m": [
-    1.2,
-    6
-   ],
-   "z_m": [
-    104.4,
-    126
-   ]
-  },
-  {
-   "id": "sensors_s",
-   "name": "Sensor room (the Petrel's), starboard",
-   "kind": "systems",
    "decks": [
     3
    ],
    "x_m": [
     -6,
-    -1.2
-   ],
-   "z_m": [
-    104.4,
-    126
-   ]
-  },
-  {
-   "id": "torpedoes_p",
-   "name": "Torpedo magazine (the Petrel's), port",
-   "kind": "weapons",
-   "decks": [
-    4
-   ],
-   "x_m": [
-    1.2,
-    7
-   ],
-   "z_m": [
-    160,
-    176
-   ]
-  },
-  {
-   "id": "torpedoes_s",
-   "name": "Torpedo magazine (the Petrel's), starboard",
-   "kind": "weapons",
-   "decks": [
-    4
-   ],
-   "x_m": [
-    -7,
-    -1.2
-   ],
-   "z_m": [
-    160,
-    176
-   ]
-  },
-  {
-   "id": "petrel_reactor",
-   "name": "The Petrel's reactor (runs the saucer)",
-   "kind": "engineering",
-   "decks": [
-    4
-   ],
-   "x_m": [
-    1.2,
-    9
-   ],
-   "z_m": [
-    142,
-    160
-   ]
-  },
-  {
-   "id": "switchboard",
-   "name": "Switchboard (the Petrel's)",
-   "kind": "systems",
-   "decks": [
-    4
-   ],
-   "x_m": [
-    -9,
-    -1.2
-   ],
-   "z_m": [
-    142,
-    160
-   ]
-  },
-  {
-   "id": "life_support_p",
-   "name": "Life support (the Petrel's), port",
-   "kind": "systems",
-   "decks": [
-    4
-   ],
-   "x_m": [
-    1.2,
-    9
+    6
    ],
    "z_m": [
     124,
-    142
+    134
    ]
   },
   {
-   "id": "life_support_s",
-   "name": "Life support (the Petrel's), starboard",
-   "kind": "systems",
+   "id": "pilots_p",
+   "name": "Pilots' quarters, port",
+   "kind": "crew",
    "decks": [
-    4
+    3
    ],
    "x_m": [
-    -9,
+    1.2,
+    7.5
+   ],
+   "z_m": [
+    99,
+    124
+   ]
+  },
+  {
+   "id": "pilots_s",
+   "name": "Pilots' quarters, starboard",
+   "kind": "crew",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    -7.5,
     -1.2
    ],
    "z_m": [
-    124,
-    142
+    99,
+    124
    ]
   },
   {
-   "id": "shuttle_bay",
-   "name": "Shuttle bay (the Petrel's, port door)",
-   "kind": "bay",
+   "id": "briefing",
+   "name": "Briefing room",
+   "kind": "command",
    "decks": [
     4
    ],
@@ -821,14 +629,14 @@
     7.5
    ],
    "z_m": [
-    104.4,
-    124
+    99,
+    112
    ]
   },
   {
-   "id": "old_engine_room",
-   "name": "Stores (the Petrel's engine room, its drive cut away)",
-   "kind": "systems",
+   "id": "pilots_mess",
+   "name": "Pilots' mess",
+   "kind": "crew",
    "decks": [
     4
    ],
@@ -837,8 +645,40 @@
     -1.2
    ],
    "z_m": [
-    104.4,
-    124
+    99,
+    112
+   ]
+  },
+  {
+   "id": "fighter_armoury_p",
+   "name": "Fighter armoury, port",
+   "kind": "weapons",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    1.2,
+    6
+   ],
+   "z_m": [
+    112,
+    132
+   ]
+  },
+  {
+   "id": "fighter_armoury_s",
+   "name": "Fighter armoury, starboard",
+   "kind": "weapons",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -6,
+    -1.2
+   ],
+   "z_m": [
+    112,
+    132
    ]
   }
  ]

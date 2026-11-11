@@ -36,3 +36,4 @@
   hash), so a changed sound is never played from the viewer's cache.
 - Version 10 published 2026-11-07, version id `1793956237-fd25`: the brown-noise bed is the bridge (owner: "delete
   amb_bridge, use amb_bridge_brown"); the space ambience removed, and with it the only CC-BY pack.
+- 2026-11-11, recorded from the live tracker by the Vos ships session: another session republished the page at a new link, https://claude.ai/artifact/7zWthg14SmsRfaFZpj1vAE (version 3, "36 cues, the weapons redone and every sound in the game"); its own record of that publish is on that session's branch.

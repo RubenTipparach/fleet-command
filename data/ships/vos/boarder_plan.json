@@ -1,6 +1,6 @@
 {
  "schema": "fleetcommand.ship-plan/1",
- "_doc": "A Vos specialist's rooms as blocks (Ship Design Bible chapter 2), laid out inside the parts it is built from, since a Vos ship is a conversion: the hull came first and the rooms are fitted into it, the opposite of a warship designed inside out. Frame: the page's build frame (mockup 37, window.MOCKUP_PARTS): +X port, +Y up, +Z bow, metres, the drive block's stern at z = 0. Functional rooms only, in our own words; what the Syndicate calls them is the owner's (survey U7). A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top); deck_floor_m each deck's floor, headroom_m its clear height, clearance_m and structure_m the air and plating between a room and the outside, which the page checks against every part. The Boarder: a Hunt freighter's drive block with a Hunt frigate's forked prow. Its boarding crews are quartered in the two containers and cross from the lock in the collar onto the hull the fork holds. The Hunt prow itself is a blade 8 m across, its tines one above the other, too slim for rooms.",
+ "_doc": "A Vos specialist's rooms as blocks (Ship Design Bible chapter 2), laid out inside the parts it is built from, since a Vos ship is a conversion: the hull came first and the rooms are fitted into it, the opposite of a warship designed inside out. Frame: the page's build frame (mockup 37, window.MOCKUP_PARTS): +X port, +Y up, +Z bow, metres, the drive block's stern at z = 0. Functional rooms only, in our own words; what the Syndicate calls them is the owner's (survey U7). A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top); deck_floor_m each deck's floor, headroom_m its clear height, clearance_m and structure_m the air and plating between a room and the outside, which the page checks against every part. The Boarder: a Hunt freighter's drive block with a lock house and a grapple fork welded on its bow. Its boarding crews are quartered in the two containers and cross through the lock in the welded lock house onto the hull the grapple fork holds; the fork's arms are solid.",
  "ship": "vos_boarder",
  "crew": 90,
  "deck_floor_m": [
@@ -523,18 +523,18 @@
   },
   {
    "id": "lock",
-   "name": "Boarding lock (in the collar)",
+   "name": "Boarding lock (in the welded lock house)",
    "kind": "bay",
    "decks": [
     3
    ],
    "x_m": [
-    -6,
-    6
+    -5.5,
+    5.5
    ],
    "z_m": [
     100,
-    108
+    115
    ]
   },
   {
@@ -550,7 +550,7 @@
    ],
    "z_m": [
     100,
-    108
+    115
    ]
   }
  ]

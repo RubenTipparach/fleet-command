@@ -65,3 +65,4 @@
 - 2026-11-10, cloud session: version 40, version id `1794315325-f882`: Y11, which fighter the Vos fly (mockup 37 v6).
 - 2026-11-10, cloud session: version 41, version id `1794327653-77e1`: Y11 decided (the Cutter the standard fighter, the Twin boom the shuttle stand-in and bomber); Y12, whether a Vos craft is patched unevenly side to side (mockup 37 v7).
 - 2026-11-10, cloud session: version 42, version id `1794334502-c09a`: Y13 (whether a taken part keeps its maker's plating, not only its paint) and Y14 (what the Vos fly the Stack as), for mockup 37 v8.
+- 2026-11-11, cloud session: version 44, version id `1794382769-e723`: merged onto another session's version 43 (sections CR, DW, NP, EZ, BS); section Y for mockup 37 v9: Y7 decided by the owner's freighter-only rule, Y15 (whose colours a militia ship wears) added; NP12's unescaped apostrophe ("phones' renderer"), which stopped the page's script, escaped.

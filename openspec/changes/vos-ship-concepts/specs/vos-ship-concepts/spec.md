@@ -77,11 +77,20 @@ rooms of a deck overlapping.
 - **WHEN** `window.MOCKUP_ROOMS(n)` runs on mockup 37 for each of 3, 8, 9, 10, 11 and 12
 - **THEN** it reports no room outside and no plan failure
 
-### Requirement: A conversion's taken parts keep their makers' looks
+### Requirement: Vos ships are built from freighter hulls only
 
-When a Vos conversion is detailed, each part taken from another faction's ship SHALL be painted in that faction's look,
-dulled, and the Syndicate's own metal in the Breakers' recipe, and its windows SHALL come from its room plan.
+Every Vos ship SHALL be built from the game's freighters (their drive blocks, spines, bows and containers) and from parts
+the Syndicate welds itself; no Vos ship SHALL carry any part of a warship of any faction.
 
-#### Scenario: The Saucer runner
-- **WHEN** the Saucer runner is shown in Painted or PBR on mockup 37
-- **THEN** its drive block wears the Hunt's freighter look, its taken body the Concord's, both dulled, its collar and flight deck the Vos's rust plate, and its windows are where its crew and command rooms meet the hull
+#### Scenario: The parts of every Vos ship
+- **WHEN** `window.MOCKUP_PARTS(n)` runs on mockup 37 for each of 3, 8, 9, 10, 11 and 12
+- **THEN** every part's maker is a freighter's, a container, a fighter or the Vos's own
+
+### Requirement: A detailed Vos ship's freighter parts keep their makers' looks
+
+When a Vos ship is detailed, each freighter part SHALL be painted in that freighter's look, dulled, and the Syndicate's
+own welded metal in the Breakers' recipe, with its windows from its room plan.
+
+#### Scenario: The Deck runner
+- **WHEN** the Deck runner is shown in Painted or PBR on mockup 37
+- **THEN** its two Hunt freighter parts wear the Hunt freighters' look, dulled, its collar and flight deck the Vos's rust plate, and its windows are where its crew and command rooms meet the hull

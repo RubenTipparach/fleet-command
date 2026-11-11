@@ -21,6 +21,10 @@ and the paint-over writes the maps a page uses:
     /opt/blender/blender -b --python tools/blender/painted_bake.py -- --ship hooded_lance,forked_prow,harpoon,trident [--px 2048]
     /opt/blender/blender -b --python tools/blender/painted_bake.py -- --faction kelvane --ship kelvane_frigate [--px 2048]
 
+Iterating on a ship's look, fastest first: --repaint (paint only: colours, the seams' colour, ink, AO, dulling; about 40 s,
+no Cycles); --quick (a full bake without the breakup field, which is most of a large ship's bake time: --px 1024 --samples
+16 --quick to judge plate cuts and gaps on the page). Commit a full bake at 2048 px.
+
 Writes assets/textures/painted/ and its manifest.json (sizes in metres, sha256 of every file).
 """
 
@@ -319,8 +323,9 @@ def img_array(img):
     return a.reshape(h, w, 4)
 
 
-def bake_ship(slug, px, samples, panes_only=False):
-    """Bake one ship. panes_only: build its detail and return only its panes (no bake, no maps written)."""
+def bake_ship(slug, px, samples, panes_only=False, quick=False):
+    """Bake one ship. panes_only: build its detail and return only its panes (no bake, no maps written). quick: leave out the
+    breakup field (hull_sdf), most of a big ship's bake time, for iterating on its look; the manifest keeps the last field."""
     import bmesh
     import hull_detail as HD
     import hull_sdf
@@ -442,7 +447,7 @@ def bake_ship(slug, px, samples, panes_only=False):
     return {"tris": len(pos) // 9, "tex_px": px, "smooth_deg": smooth, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
             "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
             "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "pads": pads, "mesh": {"pos": pos, "uv": uv},
-            "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
+            **({} if quick else {"sdf": hull_sdf.hull_sdf(pos)})}   # the inside its breakup cuts by (lib/ship-break.js)
 
 
 def passes_path(slug):
@@ -856,7 +861,7 @@ def half(a):
     return (a[0::2, 0::2] + a[1::2, 0::2] + a[0::2, 1::2] + a[1::2, 1::2]) / 4
 
 
-def ship_main(slugs, px, samples, panes_only=False):
+def ship_main(slugs, px, samples, panes_only=False, quick=False):
     mpath = os.path.join(ships_out(), "manifest.json")
     man = json.load(open(mpath)) if os.path.exists(mpath) else {"pieces": {}, "ships": {}}
     man.setdefault("kept", {})
@@ -873,7 +878,9 @@ def ship_main(slugs, px, samples, panes_only=False):
             man["ships"][slug]["panes"] = bake_ship(slug, px, samples, True)["panes"]
             print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
             continue
-        info = bake_ship(slug, px, samples)
+        info = bake_ship(slug, px, samples, quick=quick)
+        if quick and "sdf" in man["ships"].get(slug, {}):   # an iteration keeps the last full bake's breakup field
+            info["sdf"] = man["ships"][slug]["sdf"]
         n = int(open(os.path.join(SHIPS_RAW, mesh_of(slug) + ".obj")).readline().split()[1])
         info["n"] = n
         man["ships"][slug] = info
@@ -899,7 +906,7 @@ def main():
         FACTION = arg("--faction", "ssarith")
         if "--repaint" in argv:
             return repaint_main(arg("--ship", "").split(","))
-        return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv)
+        return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv, "--quick" in argv)
     names = arg("--tile", ",".join(TILES)).split(",")
     samples, ppm = int(arg("--samples", "32")), float(arg("--ppm", "128"))
     os.makedirs(OUT, exist_ok=True); os.makedirs(RAW, exist_ok=True)

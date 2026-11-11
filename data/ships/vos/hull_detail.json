@@ -27,7 +27,7 @@
    "#432014",
    "#5a2e1c"
   ],
-  "under": "#3a1c14",
+  "under": "#5a3022",
   "greeble": [
    "#3f2a22",
    "#8a6a3a"
@@ -107,7 +107,7 @@
    0.72,
    0.64
   ],
-  "ink_k": 0.3,
+  "ink_k": 0.12,
   "machine": [
    "#4a3a30",
    "#a8741c"
@@ -121,12 +121,13 @@
   "machine_light": 0.7,
   "strip_rim_k": 0.0,
   "_doc": "Breakers' plate: rust is salvage (console-skins, Vos Syndicate), so the armour is a patchwork of rusts, with about one plate in five still in a maker's colour gone dull (a grey, an olive, a sand); brass (loot and luck) is the one metal kept bright, and there is little of it; the light is verdigris (the spoils kept). Nothing is black: the layer under the plates is a dark rust.",
-  "ao_floor": 0.4,
+  "ao_floor": 0.55,
   "accent_share": 0.0,
-  "_accent_share": "No whole plate is brass: brass is kept for the two bands (the Breakers' principle 3)."
+  "_accent_share": "No whole plate is brass: brass is kept for the two bands (the Breakers' principle 3).",
+  "_under": "The layer under the plates, in the seams: a rust a little darker than the plate, never near black, so a seam reads as a fine line, not a drawn one (owner, 2026-11-11)."
  },
  "defaults": {
-  "_doc": "A Vos ship of about cruiser size (150 to 190 m). Breakers' plate: stations 5 to 14 m apart and raked up to 0.3 either way, so no two plates match; each plate stands proud by its own amount (up to 0.25 m on 0.35 m plate); the welds are left plain and wide (0.25 to 0.5 m), and one cut in eight is a trench where the plate ran out, its machinery left bare. A fighter's own defaults override these at its scale.",
+  "_doc": "A Vos ship of about cruiser size (150 to 190 m). Breakers' plate: stations 5 to 14 m apart, so no two plates match, and each plate stands proud by its own amount (up to 0.12 m on 0.25 m plate). The welds are narrow seams (8 to 14 cm), every cut square to the ship so seams meet cuts and never cross them, and no trenches (owner, 2026-11-11, of the first Saucer runner: \"lihnes are too harsh, and hull plating lines are crossing over each other\"). A fighter's own defaults override these at its scale.",
   "smooth_deg": 18,
   "cuts": "grid",
   "facing_min": 0.38,
@@ -136,18 +137,18 @@
    0.72,
    0.64
   ],
-  "armour_t_m": 0.35,
-  "sub_t_m": 0.12,
-  "lift_m": 0.25,
+  "armour_t_m": 0.25,
+  "sub_t_m": 0.08,
+  "lift_m": 0.12,
   "gap_m": [
-   0.25,
-   0.5
+   0.08,
+   0.14
   ],
   "trench_m": [
-   0.5,
-   1.0
+   0.2,
+   0.3
   ],
-  "trench_share": 0.12,
+  "trench_share": 0.0,
   "top_station_m": [
    5.0,
    14.0
@@ -161,10 +162,10 @@
    14.0
   ],
   "flank_rake": [
-   -0.3,
-   0.3
+   0.0,
+   0.0
   ],
-  "greebles_per_m2": 0.4,
+  "greebles_per_m2": 0.0,
   "overlay_min_m2": 1000000.0,
   "overlay_inset": 0.88,
   "overlay_lift_m": 0.2,
@@ -185,7 +186,7 @@
    "power_w": 4800
   },
   "inner_machinery": false,
-  "corner_m": 0.4,
+  "corner_m": 0.15,
   "cage_m": 2.0,
   "hatch_share": 0.3,
   "hatch_min_m2": 18.0,
@@ -479,17 +480,18 @@
     "glass_cell_m": 0.1
    }
   },
-  "vos_saucer_runner": {
-   "_doc": "8, the Saucer runner (fighter launching): a Hunt freighter's drive block and a stub of its spine, a Concord Petrel's hull and command deck, and the Vos's own collar and flight deck. Its windows come from its room plan (data/ships/vos/saucer_runner_plan.json, moved into the export's frame by dz_m and dy_m, the page's re-centring of the ship). The taken parts wear their makers' looks dulled; the Vos metal is the Breakers' plate.",
-   "seed": 801,
+  "vos_deck_runner": {
+   "_doc": "8, the Deck runner (fighter launching): two Hunt freighters cut and joined (one's drive block, the other's bow end, cut short and capped flat), with a welded collar and flight deck. Freighter hulls only, no warship parts (owner, 2026-11-11: \"other than freighter hulls lets not reuse any other ships hulls too\"). Its windows come from its room plan (data/ships/vos/deck_runner_plan.json, moved into the export's frame by dz_m and dy_m, the page's re-centring of the ship). The freighter parts wear the Hunt freighters' look dulled; the Vos metal is the Breakers' plate.",
+   "seed": 802,
    "makers": {
     "ssarith": {
      "look": "ssarith",
-     "dull": 0.4
-    },
-    "concord": {
-     "look": "concord",
-     "dull": 0.6
+     "dull": 0.4,
+     "paint": {
+      "under": "#4e5440",
+      "ink_k": 0.12,
+      "ao_floor": 0.55
+     }
     }
    },
    "lamps": [
@@ -497,7 +499,7 @@
      "face": "top",
      "at": [
       22.5,
-      -84.42
+      -67.0
      ],
      "size_m": 0.5,
      "colour": "amber"
@@ -506,7 +508,7 @@
      "face": "top",
      "at": [
       22.5,
-      -72.42
+      -55.0
      ],
      "size_m": 0.5,
      "colour": "amber"
@@ -515,7 +517,7 @@
      "face": "top",
      "at": [
       22.5,
-      -60.42
+      -43.0
      ],
      "size_m": 0.5,
      "colour": "amber"
@@ -524,7 +526,7 @@
      "face": "top",
      "at": [
       22.5,
-      -48.42
+      -31.0
      ],
      "size_m": 0.5,
      "colour": "amber"
@@ -533,7 +535,7 @@
      "face": "top",
      "at": [
       22.5,
-      -36.42
+      -19.0
      ],
      "size_m": 0.5,
      "colour": "amber"
@@ -542,7 +544,7 @@
      "face": "top",
      "at": [
       0,
-      57.58
+      43.0
      ],
      "size_m": 0.6,
      "colour": "red",
@@ -552,40 +554,34 @@
    "liveries": [
     {
      "band_z_m": [
-      -3.42,
-      -0.42
+      14.0,
+      17.0
      ]
-    }
-   ],
-   "bays": [
+    },
     {
-     "face": "port",
-     "at": [
-      21.78,
-      -3.44
-     ],
-     "w_m": 7.0,
-     "h_m": 2.2
+     "band_z_m": [
+      71.0,
+      73.0
+     ]
     }
    ],
    "lighting": {
     "floods": [],
     "auto_floods": {
-     "to_z_m": 87.58
+     "to_z_m": 71.0
     }
    },
    "windows": [
     {
-     "plan": "data/ships/vos/saucer_runner_plan.json",
-     "dz_m": 92.424,
+     "plan": "data/ships/vos/deck_runner_plan.json",
+     "dz_m": 75.0,
      "dy_m": 3.943,
      "wall_m": 3.2,
      "dark_share": 0.25,
      "rooms": {
       "crew": "quarters",
       "command": "quarters",
-      "mess": "mess",
-      "saucer_mess": "mess",
+      "pilots_mess": "mess",
       "workshop": "workshop",
       "ready_room": "mess",
       "briefing": "mess"
