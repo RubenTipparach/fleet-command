@@ -5032,7 +5032,7 @@
   "power_e": {
    "weapons": 6,
    "shields": 5,
-   "engines": 6,
+   "engines": 4,
    "sensors": 1,
    "tractor": 2,
    "transport": 0,
@@ -5136,7 +5136,7 @@
   "power_e": {
    "weapons": 6,
    "shields": 5,
-   "engines": 6,
+   "engines": 4,
    "sensors": 1,
    "tractor": 0,
    "transport": 2,

@@ -191,13 +191,13 @@ def axes_from_data(meshes, empties) -> dict:
     """
     allp = np.concatenate([p for _, p, _ in meshes])
     ext = allp.max(0) - allp.min(0)
-    long_axis = int(np.argmax(ext))
     engines = [v for k, v in empties.items() if k.startswith("engine_")]
     fore = [v for k, v in empties.items() if k in ("deflector", "bridge") or k.startswith("mount_")]
     # the baked lines (the Ssarith and Kelvane, exported from docs/mockups/lib/baked-fleet.js) name no mounts or bridge:
     # their engines are measured against the hull's own middle
     fore = fore or [(allp.max(0) + allp.min(0)) / 2]
-    if long_axis != 2 or not engines or not fore:
+    # a craft can be wider than it is long (the Vos Cutter and Stack, swept wings): its length need only be near its longest
+    if ext[2] < 0.8 * ext.max() or not engines or not fore:
         raise SystemExit("ship_schematics: cannot find the nose from the data (expected the long axis on Z)")
     # The bow is the end away from the engines: engines' mean Z is greater than the fore fittings' -> bow is -Z.
     bow_sign = -1 if np.mean([e[2] for e in engines]) > np.mean([f[2] for f in fore]) else 1

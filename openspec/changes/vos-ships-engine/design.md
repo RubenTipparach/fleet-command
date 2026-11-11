@@ -31,8 +31,8 @@ Deck runner a carrier's, at three quarters of its hull points. Each has its trad
 | Ship | Trade | In the game |
 |---|---|---|
 | Drum | Mine laying | 12 mines (a cruiser carries 4) |
-| Cross | Tractor beams | 2 energy on its tractor |
-| Boarder | Boarding | 2 energy on its transporters, 24 marines |
+| Cross | Tractor beams | 2 energy on its tractor, 2 off its engines (its allocation fits its reactor) |
+| Boarder | Boarding | 2 energy on its transporters, 2 off its engines, 24 marines |
 | Broadside | Passing as a freighter | A cruiser's guns; the disguise is vos-ship-concepts 2.4 |
 | Deck runner | Fighters | 6 Cutters, parked on its deck |
 

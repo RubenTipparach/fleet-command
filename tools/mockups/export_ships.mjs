@@ -538,7 +538,9 @@ async function contactInPage(list) {
 
 // ---------------------------------------------------------------------------------------------------------------
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// file access from files: a page whose maps sit beside it as files (a manifest with maps_dir, the Vos page) is read from
+// file://, where WebGL refuses an image from another file without it
+const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--allow-file-access-from-files'] });
 // The Concord page paints its registries in Antonio: that page's Google Fonts request is answered with assets/fonts' Antonio, so every
 // run paints them the same. Only that page: under the same route the Krai page (which paints no text on its ships) never steps.
 const ANTONIO_B64 = fs.readFileSync(path.join(ROOT, 'assets', 'fonts', 'Antonio-VariableFont_wght.ttf')).toString('base64');

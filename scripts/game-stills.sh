@@ -76,6 +76,12 @@ shot institute-battlecruiser 1920x1080 --steps=600 --scenario=concord_institute 
 shot institute-carrier 1920x1080 --steps=600 --scenario=concord_institute --target=kv_curiosity --target-view --zoom=0.5
 shot institute-range 1920x1080 --steps=300 --scenario=concord_range --target=t_irv --target-view --zoom=0.5
 shot institute-carrier-pads 1920x1080 --steps=300 --scenario=concord_range --target=t_icv --target-view --zoom=0.15
+# the Vos Syndicate (mockup 37, change vos-ships-engine): each specialist close, on the Concord's damage range
+shot vos-drum 1920x1080 --steps=300 --scenario=concord_range --target=ph_vos_drum --target-view --zoom=0.5
+shot vos-cross 1920x1080 --steps=300 --scenario=concord_range --target=ph_vos_cross --target-view --zoom=0.5
+shot vos-boarder 1920x1080 --steps=300 --scenario=concord_range --target=ph_vos_boarder --target-view --zoom=0.5
+shot vos-broadside 1920x1080 --steps=300 --scenario=concord_range --target=ph_vos_broadside --target-view --zoom=0.5
+shot vos-deck-runner 1920x1080 --steps=300 --scenario=concord_range --target=ph_vos_deck_runner --target-view --zoom=0.3
 shot institute-frigate 1920x1080 --steps=300 --scenario=concord_range --target=t_iff --target-view --zoom=0.3
 shot institute-wrecks 1920x1080 --steps=2400 --scenario=concord_institute_wrecks --target=kw_parallax --target-view --zoom=0.7
 # the placeholder lines (mockup 36, change placeholder-fleets): a row of the damage range each

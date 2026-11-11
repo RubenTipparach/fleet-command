@@ -6,9 +6,9 @@ A Vos class with a `model` SHALL be drawn in the battle as its glb, exported fro
 manifest with its own baked maps by the baked hull shader, with its antennas, its lenses and its containers, scaled to the
 class's battle length, and it SHALL come apart as the Hunt's ships do.
 
-#### Scenario: The Syndicate from the Concord's side
-- **WHEN** the Concord's scenario The Syndicate starts
-- **THEN** the Drum, the Cross, the Boarder, the Broadside and the Deck runner are drawn as their baked ships, and no ship is a stand-in
+#### Scenario: The Vos line on the damage range
+- **WHEN** the Concord's damage range starts
+- **THEN** the Drum, the Cross, the Boarder, the Broadside and the Deck runner stand on it as their baked ships
 
 ### Requirement: A glowing mouth is a lens, not paint
 
