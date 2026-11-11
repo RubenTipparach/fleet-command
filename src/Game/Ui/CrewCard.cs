@@ -41,7 +41,8 @@ public sealed partial class CrewCard : ConsolePanel
         var aboard = crew.Members.Where(m => crew.BridgeOf(m.Id) == bridge && (m.Id == captain || !crew.Ships.ContainsValue(m.Id))).ToList();
         Ship[] others = co.Battle == null ? Array.Empty<Ship>() : B.Fleet().Where(s => s != co.Flag).ToArray();
         float rowH = 50, w = Math.Min(1100, Size.X - 32);
-        float h = 140 + (aboard.Count + 1) * rowH + (admiral && others.Length > 0 ? 50 + others.Length * rowH : 0) + 70;
+        int fleet = co.Battle == null ? crew.Members.Count : others.Length + 1;
+        float h = 140 + (aboard.Count + 1) * rowH + 40 + fleet * 40 + crew.Members.Count * 28 + crew.Ships.Count * 40 + 80;
         var at = new Rect2((Size.X - w) / 2, Math.Max(16, (Size.Y - h) / 2), w, Math.Min(h, Size.Y - 32));
         Shapes.RoundRect(this, new Rect2(at.Position, new Vector2(w - 21, at.Size.Y)), Sk.R.Sheet, 24, 0, 0, 24);
         Rect2 b = Frame(at, Lobby ? "Bridge crew" : "Captain's menu", false);
@@ -82,26 +83,75 @@ public sealed partial class CrewCard : ConsolePanel
             y += rowH;
         }
 
-        // the admiral's ships: each ship of the fleet but the flagship, given to a crew member or left to the AI
-        if (admiral && others.Length > 0)
+        // the fleet manifest, for everyone: every ship of the fleet, its captain (the admiral, a crew member, or the AI), its
+        // hull, who stands on its bridge with which stations, and what each station has locked; the admiral gives ships here
+        // and sends a directive to each crew member's ship (owner, 2026-11-11: "Crew manifest", "someway for players to see
+        // and interact with crew members in game")
+        y += 10;
+        Text(admiral ? "FLEET MANIFEST · GIVE A SHIP, SEND A DIRECTIVE" : "FLEET MANIFEST", x0, y + 16, 15, C.Lilac, HorizontalAlignment.Left, bw, 700, 1);
+        y += 26;
+        if (co.Battle == null)
         {
-            y += 10;
-            Text("SHIPS · GIVE A SHIP TO A CREW MEMBER", x0, y + 16, 15, C.Lilac, HorizontalAlignment.Left, bw, 700, 1);
-            y += 26;
-            var choices = new[] { (Id: Crew.AdmiralId, Label: "AI") }.Concat(crew.Members.Where(m => m.Id != Crew.AdmiralId).Select(m => (Id: m.Id, Label: m.Name))).ToArray();
-            float tw = Math.Min(170, (bw - nameW) / Math.Max(1, choices.Length));
-            foreach (Ship s in others)
+            foreach (CrewMember m in crew.Members)
             {
-                Text(s.Name.ToUpperInvariant(), x0, y + 28, 17, C.Text, HorizontalAlignment.Left, nameW - 8, 600, 1);
-                int cap = crew.Ships.GetValueOrDefault(s.Id, Crew.AdmiralId);
-                for (int i = 0; i < choices.Length; i++)
+                string at2 = crew.BridgeOf(m.Id) == Crew.Flag ? "the flagship" : crew.BridgeOf(m.Id);
+                string held = string.Join(", ", roles.Where(r => crew.HolderOf(crew.BridgeOf(m.Id), r.Id) == m.Id).Select(r => r.Name));
+                X.Fonts.DrawRich(this, new[] { (m.Name.ToUpperInvariant() + "  ", CrewColors.Of(m.Id, C.Sky)),
+                    ($"{(crew.CaptainOf(crew.BridgeOf(m.Id)) == m.Id ? "captain of " : "on ")}{at2}{(held.Length > 0 ? " · " + held : "")}", C.Text) }, x0, y + 22, 16, bw);
+                y += 30;
+            }
+        }
+        else
+        {
+            var choices = new[] { (Id: Crew.AdmiralId, Label: "AI") }.Concat(crew.Members.Where(m => m.Id != Crew.AdmiralId).Select(m => (Id: m.Id, Label: m.Name))).ToArray();
+            float tw = Math.Min(150, (bw - nameW - 200) / Math.Max(1, choices.Length));
+            foreach (Ship s in B.Fleet().Prepend(co.Flag!).Where(s => s != null).Distinct())
+            {
+                bool flag = s == co.Flag;
+                string key = flag ? Crew.Flag : s.Id;
+                int cap = flag ? Crew.AdmiralId : crew.Ships.GetValueOrDefault(s.Id, 0);
+                string capName = cap == 0 ? "AI" : crew.NameOf(cap);
+                Text(s.Name.ToUpperInvariant(), x0, y + 22, 17, C.Text, HorizontalAlignment.Left, nameW - 8, 600, 1);
+                X.Fonts.DrawRich(this, new[] { ("captain ", C.Lilac), (capName.ToUpperInvariant(), cap == 0 ? C.Lilac : CrewColors.Of(cap, C.Sky)),
+                    ($" · hull {100 * s.Hull / s.Class.HullHp:0}%", s.Hull < s.Class.HullHp * 0.35 ? C.Alert : C.Lilac) }, x0 + nameW, y + 22, 16, 230);
+                if (admiral && !flag)
+                    for (int i = 0; i < choices.Length; i++)
+                    {
+                        int to = choices[i].Id;
+                        string sid = s.Id;
+                        Tab($"crew.ship.{s.Id}.{to}", new Rect2(x0 + nameW + 236 + i * tw, y + 2, tw - 6, 34), choices[i].Label,
+                            () => co.AskCrew(new JsonObject { ["op"] = "ship", ["ship"] = sid, ["to"] = to }), (cap == 0 ? Crew.AdmiralId : cap) == to);
+                    }
+                y += 40;
+                // who stands on this bridge, with each station's lock
+                foreach (CrewMember m in crew.Members.Where(m => crew.BridgeOf(m.Id) == key && (m.Id == cap || crew.Held.Any(kv => kv.Key.StartsWith(key + "|") && kv.Value == m.Id))))
                 {
-                    int to = choices[i].Id;
-                    string sid = s.Id;
-                    Tab($"crew.ship.{s.Id}.{to}", new Rect2(x0 + nameW + i * tw + 3, y + 4, tw - 6, rowH - 10), choices[i].Label,
-                        () => co.AskCrew(new JsonObject { ["op"] = "ship", ["ship"] = sid, ["to"] = to }), cap == to);
+                    float xx = x0 + 24;
+                    Text(m.Name.ToUpperInvariant(), xx, y + 20, 15, CrewColors.Of(m.Id, C.Sky), HorizontalAlignment.Left, nameW - 30, 600, 1);
+                    xx = x0 + nameW;
+                    foreach (RoleDef r in roles.Where(r => crew.HolderOf(key, r.Id) == m.Id))
+                    {
+                        Kit.Icon(this, r.Icon, new Rect2(xx, y + 4, 20, 20), CrewColors.Of(m.Id, C.Sky));
+                        string lockOn = r.Targets && s.RoleTargets != null && B.ShipById(Battle.RoleTargetId(s, r.Id)) is { Alive: true } lt ? lt.Name : "";
+                        Text(lockOn, xx + 24, y + 19, 13, C.Lilac, HorizontalAlignment.Left, 96, 500);
+                        xx += lockOn.Length > 0 ? 124 : 28;
+                        if (xx > x0 + bw - 130) break;
+                    }
+                    y += 28;
                 }
-                y += rowH;
+                // the admiral's directives to a crew member's ship
+                if (admiral && cap > 1)
+                {
+                    float dx = x0 + 24;
+                    foreach (var (id, label) in Lockstep.Directives)
+                    {
+                        string order = id;
+                        Button($"crew.dir.{cap}.{id}", new Rect2(dx, y + 2, 180, 32), label, () => co.Direct(cap, order), dis: id == "attack" && B.TargetOf(co.Flag!, "weapons") == null);
+                        dx += 188;
+                    }
+                    if (co.DirectiveFor(cap) is { } d) Text($"sent: {d.Text}", dx + 6, y + 23, 14, C.Caution, HorizontalAlignment.Left, x0 + bw - dx - 10);
+                    y += 40;
+                }
             }
         }
         if (!Lobby) Button("crew.done", new Rect2(x0 + bw - 200, b.End.Y - 50, 200, 44), "Done", () => X.CrewOpen = false);

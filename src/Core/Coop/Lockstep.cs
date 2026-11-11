@@ -20,6 +20,16 @@ using FleetCommand.Sim;
 
 namespace FleetCommand.Coop;
 
+/// <summary>Something a crew member said or did for the others to see (owner, 2026-11-11: "someway for players to see and
+/// interact with crew members in game. Adding that real time strategy game layer"): chat, a ping on a point or a ship, the
+/// admiral's directive to a ship's captain and its answer, or a crew change. None changes the battle: they travel beside
+/// the ticks, the host stamping who sent each and passing it to everyone. At is the battle time it was sent (0 between
+/// battles); Received is this machine's clock when it arrived, in ms, for how long the view shows it.</summary>
+public sealed record CoopEvent(int By, string Kind, string Text, double At, double X = 0, double Z = 0, string? Ship = null, int To = 0, string? Order = null)
+{
+    public long Received { get; init; }
+}
+
 public sealed class Lockstep
 {
     /// <summary>Steps between checksums.</summary>
@@ -46,6 +56,17 @@ public sealed class Lockstep
     public Action<string> Note = _ => { };
     /// <summary>Told when the roster (members, ships, roles) changed.</summary>
     public Action? CrewChanged;
+
+    /// <summary>Every crew event of this game, oldest first (the last 200).</summary>
+    public List<CoopEvent> Events { get; } = new();
+    /// <summary>Told each crew event as it arrives (the console puts it in the log).</summary>
+    public Action<CoopEvent>? OnEvent;
+    /// <summary>This machine's clock in ms (set by the game), for how long a ping shows.</summary>
+    public Func<long> Clock = () => Environment.TickCount64;
+
+    /// <summary>The admiral's directives, by name, and what each tells a ship's captain.</summary>
+    public static readonly (string Id, string Label)[] Directives =
+        { ("attack", "Attack my target"), ("escort", "Escort me"), ("hold", "Hold position"), ("free", "Engage freely") };
 
     // the admiral's ship between ticks (Battle.Player is the local member's own ship while the console draws)
     private Ship? _flag;
@@ -154,6 +175,90 @@ public sealed class Lockstep
         return null;
     }
 
+    // ---- Crew events -----------------------------------------------------------------------------------------------
+
+    /// <summary>Says something to the whole crew.</summary>
+    public void Chat(string text)
+    {
+        text = text.Trim();
+        if (text.Length == 0) return;
+        Emit(new JsonObject { ["kind"] = "chat", ["text"] = text.Length > 200 ? text[..200] : text });
+    }
+
+    /// <summary>Marks a point on the battle plane (metres), or a ship, for the whole crew.</summary>
+    public void Ping(double x, double z, string? ship)
+    {
+        if (!double.IsFinite(x) || !double.IsFinite(z)) return;
+        string what = ship != null && Battle?.ShipById(ship) is { } s ? s.Name : $"{x / 1000:0.0}, {z / 1000:0.0} km";
+        Emit(new JsonObject { ["kind"] = "ping", ["text"] = $"marks {what}", ["x"] = x, ["z"] = z, ["ship"] = ship });
+    }
+
+    /// <summary>The admiral's directive to the captain of a ship given to a crew member: attack (the admiral's target),
+    /// escort (the flagship), hold, or engage freely.</summary>
+    public void Direct(int to, string order)
+    {
+        if (Me != Crew.AdmiralId || !Directives.Any(d => d.Id == order) || !Crew.Ships.ContainsValue(to)) return;
+        string? ship = order == "attack" ? Battle?.TargetOf(_flag ?? Battle.Player, "weapons")?.Id : order == "escort" ? _flag?.Id : null;
+        if (order == "attack" && ship == null) return;
+        string label = Directives.First(d => d.Id == order).Label;
+        string text = order switch
+        {
+            "attack" => $"{Crew.NameOf(to)}: attack the {Battle!.ShipById(ship)!.Name}",
+            "escort" => $"{Crew.NameOf(to)}: escort the {_flag?.Name}",
+            _ => $"{Crew.NameOf(to)}: {label.ToLowerInvariant()}",
+        };
+        Emit(new JsonObject { ["kind"] = "directive", ["text"] = text, ["to"] = to, ["order"] = order, ["ship"] = ship });
+    }
+
+    /// <summary>A ship's captain answers the admiral's last directive to them.</summary>
+    public void Ack()
+    {
+        if (DirectiveFor(Me) is not { } d) return;
+        Emit(new JsonObject { ["kind"] = "ack", ["text"] = $"aye, {d.Text[(d.Text.IndexOf(':') + 2)..]}", ["to"] = d.By, ["order"] = d.Order });
+    }
+
+    /// <summary>The admiral's last directive to a member that they have not answered, or null.</summary>
+    public CoopEvent? DirectiveFor(int member)
+    {
+        for (int i = Events.Count - 1; i >= 0; i--)
+        {
+            CoopEvent e = Events[i];
+            if (e.Kind == "ack" && e.By == member) return null;
+            if (e.Kind == "directive" && e.To == member) return e;
+        }
+        return null;
+    }
+
+    // a crew event from this machine: to the host, which stamps and passes it on (the host passes its own on at once)
+    private void Emit(JsonObject e)
+    {
+        e["t"] = "event";
+        e["at"] = Battle?.T ?? 0;
+        if (IsHost) HostEvent(Me, e);
+        else Send(e);
+    }
+
+    private void HostEvent(int by, JsonObject e)
+    {
+        e["by"] = by;
+        Send(e);
+        AddEvent(e);
+    }
+
+    // an event arrived (or was made here): kept, and told to the console
+    private void AddEvent(JsonObject e)
+    {
+        var ev = new CoopEvent((int?)e["by"] ?? 0, (string?)e["kind"] ?? "chat", (string?)e["text"] ?? "", (double?)e["at"] ?? 0,
+            (double?)e["x"] ?? 0, (double?)e["z"] ?? 0, (string?)e["ship"], (int?)e["to"] ?? 0, (string?)e["order"]) { Received = Clock() };
+        Events.Add(ev);
+        if (Events.Count > 200) Events.RemoveAt(0);
+        Note($"COOP_EVENT {ev.Kind} {Crew.NameOf(ev.By)}: {ev.Text}");
+        OnEvent?.Invoke(ev);
+    }
+
+    // a crew change seen here (each peer applies it from the tick, so each notes it itself)
+    private void LocalEvent(int by, string text) => AddEvent(new JsonObject { ["kind"] = "crew", ["text"] = text, ["by"] = by, ["at"] = Battle?.T ?? 0 });
+
     // ---- The host --------------------------------------------------------------------------------------------------
 
     private void HostOrder(int by, JsonObject o)
@@ -179,6 +284,7 @@ public sealed class Lockstep
         {
             case "order": HostOrder(from, m); break;
             case "crew": HostCrew(from, m); break;
+            case "event": HostEvent(from, m); break;
             case "desync": Desyncs++; Note($"COOP_DESYNC reported by {Crew.NameOf(from)} at tick {(long?)m["n"]}"); break;
         }
     }
@@ -189,6 +295,7 @@ public sealed class Lockstep
         CrewMember m = Crew.Join(name);
         Note($"COOP_JOIN {m.Id} {m.Name}");
         SendRoster();
+        HostEvent(m.Id, new JsonObject { ["t"] = "event", ["kind"] = "crew", ["text"] = "came aboard", ["at"] = Battle?.T ?? 0 });
         return m.Id;
     }
 
@@ -197,8 +304,10 @@ public sealed class Lockstep
     {
         if (Battle != null && Crew.Ships.Where(kv => kv.Value == id).Select(kv => kv.Key).FirstOrDefault() is { } ship)
             _ops.Add(new JsonObject { ["t"] = "crew", ["op"] = "ship", ["ship"] = ship, ["to"] = Crew.AdmiralId, ["by"] = Crew.AdmiralId });
+        string who = Crew.NameOf(id);
         Crew.Leave(id);
         Note($"COOP_LEAVE {id}");
+        HostEvent(Crew.AdmiralId, new JsonObject { ["t"] = "event", ["kind"] = "crew", ["text"] = $"{who} left the bridge", ["at"] = Battle?.T ?? 0 });
         SendRoster();
     }
 
@@ -236,6 +345,7 @@ public sealed class Lockstep
             case "welcome": Me = (int?)m["you"] ?? 0; Note($"COOP_WELCOME {Me}"); break;
             case "roster": ReadCrew(Crew, m["crew"]!.AsObject()); CrewChanged?.Invoke(); ViewOwn(); break;
             case "tick": _ticks.Enqueue(m); break;
+            case "event": AddEvent(m); break;
         }
     }
 
@@ -290,7 +400,7 @@ public sealed class Lockstep
                 var args = (o["args"]?.AsArray() ?? new JsonArray()).Select(Arg).ToList();
                 string name = (string?)o["name"] ?? "";
                 bool captain = Crew.CaptainOf(bridge) == by;
-                Ship now = b.ApplyAs(ship, Crew.LockRoles(by, (string?)o["tab"]), captain, () => b.ApplyCall(name, args));
+                Ship now = b.ApplyAs(ship, Crew.LockRoles(by, (string?)o["tab"]), captain, () => b.ApplyCall(name, args), Crew.NameOf(by));
                 if (now != ship && bridge != Crew.Flag) Crew.MoveShip(ship.Id, now.Id);
             }
             if ((bool?)t["step"] == true) b.Step();
@@ -324,7 +434,14 @@ public sealed class Lockstep
             default: why = "unknown change"; break;
         }
         if (why != null) Note($"COOP_REFUSED {Crew.NameOf(by)} {(string?)op["op"]}: {why}");
-        else Note($"COOP_CREW {Crew.NameOf(by)} {(string?)op["op"]} {(string?)op["role"] ?? (string?)op["ship"]} to {Crew.NameOf(to)}");
+        else
+        {
+            Note($"COOP_CREW {Crew.NameOf(by)} {(string?)op["op"]} {(string?)op["role"] ?? (string?)op["ship"]} to {Crew.NameOf(to)}");
+            string what = (string?)op["op"] == "role" ? Crew.Roles[(string)op["role"]!].Name
+                : Battle?.ShipById((string?)op["ship"])?.Name is { } sn ? $"command of the {sn}" : "a ship";
+            bool ship = (string?)op["op"] == "ship";
+            LocalEvent(by, ship && to == Crew.AdmiralId ? $"gave {what} back to the AI" : !ship && to == Crew.CaptainOf(Crew.BridgeOf(by)) ? $"took back {what}" : $"gave {what} to {Crew.NameOf(to)}");
+        }
         CrewChanged?.Invoke();
     }
 

@@ -185,6 +185,8 @@ public sealed partial class ScriptedCaptain : Node
             if (!me.Alive) break;
             // command passed to another ship (the last one was lost): its helm has had no order yet
             if (me.Id != commanding) { commanding = me.Id; ordered = false; }
+            // co-op: the crew's talk, pings and the admiral's directives (ScriptedCaptain.Coop.cs)
+            await CoopEach();
             // the core: a captain who holds Engineering brings the coils back when the reactor runs hot or misaligned, as a
             // player watching the Power station would (a campaign ship's coils drift and its core melts down untended)
             if (_x.Opens("st.power") && B.T - lastTend > 8 && (Rules.Misalignment(me) > 0.1 || me.Reactor.Temp >= B.Data.Systems.Reactor.CriticalPct * 0.85))

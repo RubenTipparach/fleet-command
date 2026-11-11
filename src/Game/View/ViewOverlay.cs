@@ -121,6 +121,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
 
     private void LeftClick(Vector2 local)
     {
+        if (PingClick(local)) return;   // co-op's Ping key (ViewOverlay.Coop.cs)
         if (_x.State.PlacingHet)
         {
             _x.State.PlacingHet = false;
@@ -134,7 +135,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         if (_view.PlaneAt(local + Position) is { } q)
         {
             B.HelmTo(q.X, q.Z);
-            B.Say("Helm", $"Come to {Geometry.HeadingDeg(B.Player.HOrder):000}.");
+            if (_x.Opens("st.helm")) B.Say("Helm", $"Come to {Geometry.HeadingDeg(B.Player.HOrder):000}.");
         }
     }
 
@@ -287,11 +288,13 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         // your own hull under your ship
         if (me.Alive && Local(me) is { } mp) HullBar(mp.X, mp.Y + 74, me);
 
+        DrawCoop(f);
         if (big) { f.Draw(this, "LIVE · TAP TO RETURN", Size.X / 2, 28, 18, C.Sky, HorizontalAlignment.Center, 0, 600, 1); return; }
 
         // the Target key shows only while the Target box is shut, in the box's corner, top right (owner, 2026-11-07: "target
         // button should only reveal if target panel was closed", "Target button shold also be in the right corner")
         if (!_x.State.ShowTarget) Key("v.target", new Rect2(Size.X - 90 - 16, 14, 90, 30), "Target", () => _x.State.ShowTarget = true, false, "Show the Target box");
+        CoopKeys();
         // a campaign mission's battle has its own objectives (the mission strip) and no scene selector
         if (!_x.State.InMission) ScenePicker();
         if (b.Scenario.DamageRange && !_x.State.SceneOpen) RangePanel();
@@ -311,7 +314,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         if (b.Log.Count > 0 && b.T - b.Log[^1].T < 5)
         {
             LogLine l = b.Log[^1];
-            f.DrawRich(this, new[] { ($"{l.Who}: {l.Text}", C.Lilac) }, 18, ry - 64, 22, Size.X * 0.7f);
+            f.DrawRich(this, new[] { ($"{l.Speaker}: {l.Text}", C.Lilac) }, 18, ry - 64, 22, Size.X * 0.7f);
         }
         if (b.Over is { } over) Banner(over == "won" ? "Victory" : over == "withdrawn" ? "Withdrawn" : over == "jumped" ? "Jumped to warp" : "Fleet lost",
             over is "won" or "jumped" ? C.Accord : over == "withdrawn" ? C.Caution : C.Alert);

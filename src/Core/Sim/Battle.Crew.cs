@@ -37,6 +37,9 @@ public sealed partial class Battle
     /// target), else the roles its sender's lock moves (Coop.Crew.LockRoles).</summary>
     public IReadOnlyList<string>? OrderRoles { get; private set; }
 
+    /// <summary>The name of the player whose order is being applied, for the log (null alone).</summary>
+    public string? OrderBy { get; private set; }
+
     /// <summary>Whether the order being applied comes from the ship's captain (who also moves the ship's main target).</summary>
     public bool OrderFromCaptain { get; private set; } = true;
 
@@ -69,8 +72,9 @@ public sealed partial class Battle
 
     /// <summary>Runs one order as a sender: on the ship they command, for the targeting roles their lock moves, captain or
     /// not. Returns the ship that sender commands afterwards (Take command may have moved them).</summary>
-    public Ship ApplyAs(Ship ship, IReadOnlyList<string>? roles, bool captain, Action order)
+    public Ship ApplyAs(Ship ship, IReadOnlyList<string>? roles, bool captain, Action order, string? by = null)
     {
+        OrderBy = by;
         Ship admiral = Player;
         bool isAdmiral = ship == admiral;
         Player = ship;
@@ -78,7 +82,7 @@ public sealed partial class Battle
         OrderFromCaptain = captain;
         _inside++;
         try { order(); }
-        finally { _inside--; OrderRoles = null; OrderFromCaptain = true; }
+        finally { _inside--; OrderRoles = null; OrderFromCaptain = true; OrderBy = null; }
         Ship now = Player;
         if (!isAdmiral)
         {

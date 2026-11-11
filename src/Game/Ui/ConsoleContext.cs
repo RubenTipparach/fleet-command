@@ -21,6 +21,8 @@ public sealed partial class ConsoleState
     public bool OptionsOpen;
     /// <summary>The helm's free-angle high energy turn is waiting for a click in the view.</summary>
     public bool PlacingHet;
+    /// <summary>Co-op: the view's Ping key is waiting for a click on a ship or a point.</summary>
+    public bool PlacingPing;
     /// <summary>The view's Target key: shows or hides the Target box (the locked target's systems display).</summary>
     public bool ShowTarget = true;
     /// <summary>The view's scene selector is open.</summary>

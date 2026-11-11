@@ -46,7 +46,13 @@ public sealed class Shot
     public double ReachDeg;
 }
 
-public sealed record LogLine(double T, string Who, string Text);
+/// <summary>A line of the battle's log: when, which station or system says it, what, and in co-op the player whose order it
+/// answers (or who wrote it, for chat).</summary>
+public sealed record LogLine(double T, string Who, string Text, string? By = null)
+{
+    /// <summary>Who speaks, as the log shows it: the station, after the player's name in co-op ("Laptop · Tactical").</summary>
+    public string Speaker => By != null ? $"{By} · {Who}" : Who;
+}
 
 /// <summary>A hit as it landed, for the view's explosions and scars (it changes nothing): the ship struck, where the shot
 /// came from (metres), the weapon's kind, what the shields took and what reached the hull, and whether it destroyed the ship.</summary>
@@ -221,9 +227,12 @@ public sealed partial class Battle
     /// <summary>The battle is lost though ships of side 0 still fly (a mission whose own fleet is gone, its wingmen left).</summary>
     public void Lose() { if (Sent(nameof(Lose))) return; if (Over == null) Over = "lost"; }
 
-    public void Say(string who, string text)
+    public void Say(string who, string text) => SayAs(OrderBy, who, text);
+
+    /// <summary>A log line in a player's name (co-op: chat, a crew change, a ping), or none.</summary>
+    public void SayAs(string? by, string who, string text)
     {
-        _log.Add(new LogLine(T, who, text));
+        _log.Add(new LogLine(T, who, text, by));
         if (_log.Count > 80) _log.RemoveAt(0);
     }
 

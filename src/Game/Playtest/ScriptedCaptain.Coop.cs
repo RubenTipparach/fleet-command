@@ -31,6 +31,69 @@ public sealed partial class ScriptedCaptain
         if (await CoopBeat(b) is { } why) GD.Print($"PLAYTEST_COOP crew_ship {b.Arg} not done: {why}");
     }
 
+    // co-op's talk in a battle, once each per battle: the admiral pings its target and sends each crew member's ship to attack
+    // it; a crew member says they are on station and answers a directive with Aye. All through the console's own keys.
+    private Battle? _talkedIn;
+    private bool _said, _pinged, _directed;
+
+    private async Task CoopEach()
+    {
+        if (_x.Coop is not { Battle: { } bt } co) return;
+        if (_talkedIn != bt) { _talkedIn = bt; _said = _pinged = _directed = false; }
+        if (!_said)
+        {
+            _said = true;
+            await ChatSay(co.IsHost ? "Battle stations." : $"On station: {string.Join(", ", co.Crew.Roles.List.Where(r => co.Crew.HolderOf(co.Crew.BridgeOf(co.Me), r.Id) == co.Me).Select(r => r.Name))}.");
+        }
+        if (!co.IsHost && co.DirectiveFor(co.Me) != null)
+        {
+            if (await Click("v.aye") == null) GD.Print($"PLAYTEST_COOP aye to the admiral at {bt.T:0} s");
+        }
+        if (co.IsHost && _x.MyTarget() is { } t)
+        {
+            if (!_pinged)
+            {
+                _pinged = true;
+                // the target where the view shows it, else the plane at its place (off screen: the view's edge toward it)
+                int before = co.Events.Count;
+                if (await Click("v.ping") == null)
+                {
+                    if (await Select(t.Id) != null) await ClickPlane(t.X, t.Z);
+                    await Frames(3);
+                    GD.Print(co.Events.Count > before ? $"PLAYTEST_COOP pinged the {t.Name} at {bt.T:0} s" : $"PLAYTEST_COOP ping of the {t.Name} not placed (off the view)");
+                    _x.State.PlacingPing = false;
+                }
+            }
+            if (!_directed && co.Crew.Ships.Count > 0)
+            {
+                _directed = true;
+                if (await OpenCrew() == null)
+                {
+                    foreach (int m in co.Crew.Ships.Values.Distinct().ToList())
+                        if (await Click($"crew.dir.{m}.attack") == null) GD.Print($"PLAYTEST_COOP directed {co.Crew.NameOf(m)} to attack the {t.Name}");
+                    await Frames(20);
+                    await Snap("crew-manifest");
+                    await Click("crew.done");
+                }
+            }
+        }
+    }
+
+    // a line said in the crew's chat, typed as a player would: the Chat key, the text, Enter
+    private async Task ChatSay(string text)
+    {
+        if (await Click("chat.open") != null) return;
+        await Frames(2);
+        if (GetViewport().GuiGetFocusOwner() is not LineEdit le) return;
+        le.InsertTextAtCaret(text);
+        await Frames(2);
+        var enter = new InputEventKey { Keycode = Key.Enter, PhysicalKeycode = Key.Enter, Pressed = true };
+        GetViewport().PushInput(enter, true);
+        GetViewport().PushInput(new InputEventKey { Keycode = Key.Enter, PhysicalKeycode = Key.Enter, Pressed = false }, true);
+        await Frames(3);
+        GD.Print($"PLAYTEST_COOP said: {text}");
+    }
+
     // a crew peer with no battle shared (between battles, or the admiral's battle stopped)
     private bool CrewIdle() => _x.Coop is { IsHost: false, Battle: null };
 

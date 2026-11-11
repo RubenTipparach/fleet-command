@@ -22,6 +22,7 @@ public sealed partial class Main
 {
     private CoopNet? _net;
     private CrewCard _crew = null!;
+    private ChatBox _chat = null!;
     private CampaignData _campData = null!;
     private bool _pauseSent;
     // a crew peer: the battle's end seen, and how long ago
@@ -40,6 +41,9 @@ public sealed partial class Main
         _crew.Init(_x, Region.Station);
         _crew.SetAnchorsPreset(Control.LayoutPreset.FullRect);
         layer.AddChild(_crew);
+        _chat = new ChatBox { Name = "ChatBox", Visible = false };
+        _chat.Init(_x, Region.Station);
+        layer.AddChild(_chat);
         bool host = _args.TryGetValue("host", out string? port);
         if (!host && !IsCrew) return;
         string name = _args.GetValueOrDefault("name", host ? "Admiral" : "Crew")!;
@@ -47,6 +51,14 @@ public sealed partial class Main
         {
             Note = line => GD.Print(line),
             OpenTab = () => "st." + _x.State.Station,
+            Clock = () => (long)Time.GetTicksMsec(),
+        };
+        // every crew event goes into the battle's log too, in its sender's name (the log is no part of the checksum)
+        ls.OnEvent = e =>
+        {
+            if (ls.Battle == null) return;
+            string who = e.Kind switch { "chat" => "Chat", "ping" => "Ping", "directive" or "ack" => "Orders", _ => "Crew" };
+            ls.Battle.SayAs(ls.Crew.NameOf(e.By), who, e.Text);
         };
         // the window says whose seat it is, so a recorder (and a player with two windows) can tell them apart
         GetWindow().Title = $"Fleet Command · {(host ? "Admiral" : "Crew")} {name}";
@@ -68,6 +80,28 @@ public sealed partial class Main
             ls.CrewChanged = () => { if (_net.Connected && ls.Battle == null) _crew.Status = "Waiting for the admiral to start a battle."; };
             Waiting(true);
         }
+    }
+
+    /// <summary>Places the chat box: over the view in a battle, over the whole screen elsewhere; shown in co-op only.</summary>
+    private void PlaceChat(Rect2 view, Vector2 screen)
+    {
+        if (_chat == null) return;
+        bool battle = !_crew.Lobby && (_flow == null || _flow.Screen == Flow.FlowScreen.Battle) && _x.Coop?.Battle != null;
+        _chat.Visible = _x.Coop != null;
+        // only its own corner (bottom left, above the view's message lines), so it never takes a click meant for the view
+        Rect2 area = battle ? view : new Rect2(Vector2.Zero, screen);
+        float w = Math.Min(660, area.Size.X), h = Math.Min(300, area.Size.Y);
+        _chat.Position = new Vector2(area.Position.X, area.End.Y - h - (battle ? 90 : 10));
+        _chat.Size = new Vector2(w, h);
+    }
+
+    /// <summary>Enter opens the chat (co-op); true when it took the key.</summary>
+    private bool ChatKey(InputEvent e)
+    {
+        if (_x.Coop == null || _chat.Typing || e is not InputEventKey { Pressed: true, Keycode: Key.Enter or Key.KpEnter }) return false;
+        _chat.Open();
+        GetViewport().SetInputAsHandled();
+        return true;
     }
 
     // this machine's address on the local network, to show the crew where to join

@@ -254,6 +254,7 @@ public sealed partial class Main : Node
         if (_x == null) return;
         _menu.Visible = _x.State.MenuOpen;
         _crew.Visible = _crew.Lobby || _x.CrewOpen;
+        PlaceChat(new Rect2(_overlay.Position, _overlay.Size), GetViewport().GetVisibleRect().Size);
         _options.Visible = _x.State.OptionsOpen;
         // the bridge bed under a battle, silent on the menus and the map
         _x.Sounds.Bed(_flow == null || _flow.Screen == FlowScreen.Battle ? "amb_bridge" : null);
@@ -275,7 +276,9 @@ public sealed partial class Main : Node
 
     public override void _UnhandledInput(InputEvent e)
     {
-        if (_x == null || e.IsEcho() || (_flow != null && _flow.Screen != FlowScreen.Battle) || _crew.Lobby) return;
+        if (_x == null || e.IsEcho()) return;
+        if (ChatKey(e)) return;
+        if ((_flow != null && _flow.Screen != FlowScreen.Battle) || _crew.Lobby) return;
         foreach (var (name, run) in _bindings)
         {
             if (!e.IsActionPressed(name)) continue;
@@ -330,7 +333,7 @@ public sealed partial class Main : Node
 
     /// <summary>Everything on the console that registers controls: the panels, the strips, the view and the menu.</summary>
     private IEnumerable<IControlSource> Sources() =>
-        _panels.Values.Cast<IControlSource>().Append(_overlay).Append(_menu).Concat(_crew.Visible ? new IControlSource[] { _crew } : Array.Empty<IControlSource>()).Concat(_options.Visible ? new IControlSource[] { _options } : Array.Empty<IControlSource>()).Concat(_flow?.Sources() ?? Enumerable.Empty<IControlSource>());
+        _panels.Values.Cast<IControlSource>().Append(_overlay).Append(_menu).Concat(_crew.Visible ? new IControlSource[] { _crew } : Array.Empty<IControlSource>()).Concat(_chat.Visible ? new IControlSource[] { _chat } : Array.Empty<IControlSource>()).Concat(_options.Visible ? new IControlSource[] { _options } : Array.Empty<IControlSource>()).Concat(_flow?.Sources() ?? Enumerable.Empty<IControlSource>());
 
     /// <summary>Starts the scripted captain on data/playtests/&lt;name&gt;.json; --play=&lt;scenario id&gt; is the scenario it picks
     /// from the scene selector (the playtest skill).</summary>

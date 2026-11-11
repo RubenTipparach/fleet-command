@@ -138,7 +138,7 @@ public sealed partial class CoopNet : Node
         switch ((string?)m["t"])
         {
             case "welcome": Connected = true; Lock.Receive(m); break;
-            case "roster": case "tick": Lock.Receive(m); break;
+            case "roster": case "tick": case "event": Lock.Receive(m); break;
             default: OnFlow?.Invoke(m); break;
         }
     }

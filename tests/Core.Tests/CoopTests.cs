@@ -152,6 +152,34 @@ public class CoopTests
     }
 
     [Fact]
+    public void Chat_pings_and_directives_reach_every_peer_in_the_senders_name()
+    {
+        var p = new Pair(Sc("concord_battle"));
+        Ship wing = p.HB.Fleet().First(s => s != p.HB.Player);
+        p.Host.AskCrew(new JsonObject { ["op"] = "ship", ["ship"] = wing.Id, ["to"] = p.Guest.Me });
+        p.Steps(1);
+        p.Guest.Chat("On station.");
+        p.Guest.Ping(1000, -2000, null);
+        p.Flush();
+        p.HB.Lock(p.HB.EnemiesOf(p.HB.Player).First().Id);
+        p.Steps(1);
+        p.Host.Direct(p.Guest.Me, "attack");
+        p.Flush();
+        Assert.Equal("attack", p.Guest.DirectiveFor(p.Guest.Me)?.Order);
+        p.Guest.Ack();
+        p.Flush();
+        foreach (Lockstep side in new[] { p.Host, p.Guest })
+        {
+            Assert.Contains(side.Events, e => e.Kind == "chat" && e.By == p.Guest.Me && e.Text == "On station.");
+            Assert.Contains(side.Events, e => e.Kind == "ping" && e.X == 1000 && e.Z == -2000);
+            Assert.Contains(side.Events, e => e.Kind == "ack" && e.By == p.Guest.Me);
+            Assert.Null(side.DirectiveFor(p.Guest.Me));
+        }
+        Assert.Contains(p.HB.Log, l => l.By == "Admiral" && l.Text.StartsWith("Target locked"));
+        Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+    }
+
+    [Fact]
     public void A_battle_with_no_crew_steps_exactly_as_in_single_play()
     {
         Battle solo = new(TestData.Data, Sc("concord_battle"));
