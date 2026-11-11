@@ -27,6 +27,9 @@ public sealed class Crew
     public List<CrewMember> Members { get; } = new();
     /// <summary>Ships the admiral has given to members: ship id to its captain.</summary>
     public SortedDictionary<string, int> Ships { get; } = new(StringComparer.Ordinal);
+    /// <summary>The bridge each member moved to themselves (owner, 2026-11-11: the fleet and targeting managers "should let
+    /// you change bridge and change targets"), until they are given a ship or move again.</summary>
+    public SortedDictionary<int, string> Aboard { get; } = new();
     /// <summary>Roles given away on each bridge: (bridge, role) to the member holding it.</summary>
     public SortedDictionary<string, int> Held { get; } = new(StringComparer.Ordinal);
 
@@ -45,6 +48,7 @@ public sealed class Crew
     public string BridgeOf(int member)
     {
         foreach (var (ship, cap) in Ships) if (cap == member) return ship;
+        if (Aboard.TryGetValue(member, out string? at) && (at == Flag || Ships.ContainsKey(at))) return at;
         foreach (var (k, m) in Held) if (m == member) return k[..k.IndexOf('|')];
         return Flag;
     }
@@ -83,9 +87,15 @@ public sealed class Crew
 
     /// <summary>The targeting roles a member's lock moves: the targeting roles they hold; or, from the tab of a role they open
     /// but another holds (a captain stepping in), that role alone.</summary>
-    public IReadOnlyList<string> LockRoles(int member, string? openTab)
+    public IReadOnlyList<string> LockRoles(int member, string? openTab, IReadOnlyList<string>? chosen = null)
     {
         string b = BridgeOf(member);
+        // the stations the member picked on the Tactical or Fleet station's Lock for keys: those of them they open that target
+        if (chosen is { Count: > 0 })
+        {
+            var picked = chosen.Where(r => Roles.Has(r) && Roles[r].Targets && Opens(member, r)).Distinct().OrderBy(r => r, StringComparer.Ordinal).ToArray();
+            if (picked.Length > 0) return picked;
+        }
         if (openTab != null && Roles.RoleOfTab(openTab) is { } r && Roles[r].Targets && Opens(member, r) && HolderOf(b, r) != member)
             return new[] { r };
         return Roles.List.Where(x => x.Targets && HolderOf(b, x.Id) == member).Select(x => x.Id).ToArray();
@@ -105,6 +115,7 @@ public sealed class Crew
     {
         if (id == AdmiralId) return;
         Members.RemoveAll(m => m.Id == id);
+        Aboard.Remove(id);
         foreach (string s in Ships.Where(kv => kv.Value == id).Select(kv => kv.Key).ToList()) Ships.Remove(s);
         foreach (string k in Held.Where(kv => kv.Value == id).Select(kv => kv.Key).ToList()) Held.Remove(k);
     }
@@ -118,7 +129,7 @@ public sealed class Crew
         if (CaptainOf(bridge) != by) return "only the captain assigns the roles";
         if (!Roles.Has(role)) return $"no role '{role}'";
         if (Member(to) == null) return "no such crew member";
-        if (to != by && BridgeOf(to) != bridge && (Ships.ContainsValue(to) || Held.ContainsValue(to))) return $"{NameOf(to)} is on another bridge";
+        if (to != by && BridgeOf(to) != bridge) return $"{NameOf(to)} is on another bridge";
         if (to == CaptainOf(bridge)) Held.Remove(Key(bridge, role));
         else Held[Key(bridge, role)] = to;
         return null;
@@ -134,9 +145,28 @@ public sealed class Crew
         if (Member(to) == null) return "no such crew member";
         foreach (string s in Ships.Where(kv => kv.Value == to).Select(kv => kv.Key).ToList()) Ships.Remove(s);
         foreach (string k in Held.Where(kv => kv.Value == to).Select(kv => kv.Key).ToList()) Held.Remove(k);
+        Aboard.Remove(to);
         Ships[shipId] = to;
         return null;
     }
+
+    /// <summary>Why a member may not move to a bridge (the flagship's, or a ship another member captains), or null (and they
+    /// are there, holding no role until its captain gives them one). The admiral changes ship by taking command; a ship's
+    /// captain stays on their own bridge.</summary>
+    public string? MoveTo(int member, string bridge)
+    {
+        if (Member(member) == null) return "not aboard";
+        if (member == AdmiralId) return "the admiral takes command of a ship instead";
+        if (Ships.ContainsValue(member)) return "a captain stays on their own bridge";
+        if (bridge != Flag && !Ships.ContainsKey(bridge)) return "no crewed bridge there";
+        if (BridgeOf(member) == bridge) return "already there";
+        foreach (string k in Held.Where(kv => kv.Value == member).Select(kv => kv.Key).ToList()) Held.Remove(k);
+        Aboard[member] = bridge;
+        return null;
+    }
+
+    /// <summary>The bridges a member may be on: the flagship's and each ship a member captains.</summary>
+    public IEnumerable<string> Bridges() => new[] { Flag }.Concat(Ships.Keys);
 
     /// <summary>A member's ship moved (its captain took command of another ship of the fleet): their bridge and its roles
     /// move with them.</summary>
@@ -145,5 +175,6 @@ public sealed class Crew
         if (!Ships.Remove(from, out int cap)) return;
         Ships[to] = cap;
         foreach (string k in Held.Keys.Where(k => k.StartsWith(from + "|")).ToList()) { int m = Held[k]; Held.Remove(k); Held[to + k[from.Length..]] = m; }
+        foreach (int m in Aboard.Where(kv => kv.Value == from).Select(kv => kv.Key).ToList()) Aboard[m] = to;
     }
 }

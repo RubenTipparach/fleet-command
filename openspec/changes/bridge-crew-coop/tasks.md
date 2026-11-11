@@ -30,6 +30,7 @@
 
 ## 6. The crew layer (owner, 2026-11-11: "someway for players to see and interact with crew members in game")
 - [x] 6.0 Player names in the log, chat, pings, the admiral's directives with Aye, crew notes, the fleet manifest
+- [x] 6.1 Change bridge and Lock for over the Fleet and Tactical stations (owner, 2026-11-11: "There's the fleet manager and a targeting manager tap both should let you change bridge and change targets"): `docs/screenshots/game/coop-crew-strip.png`
 
 ## 7. Later
 - [ ] 7.1 The captain's menu mockup in each skin (the Concord first), and the console's sync with it

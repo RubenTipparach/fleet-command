@@ -180,6 +180,33 @@ public class CoopTests
     }
 
     [Fact]
+    public void A_member_moves_to_another_bridge_and_locks_for_the_stations_they_pick()
+    {
+        var p = new Pair(Sc("concord_battle"));
+        int third = p.Host.HostJoin("Third");
+        p.Flush();
+        Ship wing = p.HB.Fleet().First(s => s != p.HB.Player);
+        // the guest captains the wingman; the third member moves to that bridge and is given its science
+        p.Host.AskCrew(new JsonObject { ["op"] = "ship", ["ship"] = wing.Id, ["to"] = p.Guest.Me });
+        p.Steps(1);
+        Assert.Null(p.Host.Crew.MoveTo(third, wing.Id));
+        Assert.Equal(wing.Id, p.Host.Crew.BridgeOf(third));
+        Assert.NotNull(p.Host.Crew.MoveTo(p.Guest.Me, Crew.Flag));   // a captain stays on their own bridge
+        Assert.NotNull(p.Host.Crew.MoveTo(Crew.AdmiralId, wing.Id));  // the admiral takes command instead
+        // the admiral, holding every station of the flagship, locks for Science alone
+        Ship[] foes = p.HB.EnemiesOf(p.HB.Player).OrderBy(s => s.Order).ToArray();
+        p.HB.Lock(foes[0].Id);
+        p.Steps(1);
+        p.Host.LockFor = () => new[] { "science" };
+        p.HB.Lock(foes[1].Id);
+        p.Steps(1);
+        Ship flag = p.Host.Flag!;
+        Assert.Equal(foes[1].Id, p.HB.TargetOf(flag, "science")?.Id);
+        Assert.Equal(foes[0].Id, p.HB.TargetOf(flag, "weapons")?.Id);
+        Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+    }
+
+    [Fact]
     public void A_battle_with_no_crew_steps_exactly_as_in_single_play()
     {
         Battle solo = new(TestData.Data, Sc("concord_battle"));

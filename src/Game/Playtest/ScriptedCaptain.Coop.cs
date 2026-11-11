@@ -77,6 +77,8 @@ public sealed partial class ScriptedCaptain
                     await Frames(20);
                     await Snap("crew-manifest");
                     await Click("crew.done");
+                    // the targeting station's crew strip (change bridge, lock for), as the admiral sees it
+                    if (await Click("st.tactical") == null) { await Frames(10); await Snap("crew-strip"); }
                 }
             }
         }

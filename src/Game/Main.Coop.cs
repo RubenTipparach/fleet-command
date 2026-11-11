@@ -51,6 +51,7 @@ public sealed partial class Main
         {
             Note = line => GD.Print(line),
             OpenTab = () => "st." + _x.State.Station,
+            LockFor = () => _x.State.LockFor.OrderBy(r => r, StringComparer.Ordinal).ToList(),
             Clock = () => (long)Time.GetTicksMsec(),
         };
         // every crew event goes into the battle's log too, in its sender's name (the log is no part of the checksum)

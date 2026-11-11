@@ -1,6 +1,7 @@
 // ConsoleContext: what every console panel shares, wired once by the composition root (Main): the battle, the skin,
 // the fonts (in the skin's type), the actions, the hover card and the console's own state (the open station and ship
 // page, the expanded panel, pause and the menu). Panels read it and call its actions; they hold no rules of their own.
+using System.Linq;
 using FleetCommand.ConsoleModel;
 using FleetCommand.Data;
 using FleetCommand.Game.Ui.Kit;
@@ -21,6 +22,8 @@ public sealed partial class ConsoleState
     public bool OptionsOpen;
     /// <summary>The helm's free-angle high energy turn is waiting for a click in the view.</summary>
     public bool PlacingHet;
+    /// <summary>Co-op: the targeting stations this player's locks go to (the Lock for keys); none, every one they hold.</summary>
+    public readonly System.Collections.Generic.HashSet<string> LockFor = new();
     /// <summary>Co-op: the view's Ping key is waiting for a click on a ship or a point.</summary>
     public bool PlacingPing;
     /// <summary>The view's Target key: shows or hides the Target box (the locked target's systems display).</summary>
@@ -74,7 +77,7 @@ public sealed class ConsoleContext
     {
         Ship me = Battle.Player;
         if (Coop == null || me.RoleTargets == null) return Battle.TargetOf(me);
-        var roles = Coop.Crew.LockRoles(Coop.Me, "st." + State.Station);
+        var roles = Coop.Crew.LockRoles(Coop.Me, "st." + State.Station, State.LockFor.OrderBy(r => r, System.StringComparer.Ordinal).ToList());
         return roles.Count > 0 ? Battle.TargetOf(me, roles[0]) : Battle.TargetOf(me);
     }
 

@@ -48,6 +48,8 @@ public sealed class Lockstep
     /// <summary>Checksums compared and found equal, and found different (a crew peer's count; the host checks none).</summary>
     public int Synced { get; private set; }
     public int Desyncs { get; private set; }
+    /// <summary>The targeting stations this peer's player picked for their locks (the Lock for keys), or none.</summary>
+    public Func<IReadOnlyList<string>> LockFor = () => Array.Empty<string>();
     /// <summary>The console tab this peer has open (a lock from it may step into another's role: Crew.LockRoles).</summary>
     public Func<string?> OpenTab = () => null;
     /// <summary>Sends a message: the host to every crew peer, a crew peer to the host.</summary>
@@ -137,6 +139,7 @@ public sealed class Lockstep
         // checksum)
         if (Crew.Refuses(Me, name) is { } why) { Battle?.Say("Bridge", $"Not yours to order: {why}."); Note($"COOP_REFUSED {Crew.NameOf(Me)} {name}: {why}"); return; }
         var o = new JsonObject { ["t"] = "order", ["tab"] = OpenTab(), ["name"] = name, ["args"] = Args(args) };
+        if (LockFor() is { Count: > 0 } lf) o["for"] = new JsonArray(lf.Select(r => (JsonNode?)JsonValue.Create(r)).ToArray());
         if (IsHost) HostOrder(Me, o);
         else Send(o);
     }
@@ -400,7 +403,7 @@ public sealed class Lockstep
                 var args = (o["args"]?.AsArray() ?? new JsonArray()).Select(Arg).ToList();
                 string name = (string?)o["name"] ?? "";
                 bool captain = Crew.CaptainOf(bridge) == by;
-                Ship now = b.ApplyAs(ship, Crew.LockRoles(by, (string?)o["tab"]), captain, () => b.ApplyCall(name, args), Crew.NameOf(by));
+                Ship now = b.ApplyAs(ship, Crew.LockRoles(by, (string?)o["tab"], o["for"]?.AsArray().Select(n => (string?)n ?? "").ToArray()), captain, () => b.ApplyCall(name, args), Crew.NameOf(by));
                 if (now != ship && bridge != Crew.Flag) Crew.MoveShip(ship.Id, now.Id);
             }
             if ((bool?)t["step"] == true) b.Step();
@@ -431,6 +434,9 @@ public sealed class Lockstep
                     Battle.SetHelmed(ship, to != Crew.AdmiralId);
                 }
                 break;
+            case "bridge":
+                why = Crew.MoveTo(by, (string?)op["bridge"] ?? "");
+                break;
             default: why = "unknown change"; break;
         }
         if (why != null) Note($"COOP_REFUSED {Crew.NameOf(by)} {(string?)op["op"]}: {why}");
@@ -440,6 +446,14 @@ public sealed class Lockstep
             string what = (string?)op["op"] == "role" ? Crew.Roles[(string)op["role"]!].Name
                 : Battle?.ShipById((string?)op["ship"])?.Name is { } sn ? $"command of the {sn}" : "a ship";
             bool ship = (string?)op["op"] == "ship";
+            if ((string?)op["op"] == "bridge")
+            {
+                string where = (string?)op["bridge"] == Crew.Flag ? $"the {_flag?.Name ?? "flagship"}'s" : $"the {Battle?.ShipById((string?)op["bridge"])?.Name ?? "ship"}'s";
+                LocalEvent(by, $"moved to {where} bridge");
+                if (by == Me) ViewOwn();
+                CrewChanged?.Invoke();
+                return;
+            }
             LocalEvent(by, ship && to == Crew.AdmiralId ? $"gave {what} back to the AI" : !ship && to == Crew.CaptainOf(Crew.BridgeOf(by)) ? $"took back {what}" : $"gave {what} to {Crew.NameOf(to)}");
         }
         CrewChanged?.Invoke();
@@ -453,13 +467,15 @@ public sealed class Lockstep
         var members = new JsonArray(); foreach (CrewMember m in c.Members) members.Add(new JsonObject { ["id"] = m.Id, ["name"] = m.Name });
         var ships = new JsonObject(); foreach (var (k, v) in c.Ships) ships[k] = v;
         var held = new JsonObject(); foreach (var (k, v) in c.Held) held[k] = v;
-        return new JsonObject { ["members"] = members, ["ships"] = ships, ["held"] = held };
+        var aboard = new JsonObject(); foreach (var (k, v) in c.Aboard) aboard[k.ToString()] = v;
+        return new JsonObject { ["members"] = members, ["ships"] = ships, ["held"] = held, ["aboard"] = aboard };
     }
 
     /// <summary>Replaces a roster with one sent as JSON (CrewJson).</summary>
     public static void ReadCrew(Crew c, JsonObject j)
     {
-        c.Members.Clear(); c.Ships.Clear(); c.Held.Clear();
+        c.Members.Clear(); c.Ships.Clear(); c.Held.Clear(); c.Aboard.Clear();
+        if (j["aboard"] is JsonObject ab) foreach (var (k, v) in ab) c.Aboard[int.Parse(k)] = (string)v!;
         foreach (JsonNode? m in j["members"]!.AsArray()) c.Members.Add(new CrewMember((int)m!["id"]!, (string)m["name"]!));
         foreach (var (k, v) in j["ships"]!.AsObject()) c.Ships[k] = (int)v!;
         foreach (var (k, v) in j["held"]!.AsObject()) c.Held[k] = (int)v!;
