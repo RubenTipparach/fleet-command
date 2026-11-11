@@ -205,7 +205,8 @@ public sealed partial class ScriptedCaptain
                 await Frames(10);
             }
             Battle bt = co.Battle;
-            await Frames(60);
+            // the admiral gives roles and ships in the battle's first seconds: the seat is read once they settle
+            await Seconds(4);
             string bridge = co.Crew.BridgeOf(co.Me);
             bool captain = co.Crew.CaptainOf(bridge) == co.Me;
             var mine = co.Crew.Roles.List.Where(r => co.Crew.HolderOf(bridge, r.Id) == co.Me).Select(r => r.Id).ToList();

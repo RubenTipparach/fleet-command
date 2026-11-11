@@ -19,6 +19,12 @@ public sealed partial class ChatBox : ConsolePanel
     private const int Lines = 6;
     private const long ShowMs = 30000;
 
+    // where the box draws something this frame (its lines' backing and its Chat key): the only place it takes the pointer, so
+    // it never covers a control under it (the crew sheet's manifest, the view)
+    private Rect2 _live;
+
+    public override bool _HasPoint(Vector2 point) => _live.HasPoint(point);
+
     /// <summary>Whether a line is open for typing.</summary>
     public bool Typing => _line.Visible;
 
@@ -60,7 +66,9 @@ public sealed partial class ChatBox : ConsolePanel
         float w = Size.X - 28, x = 14, lh = 24, bottom = Size.Y - 48;
         var shown = co.Events.Where(e => Typing || now - e.Received < ShowMs).TakeLast(Typing ? Lines * 2 : Lines).ToList();
         float y = bottom - shown.Count * lh;
-        if (Typing || shown.Count > 0) DrawRect(new Rect2(x - 6, y - 6, w + 12, shown.Count * lh + (Typing ? 52 : 8)), new Color(0, 0, 0, Typing ? 0.6f : 0.35f));
+        var back = new Rect2(x - 6, y - 6, w + 12, shown.Count * lh + (Typing ? 52 : 8));
+        if (Typing || shown.Count > 0) DrawRect(back, new Color(0, 0, 0, Typing ? 0.6f : 0.35f));
+        _live = Typing ? back : new Rect2(x, bottom + 6, 96, 32);
         foreach (CoopEvent e in shown)
         {
             float fade = Typing ? 1 : Math.Clamp(1 - (now - e.Received - (ShowMs - 5000)) / 5000f, 0, 1);
