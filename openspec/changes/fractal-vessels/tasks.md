@@ -1,0 +1,27 @@
+# Tasks: fractal-vessels
+
+## 1. Mockup
+
+- [x] 1.1 Proposal, design and spec delta
+- [x] 1.2 Mockup 37, `docs/mockups/fractal-vessels.html`, with:
+  - the raymarch on a box proxy that writes depth;
+  - the three forms, each its own program;
+  - the Petrel at true scale;
+  - shape and cost controls;
+  - a frame-time readout;
+  - damage.
+- [x] 1.3 Named shots at desktop size (`SHOOT_SIZES=desktop`, the owner: "dont worry about phone"), looked at
+- [x] 1.4 Published. Then recorded in `mockup-work.md`, the tracker's repository copy and `docs/artifacts/fractal-vessels/`
+- [x] 1.5 Survey questions FV1-FV5 on the culture framing, the faction, the forms, phones and the game's hits
+- [ ] 1.6 The owner's review (approval for build, then for implementation)
+
+## 2. In the game (once approved for implementation)
+
+- [ ] 2.1 Documented exceptions in CLAUDE.md section 14: no mesh, no UVs and no baked maps for a raymarched vessel
+- [ ] 2.2 One distance-function source, `assets/shaders/fractal/<form>.gdshaderinc`. It is included by a Godot spatial
+  shader on a box proxy that writes `DEPTH`, lit by the scene's lights.
+- [ ] 2.3 The same functions in C# (`src/Core/Sim/Fractal/`), for hits and the damage zones. A test samples both at fixed
+  points and fails on any difference over 1e-4.
+- [ ] 2.4 Damage from the simulation's zones: fold levels lost and holes cut, passed to the shader as uniforms
+- [ ] 2.5 Phones, per survey FV4
+- [ ] 2.6 Game stills beside the mockup's shots, `docs/design/mockup-sync.md`, and a playtest on the owner's PC

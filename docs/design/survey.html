@@ -482,6 +482,20 @@ const SECTIONS = [
       { id: 'DW6', q: 'When the reactor starts cooling back to safe, the warning reads "Reactor cooling, safe in N s" in amber until it is safe?', options: ['Yes', 'Clear it as soon as it starts cooling'], rec: 0,
         why: 'You see that your fix is working and how long until you are clear.' },
     ] },
+  { tag: 'FV', name: 'Fractal vessels (change fractal-vessels, mockup 37)',
+    lead: 'You asked (2026-11-10) for a fractal, interdimensional faction with raymarched ships. Mockup 37 draws three raymarched vessels, one for each school of the Axiom\'s draft culture: a 4D Julia set sliced into our space, a chain of folded Menger blocks, and a branching tree. A culture is yours to set, so these are provisional.',
+    qs: [
+      { id: 'FV1', q: 'Whose vessels are these?', options: ['The Axiom\'s: they replace its placeholder line once approved', 'A new faction (name it in the notes)', 'Another faction (say which in the notes)'], rec: 0,
+        why: 'The Axiom is already drafted as the people who think in rules and their iteration (N1); a second fractal faction would split one idea in two.' },
+      { id: 'FV2', q: 'What is the vessel?', options: ['Made: a people who think in fractals build their ships by a school\'s rule (the escape-time school, the tilers, the branchers)', 'The being itself: what we fight is the 3D slice of a being from a higher dimension; it has no ships', 'Both: the beings live in the higher dimension and build vessels there, and we see their slice'], rec: 0,
+        why: 'The first keeps the Axiom\'s console and culture whole and never reads a design from a body. The second is your "interdimensional being" taken literally: the vessel is the creature, so its console, emblem and conduct carry the culture instead.' },
+      { id: 'FV3', q: 'Which forms make the line?', options: ['All three, one per school: the frigate a tree, the cruiser a lattice, the capital a Julia slice', 'Only the Julia slice, at every size', 'Only the lattice and the tree', 'Different (say in the notes)'], rec: 0,
+        why: 'Three schools, three silhouettes a captain can tell apart at range; the Julia slice, the most alien, sits at the top.' },
+      { id: 'FV4', q: 'How do phones draw them?', options: ['A mesh baked from the same field on phones (a few levels of detail); the raymarch on desktop', 'The raymarch on phones too, at a lower render scale and fewer steps', 'Desktop only: the faction is not offered on phones'], rec: 0,
+        why: 'A raymarch costs per pixel, and a 2022 phone must hold 60 fps (T3). A mesh baked from the same formula keeps one source.' },
+      { id: 'FV5', q: 'How does the game work out hits on a vessel with no mesh?', options: ['The same distance formula in C# for the simulation, tied to the shader\'s by a test that samples both', 'A simple stand-in shape (a capsule per form) for hits only'], rec: 0,
+        why: 'Shots then hit what you see, holes included; the test keeps the two copies from drifting (CLAUDE.md 6.1).' },
+    ] },
 ];
 
 const DECIDED = [

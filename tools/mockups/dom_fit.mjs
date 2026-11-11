@@ -16,7 +16,9 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 const { chromium } = createRequire(import.meta.url)('playwright');
 const [target, only] = process.argv.slice(2);
-const SIZES = [['desktop', { width: 1920, height: 1080 }], ['phone', { width: 844, height: 390 }], ['portrait', { width: 390, height: 844 }]];
+const SIZES = [['desktop', { width: 1920, height: 1080 }], ['phone', { width: 844, height: 390 }], ['portrait', { width: 390, height: 844 }]]
+  // SHOOT_SIZES=desktop (a comma list) checks only those sizes, as shoot.mjs does, for a page that is desktop-only for now.
+  .filter(([n]) => !process.env.SHOOT_SIZES || process.env.SHOOT_SIZES.split(',').includes(n));
 // The 2D canvas stays on the CPU: on the software GPU every toDataURL of a painted piece reads back from swiftshader, and
 // a page of painted skins took over four minutes to load (2026-11-07); WebGL still runs on swiftshader.
 const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--disable-accelerated-2d-canvas'] });
