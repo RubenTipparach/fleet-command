@@ -3,6 +3,7 @@
 // (amb_bridge; owner, 2026-11-07: "use amb_bridge_brown", "put in game now") loops under a battle. Every file, bus and
 // level comes from data/audio/cues.json (AudioCues); this class only plays them. Four key players in turn, so fast
 // presses overlap instead of cutting each other off.
+using System;
 using FleetCommand.Data;
 using Godot;
 
@@ -71,5 +72,8 @@ public sealed partial class ConsoleSounds : Node
         if (Log) GD.Print($"PLAYTEST_SOUND {cueId} (bed)");
     }
 
-    private static AudioStream? Load(AudioCue cue) => GD.Load<AudioStream>("res://" + cue.File);
+    private static readonly Random Takes = new(11);
+
+    // one of the cue's takes at random
+    private static AudioStream? Load(AudioCue cue) => GD.Load<AudioStream>("res://" + cue.Files[Takes.Next(cue.Files.Count)]);
 }

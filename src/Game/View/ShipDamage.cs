@@ -7,6 +7,10 @@
 // outer cell of the main hull or a pylon, nacelle or command block, with a big blast, its edges charred and burning, the
 // faces where it broke closed by cut faces with rooms behind them (cutface.gdshader). When the ship is destroyed it comes
 // apart as the mockup's core breach does: for 3.6 s outer pieces blow off one by one, then the main blast throws the rest.
+// A piece that breaks off leaves the ship's node for a debris node of its own in the battle (owner, 2026-11-10: "pieces
+// that fall off ships need to be their own nodes instead of child node. That way when parent moves or rotates detached
+// ship pieces are independent"): it keeps where it was, flies on with the ship's speed at the moment it broke plus its
+// own throw, and tumbles about its own axis in the world, whatever the hull it left does after.
 // The cells are the mockup's own fracture (exported by tools/mockups/export_ships.mjs into the manifest's "break"): each is a
 // copy of the body whose hull shader keeps only that cell's skin, so no mesh is cut here. View only: the simulation never
 // reads it, and its randomness (where on the plating a shot lands) is the view's own, seeded per ship.
@@ -36,6 +40,8 @@ public sealed class ShipDamage
 
     private readonly Node3D _ship;      // the glb's root, scaled to the class's battle length
     private readonly Node _fx;          // where effects go (the battle view)
+    private Node3D? _debris;            // where pieces broken off go, in the battle view (made with the first)
+    private Vector3 _shipAt = new(float.NaN, 0, 0), _shipVel;   // the hull's place last step, and its velocity, scene units a second
     private readonly Ship _sim;
     private readonly float _upm;        // scene units per metre
     private readonly float _lenM;       // the ship's length in its model (mockup metres)
@@ -73,7 +79,7 @@ public sealed class ShipDamage
     {
         public required Node3D Node;
         public required Vector3 Centre;          // mockup ship space
-        public Vector3 Vel, Spin;                 // metres a second in the ship's frame; radians a second
+        public Vector3 Vel, Spin;                 // scene units a second in the world; radians a second about a world axis (from Detach)
         public bool Off;
         public float Age;
         public double Hit;                        // hull points of damage it has taken
@@ -416,12 +422,24 @@ public sealed class ShipDamage
         Burn(p);
     }
 
-    private void Detach(Piece p, Vector3 vel, Vector3 spin)
+    // A piece breaks off with a throw (vel, units of the ship's frame a second) and a spin (radians a second about an axis of
+    // the ship's frame). Unless it is a cell of a chunk that goes with it (free false), it leaves the ship's node for the
+    // battle's debris node, where it is placed as it was, and its throw and spin are turned into the world's, the ship's
+    // own speed added, so nothing the hull does after moves it.
+    private void Detach(Piece p, Vector3 vel, Vector3 spin, bool free = true)
     {
-        p.Off = true; p.Vel = vel; p.Spin = spin; p.Age = 0;
+        p.Off = true; p.Age = 0;
+        Basis frame = _ship.GlobalTransform.Basis;
+        p.Vel = free ? frame * vel + _shipVel : Vector3.Zero;
+        p.Spin = free ? frame.Orthonormalized() * spin : Vector3.Zero;
+        if (free)
+        {
+            if (_debris == null) { _debris = new Node3D { Name = _sim.Id + "_debris" }; _fx.AddChild(_debris); }
+            p.Node.Reparent(_debris, true);
+        }
         if (p.Group == 0) p.Group = ++_groups;
         // a cluster's cells go with it: each torn from the ship, none from the others in its chunk
-        foreach (Piece c in p.Members) { c.Group = p.Group; Detach(c, Vector3.Zero, Vector3.Zero); }
+        foreach (Piece c in p.Members) { c.Group = p.Group; Detach(c, Vector3.Zero, Vector3.Zero, free: false); }
         foreach (ShaderMaterial m in p.Mats) m.SetShaderParameter("cut_heat", 1f);
         // the cells round a break open toward it: faces show and edges char only between cells in different chunks
         foreach (Body b in _bodies)
@@ -462,7 +480,8 @@ public sealed class ShipDamage
     private void Burn(Piece p)
     {
         float s = Math.Max(0.6f, _lenM / 150f);
-        Vector3 local = Game(p.Centre) - PlaceInShip(p.Node);
+        // (where its centre is, in its own node's frame: it may have left the ship for the debris node already)
+        Vector3 local = p.Node.ToLocal(World(p.Centre));
         // its own flame trail (owner, 2026-11-04: "my ship parts itself, should have that flame trail"); a big piece two
         Fx.Flame(p.Node, local, 0.07f * _lenU, 24f);
         Vector3 off = new Vector3(R(-1, 1), R(-0.4f, 0.4f), R(-1, 1)) * (0.08f * _lenM);
@@ -550,6 +569,10 @@ public sealed class ShipDamage
     {
         if (dt <= 0) return;
         if (_endT >= 0) _endT += dt;
+        // the hull's velocity, for a piece that breaks off to fly on with
+        Vector3 at = _ship.GlobalPosition;
+        if (!float.IsNaN(_shipAt.X)) _shipVel = (at - _shipAt) / dt;
+        _shipAt = at;
         for (int i = _aims.Count - 1; i >= 0; i--) { var a = _aims[i]; if ((a.Age += dt) > AimWaitS) _aims.RemoveAt(i); else _aims[i] = a; }
         bool cooled = false;
         for (int i = 0; i < MaxScars; i++) if (_heat[i] > 0) { _heat[i] = Math.Max(0, _heat[i] - dt / ScorchCoolS); cooled = true; }
@@ -569,12 +592,20 @@ public sealed class ShipDamage
         {
             if (!p.Off) continue;
             p.Age += dt;
-            p.Node.Position += p.Vel * dt;
-            if (p.Spin.LengthSquared() > 0) p.Node.Rotate(p.Spin.Normalized(), p.Spin.Length() * dt);
+            // in the world (the debris node), not the ship's frame; a chunk's cells ride their chunk
+            if (p.Vel.LengthSquared() > 0) p.Node.GlobalPosition += p.Vel * dt;
+            if (p.Spin.LengthSquared() > 0) p.Node.GlobalRotate(p.Spin.Normalized(), p.Spin.Length() * dt);
             float heat = Math.Max(0, 1 - p.Age / EdgeCoolS);
             foreach (ShaderMaterial m in p.Mats) m.SetShaderParameter("cut_heat", heat);
             foreach (Node3D f in p.Faces) if (f is MeshInstance3D mi && mi.MaterialOverride is ShaderMaterial fm) fm.SetShaderParameter("heat", heat);
         }
+    }
+
+    /// <summary>Frees the pieces broken off (the battle view's rebuild frees the ship models; the pieces are no longer theirs).</summary>
+    public void FreeDebris()
+    {
+        _debris?.QueueFree();
+        _debris = null;
     }
 
     // ---- Frames ------------------------------------------------------------------------------------------------------

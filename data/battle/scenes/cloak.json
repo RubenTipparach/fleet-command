@@ -1,5 +1,5 @@
 {
- "_doc": "The battle console mockup's test scenes for cloaking, sensors, ECM and ECCM, and boarding defence (SCENES.cloak, nebula and repel), in the format of data/battle/scenarios.json, appended to its list in menu order, each from both sides with the approved ships: the Krai line stands in for the mockup's Kethran and Vos ships, as in the other scenes, and the Concord's cloak-fitted destroyer is the Krai's quarry. Positions in metres (the mockup's units times 100). Per ship, the cloak package's fields (src/Core/Data/DataLoader.Cloak.cs): cloaked, ai_cloak, ecm, eccm, power_e (boxes for some systems; the rest are the class's), marines, ai_board and board_first_s, shields_down, battery_frac. Per scenario: nebula (x_m, z_m, r_m, density) and repel (won once the boarders are spent). The Kelvane Institute plays each too (kelvane_<scene>, 2026-11-07, owner: \"test all kelvan general mission scenarios\"): the Concord's scene with the Institute's own ships in the Concord's places (the cruiser Patience, the destroyer Candour carrying troops, the frigate Parallax in distress, Lyceum Depot), each under a sky of its own. So does the Ssarith Hunt (ssarith_<scene>, 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its ships in the same places (the Hunt Cruiser, the Trident or Hooded Lance frigate for the destroyer and the troop carrier, the Forked Prow in distress, Pell Reach the depot), named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4).",
+ "_doc": "The battle console mockup's test scenes for cloaking, sensors, ECM and ECCM, and boarding defence (SCENES.cloak, nebula and repel), in the format of data/battle/scenarios.json, appended to its list in menu order, each from both sides with the approved ships: the Krai line stands in for the mockup's Kethran and Vos ships, as in the other scenes, and the Concord's cloak-fitted destroyer is the Krai's quarry. Positions in metres (the mockup's units times 100). Per ship, the cloak package's fields (src/Core/Data/DataLoader.Cloak.cs): cloaked, ai_cloak, ecm, eccm, power_e (boxes for some systems; the rest are the class's), marines, ai_board and board_first_s, shields_down, battery_frac. Per scenario: nebulae (a list of plumes, each x_m, z_m, r_m, density and a look of data/space/plumes.json, violet when left out) and repel (won once the boarders are spent). The Kelvane Institute plays each too (kelvane_<scene>, 2026-11-07, owner: \"test all kelvan general mission scenarios\"): the Concord's scene with the Institute's own ships in the Concord's places (the cruiser Patience, the destroyer Candour carrying troops, the frigate Parallax in distress, Lyceum Depot), each under a sky of its own. So does the Ssarith Hunt (ssarith_<scene>, 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its ships in the same places (the Hunt Cruiser, the Trident or Hooded Lance frigate for the destroyer and the troop carrier, the Forked Prow in distress, Pell Reach the depot), named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4).",
  "scenarios": [
   {
    "id": "concord_cloak",
@@ -135,7 +135,7 @@
    "seed": 20261109,
    "objective": "Find and destroy the raider hiding in the nebula",
    "say": ["Science", "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 60 km."],
-   "nebula": { "x_m": 0, "z_m": -70000, "r_m": 48000, "density": 0.85 },
+   "nebulae": [{ "x_m": 0, "z_m": -70000, "r_m": 48000, "density": 0.85 }],
    "ships": [
     { "id": "resolute", "name": "Resolute", "captain": "Capt. Ardent", "class": "ca", "faction": "concord", "side": 0, "x_m": 0, "z_m": 10000, "heading_deg": 0, "speed_m_s": 600,
       "power_e": { "sensors": 4, "repair": 0, "engines": 5 } },
@@ -151,7 +151,7 @@
    "seed": 20261110,
    "objective": "Find and destroy the raider hiding in the nebula",
    "say": ["Science", "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 60 km."],
-   "nebula": { "x_m": 0, "z_m": -70000, "r_m": 48000, "density": 0.85 },
+   "nebulae": [{ "x_m": 0, "z_m": -70000, "r_m": 48000, "density": 0.85 }],
    "ships": [
     { "id": "kharz", "name": "Kharz", "captain": "Warlord Utrek", "class": "krai_ca", "faction": "krai", "side": 0, "x_m": 0, "z_m": 10000, "heading_deg": 0, "speed_m_s": 600,
       "power_e": { "sensors": 4, "weapons": 5 } },
@@ -170,12 +170,7 @@
     "Science",
     "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 60 km."
    ],
-   "nebula": {
-    "x_m": 0,
-    "z_m": -70000,
-    "r_m": 48000,
-    "density": 0.85
-   },
+   "nebulae": [{ "x_m": 0, "z_m": -70000, "r_m": 48000, "density": 0.85 }],
    "ships": [
     {
      "id": "patience",
@@ -225,12 +220,7 @@
     "Science",
     "A raider jams from the nebula: raise ECCM above its ECM in Science, or close to 60 km."
    ],
-   "nebula": {
-    "x_m": 0,
-    "z_m": -70000,
-    "r_m": 48000,
-    "density": 0.85
-   },
+   "nebulae": [{ "x_m": 0, "z_m": -70000, "r_m": 48000, "density": 0.85 }],
    "ships": [
     {
      "id": "hunt_cruiser",

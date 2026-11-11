@@ -65,19 +65,17 @@ public sealed partial class Battle
 
     public void ToggleOrbitDir() => Player.OrbitDir = -Player.OrbitDir;
 
-    // the helm's ranges move in steps of RangeStepKm, inside the tuning's hold limits
-    private const double RangeStepKm = 5;
-    private double StepKm(double v) => Math.Clamp(Math.Round(v / RangeStepKm) * RangeStepKm, Tuning.HoldMinKm, Tuning.HoldMaxKm);
+    /// <summary>The distance hold range keeps, snapped to the helm's range scale (HelmRange: 1 km steps up to 15 km, 5 km
+    /// above).</summary>
+    public void SetHoldKm(double km) { if (double.IsFinite(km)) Player.HoldKm = HelmRange.Snap(km, Tuning); }
 
-    /// <summary>The distance hold range keeps, in steps of 5 km.</summary>
-    public void SetHoldKm(double km) { if (double.IsFinite(km)) Player.HoldKm = StepKm(km); }
-
-    /// <summary>Hit and run's nearest and farthest range, at least one step (5 km) apart.</summary>
+    /// <summary>Hit and run's nearest and farthest range, on the helm's range scale, at least one step apart.</summary>
     public void SetRunRange(double lo, double hi)
     {
         if (!double.IsFinite(lo) || !double.IsFinite(hi)) return;
-        Player.RunMinKm = Math.Min(StepKm(lo), StepKm(hi) - RangeStepKm);
-        Player.RunMaxKm = Math.Max(StepKm(hi), Player.RunMinKm + RangeStepKm);
+        double h = HelmRange.Snap(hi, Tuning);
+        Player.RunMinKm = HelmRange.Snap(Math.Min(HelmRange.Snap(lo, Tuning), h - HelmRange.StepAt(h, Tuning)), Tuning);
+        Player.RunMaxKm = Math.Max(h, HelmRange.Snap(Player.RunMinKm + HelmRange.StepAt(Player.RunMinKm, Tuning), Tuning));
     }
 
     /// <summary>True while a high energy turn cannot be ordered (one under way, broken down, or the battery short).</summary>
@@ -180,7 +178,7 @@ public sealed partial class Battle
     private void AutoFireStep()
     {
         Ship p = Player;
-        if (!p.AutoFire || !p.Alive || p.Struck || p.Cloaking) return;
+        if (!p.AutoFire || !p.Alive || p.Struck || p.HoldsFire) return;
         foreach (var (m, t, aim) in Fireable()) FireMount(p, m, t, aim);
     }
 
@@ -198,7 +196,7 @@ public sealed partial class Battle
     }
 
     /// <summary>True when one mount could fire at the locked target now.</summary>
-    public bool CanFire(Mount m) => TargetOf(Player) is { } t && t.Side != Player.Side && !Player.Cloaking && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
+    public bool CanFire(Mount m) => TargetOf(Player) is { } t && t.Side != Player.Side && !Player.HoldsFire && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
 
     /// <summary>Fires one mount at the locked target.</summary>
     public bool FireOne(int index)
@@ -212,7 +210,7 @@ public sealed partial class Battle
     /// ship, else the locked enemy); one at a time when not in a volley.</summary>
     public Mount[] WouldFire()
     {
-        if (Player.Cloaking) return Array.Empty<Mount>();   // no fire while cloaked (Battle.Cloak.cs)
+        if (Player.HoldsFire) return Array.Empty<Mount>();   // no fire while cloaked (Battle.Cloak.cs) or with the core tripped (Battle.Nebula.cs)
         var all = Fireable().Select(f => f.M).ToArray();
         return Player.Volley ? all : all.Take(1).ToArray();
     }
@@ -222,6 +220,7 @@ public sealed partial class Battle
     public int Fire()
     {
         if (Player.Cloaking) { Say("Tactical", "Cannot fire while cloaked."); return 0; }
+        if (Player.CoreDown) { Say("Tactical", "Cannot fire: the core is down."); return 0; }
         Ship? t = TargetOf(Player);
         bool pins = Player.Mounts.Any(m => m.Selected && PinTarget(m) != null);
         if (t == null && !pins) { Say("Tactical", "No target locked."); return 0; }
@@ -243,7 +242,7 @@ public sealed partial class Battle
         if (Player.Target != t.Id && Strike.AimMount(Player.Aim) >= 0) Player.Aim = "weapons";
         // a cloaked enemy cannot be locked until it is seen, nor one a nebula hides (Battle.Cloak.cs)
         if (t.Side != Player.Side && !Detected(Player, t)) { SayOnce("Science", "No lock: it is cloaked. Sweep to find it."); return; }
-        if (t.Side != Player.Side && !CanLock(Player, t)) { SayOnce("Science", $"No lock: the nebula hides it. Raise ECCM above its ECM, or close to {Cs.Nebula.LockKm:0} km."); return; }
+        if (t.Side != Player.Side && !CanLock(Player, t)) { SayOnce("Science", $"No lock: the nebula is between us. Raise ECCM above its ECM, or close to {Cs.Nebula.LockKm:0} km."); return; }
         Player.Target = t.Id;
         Say("Tactical", t.Side == Player.Side ? $"Selected: {t.Name}, {t.Class.Name} (friendly)." : $"Target locked: {t.Name}, {t.Class.Name}.");
     }

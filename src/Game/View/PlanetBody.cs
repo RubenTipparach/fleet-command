@@ -12,7 +12,8 @@
 // installations all share the planet's own frame). Root is the planet's place and scale (its radius in scene units),
 // which the caller sets. Each frame Sync gives every layer the battle's sun and the ground its detail by the camera's
 // height (Falchion's octaves: more as the camera comes down; and how close it is, which adds grain to the ground and
-// fades the rim of air on the ground and the clouds). The look's numbers are data (PlanetLooks), never here.
+// fades the rim of air on the ground and the clouds). The look's numbers are data (PlanetLooks), never here. The layers draw in
+// that order, before anything else see-through in the battle (Priority).
 using System.Collections.Generic;
 using Godot;
 
@@ -23,6 +24,11 @@ public sealed class PlanetBody
     private static readonly string Dir = "res://src/Game/View/";
     private static Shader? _rocky, _gas, _air, _craters, _clouds, _rings;
     private static SphereMesh? _groundMesh, _craterMesh;
+
+    /// <summary>The first layer's place in the draw order: a planet's layers take Priority + 1 (craters) to Priority + 4
+    /// (air), all below a nebula plume (NebulaPlume.Priority) and the battle's glows at 0, so a plume draws over the
+    /// planet behind it and every glow over both.</summary>
+    public const int Priority = -10;
 
     /// <summary>The planet's place and scale (the caller's), and the leaning frame its layers stand in.</summary>
     public readonly Node3D Root, Body;
@@ -49,7 +55,7 @@ public sealed class PlanetBody
         Root.AddChild(Body);
         bool gas = look.Surface == 1;
         Ground = new ShaderMaterial { Shader = gas ? _gas : _rocky };
-        Air = look.AtmosphereStrength > 0 ? new ShaderMaterial { Shader = _air, RenderPriority = 4 } : null;
+        Air = look.AtmosphereStrength > 0 ? new ShaderMaterial { Shader = _air, RenderPriority = Priority + 4 } : null;
         PlanetLooks.Apply(look, seed, Ground, Air);
         Body.AddChild(Mesh("Ground", _groundMesh, Ground));
 
@@ -99,7 +105,7 @@ public sealed class PlanetBody
 
     private ShaderMaterial Lit(Shader sh, int priority)
     {
-        var m = new ShaderMaterial { Shader = sh, RenderPriority = priority };
+        var m = new ShaderMaterial { Shader = sh, RenderPriority = Priority + priority };
         _lit.Add(m);
         return m;
     }

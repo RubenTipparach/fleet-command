@@ -34,6 +34,12 @@ public sealed record PlanetLook(int Surface, Color[] Palette, float Sea, float I
     /// <summary>How many long cracks cross an ice shell (0 for none, 1 for sixteen), and their colour.</summary>
     public float Lineae { get; init; }
     public Color LineaeColor { get; init; } = new(0.45f, 0.30f, 0.24f);
+    /// <summary>An archipelago (0 to 1): the continents sunk to shoals and chains of small islands raised.</summary>
+    public float Islands { get; init; }
+    /// <summary>What stands on the ground (an index into <see cref="PlanetLooks.Patterns"/>; 0 nothing), and the colour of
+    /// it: the glass of a city's tall towers, the ruins' metal, the bones.</summary>
+    public int Pattern { get; init; }
+    public Color PatternColor { get; init; } = new(0.8f, 0.8f, 0.8f);
 }
 
 /// <summary>A cloud layer (planet_clouds.gdshader): its cover 0 to 1, its scale (cloud systems round the world), the colour
@@ -52,6 +58,8 @@ public static class PlanetLooks
 {
     /// <summary>The surface models, by name: 0 rocky, 1 gas (planet_gas.gdshader), 2 lava; the rest planet.gdshader.</summary>
     public static readonly string[] Surfaces = { "rocky", "gas", "lava" };
+    /// <summary>What may stand on a rocky world's ground, by name (planet_patterns.gdshaderinc): 0 nothing.</summary>
+    public static readonly string[] Patterns = { "none", "city", "ruins", "bones" };
     private const string File = "data/space/planets.json";
     private static Dictionary<string, PlanetLook>? _looks;
 
@@ -96,7 +104,17 @@ public static class PlanetLooks
             Climate = o.Has("climate") ? Range(o, "climate", 0, 1) : 0,
             Mountains = o.Has("mountains") ? Range(o, "mountains", 0, 1) : 0,
             Lineae = o.Has("lineae") ? Range(o, "lineae", 0, 1) : 0,
+            Islands = o.Has("islands") ? Range(o, "islands", 0, 1) : 0,
         };
+        if (o.Has("pattern"))
+        {
+            string pattern = o.Str("pattern");
+            int pi = Array.IndexOf(Patterns, pattern);
+            if (pi < 0) throw new DataError($"{o.Where}.pattern: one of {string.Join(", ", Patterns)}, not '{pattern}'");
+            if (pi > 0 && si != 0) throw new DataError($"{o.Where}.pattern: only a rocky world carries a pattern, not a {surface} one");
+            look = look with { Pattern = pi };
+        }
+        if (o.Has("pattern_color")) look = look with { PatternColor = Col(o, "pattern_color") };
         if (o.Has("arid")) look = look with { Arid = Col(o, "arid") };
         if (o.Has("tundra")) look = look with { Tundra = Col(o, "tundra") };
         if (o.Has("lineae_color")) look = look with { LineaeColor = Col(o, "lineae_color") };
@@ -122,16 +140,16 @@ public static class PlanetLooks
         return look;
     }
 
-    private static float Range(StrictJson o, string k, double lo, double hi)
+    internal static float Range(StrictJson o, string k, double lo, double hi)
     {
         double v = o.Num(k);
         if (!double.IsFinite(v) || v < lo || v > hi) throw new DataError($"{o.Where}.{k}: between {lo} and {hi}, not {v}");
         return (float)v;
     }
 
-    private static Color Col(StrictJson o, string k) => Hex(o.Str(k), $"{o.Where}.{k}");
+    internal static Color Col(StrictJson o, string k) => Hex(o.Str(k), $"{o.Where}.{k}");
 
-    private static Color Hex(string c, string where) =>
+    internal static Color Hex(string c, string where) =>
         Regex.IsMatch(c, "^#[0-9a-fA-F]{6}$") ? new Color(c) : throw new DataError($"{where}: a colour as #rrggbb, not '{c}'");
 
     /// <summary>Sets a look on a planet's ground and air (null for a world with no air): the rocky ground's every number
@@ -179,6 +197,9 @@ public static class PlanetLooks
             ground.SetShaderParameter("city_glow", l.CityGlow);
             ground.SetShaderParameter("cities", l.Cities);
             ground.SetShaderParameter("volcanoes", l.Volcanoes ? 1f : 0f);
+            ground.SetShaderParameter("islands", l.Islands);
+            ground.SetShaderParameter("pattern", l.Pattern);
+            ground.SetShaderParameter("pattern_color", l.PatternColor);
         }
         if (air == null) return;
         air.SetShaderParameter("scatter_tint", l.Atmosphere);

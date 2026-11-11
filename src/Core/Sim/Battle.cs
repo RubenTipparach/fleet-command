@@ -233,6 +233,7 @@ public sealed partial class Battle
     partial void WarpStep(double dt);
     partial void RepairCrewsStep(double dt);
     partial void CloakStep(double dt);
+    partial void NebulaStep(double dt);
     partial void SensorsStep(double dt);
     partial void SecurityStep(double dt);
     partial void TargetingStep(double dt);
@@ -284,7 +285,7 @@ public sealed partial class Battle
         ChargeStep(dt);
         // the mockup's other systems, each in its own file (Battle.<System>.cs; a hook with no body costs nothing)
         CommsStep(dt); TransportStep(dt); TractorStep(dt); MinesStep(dt); CraftStep(dt); ReactorStep(dt); WarpStep(dt);
-        RepairCrewsStep(dt); CloakStep(dt); SensorsStep(dt); SecurityStep(dt); TargetingStep(dt); FleetStep(dt);
+        RepairCrewsStep(dt); CloakStep(dt); NebulaStep(dt); SensorsStep(dt); SecurityStep(dt); TargetingStep(dt); FleetStep(dt);
         RangeStep(dt);
         FieldStep(dt);
         if (Over != null) return;
@@ -327,6 +328,7 @@ public sealed partial class Battle
     private void SystemsStep(Ship s, double dt)
     {
         ShipClass c = s.Class;
+        if (s.CoreDown) { CoreDownStep(s, dt); return; }
         double spare = Rules.Output(s) - Rules.Used(s);
         if (spare >= 0) { s.Battery = Math.Min(c.BatteryE, s.Battery + spare * dt * Tuning.BatteryChargePerSpareES); s.Brown = 1; }
         else { s.Battery = Math.Max(0, s.Battery + spare * dt); s.Brown = s.Battery > 0 ? 1 : Rules.Output(s) / Rules.Used(s); }
@@ -346,7 +348,7 @@ public sealed partial class Battle
             else continue;
             m.Charge = Math.Min(1, m.Charge + dt / w.ChargeS);
         }
-        if (s.ShieldsUp && s.CloakK <= 0)   // a cloak's shields neither hold nor regenerate (Battle.Cloak.cs)
+        if (s.ShieldsHold)   // a cloak's shields neither hold nor regenerate (Battle.Cloak.cs), nor a tripped core's (Battle.Nebula.cs)
         {
             double r = s.Power["shields"] * s.Brown * Tuning.ShieldRegenPerES * dt * s.Sys["shields"];
             for (int i = 0; i < 6; i++)
@@ -355,11 +357,26 @@ public sealed partial class Battle
                 s.Shields[i] = Math.Min(c.ShieldsHp[i], s.Shields[i] + add);
             }
         }
+        SystemsTail(s, dt);
+        // repair energy works through the crews on the repair queue (Battle.Repair, RepairCrewsStep)
+    }
+
+    // what runs down whether or not the ship has power: the shield flashes and the helm's timers
+    private void SystemsTail(Ship s, double dt)
+    {
         for (int i = 0; i < 6; i++) s.Flash[i] = Math.Max(0, s.Flash[i] - dt * 2);
         s.HetChance = Math.Min(Rules.HetMax(s), s.HetChance + Tuning.HetRecoverPerS * dt);
         s.Broke = Math.Max(0, s.Broke - dt);
         s.EstopT = Math.Max(0, s.EstopT - dt);
-        // repair energy works through the crews on the repair queue (Battle.Repair, RepairCrewsStep)
+    }
+
+    // A core tripped by lightning (Battle.Nebula.cs): no power at all, so nothing charges and nothing regenerates. The
+    // brownout at 0 stops what scales by it (the drive, the warp, the tractor, the repair crews).
+    private void CoreDownStep(Ship s, double dt)
+    {
+        s.Brown = 0;
+        SpecialsStep(s, dt);
+        SystemsTail(s, dt);
     }
 
     private void Move(Ship s, double dt)
@@ -491,7 +508,7 @@ public sealed partial class Battle
     private bool FireMount(Ship s, Mount m, Ship t, string? aim = null)
     {
         if (!Rules.Ready(m) || !Rules.InArc(s, m, t) || !Rules.InRange(s, m, t)) return false;
-        if (s.Cloaking || !CanLock(s, t)) return false;   // no fire while cloaking, none at what cannot be locked (Battle.Cloak.cs)
+        if (s.HoldsFire || !CanLock(s, t)) return false;   // no fire while cloaking or with the core tripped, none at what cannot be locked (Battle.Cloak.cs)
         _firstFire ??= s.Side;
         string a = aim ?? s.Aim;
         WeaponMode w = Rules.Mode(m);
@@ -529,7 +546,7 @@ public sealed partial class Battle
         int f = Rules.FacingFrom(t, sx, sz);
         // a surging Krai bow holds bow_shield_x as much; pierce of the hit goes straight through (Rules.Pierced)
         double bowX = f == 0 && t.SurgeS > 0 ? Data.Specials.Charge.BowShieldX : 1;
-        double absorb = t.ShieldsUp && t.CloakK <= 0 ? Rules.Pierced(dmg, pierce, t.Shields[f] * bowX).Held : 0;
+        double absorb = t.ShieldsHold ? Rules.Pierced(dmg, pierce, t.Shields[f] * bowX).Held : 0;
         t.Shields[f] -= absorb / bowX;
         t.Flash[f] = 1;
         double rest = dmg - absorb;
@@ -651,7 +668,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships)
         {
             // the point defence station's mode: Off holds fire, Craft keeps it for craft, Missiles fires on missiles only
-            if (!s.Alive || s.Pd is PdMode.Off or PdMode.Craft) continue;
+            if (!s.Alive || s.CoreDown || s.Pd is PdMode.Off or PdMode.Craft) continue;
             foreach (Mount m in s.Mounts)
             {
                 if (!m.Weapon.IsPointDefence || !Rules.Ready(m)) continue;

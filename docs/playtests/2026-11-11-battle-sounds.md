@@ -1,5 +1,9 @@
 # Playtest 2026-11-11: the battle's sounds
 
+**Superseded on merge (PR #78):** main already played the battle's sounds (`BattleSounds`, `BattleAudio`,
+`data/audio/events.json`, PR #75), so the second implementation this report counts (`BattleSoundRules`,
+`BattleView.Sounds.cs`, `data/audio/battle.json`) was dropped at the merge (CLAUDE.md 6.1). Kept as the record of the run.
+
 - Commit: the battle sounds change (committed with this report), on the merge of main after
   RubenTipparach/fleet-command#46.
 - Machine: cloud session, Linux, Godot 4.7.1 .NET headless (`--headless --fixed-fps 30 --resolution 1920x1080`). A cloud

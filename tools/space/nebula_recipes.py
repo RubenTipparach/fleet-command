@@ -8,9 +8,15 @@ painted ones are: one main cloud of overlapping strokes along a long path, dark 
 one or two smaller clouds on the far side, and a gently tilted galaxy band. They keep to the band of sky the battle camera sees (it looks down at the battle plane from
 about 20 degrees above it), latitudes about -35 to +45, spread round every longitude so any heading shows nebula.
 
+The sky of a battle fought among nebula plumes takes its colours from the plumes themselves (owner, 2026-11-10: "for
+nebulat cloud battles - we should design a custom background to match the cloud colors"): the theme's clouds, space and
+cores are drawn from the looks of that battle's plumes (data/space/plumes.json, read through data/battle/scenarios.json,
+so the colours have one home), the widest look first, and a wall of the same cloud runs right round the horizon, the band
+of sky that shows between the decks of cloud above and below the battle.
+
 The composed recipes are written into data/space/skies/recipes.json after the hand-painted ones (which this leaves
 alone), each marked "composed": true; then run tools/space/nebula_skies.py to paint them. Deterministic: a recipe is a
-function of its theme and seed only.
+function of its theme, its seed and its battle's plume looks only.
 
 Usage: python3 tools/space/nebula_recipes.py
 """
@@ -22,6 +28,8 @@ import random
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 RECIPES = os.path.join(ROOT, "data", "space", "skies", "recipes.json")
+SCENARIOS = os.path.join(ROOT, "data", "battle", "scenarios.json")
+PLUMES = os.path.join(ROOT, "data", "space", "plumes.json")
 
 # The mesh's vertex budget: the painters' own (more did not soften anything: hard edges came from folded paths, above).
 VERTEX_BUDGET = 8000
@@ -349,6 +357,19 @@ THEMES = [
     ("hunt_ash_lattice", "Ash Lattice", "Pale ash-grey wisps in a crossed lattice over dark, a faint warm core.",
      2448, [0.009, 0.009, 0.01], [0.78, 0.76, 0.74], [((0.7, 0.68, 0.64), (0.16, 0.15, 0.14)), ((0.8, 0.6, 0.45), (0.18, 0.12, 0.08))],
      [0.75, 0.9, 1.15], [((0.98, 0.95, 0.9), (0.8, 0.65, 0.5))], 1.0),
+    # the heavy fleets' skies (the *_heavy scenarios, 2026-11-10): one for each of the four battles of three heavy ships a side
+    ("heavy_garnet_front", "Garnet Front", "A long garnet-red front of cloud with a brass-gold edge, a black lane under it and a white core at its head.",
+     2501, [0.02, 0.008, 0.012], [0.92, 0.66, 0.56], [((0.95, 0.2, 0.3), (0.3, 0.02, 0.08)), ((1.0, 0.72, 0.36), (0.36, 0.18, 0.05))],
+     [0.7, 0.95, 1.25], [((1.0, 0.95, 0.88), (1.0, 0.5, 0.4))], 1.15),
+    ("heavy_brass_squall", "Brass Squall", "Brass-yellow squall clouds over a slate-blue dark, a pale gold core and heavy lanes across it.",
+     2502, [0.01, 0.012, 0.02], [0.86, 0.8, 0.7], [((0.95, 0.76, 0.3), (0.3, 0.2, 0.05)), ((0.4, 0.52, 0.8), (0.06, 0.1, 0.24))],
+     [0.7, 0.9, 1.25], [((1.0, 0.97, 0.86), (0.95, 0.75, 0.4))], 1.1),
+    ("heavy_teal_anvil", "Teal Anvil", "A flat-topped anvil of teal cloud, sea-green beneath, a cold white core in its shadow.",
+     2503, [0.007, 0.016, 0.02], [0.62, 0.86, 0.86], [((0.25, 0.8, 0.85), (0.03, 0.18, 0.26)), ((0.45, 0.95, 0.65), (0.06, 0.26, 0.14))],
+     [0.8, 1.0, 1.1], [((0.92, 1.0, 1.0), (0.4, 0.85, 0.9))], 1.1),
+    ("heavy_orchid_wall", "Orchid Wall", "A high wall of orchid and violet cloud, rose at its crest, a lilac-white core behind a dark gate.",
+     2504, [0.016, 0.008, 0.024], [0.8, 0.66, 0.92], [((0.8, 0.4, 0.95), (0.2, 0.05, 0.32)), ((1.0, 0.5, 0.7), (0.32, 0.08, 0.2))],
+     [0.7, 0.9, 1.2], [((0.98, 0.92, 1.0), (0.75, 0.5, 1.0))], 1.2),
 ]
 
 
@@ -386,12 +407,57 @@ def shifted(path, dlon, dlat):
     return [[round(((p[0] + dlon + 180) % 360) - 180, 1), round(max(-35, min(45, p[1] + dlat)), 1)] for p in path]
 
 
-def compose(theme):
+def srgb(hex_colour):
+    return [int(hex_colour[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+
+
+def mix(a, b, t):
+    return [x + (y - x) * t for x, y in zip(a, b)]
+
+
+def plume_looks():
+    """Each sky a battle with nebula plumes is fought under, and that battle's plume looks, widest first (by the area
+    each look covers); a plume that names no look takes the loader's default (DataLoader.CloakNebulae)."""
+    with open(SCENARIOS, encoding="utf-8") as f:
+        sc = json.load(f)
+    with open(PLUMES, encoding="utf-8") as f:
+        looks = json.load(f)
+    out = {}
+    for s in sc if isinstance(sc, list) else sc["scenarios"]:
+        if not s.get("nebulae"):
+            continue
+        area = out.setdefault(s["sky"], {})
+        for n in s["nebulae"]:
+            k = n.get("look") or ("slate" if n.get("storm") else "violet")
+            area[k] = area.get(k, 0) + n["r_m"] ** 2
+    return {sky: [looks[k] for k in sorted(area, key=lambda k: (-area[k], k))] for sky, area in out.items()}
+
+
+def from_plumes(theme, looks):
+    """A theme in its battle's plume colours: its clouds the looks' lit hearts over their glow, its space their deep
+    shadow, its cores their light gone white."""
+    tid, name, look, seed, space, band, glows, redden, cores, exposure = theme
+    glows = [(srgb(l["lit"]), [c * 0.45 for c in srgb(l["glow"])]) for l in looks]
+    space = [c * 0.3 for c in srgb(looks[0]["deep"])]
+    cores = [(mix(srgb(looks[0]["lit"]), [1, 1, 1], 0.7), srgb(looks[0]["lit"]))]
+    return (tid, name, look, seed, space, band, glows, redden, cores, exposure)
+
+
+def compose(theme, wall=False):
     """One sky: a main cloud (two or three overlapping strokes along one long path, as the painted skies are built),
-    dark lanes down its spine, its core on it, one or two smaller clouds elsewhere and a gently tilted galaxy band."""
+    dark lanes down its spine, its core on it, one or two smaller clouds elsewhere and a gently tilted galaxy band. With
+    wall, first a wall of the theme's clouds right round the horizon (a battle among plumes: what shows between the
+    decks), from its own stream of numbers so the rest of the sky is as it was."""
     tid, name, look, seed, space, band, glows, redden, cores, exposure = theme
     r = random.Random(seed)
     layers = []
+    if wall:
+        w = random.Random(seed * 7 + 1)
+        for i in range(6):
+            heart, edge = glows[i % len(glows)]
+            lon = -180 + 60 * i + w.uniform(-12, 12)
+            path = [[round(((lon + 22 * j + 180) % 360) - 180, 1), round(w.uniform(-10, 14), 1)] for j in range(5)]
+            layers.append(stroke(w, path, w.uniform(16, 24), heart, edge, w.uniform(0.35, 0.55)))
     lon0 = r.uniform(-180, 180)
     spine = rnd_path(r, r.randint(5, 7), lon0, -18, 28, r.uniform(24, 34))     # 100-200 degrees of sky
     (h0, e0), (h1, e1) = glows[0], glows[min(1, len(glows) - 1)]
@@ -433,10 +499,11 @@ def main():
     with open(RECIPES, encoding="utf-8") as f:
         R = json.load(f)
     hand = [s for s in R["skies"] if not s.get("composed")]
-    R["skies"] = hand + [compose(t) for t in THEMES]
+    plumes = plume_looks()
+    R["skies"] = hand + [compose(from_plumes(t, plumes[t[0]]), wall=True) if t[0] in plumes else compose(t) for t in THEMES]
     with open(RECIPES, "w", encoding="utf-8") as f:
         f.write(json.dumps(R, indent=1, ensure_ascii=False) + "\n")
-    print(f"{RECIPES}: {len(hand)} painted and {len(THEMES)} composed recipes")
+    print(f"{RECIPES}: {len(hand)} painted and {len(THEMES)} composed recipes ({len(plumes)} in their plumes' colours)")
 
 
 if __name__ == "__main__":

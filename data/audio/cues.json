@@ -1,78 +1,107 @@
 {
-  "_doc": "The sounds the game plays (openspec/changes/sound-effects, design section 3): per cue its file (a committed OGG under assets/audio, built by tools/audio/render_sfx.sh), the bus it plays on (Master, Music or Effects, set by the Options sheet's boxes: src/Game/Ui/AudioSettings.cs) and its level in dB at that bus. The console keys first (owner, 2026-11-07: \"Console keys - this should be implemented in the game\"): each skin names its key cue in its style (src/Game/Ui/Kit/*Kit.cs, SkinStyle.KeySound); and the bridge bed under a battle (owner, 2026-11-07: \"use amb_bridge_brown\", \"put in game now\"; src/Game/Ui/ConsoleSounds.cs); and the battle's sounds, placed in 3D where they happen (which event plays which: data/audio/battle.json; src/Game/View/BattleView.Sounds.cs).",
-  "ui_chirp": {
-    "file": "assets/audio/sfx/ui_chirp.ogg",
-    "bus": "Effects",
-    "volume_db": -4
-  },
-  "ui_clunk": {
-    "file": "assets/audio/sfx/ui_clunk.ogg",
-    "bus": "Effects",
-    "volume_db": -4
-  },
-  "amb_bridge": {
-    "file": "assets/audio/ambience/amb_bridge.ogg",
-    "bus": "Effects",
-    "volume_db": -3
-  },
-  "lance_fire": {
-    "file": "assets/audio/sfx/lance_fire.ogg",
-    "bus": "Effects",
-    "volume_db": -2
-  },
-  "disruptor_fire": {
-    "file": "assets/audio/sfx/disruptor_fire.ogg",
-    "bus": "Effects",
-    "volume_db": -2
-  },
-  "torpedo_launch": {
-    "file": "assets/audio/sfx/torpedo_launch.ogg",
-    "bus": "Effects",
-    "volume_db": -2
-  },
-  "missile_launch": {
-    "file": "assets/audio/sfx/missile_launch.ogg",
-    "bus": "Effects",
-    "volume_db": -2
-  },
-  "pd_burst": {
-    "file": "assets/audio/sfx/pd_burst.ogg",
-    "bus": "Effects",
-    "volume_db": -6
-  },
-  "shield_hit": {
-    "file": "assets/audio/sfx/shield_hit.ogg",
-    "bus": "Effects",
-    "volume_db": -3
-  },
-  "shield_hit_short": {
-    "file": "assets/audio/sfx/shield_hit_short.ogg",
-    "bus": "Effects",
-    "volume_db": -3
-  },
-  "hull_hit": {
-    "file": "assets/audio/sfx/hull_hit.ogg",
-    "bus": "Effects",
-    "volume_db": -3
-  },
-  "hull_hit_short": {
-    "file": "assets/audio/sfx/hull_hit_short.ogg",
-    "bus": "Effects",
-    "volume_db": -3
-  },
-  "torpedo_detonate": {
-    "file": "assets/audio/sfx/torpedo_detonate.ogg",
-    "bus": "Effects",
-    "volume_db": -2
-  },
-  "torpedo_detonate_short": {
-    "file": "assets/audio/sfx/torpedo_detonate_short.ogg",
-    "bus": "Effects",
-    "volume_db": -2
-  },
-  "ship_destroyed": {
-    "file": "assets/audio/sfx/ship_destroyed.ogg",
-    "bus": "Effects",
-    "volume_db": 0
-  }
+ "_doc": "The sounds the game plays (openspec/changes/sound-effects, design section 3): per cue its file (a committed OGG under assets/audio, built by tools/audio/render_sfx.sh), the bus it plays on (Master, Music or Effects, set by the Options sheet's boxes: src/Game/Ui/AudioSettings.cs) and its level in dB at that bus. The console keys first (owner, 2026-11-07: \"Console keys - this should be implemented in the game\"): each skin names its key cue in its style (src/Game/Ui/Kit/*Kit.cs, SkinStyle.KeySound); and the bridge bed under a battle (owner, 2026-11-07: \"use amb_bridge_brown\", \"put in game now\"; src/Game/Ui/ConsoleSounds.cs). The battle's sounds (owner, 2026-11-10: \"Implement sound fx in the game\"): which event plays which cue is data/audio/events.json (SoundMap); a placed cue plays at its ship in 3D and falls off with distance. Levels set so a sound nearby peaks about 10 dB under full scale at the Options sheet's first volumes (Master and Effects 8 of 10), the frequent ones (point defence, shield hits) lower; the bridge bed sits about 30 dB down (owner, 2026-11-10: \"I don't hear any clicks or bridge hums\": the bed and the keys were set 20 dB quieter than this and could not be heard). A cue may name several takes (files in place of file): each time it plays, one is picked at random, so a sound heard often is not the same every time (the shield hit's three low thumps; owner, 2026-11-11: \"we can use them all to give the.sound variety\").",
+ "ui_chirp": {
+  "file": "assets/audio/sfx/ui_chirp.ogg",
+  "bus": "Effects",
+  "volume_db": 2
+ },
+ "ui_clunk": {
+  "file": "assets/audio/sfx/ui_clunk.ogg",
+  "bus": "Effects",
+  "volume_db": 4
+ },
+ "amb_bridge": {
+  "file": "assets/audio/ambience/amb_bridge.ogg",
+  "bus": "Effects",
+  "volume_db": 0
+ },
+ "lance_fire": {
+  "file": "assets/audio/sfx/lance_fire.ogg",
+  "bus": "Effects",
+  "volume_db": 0
+ },
+ "disruptor_fire": {
+  "file": "assets/audio/sfx/disruptor_fire.ogg",
+  "bus": "Effects",
+  "volume_db": 0
+ },
+ "torpedo_launch": {
+  "file": "assets/audio/sfx/torpedo_launch.ogg",
+  "bus": "Effects",
+  "volume_db": 0
+ },
+ "missile_launch": {
+  "file": "assets/audio/sfx/missile_launch.ogg",
+  "bus": "Effects",
+  "volume_db": -1
+ },
+ "pd_burst": {
+  "file": "assets/audio/sfx/pd_burst.ogg",
+  "bus": "Effects",
+  "volume_db": -8
+ },
+ "shield_hit_short": {
+  "files": [
+   "assets/audio/sfx/shield_hit_short.ogg",
+   "assets/audio/sfx/shield_hit_short_2.ogg",
+   "assets/audio/sfx/shield_hit_short_3.ogg"
+  ],
+  "bus": "Effects",
+  "volume_db": 0
+ },
+ "hull_hit_short": {
+  "file": "assets/audio/sfx/hull_hit_short.ogg",
+  "bus": "Effects",
+  "volume_db": -5
+ },
+ "torpedo_detonate_short": {
+  "file": "assets/audio/sfx/torpedo_detonate_short.ogg",
+  "bus": "Effects",
+  "volume_db": -4
+ },
+ "ship_destroyed": {
+  "file": "assets/audio/sfx/ship_destroyed.ogg",
+  "bus": "Effects",
+  "volume_db": -2
+ },
+ "core_breach": {
+  "file": "assets/audio/sfx/core_breach.ogg",
+  "bus": "Effects",
+  "volume_db": -2
+ },
+ "explosion_small_short": {
+  "file": "assets/audio/sfx/explosion_small_short.ogg",
+  "bus": "Effects",
+  "volume_db": -5
+ },
+ "target_lock": {
+  "file": "assets/audio/sfx/target_lock.ogg",
+  "bus": "Effects",
+  "volume_db": 1
+ },
+ "hull_critical": {
+  "file": "assets/audio/sfx/hull_critical.ogg",
+  "bus": "Effects",
+  "volume_db": 0
+ },
+ "pause_on": {
+  "file": "assets/audio/sfx/pause_on.ogg",
+  "bus": "Effects",
+  "volume_db": -2
+ },
+ "pause_off": {
+  "file": "assets/audio/sfx/pause_off.ogg",
+  "bus": "Effects",
+  "volume_db": -2
+ },
+ "thruster_burst": {
+  "file": "assets/audio/sfx/thruster_burst.ogg",
+  "bus": "Effects",
+  "volume_db": -9
+ },
+ "overload_charge": {
+  "file": "assets/audio/sfx/overload_charge.ogg",
+  "bus": "Effects",
+  "volume_db": -3
+ }
 }
