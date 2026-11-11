@@ -85,6 +85,7 @@
 - [ ] 1k.3 The freighters page moved onto `lib/container.js` (its own copy removed) at its next republish
 - [x] 1k.4 The Boarder, Drum, Cross, Ram, Broadside and Stack baked at 2048 px and shown
 - [x] 1k.4b Every antenna its own design and its own length, a port and starboard pair included (T13; `tools/mockups/mast_check.mjs`)
+- [x] 1k.4c Glow by baked light and shaders, not flat paint (D21, T14): all nine repainted, lenses on the page
 - [ ] 1k.5 A full bake (with the breakup field) of each before implementation
 - [ ] 1k.6 The busiest faces (the Ram's hammer face, the Cross's hub) read thick with machinery: lighter greebles on large bare faces if the owner agrees
 

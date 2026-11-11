@@ -535,6 +535,16 @@ materials. We can reuse that from freighters. And we should begin texture work o
   a brass band where the militia welded its trade on, a red beacon. The Stack is a fighter, on the Cutter's small-scale
   recipe; its job is still survey Y14 (a heavy fighter, provisional).
 
+### D21. Glow by baked light and shaders (owner, 2026-11-11)
+
+The owner, of the Cross's emitters: "I don't really like these glowy bits on the cross. They look kinda cheap to me. If
+you're gonna have glowy bits use baked lighting or shaders". The glowing faces (gun mouths, tractor emitters, drives) were
+painted flat cyan with a grid of cells. Now (Ship Design Bible T14): the Vos paint's `strip_k` is 0, so those faces bake
+as dark metal lenses, repainted on all nine ships (no rebake: the light they throw on the hull round them was already in
+each light map); and the shared `baked-ship.js` `lenses` lays a shader lens on each glowing face, built from the page's own
+hull: a hot core fading to a dark lip, a rim that lights as the view grazes it, slow rings drawn inward, a pulse on its own
+phase.
+
 ## Open questions
 
 | # | Question | Provisional answer |

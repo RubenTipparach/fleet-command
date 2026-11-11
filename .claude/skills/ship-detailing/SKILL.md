@@ -49,6 +49,9 @@ Bible (`docs/design/ship-bible.html`): chapters 7 (windows), 9 (hull lighting), 
    differ too (owner: "I literally just told you no two antenna should look the same on a starship"). This overrides
    rule 2's symmetry for antennas and dishes. No two the same length either (owner: "No two antenna shall have same
    length"): every antenna, measured whole as built, at least 12% from every other (`baked-ship.js` masts stretches them to it).
+10. **Glow is baked light or a shader, never flat paint** (owner, 2026-11-11, of flat cyan emitters: "They look kinda cheap
+    to me. If you're gonna have glowy bits use baked lighting or shaders"; Ship Design Bible T14). Paint `strip_k` 0 so
+    glowing faces bake as dark lenses (their spill stays in the light map), and draw the glow with `baked-ship.js` lenses.
 
 ## The method: culture, then principles, then the recipe
 

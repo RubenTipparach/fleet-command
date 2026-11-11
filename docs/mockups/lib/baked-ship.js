@@ -7,7 +7,7 @@
 // which still carries its own copy of the rest, with damage and breakup woven in; moving it wholly onto this file is task
 // 3.4 of kelvane-ship-concepts (CLAUDE.md 6.1). Edit it here, then re-run tools/mockups/inline_data.py on each page that inlines it.
 //
-// FCBakedShip(THREE, { onTexture, normals }) returns { tex, geometry, maps, looks, fixtures, blink, panes, masts }. onTexture(promise):
+// FCBakedShip(THREE, { onTexture, normals }) returns { tex, geometry, maps, looks, fixtures, blink, panes, masts, lenses }. onTexture(promise):
 // called for every texture's load, so the page can wait for them before it calls itself ready. normals(points, deg): smooth
 // normals within deg (hull-grow.js creasedNormals), for a ship baked shaded smooth (its manifest's smooth_deg).
 window.FCBakedShip = function FCBakedShip(THREE, opts) {
@@ -201,5 +201,51 @@ function masts(sh, mat, lamp) {
   for (const B of built) { const want = Math.max(B.h, prev * 1.14); B.lean.scale.z = want / B.h; prev = want; }
   return g;
 }
-return { tex, geometry, maps, looks, fixtures, blink, panes, masts };
+/**
+ * The glowing mouths (a gun's muzzle, an emitter, a drive) as shaders, not painted light (owner, 2026-11-11, of flat cyan caps
+ * baked into the maps: "They look kinda cheap to me. If you're gonna have glowy bits use baked lighting or shaders"). The bake
+ * paints those faces as dark metal lenses and keeps the light they cast on the hull round them in its light map; here each
+ * glowing face of the page's own hull (meshes, those of them for which isGlow(material) holds) gets a lens laid just off it:
+ * a hot core fading through the glow's colour to a dark edge, a bright rim that catches the light as the view grazes it,
+ * slow rings drawn inward and a gentle pulse, each mouth on its own phase. root: the group the lenses go in (they are built in
+ * its frame); rgb: the glow's colour. Returns { group, time }, time a { value } uniform the page advances in seconds.
+ */
+function lenses(meshes, isGlow, root, rgb) {
+  const group = new THREE.Group(), time = { value: 0 }, V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+  root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const mat = (phase) => new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
+    uniforms: { uTime: time, uPhase: { value: phase }, uCol: { value: new THREE.Color(...rgb) } },
+    vertexShader: `varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz);
+        gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: `uniform float uTime; uniform float uPhase; uniform vec3 uCol; varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      void main(){ float r = length(vUv - 0.5) * 2.0; if (r > 1.0) discard;
+        float pulse = 0.82 + 0.18 * sin(uTime * 1.7 + uPhase);
+        float core = exp(-r * r * 7.0);                                        // the hot centre
+        float body = smoothstep(1.0, 0.15, r) * 0.45;                          // the glow falling off toward the lip
+        float rings = 0.10 * (0.5 + 0.5 * sin(r * 22.0 + uTime * 2.6 + uPhase)) * smoothstep(1.0, 0.35, r);   // drawn inward
+        float rim = smoothstep(0.84, 0.95, r) * smoothstep(1.0, 0.95, r);
+        float graze = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.0);  // the rim lights as the view grazes the mouth
+        vec3 c = uCol * (body + rings) * pulse + mix(uCol, vec3(1.0), 0.7) * core * pulse + uCol * rim * (0.25 + 0.9 * graze);
+        gl_FragColor = vec4(c, 1.0); }` });
+  let k = 0;
+  for (const m of meshes) m.updateMatrixWorld(true);
+  for (const m of meshes) m.traverse((o) => { if (!o.isMesh || !isGlow(o.material)) return;
+    const pos = o.geometry.attributes.position, idx = o.geometry.index, n = idx ? idx.count : pos.count, mtx = new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld);
+    const P = (i) => V().fromBufferAttribute(pos, idx ? idx.getX(i) : i).applyMatrix4(mtx);
+    const c = V(), nrm = V(), pts = []; let area = 0;
+    for (let i = 0; i + 2 < n; i += 3) { const a = P(i), b = P(i + 1), e = P(i + 2), x = V().subVectors(b, a).cross(V().subVectors(e, a)), A = x.length() / 2;
+      if (A < 1e-6) continue; area += A; c.addScaledVector(V().add(a).add(b).add(e).multiplyScalar(1 / 3), A); nrm.add(x); pts.push(a, b, e); }
+    if (!area) return; c.multiplyScalar(1 / area); nrm.normalize();
+    let rad = Infinity; for (const p of pts) { const d = V().subVectors(p, c); d.addScaledVector(nrm, -d.dot(nrm)); if (d.length() > 1e-3) rad = Math.min(rad, d.length()); }
+    if (!isFinite(rad)) return;
+    let edge = 0; for (const p of pts) edge = Math.max(edge, V().subVectors(p, c).length());
+    const R = Math.min(edge * 0.9, Math.max(rad, edge * 0.82));   // inside the mouth's lip
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(R, 48), mat(k++ * 1.37));
+    lens.position.copy(c).addScaledVector(nrm, 0.03); lens.quaternion.setFromUnitVectors(V(0, 0, 1), nrm); group.add(lens); });
+  root.add(group);
+  return { group, time };
+}
+return { tex, geometry, maps, looks, fixtures, blink, panes, masts, lenses };
 };

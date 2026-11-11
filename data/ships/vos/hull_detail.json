@@ -92,13 +92,13 @@
    0.38,
    0.75
   ],
-  "strip_k": 0.6,
+  "strip_k": 0.0,
   "strip_inner": 1.0,
   "strip_rim_px": 7,
   "strip_cell_m": 1.6,
   "strip_cell_gap": 0.14,
   "strip_cell_on": 0.7,
-  "strip_cell_k": 0.55,
+  "strip_cell_k": 0.0,
   "greeble_ao_floor": 0.6,
   "glass_cells_k": 0.18,
   "glass_cell_m": 0.8,
@@ -125,7 +125,8 @@
   "accent_share": 0.0,
   "_accent_share": "No whole plate is brass: brass is kept for the two bands (the Breakers' principle 3).",
   "_under": "The layer under the plates, in the seams: a rust a little darker than the plate, never near black, so a seam reads as a fine line, not a drawn one (owner, 2026-11-11).",
-  "_machine": "Machinery in the inset panels and the greebles a worn grey against the rust, so the ordered machinery reads apart from the plate (the owner's references, 2026-11-11)."
+  "_machine": "Machinery in the inset panels and the greebles a worn grey against the rust, so the ordered machinery reads apart from the plate (the owner's references, 2026-11-11).",
+  "_strip_k": "No glow painted into the maps (owner, 2026-11-11, of the Cross's emitters: \"I don't really like these glowy bits on the cross. They look kinda cheap to me. If you're gonna have glowy bits use baked lighting or shaders\"): a gun's mouth, an emitter and a drive bake as dark metal lenses; the light they cast on the hull round them stays in the baked light map, and the glow itself is a shader on the page (docs/mockups/lib/baked-ship.js lenses). Ship Design Bible T14."
  },
  "defaults": {
   "_doc": "A Vos ship of about cruiser size (150 to 190 m). Breakers' plate: stations 5 to 14 m apart, so no two plates match, and each plate stands proud by its own amount (up to 0.12 m on 0.25 m plate). The welds are narrow seams (8 to 14 cm), every cut square to the ship so seams meet cuts and never cross them, and no trenches (owner, 2026-11-11, of the first Saucer runner: \"lihnes are too harsh, and hull plating lines are crossing over each other\"). A fighter's own defaults override these at its scale.",
@@ -492,7 +493,9 @@
      "paint": {
       "under": "#4e5440",
       "ink_k": 0.12,
-      "ao_floor": 0.55
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
      }
     }
    },
@@ -727,7 +730,9 @@
      "dull": 0.4,
      "paint": {
       "ink_k": 0.12,
-      "ao_floor": 0.55
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
      }
     }
    },
@@ -850,7 +855,9 @@
      "dull": 0.4,
      "paint": {
       "ink_k": 0.12,
-      "ao_floor": 0.55
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
      }
     }
    },
@@ -968,7 +975,9 @@
      "dull": 0.4,
      "paint": {
       "ink_k": 0.12,
-      "ao_floor": 0.55
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
      }
     }
    },
@@ -1080,7 +1089,9 @@
      "dull": 0.4,
      "paint": {
       "ink_k": 0.12,
-      "ao_floor": 0.55
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
      }
     }
    },
@@ -1192,7 +1203,9 @@
      "dull": 0.4,
      "paint": {
       "ink_k": 0.12,
-      "ao_floor": 0.55
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
      }
     }
    },

@@ -35,3 +35,4 @@
 - 2026-11-11, cloud session: version 4, version id `1794400281-6daa`: T13 (no two antennas the same shape, a mirrored pair being one design) and dishes under T11 (owner: "No two antenna cam be the same shape. Also need dishes as well").
 - 2026-11-11, cloud session: version 5, version id `1794401940-2f75`: T13 corrected, a port and starboard pair of antennas differ too, overriding T7's symmetry for antennas and dishes.
 - 2026-11-11, cloud session: version 6, version id `1794403496-09be`: T13 adds no two antennas the same length (at least 12% apart, measured whole).
+- 2026-11-11, cloud session: version 7, version id `1794409572-bbd0`: T14, glow is baked light or a shader, never flat paint.

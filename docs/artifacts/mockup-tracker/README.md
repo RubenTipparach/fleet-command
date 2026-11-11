@@ -168,3 +168,4 @@
 - Version 179 published 2026-11-11, cloud session, version id `1794401946-a2fe`: M37 at v12; the Ship Design Bible at v5.
 - Version 180 published 2026-11-11, cloud session, version id `1794401964-7472`: M37 at v13.
 - Version 181 published 2026-11-11, cloud session, version id `1794403501-a5be`: M37 at v14; the Ship Design Bible at v6.
+- Version 182 published 2026-11-11, cloud session, version id `1794409578-f05a`: M37 at v15; the Ship Design Bible at v7.

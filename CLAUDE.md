@@ -557,6 +557,9 @@ saying what changes here. Where a note and the copied text below it disagree, th
   ship every antenna and dish has its own design, a port and starboard pair included (owner: "I literally just told you no two
   antenna should look the same on a starship"), and no two the same length ("No two antenna shall have same length": at
   least 12% apart); masts and dishes are geometry, never baked (Ship Design Bible T11, T13).
+- **Glow is baked light or a shader, never flat paint** (owner, 2026-11-11, of flat cyan emitters: "They look kinda cheap to
+  me. If you're gonna have glowy bits use baked lighting or shaders"). A gun's mouth, an emitter or a drive bakes as a dark
+  lens with its light baked onto the hull round it, and glows by a shader (Ship Design Bible T14).
 - **No z-fighting, ever** (Undercity, Star Crew).
 - **Stars and every scatter come from a real generator, never a cheap hash** (owner, 2026-11-05, of the menu's stars drawn
   with `i * 7919 % 1000`: "never to use poor RNG stuff for stars, this seems like a common low effort mistake", "you can see a
