@@ -198,7 +198,8 @@ public sealed partial class ScriptedCaptain : Node
             // a battle with marker beacons and no enemy left: steer for the next beacon shown, by clicking it, as a player would
             if (B.Scenario.Markers != null && !B.EnemiesOf(me).Any())
             {
-                if (B.Scenario.Markers.FirstOrDefault(k => B.MarkerActive(k) && !B.Reached.Contains(k.Id)) is { } mk && steering != mk.Id)
+                // only a captain who steers clicks the beacons (a co-op crew member without the helm leaves it to the helm)
+                if (steer && B.Scenario.Markers.FirstOrDefault(k => B.MarkerActive(k) && !B.Reached.Contains(k.Id)) is { } mk && steering != mk.Id)
                 {
                     if (await Click("v.marker." + mk.Id) == null) steering = mk.Id;
                 }
