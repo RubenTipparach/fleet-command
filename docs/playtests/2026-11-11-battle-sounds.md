@@ -16,3 +16,6 @@ Every weapon kind on both sides fires with its sound, every hit lands with one b
 take over when a ship is struck again within half a second, and each destroyed ship plays its full explosion. Not
 covered: how loud a fleet battle is in the owner's ears (209 lance shots in one battle is busy; the 24-voice cap holds
 it), and the engines, thrusters, reactor, shields rising and failing, and the alerts, which are not wired yet (task 3.9).
+
+The whole suite after the change (`bash scripts/playtest.sh`): `PLAYTEST_SUITE 127/127 ok`; `scripts/run-tests.sh`: 399 Core
+tests, the layout test and skin parity (47 states, 12876 controls) pass.
