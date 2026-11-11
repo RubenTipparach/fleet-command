@@ -22,8 +22,10 @@ public static class Stacking
     public const double GapX = 0.35, MarginX = 0.2;
 
     /// <summary>A ship as the stacking sees it: its place (any one unit, the same for all), heading (radians), half its
-    /// width and length, its lowest and highest points about its origin, and its rank keys.</summary>
-    public readonly record struct Hull(string Id, double X, double Z, double H, double HalfW, double HalfL, double Lo, double Hi, bool Player, int Order);
+    /// width and length, its lowest and highest points about its origin, its rank keys, and its velocity (that unit a
+    /// second) for the look ahead.</summary>
+    public readonly record struct Hull(string Id, double X, double Z, double H, double HalfW, double HalfL, double Lo, double Hi, bool Player, int Order,
+        double VX = 0, double VZ = 0);
 
     /// <summary>The height each ship is drawn at, in the hulls' unit.</summary>
     public static Dictionary<string, double> Heights(IEnumerable<Hull> hulls)
@@ -48,6 +50,23 @@ public static class Stacking
             laid.Add((s, y));
         }
         return laid.ToDictionary(l => l.S.Id, l => l.Y);
+    }
+
+    /// <summary>The height each ship needs now or at any of <paramref name="samples"/> moments over the next
+    /// <paramref name="aheadS"/> seconds, each ship carried on at its velocity: the highest. A view that eases its ships
+    /// slowly up and down (owner, 2026-11-10: "Ships move up and down too abruptly. They should take like 5 seconds or
+    /// something to move up or down to avoid clipping though") starts each climb that long before the hulls would meet,
+    /// and lets a ship down only once nothing it would meet in that time is under it.</summary>
+    public static Dictionary<string, double> HeightsAhead(IReadOnlyList<Hull> hulls, double aheadS, int samples)
+    {
+        Dictionary<string, double> most = Heights(hulls);
+        for (int k = 1; k <= samples; k++)
+        {
+            double t = aheadS * k / samples;
+            foreach (var (id, y) in Heights(hulls.Select(h => h with { X = h.X + h.VX * t, Z = h.Z + h.VZ * t })))
+                if (y > most[id]) most[id] = y;
+        }
+        return most;
     }
 
     /// <summary>Whether two footprints (boxes turned to their headings, each grown by its margin) overlap on the plane: the

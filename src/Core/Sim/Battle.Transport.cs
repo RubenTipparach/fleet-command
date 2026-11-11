@@ -142,8 +142,8 @@ public sealed partial class Battle
 
     // ---- Who can be reached ---------------------------------------------------------------------------------------
 
-    /// <summary>Whether t's shield facing toward s is down (at or under shield_down_hp, or its shields lowered).</summary>
-    public bool FacingDown(Ship t, Ship s) => !t.ShieldsUp || t.Shields[Rules.FacingFrom(t, s.X, s.Z)] <= Comms.Transport.ShieldDownHp;
+    /// <summary>Whether t's shield facing toward s is down (at or under shield_down_hp, its shields lowered, or its core tripped by lightning).</summary>
+    public bool FacingDown(Ship t, Ship s) => !t.ShieldsUp || t.CoreDown || t.Shields[Rules.FacingFrom(t, s.X, s.Z)] <= Comms.Transport.ShieldDownHp;
 
     /// <summary>Whether s's transporter can reach t now (the-federation's beam_check): inside range, a pad charged, and for
     /// an enemy its facing toward s down. One rule for capture, hit and run and the troops (6.1).</summary>

@@ -1,4 +1,5 @@
 using System;
+using FleetCommand.Data;
 using FleetCommand.Sim;
 using Xunit;
 
@@ -95,5 +96,31 @@ public class HelmTests
         Assert.True(b.Player.RunMaxKm - b.Player.RunMinKm >= 5);
         b.SetHoldKm(999);
         Assert.Equal(b.Tuning.HoldMaxKm, b.Player.HoldKm);
+    }
+
+    [Fact]
+    public void The_range_sliders_give_their_first_half_to_five_to_fifteen_kilometres_and_step_by_five_above()
+    {
+        // owner, 2026-11-10: "dedicate 1/2 of the slider to be from 5km - 15km, and the other half is increments of 5km"
+        Battle b = TestData.NewBattle();
+        Tuning t = b.Tuning;
+        Assert.Equal(5, HelmRange.FromFrac(0, t));
+        Assert.Equal(15, HelmRange.FromFrac(0.5, t));
+        Assert.Equal(t.HoldMaxKm, HelmRange.FromFrac(1, t));
+        Assert.Equal(10, HelmRange.FromFrac(0.25, t));
+        // below the split, a kilometre at a time; above it, five
+        b.SetHoldKm(7.4);
+        Assert.Equal(7, b.Player.HoldKm);
+        b.SetHoldKm(17);
+        Assert.Equal(15, b.Player.HoldKm);
+        b.SetHoldKm(18);
+        Assert.Equal(20, b.Player.HoldKm);
+        // the slider reads back where it drew
+        foreach (double km in new[] { 5.0, 9, 15, 40, t.HoldMaxKm }) Assert.Equal(km, HelmRange.FromFrac(HelmRange.ToFrac(km, t), t), 9);
+        // hit and run's two ranges a step apart in the fine half too
+        b.SetRunRange(8, 8);
+        Assert.Equal(1, b.Player.RunMaxKm - b.Player.RunMinKm, 9);
+        b.SetRunRange(1, 2);
+        Assert.Equal(5, b.Player.RunMinKm);
     }
 }

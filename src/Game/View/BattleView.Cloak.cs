@@ -2,7 +2,7 @@
 // cloak's own_alpha for your own ship and a revealed enemy (the battle console mockup's cloakLook): every mesh of the model
 // takes the fade as its GeometryInstance3D transparency, so the hull shader, the lamps and the scars all fade together
 // and no material is shared with another ship. A cloaked enemy unseen is not drawn at all (Sync reads Battle.Detected).
-// A nebula is soft violet puffs of glow, seeded, filling its circle on the battle plane (the mockup's syncNebula).
+// (The nebula plumes a cloak hides in are BattleView.Nebula's.)
 using System;
 using System.Collections.Generic;
 using FleetCommand.Sim;
@@ -14,11 +14,10 @@ public sealed partial class BattleView
 {
     private Battle? _cloakFor;
     private readonly Dictionary<string, List<GeometryInstance3D>> _cloakMeshes = new();
-    private Node3D? _nebula;
 
     partial void SyncCloak(Battle b, double dt)
     {
-        if (_cloakFor != b) { _cloakFor = b; _cloakMeshes.Clear(); BuildNebula(b); }
+        if (_cloakFor != b) { _cloakFor = b; _cloakMeshes.Clear(); }
         double own = b.Data.Systems.Cloak.Cloak.OwnAlpha, now = Time.GetTicksMsec() / 1000.0;
         foreach (Ship s in b.Ships)
         {
@@ -38,39 +37,6 @@ public sealed partial class BattleView
         {
             if (c is GeometryInstance3D g) into.Add(g);
             Collect(c, into);
-        }
-    }
-
-    // The nebula's puffs, made once a battle: 70 soft glows of violet, seeded from the scenario, at its density.
-    private void BuildNebula(Battle b)
-    {
-        _nebula?.QueueFree();
-        _nebula = null;
-        if (b.Scenario.Nebula is not { } n) return;
-        _nebula = new Node3D { Name = "Nebula" };
-        AddChild(_nebula);
-        var r = Rng.Fork(b.Scenario.Seed, "nebula");
-        float rU = (float)(n.RM / MPerU);
-        var tex = new GradientTexture2D
-        {
-            Width = 64, Height = 64, Fill = GradientTexture2D.FillEnum.Radial, FillFrom = new Vector2(0.5f, 0.5f), FillTo = new Vector2(1f, 0.5f),
-            Gradient = new Gradient { Offsets = new[] { 0f, 0.4f, 1f }, Colors = new[] { new Color(1, 1, 1, 1), new Color(1, 1, 1, 0.45f), new Color(1, 1, 1, 0) } },
-        };
-        for (int i = 0; i < 70; i++)
-        {
-            double a = r.Next() * Math.Tau, d = Math.Sqrt(r.Next()) * rU, sz = rU * (0.25 + r.Next() * 0.35);
-            // the mockup's colour, HSL (0.76 to 0.84, 0.6, 0.45 to 0.6), as HSV
-            double hue = 0.76 + r.Next() * 0.08, l = 0.45 + r.Next() * 0.15, v = l + 0.6 * Math.Min(l, 1 - l);
-            Color col = Color.FromHsv((float)hue, (float)(2 * (1 - l / v)), (float)v, (float)(0.16 * n.Density));
-            var mat = new StandardMaterial3D
-            {
-                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
-                Transparency = BaseMaterial3D.TransparencyEnum.Alpha, BlendMode = BaseMaterial3D.BlendModeEnum.Add, AlbedoTexture = tex, AlbedoColor = col,
-                DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled, DisableReceiveShadows = true,
-            };
-            var q = new MeshInstance3D { Mesh = new QuadMesh { Size = new Vector2((float)sz, (float)sz) }, MaterialOverride = mat, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
-            q.Position = new Vector3((float)(n.XM / MPerU + Math.Cos(a) * d), (float)((r.Next() - 0.5) * rU * 0.25), (float)(n.ZM / MPerU + Math.Sin(a) * d));
-            _nebula.AddChild(q);
         }
     }
 }

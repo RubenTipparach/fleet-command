@@ -86,7 +86,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
         float x0 = r.Position.X, y = r.Position.Y, cw = r.Size.X / 2 - 12;
         Text($"{m.Label} · {m.Weapon.Name}".ToUpperInvariant(), x0, y + 26, 26, C.Sky, HorizontalAlignment.Left, cw, 700, 1);
         Pairs("wd.a", x0, y + 62, new (string, string, Color?)[] { ("Status", st.ToString(), StatusColor(st)), ("Health", Pct(Math.Clamp(m.Hp, 0, 1)), null) }, 20);
-        Pairs("wd.b", x0, y + 92, new (string, string, Color?)[] { ("Arc", m.Def.ArcWidthDeg >= 360 ? "All round" : $"{m.Def.ArcCentreDeg:0}° ± {m.Def.ArcWidthDeg / 2:0}°", null), ("Range", $"{w.RangeKm:0.0} km", null), ("Damage", w.Damage.ToString("0"), null) }, 20);
+        Pairs("wd.b", x0, y + 92, new (string, string, Color?)[] { ("Arc", m.Def.ArcWidthDeg >= 360 ? "All round" : $"{m.Def.ArcCentreDeg:0}° ± {m.Def.ArcWidthDeg / 2:0}°", null), ("Range", $"{B.Rules.RangeKm(s, m, t):0.0} km", null), ("Damage", w.Damage.ToString("0"), null) }, 20);
         Pairs("wd.c", x0, y + 122, new (string, string, Color?)[] { ("Charge", m.Hp <= 0 || m.State == Arming.Offline ? "--" : Pct(m.Charge), null),
             ("Ready in", cool is { } c ? $"{Rules.FormatCooldown(c)} s" : Rules.Ready(m) ? "Ready" : "--", null), ("Cost", $"{w.CostE:0.#} E", null) }, 20);
         float rx = x0 + r.Size.X / 2 + 12, rw = r.Size.X / 2 - 12;
@@ -95,7 +95,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
                 id => B.ArmOne(m.Index, Enum.Parse<Arming>(id, true)), id => !Rules.CanArm(m.Weapon, Enum.Parse<Arming>(id, true)));
         if (t != null)
         {
-            bool arc = Rules.InArc(s, m, t), rng = Rules.InRange(s, m, t);
+            bool arc = Rules.InArc(s, m, t), rng = B.Rules.InRange(s, m, t);
             Pairs("wd.t", rx, y + 62, new (string, string, Color?)[] { ("Target", Aiming.ContactName(B, t), null), ("To hit", Pct(B.Rules.HitChance(s, m, t)), null),
                 ("In arc", arc ? "Yes" : "No", arc ? C.Accord : C.Alert), ("In range", rng ? "Yes" : "No", rng ? C.Accord : C.Alert) }, 20);
         }
@@ -127,6 +127,16 @@ public sealed partial class RadarPanel : ConsolePanel
         foreach (float f in new[] { 0.5f, 1f }) DrawArc(c, rr * f, 0, Mathf.Tau, 48, C.Deep, 1.5f, true);
         // your sensors' reach, a faint ring (beyond it an enemy is an unknown contact: Battle.Identified)
         DrawArc(c, (float)Math.Min(1.08, B.SensorKm(Me) / ScaleKm) * rr, 0, Mathf.Tau, 48, new Color(C.Sky, 0.35f), 1, true);
+        // the nebula plumes on the dial (RadarPanel.Map's colours), each kept inside its rim
+        foreach (NebulaDef n in B.Rules.Nebulae)
+        {
+            double km = Math.Sqrt((n.XM - Me.X) * (n.XM - Me.X) + (n.ZM - Me.Z) * (n.ZM - Me.Z)) / 1000, br = Rules.Bearing(Me, n.XM, n.ZM);
+            float r = (float)(km / ScaleKm) * rr, pr = Math.Min((float)(n.RM / 1000 / ScaleKm) * rr, 1.08f * rr - r);
+            if (pr < 2) continue;
+            var p = c + new Vector2((float)(Math.Sin(br) * r), (float)(-Math.Cos(br) * r));
+            DrawCircle(p, pr, new Color(PlumeColor(n), 0.16f), true, -1, true);
+            DrawArc(p, pr, 0, Mathf.Tau, 32, new Color(PlumeColor(n), 0.55f), 1, true);
+        }
         foreach (Ship o in B.Ships)
         {
             if (!o.Alive || o == Me || !B.Detected(Me, o)) continue;   // a cloaked ship unseen is not on the radar

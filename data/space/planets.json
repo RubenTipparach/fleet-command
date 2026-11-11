@@ -1,5 +1,5 @@
 {
- "_doc": "How each kind of planet is drawn in the battle (src/Game/View/PlanetLooks.cs, read into src/Game/View/planet.gdshader and planet_atmosphere.gdshader; owner, 2026-11-08: \"In game Planets: pull in planets from godot-sandbox and falchion\"). One look per PlanetDef.Kinds. Ported from Falchion's PLANET_LOOKS (RubenTipparach/falchion 5d128af8, src/content/planetLooks.ts): surface is rocky (noise terrain with seas, caps, craters and canyons), gas (warped bands and a storm) or lava (rocky with glowing cracks); palette is deep water, shallow water, lowland, highland for a rocky world with a sea, the ground from darkest (low plains) to brightest (highlands) for a world with none and for a lava world's crust, three bands and the storm for gas; sea is the terrain height (-1 to 1) below which it is liquid (below -1: none), on a lava world the height below which the ground is molten; ice_lat the latitude share (0 to 1) where the caps begin (above 1: none); clouds the cover, 0 to 1; detail the noise frequency (more, smaller continents); craters and canyons the landforms; glow the colour of lava and volcanoes; city_glow and cities the night side's lights and how much land they cover (0 to 1); volcanoes adds cones with lit calderas. The atmosphere shell is godot-sandbox's single scattering shell (RubenTipparach/godot-sandbox 63f463f7, resources/shaders/comic_atmosphere_shell.gdshader): atmosphere its tint, atmosphere_strength how strongly it scatters (0: no shell), atmosphere_height its top as a share of the radius above the ground. Layers over the ground (src/Game/View/PlanetBody.cs; owner, 2026-11-09: \"We need some really good in game planet shaders ... Make a few different planet types ... gas giants with rings\"; the planet-shaders skill, after godot-sandbox's stack of shells): cloud_layer is godot-sandbox's domed, lit weather (planet_clouds.gdshader; cover 0 to 1, scale its cloud systems round the world, lit and base the colours of thick and thin cloud, opacity), which turns the ground's painted clouds off; crater_cover is the share of godot-sandbox's crater lattice stamped (planet_craters.gdshader, 0 to 1); rings are a flat ring system (planet_rings.gdshader; inner and outer edges in the planet's radii, color_in and color_out, opacity) whose shadow a gas giant's tops take; tilt_deg leans the axis (degrees). A gas surface is planet_gas.gdshader, its flow in gas: bands (belt and zone pairs), turbulence (how torn their edges are), storm_lat (the great storm's latitude as a sine), storm_size (radians) and ovals (how many small white ovals, 0 to 1); its palette is zones, belts, the brightest bands and the storm. Realism (owner, 2026-11-10: \"make planets more realistic please\"): climate (0 to 1) colours the land by its weather, forest where it rains, the arid colour in the dry belts and the rain's gaps, the tundra colour toward the caps, the highland colour up high; mountains (0 to 1) raises ridged ranges in belts, snow on their peaks where it is cold; canyons are great rifts (three, and six more at 1), arcs that wander and pinch out; lineae (0 to 1, sixteen at 1) are an ice shell's long thin cracks in lineae_color.",
+ "_doc": "How each kind of planet is drawn in the battle (src/Game/View/PlanetLooks.cs, read into src/Game/View/planet.gdshader and planet_atmosphere.gdshader; owner, 2026-11-08: \"In game Planets: pull in planets from godot-sandbox and falchion\"). One look per PlanetDef.Kinds. Ported from Falchion's PLANET_LOOKS (RubenTipparach/falchion 5d128af8, src/content/planetLooks.ts): surface is rocky (noise terrain with seas, caps, craters and canyons), gas (warped bands and a storm) or lava (rocky with glowing cracks); palette is deep water, shallow water, lowland, highland for a rocky world with a sea, the ground from darkest (low plains) to brightest (highlands) for a world with none and for a lava world's crust, three bands and the storm for gas; sea is the terrain height (-1 to 1) below which it is liquid (below -1: none), on a lava world the height below which the ground is molten; ice_lat the latitude share (0 to 1) where the caps begin (above 1: none); clouds the cover, 0 to 1; detail the noise frequency (more, smaller continents); craters and canyons the landforms; glow the colour of lava and volcanoes; city_glow and cities the night side's lights and how much land they cover (0 to 1); volcanoes adds cones with lit calderas. The atmosphere shell is godot-sandbox's single scattering shell (RubenTipparach/godot-sandbox 63f463f7, resources/shaders/comic_atmosphere_shell.gdshader): atmosphere its tint, atmosphere_strength how strongly it scatters (0: no shell), atmosphere_height its top as a share of the radius above the ground. Layers over the ground (src/Game/View/PlanetBody.cs; owner, 2026-11-09: \"We need some really good in game planet shaders ... Make a few different planet types ... gas giants with rings\"; the planet-shaders skill, after godot-sandbox's stack of shells): cloud_layer is godot-sandbox's domed, lit weather (planet_clouds.gdshader; cover 0 to 1, scale its cloud systems round the world, lit and base the colours of thick and thin cloud, opacity), which turns the ground's painted clouds off; crater_cover is the share of godot-sandbox's crater lattice stamped (planet_craters.gdshader, 0 to 1); rings are a flat ring system (planet_rings.gdshader; inner and outer edges in the planet's radii, color_in and color_out, opacity) whose shadow a gas giant's tops take; tilt_deg leans the axis (degrees). A gas surface is planet_gas.gdshader, its flow in gas: bands (belt and zone pairs), turbulence (how torn their edges are), storm_lat (the great storm's latitude as a sine), storm_size (radians) and ovals (how many small white ovals, 0 to 1); its palette is zones, belts, the brightest bands and the storm. Realism (owner, 2026-11-10: \"make planets more realistic please\"): climate (0 to 1) colours the land by its weather, forest where it rains, the arid colour in the dry belts and the rain's gaps, the tundra colour toward the caps, the highland colour up high; mountains (0 to 1) raises ridged ranges in belts, snow on their peaks where it is cold; canyons are great rifts (three, and six more at 1), arcs that wander and pinch out; lineae (0 to 1, sixteen at 1) are an ice shell's long thin cracks in lineae_color. More worlds (owner, 2026-11-10: \"theres some world types in falchion, city planet, archipelego, fossil planet (lots of bones). and an old alien ruins planet\"): islands (0 to 1) makes an archipelago, the continents sunk to shoals and chains of small islands raised along drowned ridges; pattern is what stands on a rocky world's ground (src/Game/View/planet_patterns.gdshaderinc, after Falchion's src/render/planets/patterns.glsl.ts): city (Falchion's ecumenopolis, the whole world built over: districts, streets within streets, plazas, every plot a building of its own height, islands of far taller towers, and its lights in glow over the whole night side), ruins (ring works, the footprints of towns and broken causeways under the dust, a few lamps still lit in glow; after Falchion's deadtech and choir worlds) or bones (skeletons at every size from a province to a hill, half buried; Falchion's bones world from orbit, its bones drawn here); pattern_color is the glass of a city's tall towers, the ruins' weathered metal, or the bone. city is Falchion's ecumenopolis row and fossil its bones row; archipelago and ruins are Fleet Command's own.",
  "terran": {
   "surface": "rocky",
   "palette": [
@@ -252,5 +252,116 @@
    "base": "#6f7038",
    "opacity": 0.95
   }
+ },
+ "city": {
+  "surface": "rocky",
+  "palette": [
+   "#1c1e22",
+   "#34383e",
+   "#5a5e66",
+   "#8a9098"
+  ],
+  "sea": -2,
+  "ice_lat": 1.2,
+  "clouds": 0.2,
+  "cloud_color": "#d8d8d0",
+  "atmosphere": "#d8c890",
+  "atmosphere_strength": 0.8,
+  "atmosphere_height": 0.045,
+  "detail": 2.0,
+  "glow": "#ffc860",
+  "city_glow": "#ffc860",
+  "cities": 0,
+  "cloud_layer": {
+   "cover": 0.3,
+   "scale": 3.4,
+   "lit": "#e6e2d6",
+   "base": "#b9b4a8",
+   "opacity": 0.85
+  },
+  "pattern": "city",
+  "pattern_color": "#b4c6d2"
+ },
+ "archipelago": {
+  "surface": "rocky",
+  "palette": [
+   "#062a52",
+   "#27b3b8",
+   "#4a8a3a",
+   "#8f8566"
+  ],
+  "sea": 0.2,
+  "ice_lat": 0.93,
+  "clouds": 0.5,
+  "cloud_color": "#ffffff",
+  "atmosphere": "#7fd0ff",
+  "atmosphere_strength": 1.0,
+  "atmosphere_height": 0.05,
+  "detail": 2.2,
+  "glow": "#ffcf7a",
+  "city_glow": "#ffd890",
+  "cities": 0.25,
+  "cloud_layer": {
+   "cover": 0.42,
+   "scale": 3.6,
+   "lit": "#ffffff",
+   "base": "#cdd9e8",
+   "opacity": 0.9
+  },
+  "climate": 1.0,
+  "arid": "#e6d6a0",
+  "tundra": "#6f7058",
+  "mountains": 0.35,
+  "islands": 1.0
+ },
+ "fossil": {
+  "surface": "rocky",
+  "palette": [
+   "#4a3e2e",
+   "#62523e",
+   "#8a7656",
+   "#a69070"
+  ],
+  "sea": -2,
+  "ice_lat": 1.2,
+  "clouds": 0.04,
+  "cloud_color": "#fff8ea",
+  "atmosphere": "#f0e0c0",
+  "atmosphere_strength": 0.5,
+  "atmosphere_height": 0.04,
+  "detail": 2.4,
+  "canyons": 0.2,
+  "glow": "#ffcf7a",
+  "city_glow": "#ffcf7a",
+  "cities": 0,
+  "mountains": 0.3,
+  "pattern": "bones",
+  "pattern_color": "#efe6cf"
+ },
+ "ruins": {
+  "surface": "rocky",
+  "palette": [
+   "#3b3440",
+   "#5e5560",
+   "#8c7f7a",
+   "#b8aa98"
+  ],
+  "sea": -2,
+  "ice_lat": 1.2,
+  "clouds": 0.05,
+  "cloud_color": "#e8dccc",
+  "atmosphere": "#c8b0a0",
+  "atmosphere_strength": 0.4,
+  "atmosphere_height": 0.035,
+  "detail": 2.6,
+  "craters": true,
+  "canyons": 0.3,
+  "glow": "#9ff0e0",
+  "city_glow": "#9ff0e0",
+  "cities": 0,
+  "crater_cover": 0.2,
+  "mountains": 0.4,
+  "pattern": "ruins",
+  "pattern_color": "#7f9a90"
  }
 }

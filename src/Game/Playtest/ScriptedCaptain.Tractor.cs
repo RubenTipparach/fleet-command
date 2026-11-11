@@ -16,6 +16,12 @@ public sealed partial class ScriptedCaptain
         string[] p = arg.Split(',');
         if (p.Length != 2 || !double.TryParse(p[0], NumberStyles.Float, CultureInfo.InvariantCulture, out double dx) || !double.TryParse(p[1], NumberStyles.Float, CultureInfo.InvariantCulture, out double dz))
             return $"mine_at needs \"dx,dz\" in metres, not '{arg}'";
+        return await PlaceMine(dx, dz);
+    }
+
+    // A mine beamed to a point dx metres east and dz south of the captain's ship: Place mine, then a click in the view.
+    private async Task<string?> PlaceMine(double dx, double dz)
+    {
         int before = B.Mines.Count;
         // the Mines tab of the Transport station, then Place mine
         string? stuck = await Click("st.transport") ?? await Click("tr.tab.mines") ?? await Click("mn.place");

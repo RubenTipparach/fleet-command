@@ -279,7 +279,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         float ry = Size.Y - 16, mw = Size.X * 0.6f;
         if (t != null)
         {
-            Mount[] arc = me.Mounts.Where(m => !m.Weapon.IsPointDefence && m.State != Arming.Offline && Rules.InArc(me, m, t) && Rules.InRange(me, m, t)).ToArray();
+            Mount[] arc = me.Mounts.Where(m => !m.Weapon.IsPointDefence && m.State != Arming.Offline && Rules.InArc(me, m, t) && b.Rules.InRange(me, m, t)).ToArray();
             f.DrawRich(this, new[] { (Aiming.ContactName(b, t), C.Sky), ($" {Aiming.ContactClass(b, t)} · range ", C.Lilac), ($"{Rules.DistKm(me, t):0.0} km", C.Sky), (" · speed ", C.Lilac), (Math.Round(t.V).ToString(), C.Sky) }, 18, ry - 28, 22, mw);
             f.DrawRich(this, new[] { ("in arc ", C.Lilac), (arc.Length.ToString(), C.Sky), (" · charged ", C.Lilac), (arc.Count(Rules.Ready).ToString(), C.Sky) }, 18, ry, 22, mw);
         }

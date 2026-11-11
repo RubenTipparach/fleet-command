@@ -125,7 +125,7 @@ public sealed record RockDef(double XM, double ZM, double RadiusM, string? Name)
 /// gravity wells whose field a warp jump must reckon with (ScenarioStart), or null.</summary>
 public sealed record Scenario(string Id, string Name, string Side, ulong Seed, string Objective, string SayWho, string SayText,
     IReadOnlyList<ShipStart> Ships, string Sky, double SunEnergy = Scenario.DeepSpaceSun, bool DamageRange = false,
-    IReadOnlyList<MarkerDef>? Markers = null, IReadOnlyList<WellDef>? Wells = null, NebulaDef? Nebula = null, bool Repel = false)
+    IReadOnlyList<MarkerDef>? Markers = null, IReadOnlyList<WellDef>? Wells = null, IReadOnlyList<NebulaDef>? Nebulae = null, bool Repel = false)
 {
     /// <summary>False for a test scene whose own ship carries no weapons (the mockup's armed: false: the scene's tool is
     /// what destroys the target).</summary>
@@ -192,6 +192,11 @@ public sealed record Tuning(
     /// ramming contact, the hull a rock strikes), as the reference games draw their ships large against the space between
     /// them (owner, 2026-11-06: "multiply all distance by 10", "1km -> 10km": every distance grew tenfold, the ships did not).</summary>
     public double ShipFrameX { get; init; } = 1;
+    /// <summary>The helm's range sliders (HelmRange): the range their first half ends at, km, and the step below it and
+    /// above it, km.</summary>
+    public double HoldSplitKm { get; init; } = 15;
+    public double HoldFineStepKm { get; init; } = 1;
+    public double HoldStepKm { get; init; } = 5;
     /// <summary>Seconds an AI captain's fire goes without landing before it closes to half its fighting range (half again for each
     /// further such span, an eighth at most).</summary>
     public double AiCloseAfterS { get; init; } = 20;
@@ -222,6 +227,8 @@ public sealed record GameData(
 
     /// <summary>The sounds the game plays (data/audio/cues.json).</summary>
     public AudioCues Audio { get; init; } = AudioCues.Empty;
+    /// <summary>Which sound each thing the battle does plays (data/audio/events.json).</summary>
+    public SoundMap Sounds { get; init; } = SoundMap.Empty;
 
     /// <summary>A scenario by id; throws naming the id when there is none.</summary>
     public Scenario ScenarioById(string id) =>

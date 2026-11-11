@@ -1,0 +1,27 @@
+{
+ "_doc": "Which sound each thing the battle does plays (src/Core/Sim/BattleSounds.cs, read by src/Game/View/BattleAudio.cs; owner, 2026-11-10: \"Implement sound fx in the game\"; openspec/changes/sound-effects design section 3). Every name is a cue of data/audio/cues.json. shots: a shot of each kind as it leaves its mount, placed at the mount; a kind not listed is silent (flares, decoys, a boarding party's shoot). intercept: point defence's beam at a missile or fighter. Hits (Battle.Hits), placed at the ship hit: shield_hit when the shield took it all, hull_hit when the hull took damage, torpedo_hit for a torpedo or a forge slug on the hull, destroyed as a ship goes. lightning: an ion storm's strike on a ship, placed. Unplaced, the commanded ship's own: lock when a new target is locked, hull_critical once as its hull falls below hull_critical_frac (again after it climbs back over), pause_on and pause_off with the pause key. repeat_s: a cue does not play again within this many battle seconds of itself (a volley of eight lances is one sound, not eight on top of each other).",
+ "shots": {
+  "beam": "lance_fire",
+  "bolt": "disruptor_fire",
+  "torpedo": "torpedo_launch",
+  "missile": "missile_launch",
+  "chorus": "overload_charge",
+  "slug": "torpedo_launch",
+  "quell": "overload_charge",
+  "bomb": "torpedo_launch",
+  "fighter": "thruster_burst",
+  "shuttle": "thruster_burst"
+ },
+ "intercept": "pd_burst",
+ "shield_hit": "shield_hit_short",
+ "hull_hit": "hull_hit_short",
+ "torpedo_hit": "torpedo_detonate_short",
+ "destroyed": "ship_destroyed",
+ "lightning": "explosion_small_short",
+ "lock": "target_lock",
+ "hull_critical": "hull_critical",
+ "hull_critical_frac": 0.25,
+ "pause_on": "pause_on",
+ "pause_off": "pause_off",
+ "repeat_s": 0.12
+}
