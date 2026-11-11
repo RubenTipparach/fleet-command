@@ -530,26 +530,25 @@
  },
  "shield_hit_short": {
   "group": "Impacts",
-  "what": "The short shield hit, for hits that come fast: a soft dark crack over a deep shield thump (owner, 2026-11-11: \"Shield hit bad ... Fix those\": the electric zap, our shimmer and the spark are gone; candidate A of the audition).",
+  "what": "The short shield hit, for hits that come fast: a low muffled thump (owner, 2026-11-11: \"Shield hit still has an artificial retro game ding that's very out of place. It needs to sound like a low thump hit\": no bright layer at all; candidate T1 of the thump audition).",
   "layers": [
    {
-    "src": "oga/10-impactshield-blocks:impact.8.ogg",
-    "start": 0.166,
-    "lp": 3500,
-    "dur": 0.15,
-    "fadeout": 0.1
+    "src": "oga/battle-at-sea:cannon_hit_1.ogg",
+    "lp": 500,
+    "dur": 0.5,
+    "fadeout": 0.35
    },
    {
-    "src": "oga/space-ship-shield-sounds:space shield sounds - 1.wav",
-    "start": 0.036,
-    "dur": 0.55,
+    "src": "oga/explosion-somewhere-far:explosion_somewhere_far.mp3",
+    "start": 0.07,
+    "dur": 0.5,
     "fadeout": 0.35,
-    "gain": -9.9
+    "gain": -4
    }
   ],
-  "len": 0.6,
+  "len": 0.55,
   "tail_fade": 0.03,
-  "edits": "the darkest shield impact from its onset, lowpassed at 3.5 kHz, cut to 0.15 s, over the first shield take from its onset cut to 0.55 s, 10 dB under it; 0.6 s",
+  "edits": "a ship's cannon striking, lowpassed at 500 Hz, over a distant explosion 4 dB under it, each cut to 0.5 s; 0.55 s, nothing left above about 1 kHz",
   "peak_db": -8.0
  },
  "hull_hit_short": {

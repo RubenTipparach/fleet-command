@@ -23,6 +23,9 @@
   three candidates of each in an audition on Drive; candidate A of each in the game (a soft dark crack over a deep shield
   thump; a rising two-note pip from recorded interface tones, in place of our synthesised sweep)
 - [ ] 2.2d The owner's pick from the shield and lock audition (A, B or C of each)
+- [x] 2.2e The shield hit again (owner, 2026-11-11: "Shield hit still has an artificial retro game ding that's very out of
+  place. It needs to sound like a low thump hit"): no bright layer; a ship's cannon striking, lowpassed at 500 Hz, over a
+  distant explosion (T1 of three low thumps on Drive)
 
 ## 3. In the game (after approval for implementation)
 
