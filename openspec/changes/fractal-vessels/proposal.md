@@ -14,7 +14,7 @@ moves, without moving through our space.
 
 ## What Changes
 
-- **Mockup 37, Fractal vessels** (`docs/mockups/fractal-vessels.html`), desktop only. It has three raymarched vessels, one
+- **Mockup 37, Fractal vessels** (`docs/mockups/fractal-vessels.html`), on desktop and phones since v2 (owner, 2026-11-10: "Make this thing phone friendly please! Also half resolution ray match if you don't mind"), marched at half resolution. It has three raymarched vessels, one
   for each school of the Axiom's draft culture (survey N1):
   - a 4D quaternion Julia set sliced into 3D (the escape-time school);
   - a chain of folded Menger blocks (the tilers);

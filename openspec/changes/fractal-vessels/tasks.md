@@ -13,6 +13,7 @@
 - [x] 1.3 Named shots at desktop size (`SHOOT_SIZES=desktop`, the owner: "dont worry about phone"), looked at
 - [x] 1.4 Published. Then recorded in `mockup-work.md`, the tracker's repository copy and `docs/artifacts/fractal-vessels/`
 - [x] 1.5 Survey questions FV1-FV5 on the culture framing, the faction, the forms, phones and the game's hits
+- [x] 1.7 v2 (owner, 2026-11-10: "Make this thing phone friendly please! Also half resolution ray match if you don't mind"): the vessels marched at half resolution into their own target with the occluders' depth (design D5a), the phone layout, every shot at desktop, phone and portrait sizes in `docs/screenshots/mockups/fractal-vessels/`, republished
 - [ ] 1.6 The owner's review (approval for build, then for implementation)
 
 ## 2. In the game (once approved for implementation)
