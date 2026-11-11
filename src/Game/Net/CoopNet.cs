@@ -79,6 +79,7 @@ public sealed partial class CoopNet : Node
 
     private void SendTo(int peer, JsonObject m)
     {
+        if (_peer.GetConnectionStatus() != MultiplayerPeer.ConnectionStatus.Connected) return;
         _peer.SetTargetPeer(peer);
         _peer.TransferMode = MultiplayerPeer.TransferModeEnum.Reliable;
         _peer.PutPacket(Encoding.UTF8.GetBytes(m.ToJsonString()));
@@ -92,7 +93,8 @@ public sealed partial class CoopNet : Node
     /// <summary>Takes in every packet that arrived (also called before the lockstep plays, so nothing waits a frame).</summary>
     public void Poll()
     {
-        if (_peer == null) return;
+        // a connection that closed (the host left) is polled no more
+        if (_peer == null || _peer.GetConnectionStatus() == MultiplayerPeer.ConnectionStatus.Disconnected) return;
         _peer.Poll();
         while (_peer.GetAvailablePacketCount() > 0)
         {

@@ -30,7 +30,7 @@ public static class Strike
         bool Near(double x, double y)
         {
             if (Math.Sqrt(x * x + y * y) < d.InternalHalfLen) return true;
-            double b = Math.Atan2(x, y) / Geometry.Deg;
+            double b = DMath.Atan2(x, y) / Geometry.Deg;
             return Math.Abs(((((b - fa) % 360) + 540) % 360) - 180) <= reach;
         }
         var sys = Rules.Subsystems.Where(k => Near(d.SubsystemsHalfLen[k].X, d.SubsystemsHalfLen[k].Y)).ToArray();

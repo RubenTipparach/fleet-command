@@ -61,15 +61,15 @@ public static class Starfield2D
         double cx = w * (0.35 + 0.3 * rb.Next()), cy = h * (0.35 + 0.3 * rb.Next());
         double diag = Math.Sqrt(w * (double)w + h * (double)h), half = BandWidth * diag;
         var waves = Enumerable.Range(0, 3).Select(k => (A: half * (0.6 / (k + 1)) * rb.Next(), F: (k + 1) * (1.5 + rb.Next()) / diag, P: rb.Next() * Math.Tau)).ToArray();
-        double ux = Math.Cos(ang), uy = Math.Sin(ang);
+        double ux = DMath.Cos(ang), uy = DMath.Sin(ang);
         int bandTry = (int)Math.Round(BandPerMpx * mpx * 2.2);
         for (int i = 0; i < bandTry; i++)
         {
             double x = rb.Next() * w, y = rb.Next() * h;
             double along = (x - cx) * ux + (y - cy) * uy, across = -(x - cx) * uy + (y - cy) * ux;
-            double mid = waves.Sum(v => v.A * Math.Sin(along * v.F * Math.Tau + v.P));
+            double mid = waves.Sum(v => v.A * DMath.Sin(along * v.F * Math.Tau + v.P));
             double d = (across - mid) / half;
-            if (rb.Next() < Math.Exp(-0.5 * d * d) * 0.45) pos.Add((x, y));
+            if (rb.Next() < DMath.Exp(-0.5 * d * d) * 0.45) pos.Add((x, y));
         }
 
         // clusters: knots scattered round seeded centres by a Gaussian (Box-Muller)
@@ -81,8 +81,8 @@ public static class Starfield2D
             int n = (int)(perCluster * (0.5 + rc.Next()));
             for (int i = 0; i < n; i++)
             {
-                double u1 = Math.Max(1e-12, rc.Next()), u2 = rc.Next(), g = Math.Sqrt(-2 * Math.Log(u1));
-                double x = kx + spread * g * Math.Cos(Math.Tau * u2), y = ky + spread * g * Math.Sin(Math.Tau * u2);
+                double u1 = Math.Max(1e-12, rc.Next()), u2 = rc.Next(), g = Math.Sqrt(-2 * DMath.Log(u1));
+                double x = kx + spread * g * DMath.Cos(Math.Tau * u2), y = ky + spread * g * DMath.Sin(Math.Tau * u2);
                 if (x >= 0 && y >= 0 && x < w && y < h) pos.Add((x, y));
             }
         }
@@ -140,7 +140,7 @@ public static class Starfield2D
             for (int t = 0; t < tries; t++)
             {
                 double a = rng.Next() * Math.Tau, d = r * (1 + rng.Next());
-                double x = px + Math.Cos(a) * d, y = py + Math.Sin(a) * d;
+                double x = px + DMath.Cos(a) * d, y = py + DMath.Sin(a) * d;
                 if (x < 0 || y < 0 || x >= w || y >= h || !Free(x, y)) continue;
                 Add(x, y);
                 placed = true;

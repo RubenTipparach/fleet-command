@@ -497,7 +497,7 @@ public sealed partial class Battle
         double range = Rules.AiRangeKm(s.Range);
         // a captain whose fire has not landed for a while closes in, half its range for every ai_close_after_s without a
         // hit (to an eighth): no ship kites at a range where its shots are all decoyed, missed or out of reach
-        range *= Math.Pow(0.5, Math.Min(3, Math.Floor((T - s.LastLandedT) / Tuning.AiCloseAfterS)));
+        range *= DMath.Pow(0.5, Math.Min(3, Math.Floor((T - s.LastLandedT) / Tuning.AiCloseAfterS)));
         if (Retreating(s)) Steer(s, "evade", near, range);
         else if (s.Stance == Stance.Hold) Steer(s, "hold", t, range);
         // a lane run (test scenes): straight on at full speed, turning back for another pass once lane_turn_km out

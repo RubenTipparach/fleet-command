@@ -117,7 +117,7 @@ public sealed partial class Battle
         if (home == null) { c.Gone = true; c.Fate = "lost"; return; }
         Ship t = c.Recall || !home.Alive || c.Mission == "defend" ? home : TargetOf(home, "weapons") ?? home;
         c.A += dt * fd.OrbitRadS;
-        double r = c.Recall ? 0 : fd.OrbitM, gx = t.X + Math.Cos(c.A) * r, gz = t.Z + Math.Sin(c.A) * r, d = Geometry.Dist(c.X, c.Z, gx, gz), sp = fd.SpeedMS * dt;
+        double r = c.Recall ? 0 : fd.OrbitM, gx = t.X + DMath.Cos(c.A) * r, gz = t.Z + DMath.Sin(c.A) * r, d = Geometry.Dist(c.X, c.Z, gx, gz), sp = fd.SpeedMS * dt;
         if (d > sp) { c.X += (gx - c.X) / d * sp; c.Z += (gz - c.Z) / d * sp; } else { c.X = gx; c.Z = gz; }
         if (c.Recall && d < fd.RecoverM) { c.Gone = true; c.Fate = "recovered"; home.Fighters++; return; }
         c.Cool -= dt;

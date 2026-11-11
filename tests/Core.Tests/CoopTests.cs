@@ -170,3 +170,34 @@ public class CoopTests
         Assert.Equal(solo.Ships.Count(s => s.Alive), shared.Ships.Count(s => s.Alive));
     }
 }
+
+public class DMathTests
+{
+    [Fact]
+    public void The_simulation_calls_no_platform_transcendental_function()
+    {
+        string core = Path.Combine(Path.GetDirectoryName(TestData.DataDir)!, "src", "Core");
+        var bad = Directory.GetFiles(core, "*.cs", SearchOption.AllDirectories).Where(f => !f.EndsWith("DMath.cs"))
+            .SelectMany(f => File.ReadAllLines(f).Select((l, i) => (f, i, l)))
+            .Where(x => Regex.IsMatch(x.l, @"(?<![\w.])Math\.(Sin|Cos|Tan|Atan2|Atan|Asin|Acos|Exp|Log|Log2|Log10|Pow|Cbrt|Sinh|Cosh|Tanh)\(|MathF\."))
+            .Select(x => $"{Path.GetFileName(x.f)}:{x.i + 1}").ToList();
+        Assert.Empty(bad);
+    }
+
+    [Fact]
+    public void Deterministic_functions_agree_with_the_platform_to_a_few_units_in_the_last_place()
+    {
+        var rng = new Rng(7);
+        for (int i = 0; i < 20000; i++)
+        {
+            double x = (rng.Next() - 0.5) * 80, y = (rng.Next() - 0.5) * 80, p = rng.Next() * 30 + 1e-9;
+            Assert.Equal(System.Math.Sin(x), DMath.Sin(x), 1e-14);
+            Assert.Equal(System.Math.Cos(x), DMath.Cos(x), 1e-14);
+            Assert.Equal(System.Math.Atan2(y, x), DMath.Atan2(y, x), 1e-14);
+            Assert.Equal(System.Math.Atan(x), DMath.Atan(x), 1e-14);
+            Assert.Equal(System.Math.Log(p), DMath.Log(p), 1e-13);
+            Assert.Equal(System.Math.Exp(x / 4), DMath.Exp(x / 4), System.Math.Abs(System.Math.Exp(x / 4)) * 1e-14);
+        }
+        Assert.Equal(0.125, DMath.Pow(0.5, 3));
+    }
+}
