@@ -110,6 +110,7 @@ public sealed partial class BattleView : Node3D
         _sun = sun;
         _cam = new Camera3D { Name = "Camera", Current = true };
         AddChild(_cam);
+        InitSounds();   // the battle heard from the camera (BattleView.Sounds.cs)
         _shots = new ShotView { Name = "Shots", Lift = LiftOf };
         AddChild(_shots);
         Rebuild();
@@ -128,6 +129,7 @@ public sealed partial class BattleView : Node3D
         _extent.Clear();
         _lift.Clear();
         _hitSeq = _x.Battle.Hits.Count > 0 ? _x.Battle.Hits[^1].Seq : 0;
+        ResetSounds(_x.Battle);
         // the scenario's own nebula sky (each scene its own: data/battle/scenarios.json "sky")
         if (_sky == null || _sky.Name != "Sky_" + _x.Battle.Scenario.Sky)
         {
@@ -238,6 +240,7 @@ public sealed partial class BattleView : Node3D
         Battle b = _x.Battle;
         ShipSkin.Flash(_strobes, Time.GetTicksMsec() / 1000.0);
         Damage(b, _x.State.Paused || _x.State.MenuOpen ? 0 : dt);
+        SyncSounds(b);
         // the mockup's other systems in 3D (transporter beams, tractor beams, mines, craft, cloaks), each in BattleView.<Package>.cs
         double sdt = _x.State.Paused || _x.State.MenuOpen ? 0 : dt;
         SyncComms(b, sdt); SyncTractor(b, sdt); SyncReactor(b, sdt); SyncCloak(b, sdt); SyncTactical(b, sdt);

@@ -1,0 +1,28 @@
+{
+  "_doc": "Which battle event plays which sound (openspec/changes/sound-effects, design section 3; owner, 2026-11-11: \"ok implment it\"). fire: a shot's kind to the cue its mount plays as it leaves (pd: a point defence intercept); a kind not listed plays nothing (craft, flares, decoys). hit: what a landed hit plays at the ship struck: shield (the shields took it all), hull, torpedo_hull (a torpedo through to the hull) or destroyed. short: a hit's short alternative, played when another hit landed on the same ship less than short_within_s seconds of battle time before. voices: how many battle sounds play at once (a phone's budget; the quietest new one waits). unit_size_m: the distance at which a sound is at its full level, falling off beyond it; max_distance_m: beyond it a sound is not heard. Every cue is in data/audio/cues.json.",
+  "fire": {
+    "beam": "lance_fire",
+    "chorus": "lance_fire",
+    "pd": "pd_burst",
+    "bolt": "disruptor_fire",
+    "slug": "disruptor_fire",
+    "torpedo": "torpedo_launch",
+    "quell": "torpedo_launch",
+    "missile": "missile_launch"
+  },
+  "hit": {
+    "shield": "shield_hit",
+    "hull": "hull_hit",
+    "torpedo_hull": "torpedo_detonate",
+    "destroyed": "ship_destroyed"
+  },
+  "short": {
+    "shield_hit": "shield_hit_short",
+    "hull_hit": "hull_hit_short",
+    "torpedo_detonate": "torpedo_detonate_short"
+  },
+  "short_within_s": 0.5,
+  "voices": 24,
+  "unit_size_m": 1000,
+  "max_distance_m": 30000
+}

@@ -951,6 +951,11 @@ heard, not seen, so its mockup is a page to listen on: every cue with a play but
   brightness falls from 900 to 120 Hz, no tone) with an electric fizz, a crackle and a spark, now 7% ringing; its short
   alternative and `shields_collapse` lose the ringing takes too. `tools/audio/inspect_sfx.py check` now prints every
   cue's ringing and refuses a shield sound that rings.
+- The owner, 2026-11-11: "ok implment it". The battle's sounds are in the game: every weapon firing (by its shot's kind,
+  point defence its own), every hit landing (shield, hull, a torpedo through to the hull, a ship destroyed, the short
+  alternatives when hits come fast), placed in 3D where they happen and heard from the camera
+  (`src/Game/View/BattleView.Sounds.cs`, `src/Core/Audio/BattleSoundRules.cs`, `data/audio/battle.json`). Played in the
+  scripted battles (`docs/playtests/2026-11-11-battle-sounds.md`), not yet heard by the owner.
 
 ## 18. Music
 

@@ -95,9 +95,12 @@ Size: 29 mono cues 604 KB and the bed 120 KB as OGG, about 0.7 MB in all.
 
 ## 3. Playing them in the game (after approval)
 
-- **One cue table**, `data/audio/sfx.json`: per cue its file, `bus` (`effects`, `console`, `alerts`, `ambience`),
-  `volume_db`, `placed` (bool), `max_distance_u` (game units), `pitch_jitter` (0 to 0.1, seeded), validated on load like
-  every data file (CLAUDE.md section 6.4). A skin names its key cue in its kit manifest (survey U6).
+- **One cue table**, `data/audio/cues.json` (built 2026-11-07): per cue its file, bus (Master, Music, Effects) and
+  `volume_db`, validated on load like every data file (CLAUDE.md section 6.4). A skin names its key cue in its style
+  (survey U6). **Which battle event plays which cue** is `data/audio/battle.json` (built 2026-11-11): a shot's kind to its
+  firing cue (a point defence intercept to `pd_burst`), a hit's kind (shield, hull, a torpedo through to the hull,
+  destroyed) to its cue, each hit's short alternative and the window it is used in (0.5 s of battle time), the voice cap
+  and the 3D distances (full level within 1 km, silent past 30 km).
 - **Sounds read the battle's own events, the ones the effects draw from** (CLAUDE.md section 6.1): `Battle.Hits`
   (`HitEvent`: kind, shield absorbed, hull damage, destroyed) and the shots fired, so a sound can never disagree with
   what the view shows. A mapping in the cue table says which event plays which cue: a hit with `Absorbed > 0` and no hull

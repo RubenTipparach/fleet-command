@@ -1,5 +1,5 @@
 {
-  "_doc": "The sounds the game plays (openspec/changes/sound-effects, design section 3): per cue its file (a committed OGG under assets/audio, built by tools/audio/render_sfx.sh), the bus it plays on (Master, Music or Effects, set by the Options sheet's boxes: src/Game/Ui/AudioSettings.cs) and its level in dB at that bus. The console keys first (owner, 2026-11-07: \"Console keys - this should be implemented in the game\"): each skin names its key cue in its style (src/Game/Ui/Kit/*Kit.cs, SkinStyle.KeySound); and the bridge bed under a battle (owner, 2026-11-07: \"use amb_bridge_brown\", \"put in game now\"; src/Game/Ui/ConsoleSounds.cs).",
+  "_doc": "The sounds the game plays (openspec/changes/sound-effects, design section 3): per cue its file (a committed OGG under assets/audio, built by tools/audio/render_sfx.sh), the bus it plays on (Master, Music or Effects, set by the Options sheet's boxes: src/Game/Ui/AudioSettings.cs) and its level in dB at that bus. The console keys first (owner, 2026-11-07: \"Console keys - this should be implemented in the game\"): each skin names its key cue in its style (src/Game/Ui/Kit/*Kit.cs, SkinStyle.KeySound); and the bridge bed under a battle (owner, 2026-11-07: \"use amb_bridge_brown\", \"put in game now\"; src/Game/Ui/ConsoleSounds.cs); and the battle's sounds, placed in 3D where they happen (which event plays which: data/audio/battle.json; src/Game/View/BattleView.Sounds.cs).",
   "ui_chirp": {
     "file": "assets/audio/sfx/ui_chirp.ogg",
     "bus": "Effects",
@@ -14,5 +14,65 @@
     "file": "assets/audio/ambience/amb_bridge.ogg",
     "bus": "Effects",
     "volume_db": -3
+  },
+  "lance_fire": {
+    "file": "assets/audio/sfx/lance_fire.ogg",
+    "bus": "Effects",
+    "volume_db": -2
+  },
+  "disruptor_fire": {
+    "file": "assets/audio/sfx/disruptor_fire.ogg",
+    "bus": "Effects",
+    "volume_db": -2
+  },
+  "torpedo_launch": {
+    "file": "assets/audio/sfx/torpedo_launch.ogg",
+    "bus": "Effects",
+    "volume_db": -2
+  },
+  "missile_launch": {
+    "file": "assets/audio/sfx/missile_launch.ogg",
+    "bus": "Effects",
+    "volume_db": -2
+  },
+  "pd_burst": {
+    "file": "assets/audio/sfx/pd_burst.ogg",
+    "bus": "Effects",
+    "volume_db": -6
+  },
+  "shield_hit": {
+    "file": "assets/audio/sfx/shield_hit.ogg",
+    "bus": "Effects",
+    "volume_db": -3
+  },
+  "shield_hit_short": {
+    "file": "assets/audio/sfx/shield_hit_short.ogg",
+    "bus": "Effects",
+    "volume_db": -3
+  },
+  "hull_hit": {
+    "file": "assets/audio/sfx/hull_hit.ogg",
+    "bus": "Effects",
+    "volume_db": -3
+  },
+  "hull_hit_short": {
+    "file": "assets/audio/sfx/hull_hit_short.ogg",
+    "bus": "Effects",
+    "volume_db": -3
+  },
+  "torpedo_detonate": {
+    "file": "assets/audio/sfx/torpedo_detonate.ogg",
+    "bus": "Effects",
+    "volume_db": -2
+  },
+  "torpedo_detonate_short": {
+    "file": "assets/audio/sfx/torpedo_detonate_short.ogg",
+    "bus": "Effects",
+    "volume_db": -2
+  },
+  "ship_destroyed": {
+    "file": "assets/audio/sfx/ship_destroyed.ogg",
+    "bus": "Effects",
+    "volume_db": 0
   }
 }

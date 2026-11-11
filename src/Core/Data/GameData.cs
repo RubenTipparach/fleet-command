@@ -223,6 +223,9 @@ public sealed record GameData(
     /// <summary>The sounds the game plays (data/audio/cues.json).</summary>
     public AudioCues Audio { get; init; } = AudioCues.Empty;
 
+    /// <summary>Which battle event plays which sound (data/audio/battle.json).</summary>
+    public FleetCommand.Audio.BattleSoundsDef BattleSounds { get; init; } = FleetCommand.Audio.BattleSoundsDef.Empty;
+
     /// <summary>A scenario by id; throws naming the id when there is none.</summary>
     public Scenario ScenarioById(string id) =>
         Scenarios.FirstOrDefault(s => s.Id == id) ?? throw new KeyNotFoundException($"no scenario '{id}' in data/battle/scenarios.json");
