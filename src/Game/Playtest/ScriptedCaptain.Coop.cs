@@ -127,7 +127,7 @@ public sealed partial class ScriptedCaptain
                 {
                     // ships are given in a battle: off the battle screen it waits for the next one (LaunchAndFight)
                     if (co.Battle == null || _flow is { Screen: not FlowScreen.Battle }) { _shipToCrew = b; GD.Print($"PLAYTEST_COOP crew_ship {b.Arg} at the next battle"); return null; }
-                    Ship[] others = B.Fleet().Where(s => s != co.Flag).ToArray();
+                    Ship[] others = B.Fleet().Where(s => s != co.Flag && !s.Fixed).ToArray();
                     int i = int.Parse(what) - 1;
                     if (i < 0 || i >= others.Length) return $"crew_ship: the fleet has {others.Length} ships besides the flagship";
                     what = others[i].Id;

@@ -422,7 +422,7 @@ public sealed class Lockstep
                 break;
             case "ship":
                 string ship = (string?)op["ship"] ?? "";
-                if (Battle != null && (Battle.ShipById(ship) is not { Alive: true, Side: 0 } s || s == (_flag ?? Battle.Player))) { why = "not a ship of the fleet the admiral can give"; break; }
+                if (Battle != null && (Battle.ShipById(ship) is not { Alive: true, Side: 0, Fixed: false } s || s == (_flag ?? Battle.Player))) { why = "not a ship of the fleet the admiral can give"; break; }
                 string? had = Crew.Ships.Where(kv => kv.Value == to).Select(kv => kv.Key).FirstOrDefault();
                 why = Crew.GiveShip(by, ship, to);
                 if (why == null && Battle != null)

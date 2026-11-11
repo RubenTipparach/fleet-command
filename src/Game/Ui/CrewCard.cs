@@ -114,7 +114,7 @@ public sealed partial class CrewCard : ConsolePanel
                 Text(s.Name.ToUpperInvariant(), x0, y + 22, 17, C.Text, HorizontalAlignment.Left, nameW - 8, 600, 1);
                 X.Fonts.DrawRich(this, new[] { ("captain ", C.Lilac), (capName.ToUpperInvariant(), cap == 0 ? C.Lilac : CrewColors.Of(cap, C.Sky)),
                     ($" · hull {100 * s.Hull / s.Class.HullHp:0}%", s.Hull < s.Class.HullHp * 0.35 ? C.Alert : C.Lilac) }, x0 + nameW, y + 22, 16, 230);
-                if (admiral && !flag)
+                if (admiral && !flag && !s.Fixed)
                     for (int i = 0; i < choices.Length; i++)
                     {
                         int to = choices[i].Id;
