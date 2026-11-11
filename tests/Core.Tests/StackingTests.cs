@@ -56,4 +56,16 @@ public class StackingTests
         Assert.False(Stacking.Overlap(a, b));
         Assert.True(Stacking.Overlap(a, b with { H = System.Math.PI / 2 }));
     }
+
+    [Fact]
+    public void Ships_that_will_meet_within_the_look_ahead_are_lifted_now_and_ships_flying_apart_are_not()
+    {
+        // a frigate 1200 units off, closing on the cruiser at 300 a second: no overlap now, over it within 5 s
+        var closing = new[] { Cruiser("c", 0, 0), Frigate("f", 1200, 0) with { VX = -300 } };
+        Assert.Equal(0, Stacking.Heights(closing)["f"]);
+        Assert.True(Stacking.HeightsAhead(closing, 5, 5)["f"] > 0);
+        // the same frigate flying away: never lifted
+        var opening = new[] { Cruiser("c", 0, 0), Frigate("f", 1200, 0) with { VX = 300 } };
+        Assert.Equal(0, Stacking.HeightsAhead(opening, 5, 5)["f"]);
+    }
 }

@@ -57,7 +57,8 @@ public static partial class DataLoader
         SystemsDef systems = SystemsDef.Load(J);
         systems.CheckComms(classes);
         AudioCues audio = AudioCues.Load(J("audio/cues.json"));
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems, Audio = audio };
+        SoundMap sounds = SoundMap.Load(J("audio/events.json"), audio);
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems, Audio = audio, Sounds = sounds };
     }
 
     /// <summary>The damage range (data/battle/range.json): every program's weapons exist, and its numbers are in range.</summary>
@@ -334,7 +335,7 @@ public static partial class DataLoader
         ScenarioGoal? goal = CommsScenes.LoadGoal(root);
         CommsScenes.Check(root.Where, ships, planets, goal);
         var scenario = ScenarioExtras.Scene(root, new Scenario(scId, root.Str("name"), side, (ulong)seed, objective, say[0], say[1], ships, sky, sun, isRange, Wells: WellDef.ReadList(root),
-            Nebula: CloakNebula(root), Repel: root.Bool("repel", false))) with { Planets = planets, Goal = goal };
+            Nebulae: CloakNebulae(root), Repel: root.Bool("repel", false))) with { Planets = planets, Goal = goal };
         root.Done();
         return scenario;
     }
@@ -351,7 +352,7 @@ public static partial class DataLoader
             Frac(o, "mount_hit_chance"), Frac(o, "mount_damage"),
             Positive(o, "het_rate_deg_s"), NonNeg(o, "het_cost_e"), Frac(o, "het_chance_drop"), NonNeg(o, "het_recover_per_s"), Frac(o, "het_erratic_penalty"),
             NonNeg(o, "het_breakdown_s"), Frac(o, "het_breakdown_engines"), Positive(o, "estop_decel_x"), NonNeg(o, "estop_hold_s"), Frac(o, "erratic_hit"), Frac(o, "erratic_turn"),
-            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"), Frac(o, "capture_hull_frac")) { ShipFrameX = Positive(o, "ship_frame_x"), AiCloseAfterS = Positive(o, "ai_close_after_s"), StalemateS = Positive(o, "stalemate_s"), InterceptMaxLeadDeg = Positive(o, "intercept_max_lead_deg") };
+            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"), Frac(o, "capture_hull_frac")) { ShipFrameX = Positive(o, "ship_frame_x"), HoldSplitKm = Positive(o, "hold_split_km"), HoldFineStepKm = Positive(o, "hold_fine_step_km"), HoldStepKm = Positive(o, "hold_step_km"), AiCloseAfterS = Positive(o, "ai_close_after_s"), StalemateS = Positive(o, "stalemate_s"), InterceptMaxLeadDeg = Positive(o, "intercept_max_lead_deg") };
         o.Done();
         return t;
     }

@@ -27,3 +27,10 @@
 - [ ] 3.2 The contact rule in `src/Core`, shared with the alerts, tested
 - [ ] 3.3 The music player in `src/Game`: states, crossfades, loop points, pause ducking
 - [ ] 3.4 A playtest beat for each state change (`PLAYTEST_BEAT music <cue>`)
+
+## Out of the game (owner, 2026-11-10)
+
+- [x] Music removed from the game, not muted (owner: "Remove music from the game. I didn't approve any of those tracks",
+  "Don't delete the music, just remove from the game", "Don't just mute the music. Remove music from the game. I don't like
+  any of the tracks so far"): the music player (`MusicPlayer`) and the Music bus deleted, the Options sheet's Music row
+  gone; the renders stay in `assets/audio/music`, loaded by nothing. Music comes back only as a track the owner approves.

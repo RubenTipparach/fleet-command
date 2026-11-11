@@ -33,7 +33,9 @@ public sealed partial class BattleView : Node3D
     private const float HullClearX = 0.85f;
 
     private ConsoleContext _x = null!;
+    private BattleAudio _audio = null!;
     private Camera3D _cam = null!;
+    private Godot.Environment _env = null!;
     private readonly Dictionary<string, Node3D> _models = new();
     private readonly List<OmniLight3D> _strobes = new();
     private readonly Dictionary<string, ShipDamage> _damage = new();
@@ -72,12 +74,17 @@ public sealed partial class BattleView : Node3D
     private string? _lastTarget;
     private string? _watched;   // the ship Target view last orbited: it stays on its wreck until the next lock
     private Vector3 _focus, _glideFrom;
+    private string? _commanded;   // the ship commanded last frame (a change glides the camera to the new one)
     private float _glideT = GlideS;
     private bool _focusSet;
 
     public void Init(ConsoleContext ctx)
     {
         _x = ctx;
+        // the battle's sounds, placed where they happen (BattleAudio)
+        _audio = new BattleAudio();
+        _audio.Init(ctx.Data.Audio, ctx.Sounds);
+        AddChild(_audio);
         Name = "BattleView";
         // the environment's sky: the scenario's nebula as a baked panorama, for the hulls' reflections and part of their
         // ambient light (owner, 2026-11-04: "reflection probes for all those spacey backgrounds ... but dont crank it up
@@ -93,6 +100,7 @@ public sealed partial class BattleView : Node3D
             // glow, for the weapons' light (change weapon-fx: the weapons range's bloom): only what is brighter than 1
             GlowEnabled = true, GlowIntensity = 0.7f, GlowBloom = 0f, GlowHdrThreshold = 1.0f, GlowBlendMode = Godot.Environment.GlowBlendModeEnum.Additive,
         };
+        _env = env;
         AddChild(new WorldEnvironment { Environment = env, Name = "Environment" });
         // the sun casts high-quality shadows, the ships onto themselves too (owner, 2026-11-04: "need high quality shadows on
         // ships too", "looks like you didnt enable self shadowing"): four cascades out to 60 units (6 km) round the camera,
@@ -119,6 +127,8 @@ public sealed partial class BattleView : Node3D
     public void Rebuild()
     {
         foreach (Node3D n in _models.Values) n.QueueFree();
+        foreach (ShipDamage d in _damage.Values) d.FreeDebris();
+        _commanded = null;
         _models.Clear();
         _strobes.Clear();
         _damage.Clear();
@@ -254,6 +264,11 @@ public sealed partial class BattleView : Node3D
             if (_shields.TryGetValue(s.Id, out ShieldShell? sh)) { sh.Visible = s.Alive && s.CloakK <= 0; if (sh.Visible) sh.Show(s, _x.Kit.C); }   // a cloak's shields are down
         }
         Ship p = b.Player;
+        // command passed to another ship of the fleet: the camera glides to it, as the Target view key glides (owner,
+        // 2026-11-10: "when switch ships in your fleet camera should smooth transition like it does when toggle focus target
+        // is clicked"); a new battle starts on its ship
+        if (_commanded != null && p.Id != _commanded && _focusSet) StartGlide();
+        _commanded = p.Id;
         FollowTarget(p);
         LockStep(p, dt);
         Ship? tv = TargetView ? b.TargetOf(p) ?? Wreck(b) : null;
@@ -285,6 +300,8 @@ public sealed partial class BattleView : Node3D
         Project();
         _shots.Sync(b, _x.StepShare);
         SyncPlanets(b);
+        SyncNebulae(b);
+        _audio.Sync(b, MPerU, id => LiftOf(id));
     }
 
     // Battle damage (ShipDamage): each hit that has landed since the last frame makes its effect and scar, then every
