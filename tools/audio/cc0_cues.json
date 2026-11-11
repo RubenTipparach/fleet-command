@@ -153,26 +153,35 @@
  },
  "shield_hit": {
   "group": "Impacts",
-  "what": "A shot striking a shield facing: an energy thud with a glassy shimmer and a spark.",
+  "what": "A shot striking a shield facing: the field absorbing it, a deep electric whump with a fizz and a crackle. An electromagnetic field: nothing in it rings.",
   "layers": [
    {
-    "src": "oga/electricity-game-sound-pack:shieldhit.wav"
+    "synth": "field_whump"
    },
    {
-    "src": "oga/space-ship-shield-sounds:space shield sounds - 4.wav",
-    "gain": -3
+    "src": "oga/electricity-game-sound-pack:death_1.wav",
+    "dur": 0.55,
+    "hp": 1500,
+    "gain": -7,
+    "fadeout": 0.35
    },
    {
-    "synth": "shield_shimmer",
-    "gain": -7
+    "src": "oga/electricity-game-sound-pack:crackleelectricityloop.wav",
+    "dur": 0.4,
+    "hp": 2000,
+    "gain": -12,
+    "fadeout": 0.25
    },
    {
     "src": "oga/electricity-game-sound-pack:groundhit.wav",
     "gain": -11
    }
   ],
-  "len": 1.7,
-  "edits": "two shield takes layered with our shimmer synthesis and a spark"
+  "len": 0.75,
+  "lp": 7000,
+  "lp_order": 2,
+  "tail_fade": 0.15,
+  "edits": "our field whump (noise, no tone) with an electric fizz highpassed at 1.5 kHz, a crackle and a spark; no layer that rings (owner, 2026-11-11: \"IT CANNOT DING\")"
  },
  "hull_hit": {
   "group": "Impacts",
@@ -348,18 +357,18 @@
  },
  "shields_collapse": {
   "group": "Ship",
-  "what": "A shield facing failing: the energy draining away with a last shield thud.",
+  "what": "A shield facing failing: the field's energy draining away and a last deep whump as it goes. Nothing rings.",
   "layers": [
    {
     "src": "oga/electricity-game-sound-pack:powerdown.wav"
    },
    {
-    "src": "oga/space-ship-shield-sounds:space shield sounds - 1.wav",
-    "gain": -4
+    "synth": "field_whump",
+    "gain": -3
    }
   ],
   "len": 2.0,
-  "edits": "layered"
+  "edits": "the electric power-down with our field whump (noise, no tone) in place of a ringing shield take"
  },
  "ui_clunk": {
   "group": "Console",
