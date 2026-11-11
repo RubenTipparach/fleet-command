@@ -1203,9 +1203,9 @@ about phone", "I dont really need this stuff to work on a phone", "three js mock
 - **v5** (2026-11-11; owner, of the KIFS x T Benesi It2 render: "this one is very complex, how do we recreate this in our
   game?", then "go make it, also add some more colors and shading to the ships"):
   - Benesi KIFS replaces the ribbed truss: Mandelbulber's octahedral kaleidoscopic IFS with Benesi's turn before its third
-    fold, matched to the render's silhouette at its own camera (crown, shoulders, cavity, keel), its caps in green on
-    yellow; the render's ladder walls and round openings are not matched yet;
-  - every form in its own colours (provisional), the lattices' fold panels and the octahedral lattice's tips in an accent;
+    fold, matched to the render's silhouette at its own camera (crown, shoulders, cavity, keel), green with blue caps; the render's ladder walls and round openings are not matched yet;
+  - every form in its own colours, all blues, purples and greens (owner: "I liek the blue, purple green solors";
+    provisional), the lattices' fold panels and the octahedral lattice's tips in an accent;
   - fuller light: a warm key and cool fill, cavities in the deep colour, light through thin edges, a hue-shifting rim.
 - **Stage:** Drafted.
 - **Questions:** survey FV1-FV5 (whose vessels, what a vessel is, which forms, phones, hits).

@@ -183,7 +183,7 @@ position (1.48, 1.42, 0.78), z up, looking at the origin):
 
 So the turn runs once, before the third fold. The leaf is an octahedron with its corners rounded by a ball (the slider
 sets the ball, 0.84 to 0.68), so the units read chunky and round. The fourth fold's nearness to its corner is the accent
-mask, so the units' tips are capped in the accent colour, as the render's caps are green on yellow. Its folds stop at 7 px,
+mask, so the units' tips are capped in the accent colour, as the render's caps stand out from its walls. Its folds stop at 7 px,
 not the other tilers' 4: finer, its rounded leaves sparkle. It is 124 m, crown up, its octahedron's x axis along the hull.
 
 Not matched: the render's ladder walls and round openings.
@@ -192,9 +192,11 @@ Not matched: the render's ladder walls and round openings.
 
 **Colour and shading, every form.**
 - **Palettes.** Each form has its own (`pal`: hull, deep, trim, accent, glow, rim), provisional until the culture is set
-  (F1). The Julia slice violet and pink, the fold lattice steel blue and copper, the delta sand and teal, the octahedral
-  lattice gold and violet, the KIFS yellow and green over deep teal, the pine jade and amber, the Mandelbulb rose and
-  copper, the tree coral and sea green.
+  (F1), all in blues, purples and greens (owner, 2026-11-11: "I liek the blue, purple green solors"), mixed differently:
+  the Julia slice violet with teal, the fold lattice steel blue with purple, the delta sea green with blue, the octahedral
+  lattice lavender with green, the KIFS green with blue caps over deep blue (the render's yellow and green moved into the
+  owner's colours), the pine jade with periwinkle, the Mandelbulb ice blue with purple and green, the tree mint with
+  purple.
 - **Accent.** A form may write an accent mask while it measures the distance: the lattices' second-fold corner cubes, the
   octahedral lattice's third-fold tips, the KIFS's caps. The others take it from the orbit trap (near the long axis).
 - **Light.** A warm key, a cool fill from the far side, a sky over a dim warm ground, all occluded. Cavities fall to the

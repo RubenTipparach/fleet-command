@@ -28,7 +28,8 @@
   recreate this in our game?", then "go make it, also add some more colors and shading to the ships"): the ribbed truss is
   replaced by Benesi KIFS, Mandelbulber's octahedral kaleidoscopic IFS with Benesi's Mag Forward turn before its third fold,
   ported from the formulas' maths and matched to the render's silhouette at its own camera (the kifs_it2 shot); and every
-  form has its own palette (hull, deep, trim, accent, glow, rim; provisional, F1), the tilers' fold panels and the KIFS's
+  form has its own palette (hull, deep, trim, accent, glow, rim; provisional, F1) in blues, purples and greens (owner: "I liek the
+  blue, purple green solors"), the tilers' fold panels and the KIFS's
   caps in the accent, under a warm key, a cool fill, a sky over a dim ground, cavities falling to the deep colour, light
   through thin edges and a grazing rim that shifts hue.
 
@@ -203,50 +204,51 @@
 // shader's own units, long along +Z, the bow), its palette and the hull points its damage opens. The shader picks its
 // distance estimator by the FORM define, so each form compiles to its own program with no branch per step.
 const FORMS = [
-  { id: 'julia', de: 0, name: 'Julia slice', length_m: 132, pal: { hull: '#c9b6f2', deep: '#3a1f8f', trim: '#8a5cff', accent: '#ff8fc8', glow: '#3fe0e6', rim: '#b99cff' },
+  { id: 'julia', de: 0, name: 'Julia slice', length_m: 132, pal: { hull: '#c9b6f2', deep: '#3a1f8f', trim: '#8a5cff', accent: '#4fd8c0', glow: '#3fe0e6', rim: '#b99cff' },
     box: [1.05, 1.05, 1.6], school: 'the escape-time school',
     about: 'A quaternion Julia set lives in four dimensions. What you see is the slice of it that crosses our space. Moving the slice reshapes the vessel without moving it.',
     wLabel: 'Slice through the 4th dimension',
     c: [-0.62, 0.42, 0.18, 0.12], trap: 0.8, foldGlow: 1.0, aoK: 1.0, stepK: 0.85, trapN: 16,
     holes: [[0.25, 0.32, 0.55, 0.32], [-0.38, -0.1, -0.45, 0.3], [0.0, 0.42, -0.1, 0.26]] },
-  { id: 'lattice', de: 1, name: 'Fold lattice', length_m: 112, pal: { hull: '#a9b7d6', deep: '#1d2f6b', trim: '#3f6fd8', accent: '#d88a4a', glow: '#5fe3ff', rim: '#9cc4ff' },
+  { id: 'lattice', de: 1, name: 'Fold lattice', length_m: 112, pal: { hull: '#a9b7d6', deep: '#1d2f6b', trim: '#3f6fd8', accent: '#9a6cff', glow: '#5fe3ff', rim: '#9cc4ff' },
     box: [0.52, 0.52, 1.6], school: 'the tilers',
     about: 'Five blocks, each 0.7 the size of the one behind. Every block keeps folding: space is mirrored, sorted, turned and scaled by three, so each block becomes twenty smaller ones round square tunnels. The slider turns each fold.',
     wLabel: 'Fold turn', trap: 1.0, foldGlow: 0.5, aoK: 0.6, stepK: 0.85, trapN: 2,
     holes: [[0.0, 0.5, -1.05, 0.28], [0.42, 0.0, -0.15, 0.24], [0.0, 0.3, 0.6, 0.2]] },
-  { id: 'delta', de: 6, name: 'Delta lattice', length_m: 140, pal: { hull: '#c7b99a', deep: '#123f4a', trim: '#1fa6a0', accent: '#ffb347', glow: '#48ffd5', rim: '#8affea' },
+  { id: 'delta', de: 6, name: 'Delta lattice', length_m: 140, pal: { hull: '#9fd8c8', deep: '#123f4a', trim: '#1fa6a0', accent: '#5a7cff', glow: '#48ffd5', rim: '#8affea' },
     box: [1.4, 0.45, 1.62], school: 'the tilers',
     about: 'The fold lattice laid out as an arrowhead: a spine of five blocks and two swept wings of three, every block folding into twenty smaller ones round square tunnels. The slider turns each fold.',
     wLabel: 'Fold turn', trap: 1.0, foldGlow: 0.5, aoK: 0.6, stepK: 0.85, trapN: 2,
     holes: [[0.0, 0.42, -1.1, 0.26], [0.7, 0.28, -1.06, 0.22], [0.0, 0.24, 0.14, 0.18]] },
-  { id: 'octa', de: 5, name: 'Octahedral lattice', length_m: 130, pal: { hull: '#d6b25e', deep: '#2a1f6b', trim: '#c8902a', accent: '#7a5cff', glow: '#ffd36a', rim: '#ffcf7a' },
+  { id: 'octa', de: 5, name: 'Octahedral lattice', length_m: 130, pal: { hull: '#b4a6f0', deep: '#1c1660', trim: '#6a4fe0', accent: '#3fd8a0', glow: '#7ab8ff', rim: '#c8b0ff' },
     box: [0.74, 0.74, 1.6], school: 'the tilers',
     about: 'A Sierpinski octahedron: each fold makes six smaller octahedra at the corners of the last, so every face opens into triangles of triangles. Three blocks overlap into one spear, smaller toward the bow. The slider turns each fold out of line.',
     wLabel: 'Fold turn', trap: 1.1, foldGlow: 0.7, aoK: 0.8, stepK: 0.85, trapN: 2,
     holes: [[0.0, 0.3, -0.9, 0.3], [0.2, 0.0, 0.3, 0.22], [0.0, 0.0, 1.05, 0.15]] },
-  { id: 'kifs', de: 8, name: 'Benesi KIFS', length_m: 124, pal: { hull: '#b5a826', deep: '#0c3a40', trim: '#8f8a18', accent: '#56c020', glow: '#3fe0c6', rim: '#d6ff7a' },
+  { id: 'kifs', de: 8, name: 'Benesi KIFS', length_m: 124, pal: { hull: '#7fc24a', deep: '#0c2a50', trim: '#4a8a2a', accent: '#58a8ff', glow: '#3fe0c6', rim: '#b0ffd0' },
     box: [1.04, 1.04, 1.04], school: 'the tilers',
     about: 'Mandelbulber\'s kaleidoscopic IFS with Benesi\'s turn on the third fold, the hybrid the owner picked. Each fold mirrors and sorts space into one corner of an octahedron and halves it toward that corner; on the third, space is turned onto the diagonal first, so every unit below it stands at a new angle and the octahedron grows a crown, shoulders and a keel. The corner caps are coloured from the fourth fold. The slider rounds the units.',
     wLabel: 'Rounding', trap: 1.0, foldGlow: 0.7, aoK: 0.9, stepK: 0.8, trapN: 3,
     holes: [[0.0, 0.55, 0.0, 0.26], [0.45, 0.0, 0.3, 0.2], [0.0, -0.2, 0.7, 0.14]] },
-  { id: 'pine', de: 4, name: 'Benesi pine', length_m: 150, pal: { hull: '#b8e0c4', deep: '#103a2a', trim: '#3aa86a', accent: '#ffcf5a', glow: '#9dff6a', rim: '#c8ffd8' },
+  { id: 'pine', de: 4, name: 'Benesi pine', length_m: 150, pal: { hull: '#b8e0c4', deep: '#103a2a', trim: '#3aa86a', accent: '#7a8cff', glow: '#9dff6a', rim: '#c8ffd8' },
     box: [0.95, 0.95, 1.6], stepsMul: 2, school: 'the escape-time school',
     about: 'Benesi\'s power-2 rule, as Mandelbulber writes it: along the hull the point is squared as a complex number is, its sign flipped where its seed lies forward of the waist, and round the axis its angle is doubled and turned. In any plane through the axis it is the Mandelbrot set: the needle at the bow, the body flaring aft into banded layers. The slider shifts every point\'s seed along the axis.',
     wLabel: 'Seed shift', trap: 0.7, foldGlow: 0.9, aoK: 0.9, stepK: 0.3, trapN: 4,
     holes: [[0.0, 0.4, -0.9, 0.3], [0.3, 0.0, -0.3, 0.22], [0.0, 0.0, 0.6, 0.12]] },
-  { id: 'bulb', de: 3, name: 'Mandelbulb', length_m: 120, pal: { hull: '#e6bfa8', deep: '#4a1430', trim: '#d0604a', accent: '#ffb86a', glow: '#ff7a9a', rim: '#ffc0a8' },
+  { id: 'bulb', de: 3, name: 'Mandelbulb', length_m: 120, pal: { hull: '#a8c4f0', deep: '#2a1450', trim: '#6a5cff', accent: '#5ad0a0', glow: '#9a7aff', rim: '#c0b0ff' },
     box: [1.2, 1.2, 1.2], school: 'the escape-time school',
     about: 'Every point is turned and raised to a power in spherical coordinates, then its start is added back; the vessel is every point that never escapes. Its pole lies along the hull. The slider is the power, 5 to 11.',
     wLabel: 'Power', trap: 0.8, foldGlow: 0.9, aoK: 1.0, stepK: 0.8, trapN: 4,
     holes: [[0.0, 0.7, 0.4, 0.3], [-0.6, 0.0, -0.4, 0.26], [0.0, -0.5, 0.7, 0.2]] },
-  { id: 'branch', de: 2, name: 'Branching', length_m: 128, pal: { hull: '#e6c8bc', deep: '#3a1a40', trim: '#e06a7a', accent: '#5ad0b0', glow: '#7affd4', rim: '#ffb0c8' },
+  { id: 'branch', de: 2, name: 'Branching', length_m: 128, pal: { hull: '#b0e8c8', deep: '#1a2a5a', trim: '#3a9a8a', accent: '#9a6cff', glow: '#7affd4', rim: '#a8c0ff' },
     box: [1.25, 1.25, 1.6], school: 'the branchers',
     about: 'One rule for a branch, repeated: every branch splits in two, a size smaller and turned a quarter turn. Nine levels make 512 tips. The slider opens the branches.',
     wLabel: 'Branch angle', trap: 1.2, foldGlow: 0.8, aoK: 1.0, stepK: 0.85, trapN: 3,
     holes: [[0.0, 0.0, -0.6, 0.26], [0.35, 0.2, 0.35, 0.3], [-0.3, -0.25, 0.6, 0.26]] },
 ];
 const IDX = Object.fromEntries(FORMS.map((f, i) => [f.id, i]));   // a form's place in the list, by its id
-// Each form's palette (pal) is provisional: the faction's culture is unset (design Open question F1). Hull is the lit
+// Each form's palette (pal) is provisional: the faction's culture is unset (design Open question F1). All of them are blues,
+// purples and greens (owner, 2026-11-11: "I liek the blue, purple green solors"), mixed differently per form. Hull is the lit
 // plating, deep the cavities, trim the edges near the folds' axes, accent a second plating colour (the KIFS's corner caps,
 // elsewhere where the orbit came close to the long axis), glow the being's light, rim the grazing sheen. sRGB here, made
 // linear by lin().
@@ -573,6 +575,7 @@ float deForm(vec3 p, out vec4 tr) {
 // of the octahedron (found by rendering each placement at the reference's own camera; the third fold matches It2, the
 // second the 24K render). The leaf is an octahedron with its corners rounded by a ball (the slider sets the ball), so
 // the units read chunky and round as the reference's do. The fourth fold's nearness to its corner marks the caps (accent).
+// The reference's yellow and green became green and blue (owner: "I liek the blue, purple green solors").
 // Tried and left out: a sphere fold for the reference's round openings (it scattered the form to dust) and Menger folds
 // below the octahedral ones for its ladders (they came out as loose cubes).
 const float S2_3 = 0.81649658, S1_3 = 0.57735027, S1_2 = 0.70710678;
