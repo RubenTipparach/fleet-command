@@ -1,6 +1,6 @@
 # Audio sources
 
-Every recording Fleet Command's sounds are cut from. 23 packs, every one CC0 or public domain by its own page when `tools/audio/fetch_cc0.py` read it (a pack whose page does not say so is refused), except the few the owner asked for under another licence (`tools/audio/licence_exceptions.json`), each printed with the credit its page asks for, which the game's credits must carry. CC0 asks for no credit; the people who recorded them are named anyway.
+Every recording Fleet Command's sounds are cut from. 22 packs, every one CC0 or public domain by its own page when `tools/audio/fetch_cc0.py` read it (a pack whose page does not say so is refused), except the few the owner asked for under another licence (`tools/audio/licence_exceptions.json`), each printed with the credit its page asks for, which the game's credits must carry. CC0 asks for no credit; the people who recorded them are named anyway.
 
 This file is written by `python3 tools/audio/list_sources.py` (run by `tools/audio/render_sfx.sh`) from `tools/audio/cc0_cues.json` and `tools/audio/cc0_licences.json`: edit those, not this. Each cue's exact files and edits are in `assets/audio/sfx/SOURCES.md` and `assets/audio/ambience/SOURCES.md`; candidates and what was looked at are in `docs/analysis/audio-sources.md`.
 
@@ -28,10 +28,9 @@ This file is written by `python3 tools/audio/list_sources.py` (run by `tools/aud
 | [sci fi ambience sfx](https://opengameart.org/content/sci-fi-ambience-sfx) | OpenGameArt | Fun Gi Development | CC0 | `reactor_hum` |
 | [seamless energy emission loop](https://opengameart.org/content/seamless-energy-emission-loop) | OpenGameArt | zeroisnotnull | CC0 | `shields_raise` |
 | [sirens and alarm noise](https://opengameart.org/content/sirens-and-alarm-noise) | OpenGameArt | aquinn | CC0 | `red_alert_wail` |
-| [space ship shield sounds](https://opengameart.org/content/space-ship-shield-sounds) | OpenGameArt | bart | CC0 | `shield_hit`, `shield_hit_short`, `shields_collapse` |
 
 ## Not recorded
 
-- Layered with our own synthesis (`tools/audio/gen_sfx.py`): `amb_bridge`, `disruptor_fire`, `lance_fire`, `missile_launch`, `shield_hit`, `shield_hit_short`, `torpedo_detonate`, `torpedo_detonate_short`, `torpedo_launch`.
+- Layered with our own synthesis (`tools/audio/gen_sfx.py`): `amb_bridge`, `disruptor_fire`, `lance_fire`, `missile_launch`, `shield_hit`, `shield_hit_short`, `shields_collapse`, `torpedo_detonate`, `torpedo_detonate_short`, `torpedo_launch`.
 - Synthesised outright: `core_breach`, `hail`, `hull_critical`, `pause_off`, `pause_on`, `shields_failing`, `target_lock`, `ui_chirp`, `ui_confirm`, `ui_deny`, `weapon_charged`.
 - Music: LMMS's own synths and the GeneralUser GS soundfont (S. Christian Collins, GeneralUser GS License v2.0: free for music creation, private or commercial), rendered from the scores in `music/` (`music-authoring` skill).

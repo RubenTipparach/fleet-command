@@ -36,3 +36,5 @@
   hash), so a changed sound is never played from the viewer's cache.
 - Version 10 published 2026-11-07, version id `1793956237-fd25`: the brown-noise bed is the bridge (owner: "delete
   amb_bridge, use amb_bridge_brown"); the space ambience removed, and with it the only CC-BY pack.
+- Version 11 published 2026-11-11, version id `1794381223-1d29`: the shield hit without its ding (owner: "IT IS
+  ELECTROMAGNETIC"): a field whump, fizz and crackle; the ringing shield takes and the glassy shimmer removed.
