@@ -273,13 +273,19 @@ public sealed partial class Battle
         foreach (Ship s in _ships) if (s.Alive) SystemsStep(s, dt);
         foreach (Ship s in _ships)
         {
-            if (!s.Alive || s.Struck || s == Player) continue;
+            if (!s.Alive || s.Struck || s == Player || Helmed.Contains(s.Id)) continue;
             s.ThinkT -= dt;
             if (s.ThinkT <= 0) { s.ThinkT = Tuning.AiThinkS; Think(s); }
         }
-        Ship p = Player;
-        if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
-        AutoFireStep();
+        // every ship a player commands steers to its helm's order and fires by its own auto-fire (Battle.Crew.cs)
+        Ship admiral = Player;
+        foreach (Ship p in Commanded().ToList())
+        {
+            Player = p;
+            if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
+            AutoFireStep();
+        }
+        Player = admiral;
         FieldPreMove(dt);
         foreach (Ship s in _ships) if (s.Alive && !s.Absent && !s.Fixed) Move(s, dt);
         ChargeStep(dt);
@@ -303,7 +309,7 @@ public sealed partial class Battle
                 s.Engaged = false;
                 Say("Security", $"The {s.Name} has struck. Boarding party away: she is ours.");
                 // she is ours: every lock on her is dropped, so no one fires into the boarding party
-                foreach (Ship o in _ships) if (o.Target == s.Id) o.Target = null;
+                DropLocksOn(s.Id);
             }
         // a scene's own end, registered by the system whose objective it is (a ship disabled, not destroyed): checked first
         foreach (Func<bool> end in _ends) if (end()) return;
@@ -575,7 +581,7 @@ public sealed partial class Battle
             t.Hull = 0; t.Alive = false; t.V = 0;
             _hits[^1] = _hits[^1] with { Destroyed = true };
             Say("Tactical", $"{t.Name} destroyed.");
-            foreach (Ship o in _ships) if (o.Target == t.Id) o.Target = null;
+            DropLocksOn(t.Id);
             if (t == Player) PromoteNextCommand();
         }
     }

@@ -69,7 +69,7 @@ public sealed partial class Battle
                     w.Out = 0;
                     s.Alive = false; s.Jumped = true; s.V = 0;
                     Say("Helm", $"{s.Name} jumped to warp.");
-                    foreach (Ship o in _ships) if (o.Target == s.Id) o.Target = null;
+                    DropLocksOn(s.Id);
                     if (s == Player && Over == null) Over = "jumped";
                 }
                 continue;

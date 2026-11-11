@@ -16,7 +16,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships)
         {
             if (!s.Alive || s.ScanId == null) continue;
-            if (s.ScanId != s.Target) { s.ScanId = null; s.ScanP = 0; continue; }
+            if (s.ScanId != RoleTargetId(s, "science")) { s.ScanId = null; s.ScanP = 0; continue; }
             int free = Math.Max(0, s.Power["sensors"] - s.Ecm - s.Eccm);
             double rate = (sr.ScanBasePerS + sr.ScanPerES * free) * (s.Passive ? sr.PassiveScanX : 1) * s.Sys["sensors"] * (1 + OfficerSkill(s, "science") * sr.OfficerScan);
             s.ScanP = Math.Min(1, s.ScanP + dt * rate);
@@ -28,7 +28,7 @@ public sealed partial class Battle
     public void Scan()
     {
         Ship s = Player;
-        if (TargetOf(s) is not { } t) return;
+        if (TargetOf(s, "science") is not { } t) return;
         s.ScanP = s.ScanId == t.Id ? s.ScanP : 0;
         s.ScanId = t.Id;
     }

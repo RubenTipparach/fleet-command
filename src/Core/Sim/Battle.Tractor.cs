@@ -133,7 +133,7 @@ public sealed partial class Battle
         }
         if (s.Beam == null)
         {
-            Ship? t = TargetOf(s);
+            Ship? t = TargetOf(s, "tractor");
             if (s.Tractor == TractorMode.Hold && t != null && !TractorDown(s) && HeldBy(s) == null && Rules.DistKm(s, t) <= td.ReachKm && s.RelockOn != t.Id)
                 TakeHold(s, t, "takes hold of");
             return;

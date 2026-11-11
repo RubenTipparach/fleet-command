@@ -128,7 +128,7 @@ public sealed partial class Main : Node
         // a playtest whose script plays the campaign ("flow": true) runs the flow too, saving apart from the player's campaign
         bool flowTest = _args.TryGetValue("playtest", out string? pt) && StrictJson.Parse(ReadData($"playtests/{pt}.json"), pt).Bool("flow", false);
         if (flowTest) GameFlow.SaveTag = "playtest-";
-        bool battleOnly = new[] { "scenario", "playtest", "still", "layout-test", "parity-test" }.Any(_args.ContainsKey) && !_args.ContainsKey("flow") && !flowTest;
+        bool battleOnly = new[] { "scenario", "playtest", "still", "layout-test", "parity-test", "checksum" }.Any(_args.ContainsKey) && !_args.ContainsKey("flow") && !flowTest;
         if (!battleOnly)
         {
             _flow = new GameFlow();
@@ -145,6 +145,7 @@ public sealed partial class Main : Node
         if (_args.ContainsKey("layout-test")) CallDeferred(nameof(RunLayoutTest));
         else if (_args.ContainsKey("parity-test")) _ = RunParityTest();
         else if (_args.TryGetValue("still", out string? still)) _ = Still(still);
+        else if (_args.ContainsKey("checksum")) { foreach (string line in Coop.Determinism.Probe(_x.Data)) GD.Print($"CHECKSUM {line}"); GetTree().Quit(); }
         else if (_args.TryGetValue("playtest", out string? script)) StartPlaytest(script);
     }
 

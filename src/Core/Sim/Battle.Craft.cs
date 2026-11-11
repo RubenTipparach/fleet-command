@@ -74,7 +74,7 @@ public sealed partial class Battle
     {
         Ship s = Player;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
-        Ship? t = TargetOf(s);
+        Ship? t = TargetOf(s, "weapons");
         if (t == null || s.Shuttles <= 0 || !s.Alive) return;
         s.Shuttles--;
         _craft.Add(new Craft { Kind = "shuttle", Home = s.Id, Side = s.Side, To = t.Id, X = s.X, Z = s.Z });
@@ -86,7 +86,7 @@ public sealed partial class Battle
     {
         Ship s = Player;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
-        if (TargetOf(s) == null || s.Missiles <= 0 || s.Barrage > 0 || !s.Alive) return;
+        if (TargetOf(s, "weapons") == null || s.Missiles <= 0 || s.Barrage > 0 || !s.Alive) return;
         s.Barrage = Math.Min(Data.Systems.Barrage.Salvo, s.Missiles);
         s.BarrageT = 0;
         Say("Tactical", $"Missile barrage: {s.Barrage} away.");
@@ -110,7 +110,7 @@ public sealed partial class Battle
         FighterDef fd = Data.Systems.Fighters;
         Ship? home = ShipById(c.Home);
         if (home == null) { c.Gone = true; c.Fate = "lost"; return; }
-        Ship t = c.Recall || !home.Alive || c.Mission == "defend" ? home : TargetOf(home) ?? home;
+        Ship t = c.Recall || !home.Alive || c.Mission == "defend" ? home : TargetOf(home, "weapons") ?? home;
         c.A += dt * fd.OrbitRadS;
         double r = c.Recall ? 0 : fd.OrbitM, gx = t.X + Math.Cos(c.A) * r, gz = t.Z + Math.Sin(c.A) * r, d = Geometry.Dist(c.X, c.Z, gx, gz), sp = fd.SpeedMS * dt;
         if (d > sp) { c.X += (gx - c.X) / d * sp; c.Z += (gz - c.Z) / d * sp; } else { c.X = gx; c.Z = gz; }
@@ -172,7 +172,7 @@ public sealed partial class Battle
     private void BarrageStep(Ship s, double dt)
     {
         if (s.Barrage <= 0) return;
-        Ship? t = TargetOf(s);
+        Ship? t = TargetOf(s, "weapons");
         if (t == null || s.Missiles <= 0) { s.Barrage = 0; return; }
         if ((s.BarrageT -= dt) > 0) return;
         BarrageDef bd = Data.Systems.Barrage;

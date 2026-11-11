@@ -176,7 +176,7 @@ public sealed partial class Battle
 
     /// <summary>The ship a Capture beam goes to: the locked ship, an enemy to board or a friendly one to send troops to
     /// (owner, 2026-11-03: "supply troops for an assault (combat transport tab)").</summary>
-    public Ship? CaptureDest(Ship s) => TargetOf(s);
+    public Ship? CaptureDest(Ship s) => TargetOf(s, "transport");
 
     /// <summary>With nothing queued the pads beam marines, one a pad, from those aboard (owner, 2026-11-04: "by default
     /// marines get transported").</summary>
@@ -242,7 +242,7 @@ public sealed partial class Battle
     // picked. Says what went, or why nothing did.
     private int BeamQueued(Ship s, string mode, IReadOnlyList<int> pads)
     {
-        Ship? t = mode == "capture" ? CaptureDest(s) : TargetOf(s);
+        Ship? t = mode == "capture" ? CaptureDest(s) : TargetOf(s, "transport");
         bool byDefault = s.Queue[mode].Count == 0;
         List<string> q = byDefault ? DefaultLoad(s).ToList() : s.Queue[mode];
         var sent = new List<(string Role, int N)>();
@@ -351,7 +351,7 @@ public sealed partial class Battle
         foreach (string r in CommsDef.Specialists) t.Team[r] = p.Of(r);
         t.Vip = p.Of("vip") > 0 ? p.VipName : null;
         s.Party = null;
-        foreach (Ship o in _ships) if (o.Target == t.Id && o.Side != t.Side) o.Target = null;
+        DropLocksOn(t.Id, o => o.Side != t.Side);
         Say("Transport", $"{t.Name} strikes its colours. {p.Of("marines")} marines hold it{(p.Of("vip") > 0 ? ", the envoy aboard" : "")}.");
         if (PilotNeeded(t)) { t.AwaitPilot = true; Say("Transport", $"{t.Name} is ours but dead in space: pilot needed. Beam a pilot over (Capture, {t.Name} selected)."); }
     }
@@ -478,7 +478,7 @@ public sealed partial class Battle
     public TransportDest? InvPick()
     {
         Ship s = Player;
-        if (TargetOf(s) is { } t && t.Side == s.Side) return new TransportDest(t.Id, t.Name, Rules.DistKm(s, t), t, null);
+        if (TargetOf(s, "transport") is { } t && t.Side == s.Side) return new TransportDest(t.Id, t.Name, Rules.DistKm(s, t), t, null);
         return _planets.FirstOrDefault(p => p.Id == PlanetDest) is { } pl ? new TransportDest(pl.Id, pl.Name, PlanetKm(s, pl), null, pl) : null;
     }
 
@@ -489,7 +489,7 @@ public sealed partial class Battle
     public void SelectPlanet(string id)
     {
         if (_planets.FirstOrDefault(p => p.Id == id) is not { } pl) return;
-        if (TargetOf(Player) is { } t && t.Side == Player.Side) Unlock();
+        if (TargetOf(Player, "transport") is { } t && t.Side == Player.Side) Unlock();
         PlanetDest = id;
         double km = PlanetKm(Player, pl), reach = Comms.Transport.RangeKm;
         _reachDest = id; _inReach = km <= reach;

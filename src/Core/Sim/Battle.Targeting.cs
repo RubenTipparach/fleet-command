@@ -60,9 +60,9 @@ public sealed partial class Battle
     /// <summary>Aims at the hull, a subsystem, or one of the locked target's weapons ("w:" and its mount index).</summary>
     public void Aim(string aim)
     {
-        if (!Strike.Valid(aim, TargetOf(Player)) || Player.Aim == aim) return;
+        if (!Strike.Valid(aim, TargetOf(Player, "weapons")) || Player.Aim == aim) return;
         Player.Aim = aim;
-        Say("Tactical", $"Aiming at {Strike.Name(aim, TargetOf(Player)).ToLowerInvariant()}.");
+        Say("Tactical", $"Aiming at {Strike.Name(aim, TargetOf(Player, "weapons")).ToLowerInvariant()}.");
     }
 
     /// <summary>A pinned mount's ship while it lives, else null.</summary>
@@ -82,7 +82,7 @@ public sealed partial class Battle
     /// <summary>Pins every selected weapon to the locked enemy with the captain's aim.</summary>
     public void PinSelected()
     {
-        if (TargetOf(Player) is not { } t || t.Side == Player.Side) return;
+        if (TargetOf(Player, "weapons") is not { } t || t.Side == Player.Side) return;
         Mount[] sel = Player.Mounts.Where(m => m.Selected && !m.Weapon.IsPointDefence).ToArray();
         if (sel.Length == 0) return;
         foreach (Mount m in sel) m.Pin = new Pin(t.Id, Player.Aim);
@@ -113,7 +113,7 @@ public sealed partial class Battle
         var list = new List<(Mount, Ship, string)>();
         Ship s = Player;
         if (!s.Alive) return list;
-        Ship? locked = TargetOf(s) is { } lt && lt.Side != s.Side ? lt : null;
+        Ship? locked = TargetOf(s, "weapons") is { } lt && lt.Side != s.Side ? lt : null;
         foreach (Mount m in s.Mounts)
         {
             if (!m.Selected || m.Weapon.IsPointDefence || !Rules.Ready(m)) continue;

@@ -41,7 +41,7 @@ public sealed partial class Battle
 
     /// <summary>What the helm's manoeuvres steer toward (owner, 2026-11-03: "nav buttons not working when targeting
     /// friendly"): the locked ship, enemy or friendly, or else the planet selected for transport, as a still point.</summary>
-    public Ship? NavTarget(Ship s) => TargetOf(s) ?? (s == Player ? PlanetNav() : null);
+    public Ship? NavTarget(Ship s) => TargetOf(s, "helm") ?? (s == Player ? PlanetNav() : null);
 
     /// <summary>An order toward the target: intercept, trail, hold_range, orbit or hit_run. The lit order again, or
     /// "free", returns to free heading.</summary>
@@ -196,12 +196,12 @@ public sealed partial class Battle
     }
 
     /// <summary>True when one mount could fire at the locked target now.</summary>
-    public bool CanFire(Mount m) => TargetOf(Player) is { } t && t.Side != Player.Side && !Player.HoldsFire && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
+    public bool CanFire(Mount m) => TargetOf(Player, "weapons") is { } t && t.Side != Player.Side && !Player.HoldsFire && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
 
     /// <summary>Fires one mount at the locked target.</summary>
     public bool FireOne(int index)
     {
-        if (index < 0 || index >= Player.Mounts.Count || TargetOf(Player) is not { } t || t.Side == Player.Side) return false;
+        if (index < 0 || index >= Player.Mounts.Count || TargetOf(Player, "weapons") is not { } t || t.Side == Player.Side) return false;
         Mount m = Player.Mounts[index];
         return !m.Weapon.IsPointDefence && FireMount(Player, m, t);
     }
@@ -221,7 +221,7 @@ public sealed partial class Battle
     {
         if (Player.Cloaking) { Say("Tactical", "Cannot fire while cloaked."); return 0; }
         if (Player.CoreDown) { Say("Tactical", "Cannot fire: the core is down."); return 0; }
-        Ship? t = TargetOf(Player);
+        Ship? t = TargetOf(Player, "weapons");
         bool pins = Player.Mounts.Any(m => m.Selected && PinTarget(m) != null);
         if (t == null && !pins) { Say("Tactical", "No target locked."); return 0; }
         if (t != null && t.Side == Player.Side && !pins) { Say("Tactical", $"The {t.Name} is friendly: weapons hold."); return 0; }
@@ -239,23 +239,23 @@ public sealed partial class Battle
         Ship? t = ShipById(id);
         if (t is not { Alive: true } || t == Player) return;
         // an aim at the old target's weapon becomes an aim at the new one's weapons control
-        if (Player.Target != t.Id && Strike.AimMount(Player.Aim) >= 0) Player.Aim = "weapons";
+        if (LockedNow(Player) != t.Id && Strike.AimMount(Player.Aim) >= 0) Player.Aim = "weapons";
         // a cloaked enemy cannot be locked until it is seen, nor one a nebula hides (Battle.Cloak.cs)
         if (t.Side != Player.Side && !Detected(Player, t)) { SayOnce("Science", "No lock: it is cloaked. Sweep to find it."); return; }
         if (t.Side != Player.Side && !CanLock(Player, t)) { SayOnce("Science", $"No lock: the nebula is between us. Raise ECCM above its ECM, or close to {Cs.Nebula.LockKm:0} km."); return; }
-        Player.Target = t.Id;
+        SetLock(Player, t.Id);
         Say("Tactical", t.Side == Player.Side ? $"Selected: {t.Name}, {t.Class.Name} (friendly)." : $"Target locked: {t.Name}, {t.Class.Name}.");
     }
 
     /// <summary>Releases the locked target.</summary>
-    public void Unlock() { if (Player.Target != null) { Player.Target = null; if (Player.Engaged) Player.Engaged = false; } }
+    public void Unlock() { if (LockedNow(Player) != null) { SetLock(Player, null); if (Player.Engaged && (Player.RoleTargets == null || OrderRoles?.Contains("helm") == true)) Player.Engaged = false; } }
 
     /// <summary>Locks the next enemy by range, nearest first, after the one locked now.</summary>
     public void NextTarget()
     {
         Ship[] foes = SeenFoes(Player).OrderBy(o => Rules.DistKm(Player, o)).ThenBy(o => o.Order).ToArray();
         if (foes.Length == 0) return;
-        int i = Array.FindIndex(foes, o => o.Id == Player.Target);
+        int i = Array.FindIndex(foes, o => o.Id == LockedNow(Player));
         Lock(foes[(i + 1) % foes.Length].Id);
     }
 

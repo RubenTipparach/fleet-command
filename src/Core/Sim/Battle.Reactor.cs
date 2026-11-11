@@ -156,7 +156,7 @@ public sealed partial class Battle
             double km = Rules.DistKm(s, t);
             if (km <= R.BlastKm) Damage(t, s.X, s.Z, s, R.BlastDmg * (1 - km / R.BlastKm), "blast");
         }
-        foreach (Ship o in _ships) if (o.Target == s.Id) o.Target = null;
+        DropLocksOn(s.Id);
         if (s == Player) PromoteNextCommand();
     }
 
