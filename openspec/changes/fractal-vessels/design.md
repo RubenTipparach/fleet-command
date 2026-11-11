@@ -158,6 +158,50 @@ v3 had also commented out the line that hands the slider's damage to the shader.
 - **The Abox.** A Mandelbox at scale -1.5 cut to a hull showed only its solid inside, a plain block. The render's twisted
   beams come from the Kali modification's own folds and rotations, which are not in hand. That is task 7.2.
 
+## D3c. Version 5: Benesi KIFS, and colour
+
+The owner, 2026-11-11, of the "KIFS x T Benesi Mag Forward ... It2" render: "this one is very complex, how do we recreate
+this in our game?", then "go make it, also add some more colors and shading to the ships". v4's ribbed truss was not it
+("the ribbed truses dont look right").
+
+**Benesi KIFS replaces the ribbed truss.** It is ported from Mandelbulber's two formulas, read in their source (GPLv3:
+only the maths is used; the render is CC BY-SA: only its idea is taken):
+- the kaleidoscopic IFS step: mirror the axes, reflect in the IFS planes, scale about the offset, `z = z s - offset (s - 1)`;
+  here the octahedral set (every axis mirrored, the axes sorted so x is largest), scale 2, offset (1, 0, 0);
+- the Benesi Mag Forward transform: the turn in D3b, which takes the x axis onto the diagonal.
+
+The hybrid was found in a harness rendering each placement of the turn at the reference's own camera (Mandelbulber's
+position (1.48, 1.42, 0.78), z up, looking at the origin):
+
+| The turn on | Came out as |
+|---|---|
+| no iteration | a plain Sierpinski octahedron |
+| the first | the same octahedron, tilted |
+| the second | the 24K render's silhouette: a broad crown, flared shoulders and a keel |
+| the third | the It2 render's: a crown on a neck, two shoulder units, a cavity between them and a keel |
+| every second | dust |
+
+So the turn runs once, before the third fold. The leaf is an octahedron with its corners rounded by a ball (the slider
+sets the ball, 0.84 to 0.68), so the units read chunky and round. The fourth fold's nearness to its corner is the accent
+mask, so the units' tips are capped in the accent colour, as the render's caps are green on yellow. Its folds stop at 7 px,
+not the other tilers' 4: finer, its rounded leaves sparkle. It is 124 m, crown up, its octahedron's x axis along the hull.
+
+Not matched: the render's ladder walls and round openings.
+- A ball fold (the Mandelbox's sphere inversion) for the round openings scattered the form to dust.
+- Menger folds below the octahedral ones for the ladders came out as loose cubes.
+
+**Colour and shading, every form.**
+- **Palettes.** Each form has its own (`pal`: hull, deep, trim, accent, glow, rim), provisional until the culture is set
+  (F1). The Julia slice violet and pink, the fold lattice steel blue and copper, the delta sand and teal, the octahedral
+  lattice gold and violet, the KIFS yellow and green over deep teal, the pine jade and amber, the Mandelbulb rose and
+  copper, the tree coral and sea green.
+- **Accent.** A form may write an accent mask while it measures the distance: the lattices' second-fold corner cubes, the
+  octahedral lattice's third-fold tips, the KIFS's caps. The others take it from the orbit trap (near the long axis).
+- **Light.** A warm key, a cool fill from the far side, a sky over a dim warm ground, all occluded. Cavities fall to the
+  deep colour rather than to black. Thin edges with the key behind them glow through in the trim colour. The highlight is a
+  sharp spot (only where the surface is open: in a pit it only sparkles) on a broad sheen, tinted by the plating. The
+  grazing rim walks between the rim and accent colours with the angle.
+
 ## D4. Damage
 
 - **Fold levels lost**: `iterations - floor(damage x iterations x 0.45)`, never fewer than 2. A hurt Julia slice swells
@@ -227,6 +271,6 @@ open).
 |---|---|---|---|
 | FV1 | Whose vessels are these? | The Axiom's. They replace the placeholder line once approved | FV1 |
 | FV2 | Is the vessel the being (framing 1), or made by a people who think in fractals (framing 2)? | Framing 2, which keeps the Axiom's draft culture and console | FV2 |
-| FV3 | Which forms make the line? | Since v3, from the owner's notes (the lattice "looks most like a spaceship", the Julia slice liked): the frigate the octahedral lattice, the cruiser the fold or delta lattice, the capital the Julia slice; the Benesi pine and the Mandelbulb as other options, the tree dropped unless asked for | FV3 |
+| FV3 | Which forms make the line? | Since v3, from the owner's notes (the lattice "looks most like a spaceship", the Julia slice liked): the frigate the octahedral lattice, the cruiser the fold or delta lattice, the capital the Julia slice; since v5 Benesi KIFS (the render the owner picked) as a capital or station; the Benesi pine and the Mandelbulb as other options, the tree dropped unless asked for | FV3 |
 | FV4 | How do phones draw them? | A mesh baked from the same field (marching cubes, a few LODs) on phones; the raymarch on desktop | FV4 |
 | FV5 | How does the game hit them? | The C# copy of the field, tied to the shader's by a test (D6) | FV5 |

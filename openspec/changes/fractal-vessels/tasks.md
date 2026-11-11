@@ -18,6 +18,8 @@
 - [x] 1.9 v4 (owner, 2026-11-11: the KIFS x T Benesi render, "100% should appear more damaged", "a testing scene for me to shoot it with phasers and torpedos"): the ribbed truss, the pine on Benesi's own rule, stronger damage, the firing range, the damage slider fixed (design D3b), shots at all sizes, republished
 - [ ] 1.6 The owner's review (approval for build, then for implementation)
 
+- [x] 1.10 v5 (owner, 2026-11-11, of the KIFS x T Benesi It2 render: "go make it, also add some more colors and shading to the ships"): Benesi KIFS replacing the ribbed truss, every form's own palette, accent masks and a fuller light (design D3c), shots at all sizes, republished
+
 ## 2. In the game (once approved for implementation)
 
 - [ ] 2.1 Documented exceptions in CLAUDE.md section 14: no mesh, no UVs and no baked maps for a raymarched vessel
@@ -33,3 +35,4 @@
 
 - [ ] 7.1 The Icebox with icefractal.com's own power and fold limit (v3's port, at a fold of 0.8 to 1, came out a solid cube)
 - [ ] 7.2 The Abox (Mod 13 x Mod Kali-V3) with the Kali modification's folds and rotations (v4's plain Mandelbox cut came out a block)
+- [ ] 7.3 Benesi KIFS's ladder walls and round openings (v5's ball fold and Menger folds both failed; design D3c)

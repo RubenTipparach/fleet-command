@@ -24,6 +24,13 @@
   Benesi's own power 2 rule; full damage charred in streaked patches with ember edges, its holes mirrored and larger; a
   firing range (phasers and torpedoes, picked by the vessels' own march); and the damage slider working again (v3 had
   commented its line out). An Amazing box cut came out a plain block and is left out.
+  Version 5 (owner, 2026-11-11, of the "KIFS x T Benesi Mag Forward ... It2" render: "this one is very complex, how do we
+  recreate this in our game?", then "go make it, also add some more colors and shading to the ships"): the ribbed truss is
+  replaced by Benesi KIFS, Mandelbulber's octahedral kaleidoscopic IFS with Benesi's Mag Forward turn before its third fold,
+  ported from the formulas' maths and matched to the render's silhouette at its own camera (the kifs_it2 shot); and every
+  form has its own palette (hull, deep, trim, accent, glow, rim; provisional, F1), the tilers' fold panels and the KIFS's
+  caps in the accent, under a warm key, a cool fill, a sky over a dim ground, cavities falling to the deep colour, light
+  through thin edges and a grazing rim that shifts hue.
 
   Contract with tools/mockups/shoot.mjs: window.MOCKUP_SHOTS, MOCKUP_READY, MOCKUP_SCENE (threejs-mockups skill).
 -->
@@ -136,7 +143,7 @@
 <div class="title" id="title">
   <h1>Fractal vessels</h1>
   <p><a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a></p>
-  <p class="more">Mockup 37, OpenSpec change <code>fractal-vessels</code>, v4: eight forms, and a firing range under Fire. These ships have no mesh. Each pixel marches along its ray into a
+  <p class="more">Mockup 37, OpenSpec change <code>fractal-vessels</code>, v5: eight forms, each in its own colours, and a firing range under Fire. These ships have no mesh. Each pixel marches along its ray into a
     distance field until it reaches the surface, at half the screen's resolution unless you switch it off under Cost. Beside them is
     the Concord's Petrel (86 m), for scale. Drag to orbit and scroll or pinch to zoom.</p>
   <button class="aboutBtn" id="aboutBtn" aria-expanded="false" aria-controls="title">About</button>
@@ -196,43 +203,53 @@
 // shader's own units, long along +Z, the bow), its palette and the hull points its damage opens. The shader picks its
 // distance estimator by the FORM define, so each form compiles to its own program with no branch per step.
 const FORMS = [
-  { id: 'julia', de: 0, name: 'Julia slice', length_m: 132, box: [1.05, 1.05, 1.6], school: 'the escape-time school',
+  { id: 'julia', de: 0, name: 'Julia slice', length_m: 132, pal: { hull: '#c9b6f2', deep: '#3a1f8f', trim: '#8a5cff', accent: '#ff8fc8', glow: '#3fe0e6', rim: '#b99cff' },
+    box: [1.05, 1.05, 1.6], school: 'the escape-time school',
     about: 'A quaternion Julia set lives in four dimensions. What you see is the slice of it that crosses our space. Moving the slice reshapes the vessel without moving it.',
     wLabel: 'Slice through the 4th dimension',
     c: [-0.62, 0.42, 0.18, 0.12], trap: 0.8, foldGlow: 1.0, aoK: 1.0, stepK: 0.85, trapN: 16,
     holes: [[0.25, 0.32, 0.55, 0.32], [-0.38, -0.1, -0.45, 0.3], [0.0, 0.42, -0.1, 0.26]] },
-  { id: 'lattice', de: 1, name: 'Fold lattice', length_m: 112, box: [0.52, 0.52, 1.6], school: 'the tilers',
+  { id: 'lattice', de: 1, name: 'Fold lattice', length_m: 112, pal: { hull: '#a9b7d6', deep: '#1d2f6b', trim: '#3f6fd8', accent: '#d88a4a', glow: '#5fe3ff', rim: '#9cc4ff' },
+    box: [0.52, 0.52, 1.6], school: 'the tilers',
     about: 'Five blocks, each 0.7 the size of the one behind. Every block keeps folding: space is mirrored, sorted, turned and scaled by three, so each block becomes twenty smaller ones round square tunnels. The slider turns each fold.',
     wLabel: 'Fold turn', trap: 1.0, foldGlow: 0.5, aoK: 0.6, stepK: 0.85, trapN: 2,
     holes: [[0.0, 0.5, -1.05, 0.28], [0.42, 0.0, -0.15, 0.24], [0.0, 0.3, 0.6, 0.2]] },
-  { id: 'delta', de: 6, name: 'Delta lattice', length_m: 140, box: [1.4, 0.45, 1.62], school: 'the tilers',
+  { id: 'delta', de: 6, name: 'Delta lattice', length_m: 140, pal: { hull: '#c7b99a', deep: '#123f4a', trim: '#1fa6a0', accent: '#ffb347', glow: '#48ffd5', rim: '#8affea' },
+    box: [1.4, 0.45, 1.62], school: 'the tilers',
     about: 'The fold lattice laid out as an arrowhead: a spine of five blocks and two swept wings of three, every block folding into twenty smaller ones round square tunnels. The slider turns each fold.',
     wLabel: 'Fold turn', trap: 1.0, foldGlow: 0.5, aoK: 0.6, stepK: 0.85, trapN: 2,
     holes: [[0.0, 0.42, -1.1, 0.26], [0.7, 0.28, -1.06, 0.22], [0.0, 0.24, 0.14, 0.18]] },
-  { id: 'octa', de: 5, name: 'Octahedral lattice', length_m: 130, box: [0.74, 0.74, 1.6], school: 'the tilers',
+  { id: 'octa', de: 5, name: 'Octahedral lattice', length_m: 130, pal: { hull: '#d6b25e', deep: '#2a1f6b', trim: '#c8902a', accent: '#7a5cff', glow: '#ffd36a', rim: '#ffcf7a' },
+    box: [0.74, 0.74, 1.6], school: 'the tilers',
     about: 'A Sierpinski octahedron: each fold makes six smaller octahedra at the corners of the last, so every face opens into triangles of triangles. Three blocks overlap into one spear, smaller toward the bow. The slider turns each fold out of line.',
     wLabel: 'Fold turn', trap: 1.1, foldGlow: 0.7, aoK: 0.8, stepK: 0.85, trapN: 2,
     holes: [[0.0, 0.3, -0.9, 0.3], [0.2, 0.0, 0.3, 0.22], [0.0, 0.0, 1.05, 0.15]] },
-  { id: 'truss', de: 8, name: 'Ribbed truss', length_m: 136, box: [0.9, 0.9, 1.6], school: 'the tilers',
-    about: 'A Sierpinski octahedron drawn as a frame: every edge a ribbed beam, every corner a rounded cap, every level kept, so each face is a triangle of beams round a triangular opening with the next one nested inside. On the third fold space is turned onto the diagonal, Benesi\'s turn, which twists the inner levels. Three trusses make a spear. The slider is the beams\' weight.',
-    wLabel: 'Beam weight', trap: 1.0, foldGlow: 0.8, aoK: 0.9, stepK: 0.85, trapN: 3,
-    holes: [[0.0, 0.35, -0.75, 0.24], [0.3, 0.1, 0.25, 0.18], [0.0, 0.0, 0.95, 0.12]] },
-  { id: 'pine', de: 4, name: 'Benesi pine', length_m: 150, box: [0.95, 0.95, 1.6], stepsMul: 2, school: 'the escape-time school',
+  { id: 'kifs', de: 8, name: 'Benesi KIFS', length_m: 124, pal: { hull: '#b5a826', deep: '#0c3a40', trim: '#8f8a18', accent: '#56c020', glow: '#3fe0c6', rim: '#d6ff7a' },
+    box: [1.04, 1.04, 1.04], school: 'the tilers',
+    about: 'Mandelbulber\'s kaleidoscopic IFS with Benesi\'s turn on the third fold, the hybrid the owner picked. Each fold mirrors and sorts space into one corner of an octahedron and halves it toward that corner; on the third, space is turned onto the diagonal first, so every unit below it stands at a new angle and the octahedron grows a crown, shoulders and a keel. The corner caps are coloured from the fourth fold. The slider rounds the units.',
+    wLabel: 'Rounding', trap: 1.0, foldGlow: 0.7, aoK: 0.9, stepK: 0.8, trapN: 3,
+    holes: [[0.0, 0.55, 0.0, 0.26], [0.45, 0.0, 0.3, 0.2], [0.0, -0.2, 0.7, 0.14]] },
+  { id: 'pine', de: 4, name: 'Benesi pine', length_m: 150, pal: { hull: '#b8e0c4', deep: '#103a2a', trim: '#3aa86a', accent: '#ffcf5a', glow: '#9dff6a', rim: '#c8ffd8' },
+    box: [0.95, 0.95, 1.6], stepsMul: 2, school: 'the escape-time school',
     about: 'Benesi\'s power-2 rule, as Mandelbulber writes it: along the hull the point is squared as a complex number is, its sign flipped where its seed lies forward of the waist, and round the axis its angle is doubled and turned. In any plane through the axis it is the Mandelbrot set: the needle at the bow, the body flaring aft into banded layers. The slider shifts every point\'s seed along the axis.',
     wLabel: 'Seed shift', trap: 0.7, foldGlow: 0.9, aoK: 0.9, stepK: 0.3, trapN: 4,
     holes: [[0.0, 0.4, -0.9, 0.3], [0.3, 0.0, -0.3, 0.22], [0.0, 0.0, 0.6, 0.12]] },
-  { id: 'bulb', de: 3, name: 'Mandelbulb', length_m: 120, box: [1.2, 1.2, 1.2], school: 'the escape-time school',
+  { id: 'bulb', de: 3, name: 'Mandelbulb', length_m: 120, pal: { hull: '#e6bfa8', deep: '#4a1430', trim: '#d0604a', accent: '#ffb86a', glow: '#ff7a9a', rim: '#ffc0a8' },
+    box: [1.2, 1.2, 1.2], school: 'the escape-time school',
     about: 'Every point is turned and raised to a power in spherical coordinates, then its start is added back; the vessel is every point that never escapes. Its pole lies along the hull. The slider is the power, 5 to 11.',
     wLabel: 'Power', trap: 0.8, foldGlow: 0.9, aoK: 1.0, stepK: 0.8, trapN: 4,
     holes: [[0.0, 0.7, 0.4, 0.3], [-0.6, 0.0, -0.4, 0.26], [0.0, -0.5, 0.7, 0.2]] },
-  { id: 'branch', de: 2, name: 'Branching', length_m: 128, box: [1.25, 1.25, 1.6], school: 'the branchers',
+  { id: 'branch', de: 2, name: 'Branching', length_m: 128, pal: { hull: '#e6c8bc', deep: '#3a1a40', trim: '#e06a7a', accent: '#5ad0b0', glow: '#7affd4', rim: '#ffb0c8' },
+    box: [1.25, 1.25, 1.6], school: 'the branchers',
     about: 'One rule for a branch, repeated: every branch splits in two, a size smaller and turned a quarter turn. Nine levels make 512 tips. The slider opens the branches.',
     wLabel: 'Branch angle', trap: 1.2, foldGlow: 0.8, aoK: 1.0, stepK: 0.85, trapN: 3,
     holes: [[0.0, 0.0, -0.6, 0.26], [0.35, 0.2, 0.35, 0.3], [-0.3, -0.25, 0.6, 0.26]] },
 ];
 const IDX = Object.fromEntries(FORMS.map((f, i) => [f.id, i]));   // a form's place in the list, by its id
-// Provisional palette (the faction's culture is unset: design Open question F1). Linear colours are made from sRGB here.
-const PALETTE = { hull: '#e8ecf6', deep: '#2f2696', trim: '#4b3fd8', glow: '#3fe0e6', rim: '#b99cff' };
+// Each form's palette (pal) is provisional: the faction's culture is unset (design Open question F1). Hull is the lit
+// plating, deep the cavities, trim the edges near the folds' axes, accent a second plating colour (the KIFS's corner caps,
+// elsewhere where the orbit came close to the long axis), glow the being's light, rim the grazing sheen. sRGB here, made
+// linear by lin().
 const lin = (hex) => new THREE.Color(hex).convertSRGBToLinear();
 
 // ---- Seeded generator (Mulberry32, CLAUDE.md section 10: never a cheap hash for stars).
@@ -327,12 +344,14 @@ uniform vec4 uHits[24];   // the firing range's hits, object space: xyz the poin
 uniform float uHitT[24];  // when each hit landed, seconds
 uniform int uHitN;
 uniform float uTime, uIndex;
-uniform vec3 uHull, uDeep, uTrim, uGlowCol, uRim;
+uniform vec3 uHull, uDeep, uTrim, uAccent, uGlowCol, uRim;
 varying vec3 vObj;
 
 // A pixel's width at the point being sampled, in object units (set by the marcher). A fold finer than about a pixel
 // is not drawn: it would only shimmer as speckle and grain (owner, 2026-11-11, of the lattice: "theres someartifacts").
 float gPix = 1e-4;
+// A form may paint its own accent mask (0 to 1) while it measures the distance; below 0, the shader derives one from the trap.
+float gAcc = -1.0;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, s, -s, c); }
 int itersNow() { return max(2, uIter - int(floor(uDamage * float(uIter) * 0.55))); }   // full damage loses over half the folds (seven in ten melted the Julia slice)
@@ -359,6 +378,7 @@ float menger(vec3 q, float a, int n, float pb, inout vec4 tr) {
     if (q.x < q.y) q.xy = q.yx;
     if (q.x < q.z) q.xz = q.zx;
     if (q.y < q.z) q.yz = q.zy;
+    if (i == 1) gAcc = smoothstep(0.62, 0.7, q.z) * 0.75;   // the second fold's corner cubes: accent panels
     q.xy = r1 * q.xy;
     q.yz = r2 * q.yz;
     q = q * 3.0 - vec3(2.0, 2.0, 0.0);
@@ -372,7 +392,11 @@ float menger(vec3 q, float a, int n, float pb, inout vec4 tr) {
 // One lattice block, centre c, half side h, its fold turned a; outside its bounding box only the box is measured.
 void block(vec3 p, vec3 c, float h, float a, int n, inout float d, inout vec4 tr) {
   float bound = sdBox(p - c, vec3(h));
-  if (bound < d && bound < 0.04) { vec4 t = vec4(1e9); d = min(d, menger((p - c) / h, a, n, gPix / h, t) * h); tr = min(tr, t); }
+  if (bound < d && bound < 0.04) {
+    vec4 t = vec4(1e9); float keep = gAcc;
+    float dm = menger((p - c) / h, a, n, gPix / h, t) * h;
+    if (dm < d) { d = dm; tr = min(tr, t); } else gAcc = keep;   // the nearest block's panels colour the point
+  }
   else d = min(d, max(bound, 0.02));
 }
 
@@ -398,6 +422,7 @@ float deForm(vec3 p, out vec4 tr) {
 // smears the fold). The slider turns each fold.
 float deForm(vec3 p, out vec4 tr) {
   tr = vec4(1e9);
+  gAcc = 0.0;
   int n = clamp(itersNow() - 5, 1, 6);
   float d = 1e9, h = 0.5, z = -1.55;
   for (int m = 0; m < 5; m++) {
@@ -496,6 +521,7 @@ float octa(vec3 q, float a, int n, float pb, inout vec4 tr) {
     q = abs(q);
     if (q.x < q.y) q.xy = q.yx;
     if (q.x < q.z) q.xz = q.zx;
+    if (i == 2) gAcc = smoothstep(0.72, 0.86, q.x) * 0.8;   // the third fold's corner tips: accent
     q.yz = r1 * q.yz;
     q = q * 2.0 - vec3(1.0, 0.0, 0.0);   // half the size, toward the corner on +x
     s *= 2.0;
@@ -505,6 +531,7 @@ float octa(vec3 q, float a, int n, float pb, inout vec4 tr) {
 }
 float deForm(vec3 p, out vec4 tr) {
   tr = vec4(1e9);
+  gAcc = 0.0;
   int n = clamp(itersNow() - 3, 2, 8);
   float d = 1e9;
   vec3 C[3] = vec3[3](vec3(0.0, 0.0, -0.78), vec3(0.0, 0.0, 0.2), vec3(0.0, 0.0, 0.92));
@@ -512,7 +539,11 @@ float deForm(vec3 p, out vec4 tr) {
   for (int m = 0; m < 3; m++) {
     vec3 q = (p - C[m]) / H[m];
     float bound = (abs(q.x) + abs(q.y) + abs(q.z) - 1.0) * 0.57735 * H[m];
-    if (bound < d && bound < 0.04) { vec4 t = vec4(1e9); d = min(d, octa(q.zxy, uW * 0.5, n, gPix / H[m], t) * H[m]); tr = min(tr, t); }
+    if (bound < d && bound < 0.04) {
+      vec4 t = vec4(1e9); float keep = gAcc;
+      float dm = octa(q.zxy, uW * 0.5, n, gPix / H[m], t) * H[m];
+      if (dm < d) { d = dm; tr = min(tr, t); } else gAcc = keep;
+    }
     else d = min(d, max(bound, 0.02));
   }
   return d;
@@ -522,6 +553,7 @@ float deForm(vec3 p, out vec4 tr) {
 // (mirrored), each block folding into twenty round square tunnels. The slider turns each fold.
 float deForm(vec3 p, out vec4 tr) {
   tr = vec4(1e9);
+  gAcc = 0.0;
   int n = clamp(itersNow() - 5, 1, 6);
   vec3 q = vec3(abs(p.x), p.y, p.z);   // the wings mirrored about the centreline
   float d = 1e9;
@@ -532,49 +564,43 @@ float deForm(vec3 p, out vec4 tr) {
   return d;
 }
 #elif FORM == 8
-// The ribbed truss (after the "KIFS x T Benesi" renders the owner picked, 2026-11-11: their idea, not their pictures, which
-// are CC BY-SA): a Sierpinski octahedron drawn as a frame, not a solid. Every level's edges are ribbed beams with rounded
-// caps at the corners, and every level's frame is kept, so each face is a triangle of beams round a triangular opening with
-// the next level's triangle nested in it. On the third fold space is turned onto the diagonal (Benesi's Mag Forward turn,
-// a rotation and nothing else), which twists the inner levels. Three trusses overlap into a spear, a corner forward.
-// The slider is the beams' weight.
+// Benesi KIFS (owner, 2026-11-11, of the "KIFS x T Benesi Mag Forward ... It2" render: "go make it"). Mandelbulber's
+// kaleidoscopic IFS hybridised with its "T>Benesi Mag Forward" transform, ported from the formulas' maths (Mandelbulber is
+// GPLv3: no code is copied; the render is CC BY-SA: only its idea is taken). The KIFS step here is the octahedral one: mirror
+// every axis, sort the axes so x is largest, then scale by 2 about the corner (1, 0, 0), so each unit becomes six at its
+// corners. Benesi's Mag Forward is a pure turn that takes the x axis onto the diagonal; applied once, before the third
+// fold, it stands every unit below that level at a new angle, which grows the reference's crown, shoulders and keel out
+// of the octahedron (found by rendering each placement at the reference's own camera; the third fold matches It2, the
+// second the 24K render). The leaf is an octahedron with its corners rounded by a ball (the slider sets the ball), so
+// the units read chunky and round as the reference's do. The fourth fold's nearness to its corner marks the caps (accent).
+// Tried and left out: a sphere fold for the reference's round openings (it scattered the form to dust) and Menger folds
+// below the octahedral ones for its ladders (they came out as loose cubes).
 const float S2_3 = 0.81649658, S1_3 = 0.57735027, S1_2 = 0.70710678;
 vec3 benesiTurn(vec3 z) { float t = z.x * S2_3 - z.z * S1_3; return vec3((t - z.y) * S1_2, (t + z.y) * S1_2, z.x * S1_3 + z.z * S2_3); }
-float truss(vec3 q, float rad, int n, float pb, inout vec4 tr) {
-  float d = 1e9, s = 1.0;
-  for (int i = 0; i < 9; i++) {
-    if (i >= n || 1.0 / s < LOD_PX * pb) break;
+const float KIFS_LOD_PX = 7.0;
+float kifs(vec3 q, float ball, int n, float pb, inout vec4 tr) {
+  float s = 1.0;
+  for (int i = 0; i < 10; i++) {
+    if (i >= n || 1.0 / s < KIFS_LOD_PX * pb) break;   // coarser than the other tilers: its rounded leaves sparkle when finer
     if (i == 2) q = benesiTurn(q);
     q = abs(q);
     if (q.x < q.y) q.xy = q.yx;
     if (q.x < q.z) q.xz = q.zx;
     if (q.y < q.z) q.yz = q.zy;
-    vec3 pa = q - vec3(1.0, 0.0, 0.0), ba = vec3(-1.0, 1.0, 0.0);
-    float h = clamp(dot(pa, ba) * 0.5, 0.0, 1.0);
-    float ribK = 0.08 * smoothstep(3.0, 6.0, 1.0 / (40.0 * s * pb));   // ribs fade before they are finer than a few pixels
-    float ring = 0.5 + 0.5 * cos(h * 40.0 * 6.2832);
-    float dE = length(pa - ba * h) - rad * (1.0 + ribK * ring);
-    float dC = length(pa) - rad * 1.38;
-    d = min(d, min(dE, dC) / s);
-    trap(tr, q, i);
+    if (i == 3) gAcc = smoothstep(0.72, 0.86, q.x);
     q = q * 2.0 - vec3(1.0, 0.0, 0.0);
     s *= 2.0;
+    trap(tr, q, i);
   }
-  return d;
+  return max((abs(q.x) + abs(q.y) + abs(q.z) - 1.0) * 0.57735, length(q) - ball) / s;
 }
 float deForm(vec3 p, out vec4 tr) {
   tr = vec4(1e9);
-  int n = clamp(itersNow() - 3, 2, 8);
-  float rad = 0.2 + uW * 0.08, d = 1e9;
-  vec3 C[3] = vec3[3](vec3(0.0, 0.0, -0.72), vec3(0.0, 0.0, 0.26), vec3(0.0, 0.0, 0.96));
-  float H[3] = float[3](0.66, 0.46, 0.32);
-  for (int m = 0; m < 3; m++) {
-    vec3 q = (p - C[m]) / H[m];
-    float bound = ((abs(q.x) + abs(q.y) + abs(q.z) - 1.0) * 0.57735 - rad * 1.45) * H[m];
-    if (bound < d && bound < 0.04) { vec4 t = vec4(1e9); d = min(d, truss(q.zxy, rad, n, gPix / H[m], t) * H[m]); tr = min(tr, t); }
-    else d = min(d, max(bound, 0.02));
-  }
-  return d;
+  gAcc = 0.0;
+  vec3 q = p.zxy;   // the octahedron's x along the hull (+Z, the bow), its z up (+Y): the reference's crown stands up
+  float bound = (abs(q.x) + abs(q.y) + abs(q.z) - 1.0) * 0.57735;
+  if (bound > 0.04) return max(bound, 0.02);
+  return kifs(q, 0.84 - uW * 0.16, clamp(itersNow() - 1, 2, 9), gPix, tr);
 }
 #endif
 
@@ -613,6 +639,7 @@ vec3 shade(vec3 p, vec3 rd, float t, int used) {
   gPix = max(1e-4, t * uPix);
   vec4 tr;
   map(p, tr);
+  float accM = gAcc;   // the form's own accent mask at p, kept before the normal and occlusion samples overwrite it
   vec3 n = normalAt(p, max(2e-4, gPix * 2.5));   // two and a half pixels: the light follows the folds a pixel can show
 
   // Occlusion: five samples out along the normal, and the step count as a second cue for deep folds.
@@ -625,23 +652,39 @@ vec3 shade(vec3 p, vec3 rd, float t, int used) {
   ao = clamp(1.0 - ao * 3.0 * uAoK, 0.0, 1.0);
   float crowd = float(used) / float(uSteps);
 
-  // Colour from the orbit trap of the first few folds: where the iterate came close to the axes and the origin.
+  // Colour from the orbit trap of the first few folds: where the iterate came close to the axes and the origin. Three
+  // channels: the trap's distance picks deep or hull, nearness to the cross axes picks trim, nearness to the long axis (or
+  // the form's own mask: a tiler's fold panels, the KIFS's caps) picks the accent.
   float tw = clamp(sqrt(tr.w) * uTrap, 0.0, 1.0);
   float ta = clamp(length(tr.xy) * uTrap, 0.0, 1.0);
+  float tz = clamp(tr.z * uTrap * 2.0, 0.0, 1.0);
   vec3 base = mix(uDeep, uHull, smoothstep(0.1, 0.7, tw));
-  base = mix(base, uTrim, smoothstep(0.35, 0.0, ta) * 0.45);
+  base = mix(base, uTrim, smoothstep(0.35, 0.0, ta) * 0.55);
+  float acc = accM >= 0.0 ? accM : smoothstep(0.22, 0.0, tz) * smoothstep(0.25, 0.6, tw) * 0.55;
+  base = mix(base, uAccent, acc);
 
+  // Light: a warm key, a cool fill from the far side, a sky over a dim warm ground, all occluded; cavities fall to the deep
+  // colour rather than to black; thin edges with the key behind them glow through in the trim colour; the highlight is a
+  // sharp spot on a broad sheen, tinted a little by the plating; the grazing rim walks between the rim and accent colours.
+  const vec3 KEY = vec3(1.0, 0.93, 0.84), FILL = vec3(0.42, 0.52, 0.95), SKY = vec3(0.55, 0.6, 0.85), GROUND = vec3(0.16, 0.12, 0.1);
   vec3 L = normalize(uLight), V = -rd, H = normalize(L + V);
+  vec3 Lf = normalize(vec3(-L.x, 0.35, -L.z));
   float dif = max(dot(n, L), 0.0);
-  float spec = pow(max(dot(n, H), 0.0), 48.0) * 0.6;
+  float fil = max(dot(n, Lf), 0.0);
   float sky = 0.5 + 0.5 * n.y;
   float fres = pow(1.0 - max(dot(n, V), 0.0), 3.0);
-
-  vec3 col = base * (dif * 1.25 + sky * 0.28) * mix(0.25, 1.0, ao) + vec3(spec) * ao;
+  float occ = mix(0.22, 1.0, ao);
+  vec3 lit = KEY * dif * 1.0 + FILL * fil * 0.3 + mix(GROUND, SKY, sky) * 0.22;
+  vec3 col = base * lit * occ;
+  col = mix(col, uDeep * (0.3 + 0.35 * sky), smoothstep(0.6, 0.05, ao) * 0.6);
+  float through = pow(clamp(dot(V, -L) * 0.5 + 0.5, 0.0, 1.0), 4.0) * (1.0 - dif) * ao;
+  col += uTrim * through * 0.35;
+  float nh = max(dot(n, H), 0.0);
+  col += mix(vec3(1.0), base, 0.35) * KEY * (pow(nh, 64.0) * 0.6 * ao + pow(nh, 10.0) * 0.07) * ao;   // the sharp spot only where open: a pit's highlight is a sparkle
   // Light from inside the folds: strongest in the deepest, most crowded places, in the glow colour.
   float fold = smoothstep(0.45, 0.95, 1.0 - ao) * 0.7 + smoothstep(0.6, 1.0, crowd) * 0.25 + smoothstep(0.3, 0.0, tw) * 0.35;
   col += uGlowCol * fold * uGlow * uFoldGlow * 0.8;
-  col += uRim * fres * 0.6 * uGlow;
+  col += mix(uRim, uAccent, 0.5 + 0.5 * cos(fres * 6.0 + tw * 4.0)) * fres * 0.6 * uGlow;
   // Damage: the hull charred in patches that spread as it grows, embers along the patches' edges, and the being's light
   // leaking out round every torn hole.
   if (uDamage > 0.0) {
@@ -747,8 +790,8 @@ const vessels = FORMS.map((f, i) => {
     uHoles: { value: f.holes.map((h) => new THREE.Vector4(...h)) },
     uHits: { value: Array.from({ length: MAX_HITS }, () => new THREE.Vector4()) }, uHitT: { value: new Array(MAX_HITS).fill(0) }, uHitN: { value: 0 },
     uTime: TIME, uIndex: { value: i },
-    uHull: { value: lin(PALETTE.hull) }, uDeep: { value: lin(PALETTE.deep) }, uTrim: { value: lin(PALETTE.trim) },
-    uGlowCol: { value: lin(PALETTE.glow) }, uRim: { value: lin(PALETTE.rim) },
+    uHull: { value: lin(f.pal.hull) }, uDeep: { value: lin(f.pal.deep) }, uTrim: { value: lin(f.pal.trim) },
+    uAccent: { value: lin(f.pal.accent) }, uGlowCol: { value: lin(f.pal.glow) }, uRim: { value: lin(f.pal.rim) },
   };
   const mat = new THREE.ShaderMaterial({
     vertexShader: VERT, fragmentShader: FRAG, uniforms, defines: { FORM: f.de },
@@ -1079,9 +1122,13 @@ const SHOTS = {
   bulb_top: () => { set({ form: IDX.bulb, w: 0, petrel: false }); look([0, 330, 0.01], [0, SHIP_Y, 0]); draw(); },
   octa_turned: () => { set({ form: IDX.octa, w: 0.6 }); VIEWS.three_quarter(); draw(); },
   delta_damaged: () => { set({ form: IDX.delta, w: 0, damage: 0.8 }); VIEWS.three_quarter(); draw(); },
-  truss: () => { set({ form: IDX.truss, w: 0 }); VIEWS.three_quarter(); draw(); },
-  truss_close: () => { set({ form: IDX.truss, w: 0, petrel: false }); VIEWS.close(); draw(); },
-  truss_top: () => { set({ form: IDX.truss, w: 0, petrel: false }); look([0, 330, 0.01], [0, SHIP_Y, 0]); draw(); },
+  kifs: () => { set({ form: IDX.kifs, w: 0 }); VIEWS.three_quarter(); draw(); },
+  kifs_close: () => { set({ form: IDX.kifs, w: 0, petrel: false }); VIEWS.close(); draw(); },
+  kifs_top: () => { set({ form: IDX.kifs, w: 0, petrel: false }); look([0, 330, 0.01], [0, SHIP_Y, 0]); draw(); },
+  // along the reference render's own camera line (Mandelbulber's z up is this page's y; its x is the hull's z), 3.2 units out
+  kifs_it2: () => { set({ form: IDX.kifs, w: 0, petrel: false }); const u = FORMS[IDX.kifs].length_m / (2 * FORMS[IDX.kifs].box[2]);
+    look([2.05 * u, SHIP_Y + 1.12 * u, 2.12 * u], [0, SHIP_Y + 0.05 * u, 0]); draw(); },
+  kifs_rounded: () => { set({ form: IDX.kifs, w: 1, petrel: false }); VIEWS.close(); draw(); },
   pine_side: () => { set({ form: IDX.pine, w: 0, petrel: false }); look([300, SHIP_Y + 4, 0], [0, SHIP_Y, 0]); draw(); },   // broadside, as the reference is drawn
   lattice_wrecked: () => { set({ form: IDX.lattice, w: 0, damage: 1 }); VIEWS.three_quarter(); draw(); },
   julia_wrecked: () => { set({ form: IDX.julia, w: 0, damage: 1 }); VIEWS.three_quarter(); draw(); },
