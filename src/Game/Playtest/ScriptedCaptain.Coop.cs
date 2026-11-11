@@ -35,11 +35,12 @@ public sealed partial class ScriptedCaptain
     // it; a crew member says they are on station and answers a directive with Aye. All through the console's own keys.
     private Battle? _talkedIn;
     private bool _said, _pinged, _directed;
+    private double _pingTried = double.MinValue;
 
     private async Task CoopEach()
     {
         if (_x.Coop is not { Battle: { } bt } co) return;
-        if (_talkedIn != bt) { _talkedIn = bt; _said = _pinged = _directed = false; }
+        if (_talkedIn != bt) { _talkedIn = bt; _said = _pinged = _directed = false; _pingTried = double.MinValue; }
         if (!_said)
         {
             _said = true;
@@ -51,16 +52,18 @@ public sealed partial class ScriptedCaptain
         }
         if (co.IsHost && _x.MyTarget() is { } t)
         {
-            if (!_pinged)
+            // tried each pass until it lands (a target off the view cannot be clicked), at most every 3 s
+            if (!_pinged && bt.T - _pingTried > 3)
             {
-                _pinged = true;
+                _pingTried = bt.T;
                 // the target where the view shows it, else the plane at its place (off screen: the view's edge toward it)
                 int before = co.Events.Count;
                 if (await Click("v.ping") == null)
                 {
                     if (await Select(t.Id) != null) await ClickPlane(t.X, t.Z);
                     await Frames(3);
-                    GD.Print(co.Events.Count > before ? $"PLAYTEST_COOP pinged the {t.Name} at {bt.T:0} s" : $"PLAYTEST_COOP ping of the {t.Name} not placed (off the view)");
+                    _pinged = co.Events.Count > before;
+                    if (_pinged) GD.Print($"PLAYTEST_COOP pinged the {t.Name} at {bt.T:0} s");
                     _x.State.PlacingPing = false;
                 }
             }
