@@ -293,7 +293,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships) if (s.Alive) SystemsStep(s, dt);
         foreach (Ship s in _ships)
         {
-            if (!s.Alive || s.Struck || s == Player || Helmed.Contains(s.Id)) continue;
+            if (!s.Alive || s.Struck || s == Player && !FlagUnmanned || Helmed.Contains(s.Id)) continue;
             s.ThinkT -= dt;
             if (s.ThinkT <= 0) { s.ThinkT = Tuning.AiThinkS; Think(s); }
         }

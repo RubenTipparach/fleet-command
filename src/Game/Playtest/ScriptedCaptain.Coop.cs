@@ -44,7 +44,7 @@ public sealed partial class ScriptedCaptain
         if (!_said)
         {
             _said = true;
-            await ChatSay(co.IsHost ? "Battle stations." : $"On station: {string.Join(", ", co.Crew.Roles.List.Where(r => co.Crew.HolderOf(co.Crew.BridgeOf(co.Me), r.Id) == co.Me).Select(r => r.Name))}.");
+            await ChatSay(co.IsHost ? "Battle stations." : $"On station: {string.Join(", ", co.Crew.Roles.List.Where(r => co.Crew.Opens(co.Me, r.Id)).Select(r => r.Name))}.");
         }
         if (!co.IsHost && co.DirectiveFor(co.Me) != null)
         {
@@ -122,9 +122,20 @@ public sealed partial class ScriptedCaptain
             }
             case "crew_role": case "crew_ship":
             {
+                // "role=member", or "role=member@n" for the roles of the n-th ship of the fleet after the flagship
                 string[] p = b.Arg.Split('=');
                 string what = p[0];
-                int to = int.Parse(p[1]);
+                string[] tp = p[1].Split('@');
+                bool take = tp[0].StartsWith("-");
+                int to = int.Parse(tp[0].TrimStart('-'));
+                string? onShip = null;
+                if (tp.Length > 1)
+                {
+                    Ship[] fleet = B.Fleet().Where(s => s != co.Flag && !s.Fixed).ToArray();
+                    int n = int.Parse(tp[1]) - 1;
+                    if (n < 0 || n >= fleet.Length) return $"crew_role: no ship {tp[1]}";
+                    onShip = fleet[n].Id;
+                }
                 if (b.Do == "crew_ship")
                 {
                     // ships are given in a battle: off the battle screen it waits for the next one (LaunchAndFight)
@@ -137,10 +148,12 @@ public sealed partial class ScriptedCaptain
                 // a role in the roles grid, a ship in the assignments: both on the Fleet station's Crew view
                 string? open = await OpenCrew();
                 if (open != null) return open;
+                if (onShip != null && await Click($"fl.rb.{onShip}") is { } nb) return nb;
                 string id = b.Do == "crew_role" ? $"crew.role.{what}.{to}" : $"fl.as.{to}.{what}";
                 // a role held by the member already is a lit box: pressing it would hand it back, so leave it
-                bool held = b.Do == "crew_role" && co.Crew.HolderOf(co.Crew.BridgeOf(co.Me), what) == to;
-                string? st = held ? null : await Click(id);
+                // a grant is a toggle: pressed only when it is not already as asked ("-member" takes it back)
+                bool held = b.Do == "crew_role" && co.Crew.Holds(onShip ?? co.Crew.BridgeOf(to), what, to);
+                string? st = b.Do == "crew_role" && held != take ? null : await Click(id);
                 await Frames(20);
                 await Snap($"crew-{b.Do}-{what}");
                 if (b.Do == "crew_role" && _x.CrewOpen) await Click("crew.done");
@@ -148,6 +161,19 @@ public sealed partial class ScriptedCaptain
                 return st;
             }
             case "dock": return await Dock();
+            case "admiral_bridge":
+            {
+                // the admiral steps onto the n-th ship of the fleet after the flagship (0: back to the flagship), from the
+                // Tactical station's Bridge row
+                int n = int.Parse(b.Arg == "" ? "0" : b.Arg);
+                Ship[] fleet = B.Fleet().Where(s => s != co.Flag && !s.Fixed).ToArray();
+                string key = n == 0 ? Crew.Flag : fleet[n - 1].Id;
+                string? st = await Click("st.tactical") ?? await Click($"cs.br.{key}");
+                await Frames(10);
+                await Snap($"admiral-bridge-{n}");
+                GD.Print($"PLAYTEST_COOP admiral on {co.NameOfBridge(co.Crew.AdmiralAt)}'s bridge, flagship {(B.FlagUnmanned ? "flown by the AI" : "manned")}");
+                return st;
+            }
             case "crew_session": return await CrewSession(int.Parse(b.Arg == "" ? "1" : b.Arg), b.Seconds > 0 ? b.Seconds : 7200);
         }
         return null;
@@ -210,10 +236,10 @@ public sealed partial class ScriptedCaptain
             }
             Battle bt = co.Battle;
             // the admiral gives roles and ships in the battle's first seconds: the seat is read once they settle
-            await Seconds(4);
+            await Seconds(8);
             string bridge = co.Crew.BridgeOf(co.Me);
             bool captain = co.Crew.CaptainOf(bridge) == co.Me;
-            var mine = co.Crew.Roles.List.Where(r => co.Crew.HolderOf(bridge, r.Id) == co.Me).Select(r => r.Id).ToList();
+            var mine = co.Crew.Roles.List.Where(r => co.Crew.Holds(bridge, r.Id, co.Me)).Select(r => r.Id).ToList();
             GD.Print($"PLAYTEST_COOP battle {k + 1} {bt.Scenario.Id}: {(captain ? $"captain of the {co.OwnShip()?.Name}" : $"on the {co.OwnShip()?.Name} holding {string.Join(", ", mine)}")}");
             await Snap($"crew-battle-{k + 1}");
             // a station the member holds is opened, as a player would look at it first

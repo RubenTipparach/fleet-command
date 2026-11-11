@@ -34,6 +34,7 @@ public sealed partial class Battle
         U((ulong)Steps);
         S(Over);
         S(Player.Id);
+        U(FlagUnmanned ? 1UL : 0UL);
         Part("time");
         foreach (Ship s in _ships)
         {

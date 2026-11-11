@@ -24,6 +24,8 @@ public sealed partial class ConsoleState
     public bool PlacingHet;
     /// <summary>Co-op: the Comms station shows the bridge's roles grid (its Crew key) in place of the latest log lines.</summary>
     public bool CrewShown;
+    /// <summary>Co-op: the bridge whose roles the Fleet station's Crew view shows (null: this player's own).</summary>
+    public string? CrewBridge;
     /// <summary>Co-op: the targeting stations this player's locks go to (the Lock for keys); none, every one they hold.</summary>
     public readonly System.Collections.Generic.HashSet<string> LockFor = new();
     /// <summary>Co-op: the view's Ping key is waiting for a click on a ship or a point.</summary>

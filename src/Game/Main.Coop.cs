@@ -54,6 +54,10 @@ public sealed partial class Main
             LockFor = () => _x.State.LockFor.OrderBy(r => r, StringComparer.Ordinal).ToList(),
             Clock = () => (long)Time.GetTicksMsec(),
         };
+        // off a battle (the campaign map), the crew is set up against the campaign's fleet (owner, 2026-11-11: "This can be set
+        // up in the campaign map before missions too at any point")
+        ls.FleetOffBattle = CampFleet;
+        ls.ShipName = id => CampFleet().FirstOrDefault(f => f.Key == id).Name;
         // every crew event goes into the battle's log too, in its sender's name (the log is no part of the checksum)
         ls.OnEvent = e =>
         {
@@ -105,6 +109,16 @@ public sealed partial class Main
         return true;
     }
 
+    // the campaign last seen: the admiral's own, or on a crew peer the copy its last mission was built from
+    private Campaign.Campaign? _lastCamp;
+
+    // the campaign's fleet as crew bridges: its flagship as Crew.Flag, every other ship by its battle id (MissionRun.Plan's "own" ids)
+    private IReadOnlyList<(string Key, string Name)> CampFleet()
+    {
+        if ((_flow?.Camp ?? _lastCamp) is not { } c) return Array.Empty<(string, string)>();
+        return c.S.Fleet.Select((s, i) => (i == 0 ? Crew.Flag : $"own{s.Id}", s.Name)).ToList();
+    }
+
     // this machine's address on the local network, to show the crew where to join
     private static string LanAddress() =>
         IP.GetLocalAddresses().FirstOrDefault(a => a.StartsWith("192.168.") || a.StartsWith("10.") || a.StartsWith("172.")) ?? "this machine";
@@ -128,7 +142,11 @@ public sealed partial class Main
             else { m["kind"] = "scenario"; m["id"] = sc.Id; }
             _net!.Broadcast(m);
         }
-        ls.Begin(_x.Battle);
+        // a mission's battle keeps the crew of every ship still in the campaign's fleet (one sitting this battle out too); a
+        // skirmish, of every ship in it
+        bool mission = ls.IsHost ? _flow?.Running != null : _x.State.InMission;
+        var fleet = mission ? CampFleet().Select(f => f.Key).ToHashSet() : null;
+        ls.Begin(_x.Battle, fleet == null ? null : id => fleet.Contains(id));
         _crewOverT = 0;
         GD.Print($"COOP_BATTLE {sc.Id} as {ls.Crew.NameOf(ls.Me)} on {ls.OwnShip()?.Name}");
     }
@@ -152,7 +170,7 @@ public sealed partial class Main
                 _x.State.Goals = null;
                 if ((string?)m["kind"] == "mission")
                 {
-                    var camp = Campaign.Campaign.Load(_campData, (string)m["save"]!);
+                    var camp = _lastCamp = Campaign.Campaign.Load(_campData, (string)m["save"]!);
                     int id = (int)m["offer"]!;
                     Offer offer = camp.S.Missions.First(o => o.Id == id);
                     MissionPlan plan = MissionRun.Plan(camp, offer, _x.Data) ?? throw new InvalidOperationException($"mission {id} has no battle");

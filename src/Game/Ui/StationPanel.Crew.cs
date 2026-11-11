@@ -34,15 +34,15 @@ public sealed partial class StationPanel
         Text((cap == 0 ? "AI" : crew.NameOf(cap)).ToUpperInvariant(), x + 110, y + 26, 18, cap == 0 ? C.Lilac : CrewColors.Of(cap, C.Sky), HorizontalAlignment.Left, w - 110, 600, 1);
         y += 44;
         // who stands on this bridge: name, then each station they hold with its lock
-        // the admiral first, on every ship, every station theirs to work (those another holds dimmed); then its own crew
+        // the admiral first, on every ship, holding every station; then its own crew with the stations granted them
         foreach (CrewMember m in crew.Members.Where(m => m.Id == Crew.AdmiralId || crew.BridgeOf(m.Id) == key).OrderBy(m => m.Id))
         {
             Text(m.Name.ToUpperInvariant(), x, y + 18, 15, CrewColors.Of(m.Id, C.Sky), HorizontalAlignment.Left, 104, 600, 1);
             float xx = x + 110;
             bool adm = m.Id == Crew.AdmiralId;
-            foreach (RoleDef r in crew.Roles.List.Where(r => adm || crew.HolderOf(key, r.Id) == m.Id))
+            foreach (RoleDef r in crew.Roles.List.Where(r => crew.Holds(key, r.Id, m.Id)))
             {
-                bool theirs = crew.HolderOf(key, r.Id) == m.Id;
+                bool theirs = true;
                 // each station's icon (dimmed: the admiral's access to a station another holds), its lock on hover
                 var ir = new Rect2(xx, y + 2, 22, 22);
                 Kit.Icon(this, r.Icon, ir, new Color(CrewColors.Of(m.Id, C.Sky), theirs ? 1 : 0.4f));
@@ -74,41 +74,7 @@ public sealed partial class StationPanel
     {
         if (X.Coop is not { } co) return;
         Rect2 rest = CrewStrip(b);
-        // the assignments: every crew member and the ship they are on, a key per ship of the fleet (the admiral sends them:
-        // owner, 2026-11-11: "I don't see how you are assigning crew members to a specific ship"); then this bridge's roles
-        // grid, its rows sized so up to eight players fit
-        Crew crew = co.Crew;
-        bool admiral = co.Me == Crew.AdmiralId;
-        var members = crew.Members.Where(m => m.Id != Crew.AdmiralId).ToList();
-        Ship[] ships = co.Battle == null ? Array.Empty<Ship>() : new[] { co.Flag ?? B.Player }.Concat(B.Fleet().Where(s => s != (co.Flag ?? B.Player) && !s.Fixed)).ToArray();
-        string here = crew.BridgeOf(co.Me);
-        int rows = crew.Members.Count(m => m.Id == Crew.AdmiralId || crew.BridgeOf(m.Id) == here);
-        float assignH = members.Count > 0 && ships.Length > 0 ? 24 + members.Count * 32 : 0;
-        float rowH = Math.Clamp((rest.Size.Y - 60 - assignH) / Math.Max(1, rows), 24, 44);
-        float y = rest.Position.Y, x = rest.Position.X, w = rest.Size.X;
-        if (assignH > 0)
-        {
-            Lbl(admiral ? "Assign to ship" : "Assignments", x, y + 14, w);
-            y += 22;
-            float nw = Math.Min(110, w * 0.26f), tw = (w - nw) / ships.Length;
-            foreach (CrewMember m in members)
-            {
-                Text(m.Name.ToUpperInvariant(), x, y + 20, 15, CrewColors.Of(m.Id, C.Sky), HorizontalAlignment.Left, nw - 6, 600, 1);
-                string at = crew.BridgeOf(m.Id);
-                for (int i = 0; i < ships.Length; i++)
-                {
-                    Ship s = ships[i];
-                    string key = i == 0 ? Crew.Flag : s.Id;
-                    int mid = m.Id;
-                    bool captain = crew.CaptainOf(key) == m.Id;
-                    Tab($"fl.as.{m.Id}.{s.Id}", new Rect2(x + nw + i * tw, y, tw - 4, 28), captain ? $"★ {s.Name}" : s.Name,
-                        () => co.AskCrew(new JsonObject { ["op"] = "assign", ["member"] = mid, ["bridge"] = key }), at == key, null, !admiral);
-                }
-                y += 32;
-            }
-            y += 4;
-        }
-        RolesGrid(co, x, y, w, rowH);
+        CrewManager(co, rest);
     }
 
     /// <summary>Draws the co-op strip at the top of <paramref name="b"/> and returns the room left under it.</summary>

@@ -30,6 +30,10 @@ public sealed partial class Ship
 
 public sealed partial class Battle
 {
+    /// <summary>No player stands on the flagship's bridge (the admiral stepped onto another ship, no crew aboard it): the AI
+    /// flies it until someone is back. Set by the lockstep from the crew, the same on every peer.</summary>
+    public bool FlagUnmanned;
+
     /// <summary>The ships players command besides the admiral's (Player between steps), by id, in a stable order.</summary>
     public readonly SortedSet<string> Helmed = new(StringComparer.Ordinal);
 
@@ -173,7 +177,7 @@ public sealed partial class Battle
     public void ViewAs(Ship ship) => Player = ship;
 
     /// <summary>The ships the players command now: the admiral's first, then the others by id.</summary>
-    public IEnumerable<Ship> Commanded() => new[] { Player }.Concat(Helmed.Select(ShipById).Where(s => s is { Alive: true } && s != Player)!)!;
+    public IEnumerable<Ship> Commanded() => (FlagUnmanned ? Array.Empty<Ship>() : new[] { Player }).Concat(Helmed.Select(ShipById).Where(s => s is { Alive: true } && s != Player)!)!;
 
     // the targets a lock moves: the sender's roles on a crewed ship (and the main target if the captain sent it), else the
     // ship's one target

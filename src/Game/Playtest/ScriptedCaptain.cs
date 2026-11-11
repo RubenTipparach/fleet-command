@@ -28,7 +28,7 @@ public sealed partial class ScriptedCaptain : Node
     public static readonly string[] Kinds =
         { "wait_ready", "pick_scene", "click", "press", "station", "expand", "collapse", "arm", "helm", "fight", "hold", "wheel", "snap",
           "wait_screen", "end_turn", "move", "contract", "mine_at", "shift_click", "pin_grid", "fleet_wingman", "drag", "power", "align", "warp", "hunt", "select", "repeat", "until_over", "meet", "cash_out", "offer", "loiter", "port", "all_out", "fire", "type",
-          "wait_crew", "crew_role", "crew_ship", "dock", "crew_session" };
+          "wait_crew", "crew_role", "crew_ship", "dock", "crew_session", "admiral_bridge" };
 
     private ConsoleContext _x = null!;
     private Func<IEnumerable<IControlSource>> _sources = null!;
@@ -156,7 +156,7 @@ public sealed partial class ScriptedCaptain : Node
             // a weapons test scene: fire on the locked target for s seconds, from where the ship stands (no helm order)
             case "fire": return await Fight(b.Seconds > 0 ? b.Seconds : 30, steer: false);
             // co-op's beats (ScriptedCaptain.Coop.cs)
-            case "wait_crew": case "crew_role": case "crew_ship": case "dock": case "crew_session": return await CoopBeat(b);
+            case "wait_crew": case "crew_role": case "crew_ship": case "dock": case "crew_session": case "admiral_bridge": return await CoopBeat(b);
             default: return $"no beat '{b.Do}'";
         }
     }

@@ -164,11 +164,11 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         foreach (FleetCommand.Coop.RoleDef r in roles)
         {
             var at = new Rect2(x0, y, Sz, Sz);
-            bool mine = co.Crew.HolderOf(bridge, r.Id) == co.Me;
+            bool mine = co.Crew.Holds(bridge, r.Id, co.Me);
             DrawCircle(at.GetCenter(), Sz / 2 + 2, new Color(0, 0, 0, 0.7f), true, -1, true);
             DrawArc(at.GetCenter(), Sz / 2 + 2, 0, Mathf.Tau, 24, mine ? C.Sky : C.Lilac, 1.5f, true);
             _x.Kit.Icon(this, r.Icon, at.Grow(-4), mine ? C.Sky : C.Lilac);
-            _ui.Reg($"v.role.{s.Id}.{r.Id}", at, null, null, new Tip($"{r.Name}: {co.Crew.NameOf(co.Crew.HolderOf(bridge, r.Id))}"));
+            _ui.Reg($"v.role.{s.Id}.{r.Id}", at, null, null, new Tip($"{r.Name}: {string.Join(", ", co.Crew.HoldersOf(bridge, r.Id).Select(co.Crew.NameOf).Prepend(co.Crew.NameOf(FleetCommand.Coop.Crew.AdmiralId)))}"));
             x0 += Sz + Gap;
         }
     }

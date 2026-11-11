@@ -88,17 +88,24 @@ public sealed class Lockstep
 
     /// <summary>Starts sharing a battle that every peer has just built from the same scenario: its orders go through the
     /// lockstep from now on, the flagship keeps a target per role, and the ships given to members are theirs.</summary>
-    public void Begin(Battle b)
+    public void Begin(Battle b, Func<string, bool>? inFleet = null)
     {
+        // assignments carry from battle to battle; one to a ship gone from the fleet (sold, destroyed) is dropped, its crew back
+        // to the flagship (owner, 2026-11-11: "it persists from mission to mission until a ship is sold or destroyed", "Then any
+        // dangling crew members default to admiral ship")
+        Crew.Prune(inFleet ?? (id => b.ShipById(id) is { Alive: true, Side: 0 }));
+        // the flagship is the admiral's: a crew member's ship that became the flagship (the last one lost) goes back to them
+        if (Crew.Ships.ContainsKey(b.Player.Id)) Crew.Release(Crew.AdmiralId, b.Player.Id);
         Battle = b;
         Ticks = 0;
         _ticks.Clear(); _orders.Clear(); _ops.Clear();
         _flag = b.Player;
         Crew.AdmiralAt = Crew.Flag;   // each battle begins with the admiral on the flagship's bridge
+        b.FlagUnmanned = false;
         b.CrewShip(b.Player.Id);
+        // a crewed ship in this battle is flown by its crew, not the AI (one sitting this battle out keeps its crew for the next)
         foreach (string id in Crew.Ships.Keys.ToList())
             if (b.ShipById(id) is { Alive: true, Side: 0 } s && s != b.Player) b.SetHelmed(id, true);
-            else Crew.Ships.Remove(id);
         b.Relay = Local;
         ViewOwn();
     }
@@ -409,6 +416,7 @@ public sealed class Lockstep
                 {
                     if (!Crew.Ships.ContainsKey(Crew.AdmiralAt)) b.SetHelmed(Crew.AdmiralAt, false);
                     Crew.AdmiralAt = Crew.Flag;
+                    b.FlagUnmanned = false;
                 }
                 string bridge = Crew.BridgeOf(by);
                 Ship ship = bridge == Crew.Flag ? b.Player : b.ShipById(bridge) ?? b.Player;
@@ -422,7 +430,18 @@ public sealed class Lockstep
             if ((bool?)t["step"] == true) b.Step();
             _flag = b.Player;
             // the admiral's ship lost and command passed to a ship a member captains: that ship is the admiral's now
-            if (Crew.Ships.Remove(_flag.Id)) { b.SetHelmed(_flag.Id, false); CrewChanged?.Invoke(); }
+            if (Crew.Ships.ContainsKey(_flag.Id)) { Crew.Release(Crew.AdmiralId, _flag.Id); b.SetHelmed(_flag.Id, false); CrewChanged?.Invoke(); }
+            // a ship destroyed: everyone on its bridge back to the flagship's (owner, 2026-11-11: "any dangling crew members
+            // default to admiral ship"), the admiral too
+            bool moved = false;
+            foreach (string id in Crew.Ships.Keys.Where(id => b.ShipById(id) is not { Alive: true }).ToList()) { Crew.Release(Crew.AdmiralId, id); moved = true; }
+            if (Crew.AdmiralAt != Crew.Flag && b.ShipById(Crew.AdmiralAt) is not { Alive: true }) { Crew.AdmiralAt = Crew.Flag; moved = true; }
+            if (moved)
+            {
+                b.FlagUnmanned = Crew.AdmiralAt != Crew.Flag && !Crew.On(Crew.Flag).Any();
+                LocalEvent(Crew.AdmiralId, "a ship lost: her crew back on the flagship's bridge");
+                CrewChanged?.Invoke();
+            }
             ViewOwn();
         }
     }
@@ -434,19 +453,23 @@ public sealed class Lockstep
         switch ((string?)op["op"])
         {
             case "role":
-                why = Crew.GiveRole(by, (string?)op["role"] ?? "", to);
+                // a grant on a bridge, or (on false) taken back; roles are not exclusive
+                why = Crew.GrantRole(by, (string?)op["bridge"] ?? Crew.BridgeOf(to), (string?)op["role"] ?? "", to, (bool?)op["on"] ?? true);
                 break;
             case "ship":
+            {
+                // a ship to a member (as "assign" to an AI ship), or back to the AI (to the admiral)
                 string ship = (string?)op["ship"] ?? "";
-                if (Battle != null && (Battle.ShipById(ship) is not { Alive: true, Side: 0, Fixed: false } s || s == (_flag ?? Battle.Player))) { why = "not a ship of the fleet the admiral can give"; break; }
-                string? had = Crew.Ships.Where(kv => kv.Value == to).Select(kv => kv.Key).FirstOrDefault();
-                why = Crew.GiveShip(by, ship, to);
-                if (why == null && Battle != null)
+                if (to == Crew.AdmiralId)
                 {
-                    if (had != null) Battle.SetHelmed(had, false);
-                    Battle.SetHelmed(ship, to != Crew.AdmiralId);
+                    why = Crew.Release(by, ship);
+                    if (why == null && Battle != null && Crew.AdmiralAt != ship) Battle.SetHelmed(ship, false);
+                    break;
                 }
-                break;
+                op["op"] = "assign"; op["member"] = to; op["bridge"] = ship;
+                ApplyCrew(op);
+                return;
+            }
             case "assign":
             {
                 string at = (string?)op["bridge"] ?? "";
@@ -477,32 +500,53 @@ public sealed class Lockstep
                 break;
             default: why = "unknown change"; break;
         }
+        if (Battle != null) Battle.FlagUnmanned = Crew.AdmiralAt != Crew.Flag && !Crew.On(Crew.Flag).Any();
         if (why != null) Note($"COOP_REFUSED {Crew.NameOf(by)} {(string?)op["op"]}: {why}");
         else
         {
             Note($"COOP_CREW {Crew.NameOf(by)} {(string?)op["op"]} {(string?)op["role"] ?? (string?)op["ship"]} to {Crew.NameOf(to)}");
             string what = (string?)op["op"] == "role" ? Crew.Roles[(string)op["role"]!].Name
-                : Battle?.ShipById((string?)op["ship"])?.Name is { } sn ? $"command of the {sn}" : "a ship";
+                : $"the {NameOfBridge((string?)op["ship"] ?? "")}";
             bool ship = (string?)op["op"] == "ship";
             if ((string?)op["op"] == "assign")
             {
                 string at = (string?)op["bridge"] ?? "";
-                string place = at == Crew.Flag ? $"the {_flag?.Name ?? "flagship"}" : $"the {Battle?.ShipById(at)?.Name ?? at}";
+                string place = $"the {NameOfBridge(at)}";
                 LocalEvent(by, Crew.CaptainOf(at) == to ? $"gave command of {place} to {Crew.NameOf(to)}" : $"sent {Crew.NameOf(to)} to {place}");
                 CrewChanged?.Invoke();
                 return;
             }
             if ((string?)op["op"] == "bridge")
             {
-                string where = (string?)op["bridge"] == Crew.Flag ? $"the {_flag?.Name ?? "flagship"}'s" : $"the {Battle?.ShipById((string?)op["bridge"])?.Name ?? "ship"}'s";
+                string where = $"the {NameOfBridge((string?)op["bridge"] ?? "")}'s";
                 LocalEvent(by, $"moved to {where} bridge");
                 CrewChanged?.Invoke();
                 return;
             }
-            LocalEvent(by, ship && to == Crew.AdmiralId ? $"gave {what} back to the AI" : !ship && to == Crew.CaptainOf(Crew.BridgeOf(by)) ? $"took back {what}" : $"gave {what} to {Crew.NameOf(to)}");
+            if (ship) { LocalEvent(by, $"gave {what} back to the AI"); CrewChanged?.Invoke(); return; }
+            string onShip = NameOfBridge((string?)op["bridge"] ?? Crew.BridgeOf(to));
+            LocalEvent(by, (bool?)op["on"] ?? true ? $"gave {what} on the {onShip} to {Crew.NameOf(to)}" : $"took {what} on the {onShip} from {Crew.NameOf(to)}");
         }
         CrewChanged?.Invoke();
     }
+
+    /// <summary>The fleet's ships off a battle (the campaign's, on the map): the flagship as Crew.Flag first, set by the game.</summary>
+    public Func<IReadOnlyList<(string Key, string Name)>> FleetOffBattle = () => Array.Empty<(string, string)>();
+
+    /// <summary>The ships crew can be sent to: in a battle, the flagship (as Crew.Flag) and every other living ship of the
+    /// fleet that is not a fixed station; off a battle, the campaign's fleet.</summary>
+    public IReadOnlyList<(string Key, string Name)> Fleet()
+    {
+        if (Battle is not { } b || _flag is not { } flag) return FleetOffBattle();
+        return new[] { (Crew.Flag, flag.Name) }.Concat(b.Fleet().Where(s => s != flag && !s.Fixed).Select(s => (s.Id, s.Name))).ToList();
+    }
+
+    /// <summary>A ship's name by id outside a battle (the campaign's fleet on the map), set by the game.</summary>
+    public Func<string, string?> ShipName = _ => null;
+
+    /// <summary>A bridge's ship name: the flagship's, a ship of the battle, else the campaign's name for it.</summary>
+    public string NameOfBridge(string bridge) =>
+        bridge == Crew.Flag ? _flag?.Name ?? ShipName(Crew.Flag) ?? "flagship" : Battle?.ShipById(bridge)?.Name ?? ShipName(bridge) ?? bridge;
 
     // ---- The roster on the wire --------------------------------------------------------------------------------------
 
@@ -511,19 +555,19 @@ public sealed class Lockstep
     {
         var members = new JsonArray(); foreach (CrewMember m in c.Members) members.Add(new JsonObject { ["id"] = m.Id, ["name"] = m.Name });
         var ships = new JsonObject(); foreach (var (k, v) in c.Ships) ships[k] = v;
-        var held = new JsonObject(); foreach (var (k, v) in c.Held) held[k] = v;
+        var grants = new JsonArray(); foreach (string g in c.Grants) grants.Add(g);
         var aboard = new JsonObject(); foreach (var (k, v) in c.Aboard) aboard[k.ToString()] = v;
-        return new JsonObject { ["members"] = members, ["ships"] = ships, ["held"] = held, ["aboard"] = aboard, ["admiral_at"] = c.AdmiralAt };
+        return new JsonObject { ["members"] = members, ["ships"] = ships, ["grants"] = grants, ["aboard"] = aboard, ["admiral_at"] = c.AdmiralAt };
     }
 
     /// <summary>Replaces a roster with one sent as JSON (CrewJson).</summary>
     public static void ReadCrew(Crew c, JsonObject j)
     {
-        c.Members.Clear(); c.Ships.Clear(); c.Held.Clear(); c.Aboard.Clear();
+        c.Members.Clear(); c.Ships.Clear(); c.Grants.Clear(); c.Aboard.Clear();
         c.AdmiralAt = (string?)j["admiral_at"] ?? Crew.Flag;
         if (j["aboard"] is JsonObject ab) foreach (var (k, v) in ab) c.Aboard[int.Parse(k)] = (string)v!;
         foreach (JsonNode? m in j["members"]!.AsArray()) c.Members.Add(new CrewMember((int)m!["id"]!, (string)m["name"]!));
         foreach (var (k, v) in j["ships"]!.AsObject()) c.Ships[k] = (int)v!;
-        foreach (var (k, v) in j["held"]!.AsObject()) c.Held[k] = (int)v!;
+        foreach (JsonNode? g in j["grants"]!.AsArray()) c.Grants.Add((string)g!);
     }
 }

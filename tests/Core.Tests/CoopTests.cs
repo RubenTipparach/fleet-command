@@ -72,11 +72,11 @@ public class CoopTests
         CrewMember b = c.Join("B");
         Assert.True(c.OpensTab(Crew.AdmiralId, "st.helm"));
         Assert.False(c.OpensTab(b.Id, "st.helm"));
-        Assert.Null(c.GiveRole(Crew.AdmiralId, "helm", b.Id));
+        Assert.Null(c.GrantRole(Crew.AdmiralId, Crew.Flag, "helm", b.Id, true));
         Assert.True(c.OpensTab(b.Id, "st.helm"));
         Assert.False(c.OpensTab(b.Id, "st.tactical"));
         Assert.True(c.OpensTab(Crew.AdmiralId, "st.helm"));
-        Assert.NotNull(c.GiveRole(b.Id, "weapons", b.Id));   // only the captain assigns
+        Assert.NotNull(c.GrantRole(b.Id, Crew.Flag, "weapons", b.Id, true));   // only the admiral or the ship's captain grants
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class CoopTests
     }
 
     [Fact]
-    public void Weapons_and_science_keep_their_own_targets_and_the_captain_steps_in_from_a_tab()
+    public void Weapons_and_science_keep_their_own_targets_and_the_admiral_retargets_one_with_lock_for()
     {
         var p = new Pair(Sc("concord_battle"));
         p.Host.AskCrew(new JsonObject { ["op"] = "role", ["role"] = "science", ["to"] = p.Guest.Me });
@@ -124,8 +124,8 @@ public class CoopTests
         Assert.Equal(foes[0].Id, p.HB.TargetOf(me, "helm")?.Id);
         Assert.Equal(foes[1].Id, p.HB.TargetOf(me, "science")?.Id);
         Assert.Equal(foes[1].Id, p.GB.TargetOf(p.GB.Player, "science")?.Id);
-        // the admiral, from the Science tab, retargets science alone
-        p.Host.OpenTab = () => "st.science";
+        // the admiral, with Lock for set to Science, retargets science alone
+        p.Host.LockFor = () => new[] { "science" };
         p.HB.Lock(foes[0].Id);
         p.Steps(1);
         Assert.Equal(foes[0].Id, p.HB.TargetOf(p.HB.Player, "science")?.Id);
@@ -213,7 +213,7 @@ public class CoopTests
         p.Host.AskCrew(new JsonObject { ["op"] = "ship", ["ship"] = wings[0].Id, ["to"] = p.Guest.Me });
         p.Steps(1);
         // the one player on the wingman holds every role there
-        foreach (RoleDef r in R.List) Assert.Equal(p.Guest.Me, p.Host.Crew.HolderOf(wings[0].Id, r.Id));
+        foreach (RoleDef r in R.List) Assert.True(p.Host.Crew.Holds(wings[0].Id, r.Id, p.Guest.Me));
         // the admiral opens every role and every tab wherever they stand, and steps onto an AI wingman to fly it
         Assert.All(R.List, r => Assert.True(p.Host.Crew.Opens(Crew.AdmiralId, r.Id)));
         p.Host.AskCrew(new JsonObject { ["op"] = "bridge", ["bridge"] = wings[1].Id });
@@ -260,6 +260,72 @@ public class CoopTests
         Assert.DoesNotContain(wing.Id, p.HB.Helmed);
         // only the admiral assigns
         Assert.NotNull(p.Host.Crew.Assign(p.Guest.Me, third, Crew.Flag, false));
+        Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+    }
+
+    [Fact]
+    public void Two_players_on_one_ship_split_its_roles_as_the_admiral_filters_them()
+    {
+        var p = new Pair(Sc("concord_battle"));
+        int third = p.Host.HostJoin("Desktop");
+        p.Flush();
+        Ship wing = p.HB.Fleet().First(s => s != p.HB.Player);
+        p.Host.AskCrew(new JsonObject { ["op"] = "assign", ["member"] = p.Guest.Me, ["bridge"] = wing.Id });
+        p.Host.AskCrew(new JsonObject { ["op"] = "assign", ["member"] = third, ["bridge"] = wing.Id });
+        // the admiral, from the flagship, gives the second player the wingman's weapons and science
+        p.Host.AskCrew(new JsonObject { ["op"] = "role", ["role"] = "weapons", ["to"] = third, ["bridge"] = wing.Id });
+        p.Host.AskCrew(new JsonObject { ["op"] = "role", ["role"] = "science", ["to"] = third, ["bridge"] = wing.Id });
+        p.Steps(1);
+        Crew c = p.Host.Crew;
+        Assert.True(c.Holds(wing.Id, "weapons", third));
+        Assert.True(c.Holds(wing.Id, "science", third));
+        Assert.True(c.Holds(wing.Id, "weapons", p.Guest.Me));     // roles are not exclusive: the captain keeps weapons too
+        Assert.True(c.Holds(wing.Id, "helm", p.Guest.Me));
+        Assert.False(c.Opens(third, "helm"));
+        Assert.NotNull(c.Refuses(third, "Turn"));
+        Assert.Null(c.Refuses(third, "Fire"));
+        // the captain may filter their own bridge too, but not the flagship's
+        Assert.Null(c.GrantRole(p.Guest.Me, wing.Id, "tractor", third, true));
+        Assert.NotNull(c.GrantRole(p.Guest.Me, Crew.Flag, "tractor", third, true));
+        // the admiral takes a grant back
+        p.Host.AskCrew(new JsonObject { ["op"] = "role", ["role"] = "science", ["to"] = third, ["bridge"] = wing.Id, ["on"] = false });
+        p.Steps(1);
+        Assert.False(c.Holds(wing.Id, "science", third));
+        Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+    }
+
+    [Fact]
+    public void Assignments_carry_to_the_next_battle_until_the_ship_is_gone()
+    {
+        var c = new Crew(R, "Admiral");
+        CrewMember b = c.Join("B"), d = c.Join("D");
+        Assert.Null(c.Assign(Crew.AdmiralId, b.Id, "own2", aiShip: true));
+        Assert.Null(c.Assign(Crew.AdmiralId, d.Id, "own2", aiShip: false));
+        Assert.Null(c.GrantRole(Crew.AdmiralId, "own2", "weapons", d.Id, true));
+        c.Prune(id => id == "own2");                       // the next mission: the ship still in the fleet
+        Assert.Equal("own2", c.BridgeOf(d.Id));
+        Assert.True(c.Holds("own2", "weapons", d.Id));
+        c.Prune(_ => false);                               // sold or destroyed: everyone back to the admiral's ship
+        Assert.Equal(Crew.Flag, c.BridgeOf(b.Id));
+        Assert.Equal(Crew.Flag, c.BridgeOf(d.Id));
+        Assert.False(c.Holds("own2", "weapons", d.Id));
+    }
+
+    [Fact]
+    public void The_ai_flies_an_empty_flagship_and_a_lost_ships_crew_goes_back_to_it()
+    {
+        var p = new Pair(Sc("concord_battle"));
+        Ship wing = p.HB.Fleet().First(s => s != p.HB.Player);
+        p.Host.AskCrew(new JsonObject { ["op"] = "assign", ["member"] = p.Guest.Me, ["bridge"] = wing.Id });
+        p.Host.AskCrew(new JsonObject { ["op"] = "bridge", ["bridge"] = wing.Id });
+        p.Steps(1);
+        Assert.True(p.HB.FlagUnmanned);
+        Assert.True(p.GB.FlagUnmanned);
+        p.HB.ShipById(wing.Id)!.Alive = false; p.GB.ShipById(wing.Id)!.Alive = false;   // the wingman lost, the same on both
+        p.Steps(120);
+        Assert.Equal(Crew.Flag, p.Host.Crew.BridgeOf(p.Guest.Me));
+        Assert.Equal(Crew.Flag, p.Host.Crew.AdmiralAt);
+        Assert.False(p.HB.FlagUnmanned);
         Assert.Equal(p.Host.Sum(), p.Guest.Sum());
     }
 

@@ -34,14 +34,11 @@ public sealed partial class CrewCard : ConsolePanel
         Crew crew = co.Crew;
         DrawRect(new Rect2(Vector2.Zero, Size), Lobby ? new Color(0.01f, 0.012f, 0.03f, 1) : new Color(0, 0, 0, 0.78f));
         Ui.Reg("crew.block", new Rect2(Vector2.Zero, Size));
-        var roles = crew.Roles.List;
         string bridge = crew.BridgeOf(co.Me);
-        int captain = crew.CaptainOf(bridge);
-        bool amCaptain = captain == co.Me, admiral = co.Me == Crew.AdmiralId;
-        // the crew on this bridge: its captain, those holding a role on it, and (for its captain) everyone on no other bridge
-        var aboard = crew.Members.Where(m => crew.BridgeOf(m.Id) == bridge && (m.Id == captain || !crew.Ships.ContainsValue(m.Id))).ToList();
-        float rowH = 50, w = Math.Min(1100, Size.X - 32);
-        float h = 140 + (aboard.Count + 1) * rowH + (co.Battle == null ? 40 + crew.Members.Count * 30 : 0) + 80;
+        bool amCaptain = crew.CaptainOf(bridge) == co.Me, admiral = co.Me == Crew.AdmiralId;
+        // tall enough for the assignments (a row a crew member) and a bridge's roles grid (a row a member on it)
+        float w = Math.Min(1100, Size.X - 32);
+        float h = 230 + crew.Members.Count * 32 + 36 + (crew.Members.Count + 1) * 44 + 80;
         var at = new Rect2((Size.X - w) / 2, Math.Max(16, (Size.Y - h) / 2), w, Math.Min(h, Size.Y - 32));
         Shapes.RoundRect(this, new Rect2(at.Position, new Vector2(w - 21, at.Size.Y)), Sk.R.Sheet, 24, 0, 0, 24);
         Rect2 b = Frame(at, Lobby ? "Bridge crew" : "Captain's menu", false);
@@ -55,23 +52,11 @@ public sealed partial class CrewCard : ConsolePanel
         if (Status.Length > 0) { Text(Status, x0, y + 18, 15, C.Text, HorizontalAlignment.Left, bw); }
         y += 30;
 
-        y += RolesGrid(co, x0, y, bw, rowH);
+        // the crew manager (assignments and each bridge's roles), the Fleet station's Crew view's own drawing
+        float mh = Math.Max(240, at.End.Y - y - (Lobby ? 20 : 70));
+        CrewManager(co, new Rect2(x0, y, bw, mh));
+        y += mh;
 
-        // the whole crew between battles (in a battle, each ship's captain and bridge crew are on the Fleet station)
-        if (co.Battle == null)
-        {
-            y += 10;
-            Text("CREW", x0, y + 16, 15, C.Lilac, HorizontalAlignment.Left, bw, 700, 1);
-            y += 26;
-            foreach (CrewMember m in crew.Members)
-            {
-                string at2 = crew.BridgeOf(m.Id) == Crew.Flag ? "the flagship" : crew.BridgeOf(m.Id);
-                string held = string.Join(", ", roles.Where(r => crew.HolderOf(crew.BridgeOf(m.Id), r.Id) == m.Id).Select(r => r.Name));
-                X.Fonts.DrawRich(this, new[] { (m.Name.ToUpperInvariant() + "  ", CrewColors.Of(m.Id, C.Sky)),
-                    ($"{(crew.CaptainOf(crew.BridgeOf(m.Id)) == m.Id ? "captain of " : "on ")}{at2}{(held.Length > 0 ? " · " + held : "")}", C.Text) }, x0, y + 22, 16, bw);
-                y += 30;
-            }
-        }
         if (!Lobby) Button("crew.done", new Rect2(x0 + bw - 200, b.End.Y - 50, 200, 44), "Done", () => X.CrewOpen = false);
     }
 }
