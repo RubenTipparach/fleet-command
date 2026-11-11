@@ -48,6 +48,8 @@ public sealed partial class Main
             Note = line => GD.Print(line),
             OpenTab = () => "st." + _x.State.Station,
         };
+        // the window says whose seat it is, so a recorder (and a player with two windows) can tell them apart
+        GetWindow().Title = $"Fleet Command · {(host ? "Admiral" : "Crew")} {name}";
         _net = new CoopNet { Name = "CoopNet" };
         AddChild(_net);
         _x.Coop = ls;
@@ -61,7 +63,7 @@ public sealed partial class Main
         {
             if (_net.Join(ls, _args["join"], name) != Error.Ok) { GD.PushError($"COOP_JOIN cannot reach {_args["join"]}"); return; }
             _net.OnFlow = CrewFlow;
-            _net.OnLost = () => { _crew.Status = "The connection to the admiral was lost."; Waiting(true); };
+            _net.OnLost = () => { ls.Lost = true; _crew.Status = "The connection to the admiral was lost."; Waiting(true); };
             _crew.Status = $"Joining {_args["join"]}...";
             ls.CrewChanged = () => { if (_net.Connected && ls.Battle == null) _crew.Status = "Waiting for the admiral to start a battle."; };
             Waiting(true);
@@ -163,9 +165,10 @@ public sealed partial class Main
         int played = ls.Play(want);
         if (played < want) _acc = 0;
         _x.StepShare = Math.Clamp(_acc / step, 0, 1);
-        if (ls.Battle.Over != null && (_crewOverT += delta) > 4 && !_crew.Lobby)
+        // the admiral's stop may have arrived while playing (the battle is no longer shared)
+        if (ls.Battle is { Over: not null } && (_crewOverT += delta) > 4 && !_crew.Lobby)
         {
-            _crew.Status = $"Battle over: {ls.Battle.Over}. Waiting for the admiral.";
+            _crew.Status = $"Battle over: {ls.Battle?.Over}. Waiting for the admiral.";
             Waiting(true);
         }
         return true;

@@ -146,7 +146,12 @@ public sealed partial class Main : Node
         if (_args.ContainsKey("layout-test")) CallDeferred(nameof(RunLayoutTest));
         else if (_args.ContainsKey("parity-test")) _ = RunParityTest();
         else if (_args.TryGetValue("still", out string? still)) _ = Still(still);
-        else if (_args.ContainsKey("checksum")) { foreach (string line in Coop.Determinism.Probe(_x.Data)) GD.Print($"CHECKSUM {line}"); GetTree().Quit(); }
+        else if (_args.TryGetValue("checksum", out string? sumOf))
+        {
+            foreach (string line in sumOf.Length > 0 ? Coop.Determinism.Detail(_x.Data, sumOf) : Coop.Determinism.Probe(_x.Data)) GD.Print($"CHECKSUM {line}");
+            _x = null!;   // nothing else runs: the frame loop sees no console
+            GetTree().Quit();
+        }
         else if (_args.TryGetValue("playtest", out string? script)) StartPlaytest(script);
     }
 

@@ -31,6 +31,8 @@ public sealed class Lockstep
     public bool IsHost { get; }
     /// <summary>The battle being shared, or null between battles.</summary>
     public Battle? Battle { get; private set; }
+    /// <summary>A crew peer: the connection to the host was lost.</summary>
+    public bool Lost { get; set; }
     /// <summary>Ticks applied this battle.</summary>
     public long Ticks { get; private set; }
     /// <summary>Checksums compared and found equal, and found different (a crew peer's count; the host checks none).</summary>

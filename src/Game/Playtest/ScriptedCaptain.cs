@@ -177,7 +177,7 @@ public sealed partial class ScriptedCaptain : Node
         double closest = double.MaxValue;
         string? closestOf = null;
         bool ordered = false, hadTarget = false;
-        double lastPoint = double.MinValue, nearestFoe = double.MaxValue;
+        double lastPoint = double.MinValue, nearestFoe = double.MaxValue, lastTend = double.MinValue;
         string? steering = null, commanding = B.Player.Id;
         while (B.Over == null && B.T - t0 < maxS && !CrewIdle())
         {
@@ -185,6 +185,14 @@ public sealed partial class ScriptedCaptain : Node
             if (!me.Alive) break;
             // command passed to another ship (the last one was lost): its helm has had no order yet
             if (me.Id != commanding) { commanding = me.Id; ordered = false; }
+            // the core: a captain who holds Engineering brings the coils back when the reactor runs hot or misaligned, as a
+            // player watching the Power station would (a campaign ship's coils drift and its core melts down untended)
+            if (_x.Opens("st.power") && B.T - lastTend > 8 && (Rules.Misalignment(me) > 0.1 || me.Reactor.Temp >= B.Data.Systems.Reactor.CriticalPct * 0.85))
+            {
+                lastTend = B.T;
+                GD.Print($"PLAYTEST_REACTOR {B.T:0} s: core {me.Reactor.Temp:0}%, misaligned {Rules.Misalignment(me):0.00}: aligning");
+                await Align();
+            }
             // a battle with marker beacons and no enemy left: steer for the next beacon shown, by clicking it, as a player would
             if (B.Scenario.Markers != null && !B.EnemiesOf(me).Any())
             {
@@ -447,6 +455,7 @@ public sealed partial class ScriptedCaptain : Node
         if (flow.Screen == FlowScreen.Battle)
         {
             await Frames(30);
+            await GiveWaitingShip();
             await Snap($"battle-{m.Script}");
             string? stalled = await Fight(maxBattleS, take: m.Script == Campaign.Campaign.RaidScript);
             if (stalled != null || B.Over == null) { how = "withdrew: " + (stalled ?? "out of time"); await Click("menu"); await Click("m.withdraw"); if (_x.State.MenuOpen) await Click("m.resume"); }

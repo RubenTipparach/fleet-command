@@ -12,6 +12,20 @@ namespace FleetCommand.Coop;
 
 public static class Determinism
 {
+    /// <summary>One scenario's checksum by part at every <paramref name="every"/> steps up to <paramref name="steps"/> (the
+    /// same orders as Probe), one line per part and checkpoint: "step part hash".</summary>
+    public static IEnumerable<string> Detail(GameData data, string scenario, int steps = 1000, int every = 100)
+    {
+        var b = new Battle(data, data.ScenarioById(scenario));
+        for (int i = 1; i <= steps; i++)
+        {
+            if (i % 90 == 1) { b.NextTarget(); b.HelmOrder("intercept"); }
+            if (i % 15 == 0) b.Fire();
+            b.Step();
+            if (i % every == 0) foreach (var (part, h) in b.ChecksumParts()) yield return $"{i} {part} {h:x16}";
+        }
+    }
+
     /// <summary>Each scenario's checksum after every <paramref name="every"/> steps up to <paramref name="steps"/>, one line
     /// per scenario: "id hash hash ...".</summary>
     public static IEnumerable<string> Probe(GameData data, int steps = 3000, int every = 1000)

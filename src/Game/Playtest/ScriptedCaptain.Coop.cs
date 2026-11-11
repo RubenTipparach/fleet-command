@@ -20,6 +20,17 @@ namespace FleetCommand.Game.Playtest;
 
 public sealed partial class ScriptedCaptain
 {
+    // a ship to give at the start of the next battle (crew_ship off the battle screen)
+    private Beat? _shipToCrew;
+
+    /// <summary>At a battle's start: the ship hand-over that was waiting for it.</summary>
+    private async Task GiveWaitingShip()
+    {
+        if (_shipToCrew is not { } b) return;
+        _shipToCrew = null;
+        if (await CoopBeat(b) is { } why) GD.Print($"PLAYTEST_COOP crew_ship {b.Arg} not done: {why}");
+    }
+
     // a crew peer with no battle shared (between battles, or the admiral's battle stopped)
     private bool CrewIdle() => _x.Coop is { IsHost: false, Battle: null };
 
@@ -48,7 +59,8 @@ public sealed partial class ScriptedCaptain
                 int to = int.Parse(p[1]);
                 if (b.Do == "crew_ship")
                 {
-                    if (co.Battle == null) return "crew_ship: no battle (ships are given in a battle)";
+                    // ships are given in a battle: off the battle screen it waits for the next one (LaunchAndFight)
+                    if (co.Battle == null || _flow is { Screen: not FlowScreen.Battle }) { _shipToCrew = b; GD.Print($"PLAYTEST_COOP crew_ship {b.Arg} at the next battle"); return null; }
                     Ship[] others = B.Fleet().Where(s => s != co.Flag).ToArray();
                     int i = int.Parse(what) - 1;
                     if (i < 0 || i >= others.Length) return $"crew_ship: the fleet has {others.Length} ships besides the flagship";
@@ -122,6 +134,7 @@ public sealed partial class ScriptedCaptain
         {
             while (co.Battle == null || co.Battle.Over != null)
             {
+                if (co.Lost) { GD.Print($"PLAYTEST_COOP the admiral left after {k} battles"); return co.Desyncs > 0 ? $"{co.Desyncs} desyncs" : null; }
                 if (Time.GetTicksMsec() > end) return $"only {k} of {battles} battles started in {maxS:0} s";
                 await Frames(10);
             }
