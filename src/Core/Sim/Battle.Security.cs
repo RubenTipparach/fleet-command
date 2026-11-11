@@ -170,6 +170,7 @@ public sealed partial class Battle
     /// <summary>Sends one of your teams to a room: walking the corridors, or beamed there with a pad charge.</summary>
     public void SecurityGo(string teamId, string roomId, bool beam)
     {
+        if (Sent(nameof(SecurityGo), teamId, roomId, beam)) return;
         Ship s = Player;
         if (s.Sec is not { } sec || sec.Teams.FirstOrDefault(q => q.Id == teamId) is not { } u || !sec.Plan.HasRoom(roomId)) return;
         DeckRoom r = sec.Plan.Room(roomId);

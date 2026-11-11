@@ -27,6 +27,7 @@ public sealed partial class Battle
     /// <summary>Scan target: starts scanning the locked target (a scan of it already under way carries on).</summary>
     public void Scan()
     {
+        if (Sent(nameof(Scan))) return;
         Ship s = Player;
         if (TargetOf(s, "science") is not { } t) return;
         s.ScanP = s.ScanId == t.Id ? s.ScanP : 0;
@@ -40,13 +41,14 @@ public sealed partial class Battle
     /// sensors' energy leaves after the other.</summary>
     public void SetEw(bool eccm, int n)
     {
+        if (Sent(nameof(SetEw), eccm, n)) return;
         Ship s = Player;
         int other = eccm ? s.Ecm : s.Eccm, v = Math.Clamp(n, 0, Math.Max(0, Math.Min(Cs.Sensors.EwCells, s.Power["sensors"] - other)));
         if (eccm) s.Eccm = v; else s.Ecm = v;
     }
 
     /// <summary>Active (false) or passive (true) sensors for the commanded ship.</summary>
-    public void SetPassive(bool passive) => Player.Passive = passive;
+    public void SetPassive(bool passive) { if (Sent(nameof(SetPassive), passive)) return; Player.Passive = passive; }
 
     // ECM and ECCM fit inside the sensors' energy: when it is cut, ECM keeps what it can, then ECCM.
     private void ClampEw(Ship s)

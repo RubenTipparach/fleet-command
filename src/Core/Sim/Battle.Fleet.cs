@@ -31,6 +31,7 @@ public sealed partial class Battle
     /// <summary>Gives every living wingman one stance (the fleet orders: all attack, form on me, all hold, hunt).</summary>
     public void FleetOrder(Stance stance)
     {
+        if (Sent(nameof(FleetOrder), stance)) return;
         foreach (Ship s in _ships) if (s.Side == Player.Side && s != Player && s.Alive) s.Stance = stance;
         Say("Comms", $"Fleet: {StanceName(stance)}.");
     }
@@ -39,13 +40,13 @@ public sealed partial class Battle
     private Ship? Wingman(string id) => ShipById(id) is { Alive: true } s && s.Side == Player.Side && s != Player ? s : null;
 
     /// <summary>A wingman's stance.</summary>
-    public void SetStance(string id, Stance v) { if (Wingman(id) is { } s) s.Stance = v; }
+    public void SetStance(string id, Stance v) { if (Sent(nameof(SetStance), id, v)) return; if (Wingman(id) is { } s) s.Stance = v; }
     /// <summary>A wingman's target rule.</summary>
-    public void SetRule(string id, TargetRule v) { if (Wingman(id) is { } s) s.Rule = v; }
+    public void SetRule(string id, TargetRule v) { if (Sent(nameof(SetRule), id, v)) return; if (Wingman(id) is { } s) s.Rule = v; }
     /// <summary>A wingman's fighting range.</summary>
-    public void SetRange(string id, Data.AiRange v) { if (Wingman(id) is { } s) s.Range = v; }
+    public void SetRange(string id, Data.AiRange v) { if (Sent(nameof(SetRange), id, v)) return; if (Wingman(id) is { } s) s.Range = v; }
     /// <summary>When a wingman retreats.</summary>
-    public void SetRetreat(string id, RetreatAt v) { if (Wingman(id) is { } s) s.Retreat = v; }
+    public void SetRetreat(string id, RetreatAt v) { if (Sent(nameof(SetRetreat), id, v)) return; if (Wingman(id) is { } s) s.Retreat = v; }
     /// <summary>Whether a wingman holds its fire.</summary>
-    public void SetHoldFire(string id, bool hold) { if (Wingman(id) is { } s) s.HoldFire = hold; }
+    public void SetHoldFire(string id, bool hold) { if (Sent(nameof(SetHoldFire), id, hold)) return; if (Wingman(id) is { } s) s.HoldFire = hold; }
 }

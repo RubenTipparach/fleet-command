@@ -76,8 +76,9 @@ public sealed partial class Battle
         Player = ship;
         OrderRoles = roles;
         OrderFromCaptain = captain;
+        _inside++;
         try { order(); }
-        finally { OrderRoles = null; OrderFromCaptain = true; }
+        finally { _inside--; OrderRoles = null; OrderFromCaptain = true; }
         Ship now = Player;
         if (!isAdmiral)
         {
@@ -86,6 +87,81 @@ public sealed partial class Battle
             Player = admiral;
         }
         return now;
+    }
+
+    /// <summary>Every order the battle relays on a networked peer (each starts with Sent(nameof(...))); a test checks the two
+    /// agree.</summary>
+    public static readonly IReadOnlySet<string> RelayedOrders = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "Aim", "AimRaid", "AlignCoil", "AllStop", "ArmOne", "BeamDown", "CancelWithdraw", "DropMine", "EmergencyStop",
+        "EndWithdrawn", "Energize", "EnergizeAll", "Fire", "FireBarrage", "FireOne", "FleetOrder", "Hail",
+        "HelmOrder", "HelmTo", "Het", "HetTo", "JumpNow", "LaunchFighters", "LaunchShuttle", "Lock", "Lose",
+        "NextTarget", "OfficerNext", "Pin", "PinSelected", "PlaceMine", "PlotCourse", "QueueRole", "RaidKind",
+        "RangeFire", "RangeRun", "RangeShields", "RangeStop", "RecallFighters", "RecallParty", "Reel", "Reinforce",
+        "RepairDropped", "RepairFirst", "RepairMove", "Scan", "ScanPlanet", "SecurityGo", "SelectGroup",
+        "SelectPlanet", "SetAlert", "SetArming", "SetCoil", "SetEw", "SetFlow", "SetHoldFire", "SetHoldKm",
+        "SetMission", "SetOverdraw", "SetPassive", "SetPd", "SetPower", "SetRange", "SetRetreat", "SetRule",
+        "SetRunRange", "SetSpeed", "SetStance", "SpeedStep", "Sweep", "TakeCommand", "ToggleAutoFire", "ToggleCloak",
+        "ToggleErratic", "ToggleMount", "ToggleOrbitDir", "ToggleOverride", "ToggleShields", "ToggleVolley",
+        "ToggleWithdraw", "TractorBreak", "TractorHold", "Transfer", "Turn", "Unlock", "UnpinAll", "Unqueue",
+        "WarpKey", "Win", "Withdraw"
+    };
+
+    /// <summary>Set on a networked peer (Coop.Lockstep): an order given from outside the battle (a key, a click, the
+    /// scripted captain, the game flow) is handed to this, by name and arguments, instead of being applied, so it reaches
+    /// every peer's battle at the same step. Orders the battle gives itself (inside a step or an order) are applied.</summary>
+    public Action<string, object?[]>? Relay;
+
+    // how deep the battle is inside a step or an applied order
+    private int _inside;
+
+    // true when the order was handed to Relay (and so must not be applied here)
+    private bool Sent(string name, params object?[] args)
+    {
+        if (Relay == null || _inside > 0) return false;
+        Relay(name, args);
+        return true;
+    }
+
+    /// <summary>Applies a relayed order by name, its arguments as sent (numbers, text, true/false, enum names, null), on the
+    /// battle as it stands (ApplyAs sets the ship and roles). An order that is unknown or whose arguments do not fit
+    /// changes nothing and returns false.</summary>
+    public bool ApplyCall(string name, IReadOnlyList<object?> args)
+    {
+        foreach (System.Reflection.MethodInfo mi in typeof(Battle).GetMethods())
+        {
+            if (mi.Name != name) continue;
+            System.Reflection.ParameterInfo[] ps = mi.GetParameters();
+            if (ps.Length != args.Count || ps.Any(q => q.ParameterType == typeof(Ship))) continue;
+            var vals = new object?[ps.Length];
+            bool ok = true;
+            for (int i = 0; i < ps.Length && ok; i++) ok = Coerce(args[i], ps[i].ParameterType, out vals[i]);
+            if (!ok) continue;
+            _inside++;
+            try { mi.Invoke(this, vals); }
+            finally { _inside--; }
+            return true;
+        }
+        return false;
+    }
+
+    // one sent value as a parameter's type (numbers arrive as double, long or text; enums as their names)
+    private static bool Coerce(object? v, Type t, out object? r)
+    {
+        r = null;
+        Type? under = Nullable.GetUnderlyingType(t);
+        if (v == null) return under != null || !t.IsValueType;
+        Type u = under ?? t;
+        try
+        {
+            if (u == typeof(string)) { r = v as string; return r != null; }
+            if (u == typeof(bool)) { r = Convert.ToBoolean(v, System.Globalization.CultureInfo.InvariantCulture); return true; }
+            if (u == typeof(double)) { r = Convert.ToDouble(v, System.Globalization.CultureInfo.InvariantCulture); return double.IsFinite((double)r); }
+            if (u == typeof(int)) { r = Convert.ToInt32(v, System.Globalization.CultureInfo.InvariantCulture); return true; }
+            if (u.IsEnum) { r = v is string s ? Enum.Parse(u, s) : Enum.ToObject(u, Convert.ToInt32(v, System.Globalization.CultureInfo.InvariantCulture)); return Enum.IsDefined(u, r); }
+        }
+        catch (Exception e) when (e is FormatException or InvalidCastException or OverflowException or ArgumentException) { return false; }
+        return false;
     }
 
     /// <summary>Shows the battle as one ship's captain sees it (the console and view read Player): the lockstep puts the

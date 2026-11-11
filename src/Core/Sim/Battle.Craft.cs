@@ -44,6 +44,7 @@ public sealed partial class Battle
     /// <summary>Launches every fighter in the bay on the ship's mission.</summary>
     public void LaunchFighters()
     {
+        if (Sent(nameof(LaunchFighters))) return;
         Ship s = Player;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
         if (!s.Alive || s.Fighters <= 0) return;
@@ -58,12 +59,14 @@ public sealed partial class Battle
     /// <summary>Recalls the ship's fighters to the bay.</summary>
     public void RecallFighters()
     {
+        if (Sent(nameof(RecallFighters))) return;
         foreach (Craft c in _craft) if (c.Home == Player.Id && c.Kind == "fighter") c.Recall = true;
     }
 
     /// <summary>The fighters' mission, for those in the bay and those flying: attack, defend or defences.</summary>
     public void SetMission(string mission)
     {
+        if (Sent(nameof(SetMission), mission)) return;
         if (!ScenarioExtras.Missions.Contains(mission)) return;
         Player.Mission = mission;
         foreach (Craft c in _craft) if (c.Home == Player.Id && c.Kind == "fighter") c.Mission = mission;
@@ -72,6 +75,7 @@ public sealed partial class Battle
     /// <summary>Launches a disguised shuttle at the locked target.</summary>
     public void LaunchShuttle()
     {
+        if (Sent(nameof(LaunchShuttle))) return;
         Ship s = Player;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
         Ship? t = TargetOf(s, "weapons");
@@ -84,6 +88,7 @@ public sealed partial class Battle
     /// <summary>Fires a missile barrage at the locked target: a salvo, or what is left in the racks.</summary>
     public void FireBarrage()
     {
+        if (Sent(nameof(FireBarrage))) return;
         Ship s = Player;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
         if (TargetOf(s, "weapons") == null || s.Missiles <= 0 || s.Barrage > 0 || !s.Alive) return;

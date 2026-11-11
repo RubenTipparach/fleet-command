@@ -165,6 +165,7 @@ public sealed partial class Battle
     /// <summary>Sets a coil's offset by hand (the diagram's drag), -1 to 1.</summary>
     public void SetCoil(int i, double offset)
     {
+        if (Sent(nameof(SetCoil), i, offset)) return;
         double[] c = Player.Reactor.Coils;
         if (i < 0 || i >= c.Length || !double.IsFinite(offset)) return;
         c[i] = Math.Clamp(offset, -1, 1);
@@ -173,6 +174,7 @@ public sealed partial class Battle
     /// <summary>Nudges a coil one step toward (or away from) alignment: dir is -1 or 1.</summary>
     public void AlignCoil(int i, int dir)
     {
+        if (Sent(nameof(AlignCoil), i, dir)) return;
         double[] c = Player.Reactor.Coils;
         if (i < 0 || i >= c.Length || dir is not (-1 or 1)) return;
         c[i] = Math.Clamp(c[i] + dir * Data.Systems.Reactor.Nudge, -1, 1);
@@ -181,6 +183,7 @@ public sealed partial class Battle
     /// <summary>Sets a coolant loop's pump flow, within flow_max and what the output leaves (lowering it is always allowed).</summary>
     public void SetFlow(int j, int n)
     {
+        if (Sent(nameof(SetFlow), j, n)) return;
         CoolantLoop[] loops = Player.Reactor.Loops;
         if (j < 0 || j >= loops.Length) return;
         CoolantLoop l = loops[j];
@@ -189,5 +192,5 @@ public sealed partial class Battle
     }
 
     /// <summary>Lets the allocation draw past the reactor's output, or not (off by default).</summary>
-    public void SetOverdraw(bool on) => Player.Overdraw = on;
+    public void SetOverdraw(bool on) { if (Sent(nameof(SetOverdraw), on)) return; Player.Overdraw = on; }
 }

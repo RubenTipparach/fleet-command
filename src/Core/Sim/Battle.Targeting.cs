@@ -60,6 +60,7 @@ public sealed partial class Battle
     /// <summary>Aims at the hull, a subsystem, or one of the locked target's weapons ("w:" and its mount index).</summary>
     public void Aim(string aim)
     {
+        if (Sent(nameof(Aim), aim)) return;
         if (!Strike.Valid(aim, TargetOf(Player, "weapons")) || Player.Aim == aim) return;
         Player.Aim = aim;
         Say("Tactical", $"Aiming at {Strike.Name(aim, TargetOf(Player, "weapons")).ToLowerInvariant()}.");
@@ -71,6 +72,7 @@ public sealed partial class Battle
     /// <summary>Pins one of the commanded ship's weapons to an enemy with the captain's aim; the same pin again unpins it.</summary>
     public void Pin(int mount, string shipId)
     {
+        if (Sent(nameof(Pin), mount, shipId)) return;
         if (mount < 0 || mount >= Player.Mounts.Count) return;
         Mount m = Player.Mounts[mount];
         if (m.Weapon.IsPointDefence || ShipById(shipId) is not { Alive: true } t || t.Side == Player.Side) return;
@@ -82,6 +84,7 @@ public sealed partial class Battle
     /// <summary>Pins every selected weapon to the locked enemy with the captain's aim.</summary>
     public void PinSelected()
     {
+        if (Sent(nameof(PinSelected))) return;
         if (TargetOf(Player, "weapons") is not { } t || t.Side == Player.Side) return;
         Mount[] sel = Player.Mounts.Where(m => m.Selected && !m.Weapon.IsPointDefence).ToArray();
         if (sel.Length == 0) return;
@@ -94,12 +97,13 @@ public sealed partial class Battle
     /// <summary>Unpins every weapon.</summary>
     public void UnpinAll()
     {
+        if (Sent(nameof(UnpinAll))) return;
         foreach (Mount m in Player.Mounts) m.Pin = null;
         Say("Tactical", "All weapons unpinned.");
     }
 
     /// <summary>Sets point defence's mode (the Point defence station).</summary>
-    public void SetPd(PdMode mode) => Player.Pd = mode;
+    public void SetPd(PdMode mode) { if (Sent(nameof(SetPd), mode)) return; Player.Pd = mode; }
 
     /// <summary>Whether a ship's point defence fires on enemy craft (fighters, shuttles) now: on Auto or Craft. The hook for
     /// the craft package (Battle.Craft.cs) to shoot craft down with; shots in flight are PointDefenceStep's, on Auto or

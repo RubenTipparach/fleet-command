@@ -151,6 +151,7 @@ public sealed partial class Battle
     /// <summary>The Withdraw key: a withdrawal ordered, or, pressed again while one is under way, called off.</summary>
     public bool ToggleWithdraw()
     {
+        if (Sent(nameof(ToggleWithdraw))) return false;
         if (Withdrawing) { CancelWithdraw(); return true; }
         return Withdraw();
     }
@@ -160,6 +161,7 @@ public sealed partial class Battle
     /// Returns false when refused.</summary>
     public bool Withdraw()
     {
+        if (Sent(nameof(Withdraw))) return false;
         if (Over != null || Withdrawing || !Player.Alive) return false;
         if (!Scenario.CanWithdraw)
         {
@@ -184,12 +186,13 @@ public sealed partial class Battle
     /// grade a withdrawal, never for the player (who warps out by Withdraw).</summary>
     public void EndWithdrawn()
     {
+        if (Sent(nameof(EndWithdrawn))) return;
         if (Over != null) return;
         Over = "withdrawn";
     }
 
     /// <summary>The mission's objectives are met (a battle that ends on its objectives): it is won where it stands.</summary>
-    public void Win() { if (Over == null) { Over = "won"; Say("Tactical", "Objectives complete."); } }
+    public void Win() { if (Sent(nameof(Win))) return; if (Over == null) { Over = "won"; Say("Tactical", "Objectives complete."); } }
 
     private readonly HashSet<string> _reached = new();
     private double _lastHurtT;
@@ -216,7 +219,7 @@ public sealed partial class Battle
     }
 
     /// <summary>The battle is lost though ships of side 0 still fly (a mission whose own fleet is gone, its wingmen left).</summary>
-    public void Lose() { if (Over == null) Over = "lost"; }
+    public void Lose() { if (Sent(nameof(Lose))) return; if (Over == null) Over = "lost"; }
 
     public void Say(string who, string text)
     {
@@ -263,6 +266,14 @@ public sealed partial class Battle
         double.IsNaN(sh.PX) ? (sh.X, sh.Z) : (sh.PX + (sh.X - sh.PX) * a, sh.PZ + (sh.Z - sh.PZ) * a);
 
     public void Step()
+    {
+        // inside a step every order the AI or a system gives is applied, never relayed (Battle.Crew.cs)
+        _inside++;
+        try { StepOnce(); }
+        finally { _inside--; }
+    }
+
+    private void StepOnce()
     {
         if (Over != null) return;
         double dt = Tuning.StepS;

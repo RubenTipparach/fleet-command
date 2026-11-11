@@ -58,7 +58,8 @@ public static partial class DataLoader
         systems.CheckComms(classes);
         AudioCues audio = AudioCues.Load(J("audio/cues.json"));
         SoundMap sounds = SoundMap.Load(J("audio/events.json"), audio);
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems, Audio = audio, Sounds = sounds };
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems, Audio = audio, Sounds = sounds,
+            CoopRoles = Coop.Roles.Load(J("coop/roles.json"), Sim.Battle.RelayedOrders) };
     }
 
     /// <summary>The damage range (data/battle/range.json): every program's weapons exist, and its numbers are in range.</summary>

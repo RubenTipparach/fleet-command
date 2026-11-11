@@ -81,6 +81,7 @@ public sealed partial class Battle
     /// <summary>Scan planet: the planet selected (SelectPlanet) is scanned from within the survey reach.</summary>
     public void ScanPlanet()
     {
+        if (Sent(nameof(ScanPlanet))) return;
         if (_planets.FirstOrDefault(p => p.Id == PlanetDest) is not { } pl) { Say("Science", "No planet selected to scan."); return; }
         if (pl.Scanned) { Say("Science", $"{pl.Name} is already surveyed."); return; }
         _planetScan = pl.Id;
@@ -111,6 +112,7 @@ public sealed partial class Battle
     /// <summary>Beam down: an away team of up to the field's team size of marines to an installation on a planet.</summary>
     public bool BeamDown(string planet, string site)
     {
+        if (Sent(nameof(BeamDown), planet, site)) return false;
         if (CannotBeamDown(planet, site) is { } why) { Say("Transport", why); return false; }
         Ship s = Player;
         Planet pl = _planets.First(p => p.Id == planet);
