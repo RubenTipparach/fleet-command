@@ -82,7 +82,7 @@ icefractal.com.
 - Each form has its own step share (`uStepK`): 0.85 for the exact folds, 0.8 for the Mandelbulb and 0.5 for the Benesi
   pine, whose estimate overshoots.
 
-**The new forms**, each in its own program as before:
+**The new forms** (v3), each in its own program as before:
 
 | Form | Length | Function | The slider |
 |---|---|---|---|
@@ -102,6 +102,61 @@ icefractal.com.
   It was ported and left out, because it came out a solid cube: its folds keep every point within the box from escaping.
   The article gives no values for its power and fold limit, and those are what decide whether it opens up. A port with
   the article's own values is a task (7.1).
+
+## D3b. Version 4: the Benesi truss, damage, and a firing range
+
+The owner, 2026-11-11:
+- "benisi pine doesnt look like thereference", then, with the "KIFS x T Benesi Mag Forward" render: "this is what I wwas
+  referring to";
+- "I love the damage amount, 100% should appear more damaged, make a testing scene for me to shoot it with phasers and
+  torpedos!";
+- with an "Abox - Mod Kali" render: "this is also another cool one we can try out too".
+
+**The ribbed truss.** Mandelbulber's Benesi Mag Forward turn, read in its source (GPLv3, so only the maths is used), is a
+rotation and nothing else: `t = x sqrt(2/3) - z sqrt(1/3)`, then `((t - y) sqrt(1/2), (t + y) sqrt(1/2), x sqrt(1/3) +
+z sqrt(2/3))`. It turns space onto the diagonal. v3's mirror-and-turn-back was wrong, and that is why it collapsed.
+
+Running the hybrid in a test harness (the turn, then the kaleidoscopic fold) got the render's silhouette when the turn ran
+on the first two iterations only: a crown, three arms round a triangular centre, and a keel. It did not get the walls.
+The render's look is a structure, so the truss builds that structure on purpose:
+- a Sierpinski octahedron drawn as a frame, every level's edges ribbed beams (40 rings an edge, fading before they are
+  finer than three pixels) with rounded caps at the corners;
+- every level is kept, so each face is a triangle of beams round a triangular opening with the next level nested in it;
+- the Benesi turn on the third fold twists the inner levels;
+- three trusses overlap into a spear;
+- the slider is the beam weight.
+
+**The pine** is now Benesi's own power 2 rule, as Mandelbulber writes it:
+- the square's sign is flipped where the seed is forward of the waist and the point is farther along the axis than from
+  it;
+- round the axis the turn is -2 |x| / r;
+- it steps at 0.3 with twice the steps.
+
+Its broadside (`pine_side`) is the CC0 "Benesi - Pwr2" render's kind of shape: a needle, flaring into a body.
+
+**Damage at 100%:**
+- folds lost: 55% (v3's 70% melted the Julia slice);
+- the hull is charred by three octaves of value noise on a PCG hash, in streaked patches up to about half its area, with
+  flickering ember lines along their edges;
+- each damage hole is mirrored across the centreline and half again as large, with a dimmer glow round it.
+
+v3 had also commented out the line that hands the slider's damage to the shader. That is fixed, so the slider works again.
+
+**The firing range.**
+- **Firing.** Under Fire, pick Phaser or Torpedo, then click or tap a vessel; a drag still orbits.
+- **Where a shot lands.**
+  - Each visible vessel is drawn with its own march in a `PICK` program into a 1 x 1 float target at the clicked pixel.
+    The target holds the hit point in the vessel's space and which vessel it was, so no shape has a second copy.
+  - The pick takes the screen's pixel size. Its own 1 x 1 size first made every ray stop at the box.
+- **Phaser:** a beam from the Petrel's bow (or just off the camera when the Petrel is hidden) burns a 2.6 m groove with
+  an ember line that cools over 20 s.
+- **Torpedo:** it flies for 0.7 s, bursts, and blows a 6.5 m hole with a glowing rim and a ring of char.
+- **Hits kept:** each vessel keeps its last 24.
+- **Repair all** clears the hits and the damage.
+
+**Left out:**
+- **The Abox.** A Mandelbox at scale -1.5 cut to a hull showed only its solid inside, a plain block. The render's twisted
+  beams come from the Kali modification's own folds and rotations, which are not in hand. That is task 7.2.
 
 ## D4. Damage
 

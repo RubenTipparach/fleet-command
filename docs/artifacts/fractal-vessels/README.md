@@ -19,3 +19,7 @@
   "Mandelbulb?", Benesi, icefractal.com): the lattice's speckle, grain and stepped edges fixed; the delta lattice,
   octahedral lattice, Benesi pine and Mandelbulb added (the Icebox tried and left out). Published from the cloud session on
   `claude/vigilant-keller-s93pth`, artifact version 3, version id `1794380439-435c`.
+- 2026-11-11, version 4 (owner, of the KIFS x T Benesi render: "this is what I wwas referring to"; "100% should appear more
+  damaged, make a testing scene for me to shoot it with phasers and torpedos!"): the ribbed truss, the pine on Benesi's own
+  rule, stronger damage, a firing range for phasers and torpedoes, the damage slider fixed; the Abox tried and left out.
+  Published from the cloud session on `claude/vigilant-keller-s93pth`, artifact version 4, version id `1794384206-9c47`.

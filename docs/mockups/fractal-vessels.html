@@ -17,6 +17,13 @@
   soft silhouettes that scale up without steps), and four new forms: the delta lattice (the lattice as an arrowhead), the
   octahedral lattice (triangles of triangles), the Benesi pine (his power 2 rule, a needle bow on a heavy bulb) and the
   Mandelbulb. An Icebox port was tried and left out: it came out a solid cube.
+  Version 4 (owner, 2026-11-11: "benisi pine doesnt look like thereference", then of the KIFS x T Benesi render, "this is
+  what I wwas referring to"; "I love the damage amount, 100% should appear more damaged, make a testing scene for me to
+  shoot it with phasers and torpedos!"; and an Abox render to try): the ribbed truss (that render's structure: an
+  octahedral frame of ribbed beams with rounded caps, every level kept, Benesi's turn on the third fold); the pine on
+  Benesi's own power 2 rule; full damage charred in streaked patches with ember edges, its holes mirrored and larger; a
+  firing range (phasers and torpedoes, picked by the vessels' own march); and the damage slider working again (v3 had
+  commented its line out). An Amazing box cut came out a plain block and is left out.
 
   Contract with tools/mockups/shoot.mjs: window.MOCKUP_SHOTS, MOCKUP_READY, MOCKUP_SCENE (threejs-mockups skill).
 -->
@@ -117,6 +124,7 @@
     .side { width: 270px; top: max(8px, env(safe-area-inset-top)); bottom: max(8px, env(safe-area-inset-bottom)); max-height: none;
       right: max(8px, env(safe-area-inset-right)); }
     .side.folded { bottom: auto; }
+    .forms { grid-template-columns: repeat(2, 1fr); }   /* three columns do not fit the 270 px column (v4: two names were cut off) */
     .title { max-width: calc(100% - 300px - env(safe-area-inset-left) - env(safe-area-inset-right)); }
     .views { left: max(10px, env(safe-area-inset-left)); bottom: max(8px, env(safe-area-inset-bottom));
       max-width: calc(100% - 300px - env(safe-area-inset-left) - env(safe-area-inset-right)); }
@@ -128,7 +136,7 @@
 <div class="title" id="title">
   <h1>Fractal vessels</h1>
   <p><a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a></p>
-  <p class="more">Mockup 37, OpenSpec change <code>fractal-vessels</code>, v3: seven forms. These ships have no mesh. Each pixel marches along its ray into a
+  <p class="more">Mockup 37, OpenSpec change <code>fractal-vessels</code>, v4: eight forms, and a firing range under Fire. These ships have no mesh. Each pixel marches along its ray into a
     distance field until it reaches the surface, at half the screen's resolution unless you switch it off under Cost. Beside them is
     the Concord's Petrel (86 m), for scale. Drag to orbit and scroll or pinch to zoom.</p>
   <button class="aboutBtn" id="aboutBtn" aria-expanded="false" aria-controls="title">About</button>
@@ -145,6 +153,10 @@
   <div class="row"><label for="dmg">Damage</label><input type="range" id="dmg" min="0" max="1" step="0.01" value="0"><output id="dmgOut"></output></div>
   <div class="row"><label for="glow">Glow</label><input type="range" id="glow" min="0" max="2" step="0.05" value="1"><output id="glowOut"></output></div>
   <label class="check"><input type="checkbox" id="halo" checked> Halo</label>
+  <h2>Fire</h2>
+  <div class="forms" id="weapons"><button data-w="off">Look</button><button data-w="phaser">Phaser</button><button data-w="torpedo">Torpedo</button></div>
+  <p class="about" id="fireHint">Pick a weapon, then click or tap a vessel to fire at it.</p>
+  <div class="views" style="position: static; max-width: none; margin: 6px 0 0"><button id="repair">Repair all</button></div>
   <h2>Cost</h2>
   <div class="row"><label for="iter">Fractal iterations</label><input type="range" id="iter" min="3" max="14" step="1" value="9"><output id="iterOut"></output></div>
   <div class="row"><label for="steps">March steps per pixel</label><input type="range" id="steps" min="32" max="320" step="8" value="160"><output id="stepsOut"></output></div>
@@ -201,9 +213,13 @@ const FORMS = [
     about: 'A Sierpinski octahedron: each fold makes six smaller octahedra at the corners of the last, so every face opens into triangles of triangles. Three blocks overlap into one spear, smaller toward the bow. The slider turns each fold out of line.',
     wLabel: 'Fold turn', trap: 1.1, foldGlow: 0.7, aoK: 0.8, stepK: 0.85, trapN: 2,
     holes: [[0.0, 0.3, -0.9, 0.3], [0.2, 0.0, 0.3, 0.22], [0.0, 0.0, 1.05, 0.15]] },
-  { id: 'pine', de: 4, name: 'Benesi pine', length_m: 150, box: [1.38, 1.38, 1.32], school: 'the escape-time school',
-    about: 'Benesi\'s power-2 rule: the distance from the hull\'s axis and the place along it are squared as a complex number is, and the angle round the axis doubled. In any plane through the axis it is the Mandelbrot set: the heavy bulb aft, the needle at the bow. The slider shifts every point\'s seed along the axis.',
-    wLabel: 'Seed shift', trap: 0.7, foldGlow: 0.9, aoK: 0.9, stepK: 0.5, trapN: 4,
+  { id: 'truss', de: 8, name: 'Ribbed truss', length_m: 136, box: [0.9, 0.9, 1.6], school: 'the tilers',
+    about: 'A Sierpinski octahedron drawn as a frame: every edge a ribbed beam, every corner a rounded cap, every level kept, so each face is a triangle of beams round a triangular opening with the next one nested inside. On the third fold space is turned onto the diagonal, Benesi\'s turn, which twists the inner levels. Three trusses make a spear. The slider is the beams\' weight.',
+    wLabel: 'Beam weight', trap: 1.0, foldGlow: 0.8, aoK: 0.9, stepK: 0.85, trapN: 3,
+    holes: [[0.0, 0.35, -0.75, 0.24], [0.3, 0.1, 0.25, 0.18], [0.0, 0.0, 0.95, 0.12]] },
+  { id: 'pine', de: 4, name: 'Benesi pine', length_m: 150, box: [0.95, 0.95, 1.6], stepsMul: 2, school: 'the escape-time school',
+    about: 'Benesi\'s power-2 rule, as Mandelbulber writes it: along the hull the point is squared as a complex number is, its sign flipped where its seed lies forward of the waist, and round the axis its angle is doubled and turned. In any plane through the axis it is the Mandelbrot set: the needle at the bow, the body flaring aft into banded layers. The slider shifts every point\'s seed along the axis.',
+    wLabel: 'Seed shift', trap: 0.7, foldGlow: 0.9, aoK: 0.9, stepK: 0.3, trapN: 4,
     holes: [[0.0, 0.4, -0.9, 0.3], [0.3, 0.0, -0.3, 0.22], [0.0, 0.0, 0.6, 0.12]] },
   { id: 'bulb', de: 3, name: 'Mandelbulb', length_m: 120, box: [1.2, 1.2, 1.2], school: 'the escape-time school',
     about: 'Every point is turned and raised to a power in spherical coordinates, then its start is added back; the vessel is every point that never escapes. Its pole lies along the hull. The slider is the power, 5 to 11.',
@@ -307,6 +323,10 @@ uniform float uStepK;     // per form: the share of the estimated distance each 
 uniform int uTrapN;       // per form: how many of the first iterations colour the surface (few: broad panels, not speckle)
 uniform vec4 uC;
 uniform vec4 uHoles[3];
+uniform vec4 uHits[24];   // the firing range's hits, object space: xyz the point, w the radius (a torpedo's hole > 0, a phaser's burn < 0)
+uniform float uHitT[24];  // when each hit landed, seconds
+uniform int uHitN;
+uniform float uTime, uIndex;
 uniform vec3 uHull, uDeep, uTrim, uGlowCol, uRim;
 varying vec3 vObj;
 
@@ -315,7 +335,13 @@ varying vec3 vObj;
 float gPix = 1e-4;
 
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, s, -s, c); }
-int itersNow() { return max(2, uIter - int(floor(uDamage * float(uIter) * 0.45))); }
+int itersNow() { return max(2, uIter - int(floor(uDamage * float(uIter) * 0.55))); }   // full damage loses over half the folds (seven in ten melted the Julia slice)
+// An integer hash (PCG, CLAUDE.md section 10: never fract(sin)), and value noise on it, for the char of a damaged hull.
+uint pcg(uint v) { uint s = v * 747796405u + 2891336453u; uint w = ((s >> ((s >> 28u) + 4u)) ^ s) * 277803737u; return (w >> 22u) ^ w; }
+float hash3(ivec3 c) { return float(pcg(uint(c.x) * 73856093u ^ pcg(uint(c.y) * 19349663u ^ pcg(uint(c.z) * 83492791u)))) / 4294967295.0; }
+float vnoise(vec3 p) { ivec3 i = ivec3(floor(p)); vec3 f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash3(i), hash3(i + ivec3(1, 0, 0)), f.x), mix(hash3(i + ivec3(0, 1, 0)), hash3(i + ivec3(1, 1, 0)), f.x), f.y),
+             mix(mix(hash3(i + ivec3(0, 0, 1)), hash3(i + ivec3(1, 0, 1)), f.x), mix(hash3(i + ivec3(0, 1, 1)), hash3(i + ivec3(1, 1, 1)), f.x), f.y), f.z); }
 float sdBox(vec3 p, vec3 b) { vec3 q = abs(p) - b; return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0); }
 void trap(inout vec4 tr, vec3 q, int i) { if (i < uTrapN) tr = min(tr, vec4(abs(q), dot(q, q))); }
 
@@ -430,27 +456,31 @@ float deForm(vec3 p, out vec4 tr) {
   return 0.5 * log(r) * r / dr;
 }
 #elif FORM == 4
-// Benesi's power 2 (after his "pine tree", posted on fractalforums.com): the point's distance from the hull's axis and its
-// place along the axis are squared as a complex number is, and its angle round the axis doubled, so in any plane
-// through the axis it is the Mandelbrot set: the heavy bulb aft, the needle at the bow. The slider shifts every
-// point's seed along the axis.
+// Benesi's power 2 (after his "pine tree", posted on fractalforums.com, as Mandelbulber writes its Benesi formula): along
+// the hull's axis the point is squared as a complex number is, except that where its seed lies forward of the waist and
+// it is farther along the axis than from it, the square's sign is flipped; round the axis its angle is doubled and turned
+// by -2 |x| / r. Seeded by the point itself, the needle (the Mandelbrot strand) runs to the bow and the body flares aft
+// into banded rings. Its estimate overshoots badly (the reference renders at a quarter step), so it steps at 0.3 with
+// twice the steps. The slider shifts every point's seed along the axis.
+const float PINE_K = 1.45, PINE_X0 = -0.62;   // fractal units to one of the hull's; the seed along the axis at the hull's middle
 float deForm(vec3 p, out vec4 tr) {
-  vec3 c = vec3(-p.z - 0.75 + uW * 0.12, p.x, p.y);   // x along the hull, the needle (x near -2) at the bow
+  vec3 c = vec3(-p.z * PINE_K + PINE_X0 + uW * 0.12, p.x * PINE_K, p.y * PINE_K);   // x along the hull, the needle at the bow
   vec3 z = c;
   float dr = 1.0, r = length(z);
   tr = vec4(1e9);
-  int n = itersNow() + 2;
-  for (int i = 0; i < 18; i++) {
+  int n = itersNow() + 4;
+  for (int i = 0; i < 20; i++) {
     if (i >= n) break;
     float r2 = z.y * z.y + z.z * z.z, ra = sqrt(r2) + 1e-9;
-    float k = 2.0 * z.x / ra;
+    float nx = (c.x < 0.0 || z.x < ra) ? z.x * z.x - r2 : r2 - z.x * z.x;
+    float k = -2.0 * abs(z.x) / ra;
     dr = 2.0 * r * dr + 1.0;
-    z = vec3(z.x * z.x - r2, k * (z.y * z.y - z.z * z.z), k * 2.0 * z.y * z.z) + c;
+    z = vec3(nx, k * (z.y * z.y - z.z * z.z), k * 2.0 * z.y * z.z) + c;
     r = length(z);
     trap(tr, z, i);
-    if (r > 8.0) break;
+    if (r > 16.0) break;
   }
-  return 0.5 * log(max(r, 1.0001)) * r / dr;
+  return 0.5 * log(max(r, 1.0001)) * r / dr / PINE_K;
 }
 #elif FORM == 5
 // The octahedral lattice: a Sierpinski octahedron, the tilers' triangle. Each fold mirrors the axes, sorts toward the
@@ -501,13 +531,66 @@ float deForm(vec3 p, out vec4 tr) {
   for (int m = 0; m < 8; m++) block(q, B[m].xyz, B[m].w, 0.1 + float(m) * 0.05 + uW * 0.32, n, d, tr);
   return d;
 }
+#elif FORM == 8
+// The ribbed truss (after the "KIFS x T Benesi" renders the owner picked, 2026-11-11: their idea, not their pictures, which
+// are CC BY-SA): a Sierpinski octahedron drawn as a frame, not a solid. Every level's edges are ribbed beams with rounded
+// caps at the corners, and every level's frame is kept, so each face is a triangle of beams round a triangular opening with
+// the next level's triangle nested in it. On the third fold space is turned onto the diagonal (Benesi's Mag Forward turn,
+// a rotation and nothing else), which twists the inner levels. Three trusses overlap into a spear, a corner forward.
+// The slider is the beams' weight.
+const float S2_3 = 0.81649658, S1_3 = 0.57735027, S1_2 = 0.70710678;
+vec3 benesiTurn(vec3 z) { float t = z.x * S2_3 - z.z * S1_3; return vec3((t - z.y) * S1_2, (t + z.y) * S1_2, z.x * S1_3 + z.z * S2_3); }
+float truss(vec3 q, float rad, int n, float pb, inout vec4 tr) {
+  float d = 1e9, s = 1.0;
+  for (int i = 0; i < 9; i++) {
+    if (i >= n || 1.0 / s < LOD_PX * pb) break;
+    if (i == 2) q = benesiTurn(q);
+    q = abs(q);
+    if (q.x < q.y) q.xy = q.yx;
+    if (q.x < q.z) q.xz = q.zx;
+    if (q.y < q.z) q.yz = q.zy;
+    vec3 pa = q - vec3(1.0, 0.0, 0.0), ba = vec3(-1.0, 1.0, 0.0);
+    float h = clamp(dot(pa, ba) * 0.5, 0.0, 1.0);
+    float ribK = 0.08 * smoothstep(3.0, 6.0, 1.0 / (40.0 * s * pb));   // ribs fade before they are finer than a few pixels
+    float ring = 0.5 + 0.5 * cos(h * 40.0 * 6.2832);
+    float dE = length(pa - ba * h) - rad * (1.0 + ribK * ring);
+    float dC = length(pa) - rad * 1.38;
+    d = min(d, min(dE, dC) / s);
+    trap(tr, q, i);
+    q = q * 2.0 - vec3(1.0, 0.0, 0.0);
+    s *= 2.0;
+  }
+  return d;
+}
+float deForm(vec3 p, out vec4 tr) {
+  tr = vec4(1e9);
+  int n = clamp(itersNow() - 3, 2, 8);
+  float rad = 0.2 + uW * 0.08, d = 1e9;
+  vec3 C[3] = vec3[3](vec3(0.0, 0.0, -0.72), vec3(0.0, 0.0, 0.26), vec3(0.0, 0.0, 0.96));
+  float H[3] = float[3](0.66, 0.46, 0.32);
+  for (int m = 0; m < 3; m++) {
+    vec3 q = (p - C[m]) / H[m];
+    float bound = ((abs(q.x) + abs(q.y) + abs(q.z) - 1.0) * 0.57735 - rad * 1.45) * H[m];
+    if (bound < d && bound < 0.04) { vec4 t = vec4(1e9); d = min(d, truss(q.zxy, rad, n, gPix / H[m], t) * H[m]); tr = min(tr, t); }
+    else d = min(d, max(bound, 0.02));
+  }
+  return d;
+}
 #endif
 
+// A damage hole's radius: grows with damage, half again its listed size at full damage.
+float holeR(int k) { return uHoles[k].w * uDamage * 1.5; }
 float map(vec3 p, out vec4 tr) {
   float d = deForm(p, tr);
-  for (int k = 0; k < 3; k++) {
-    float r = uHoles[k].w * uDamage;
-    if (r > 0.0) d = max(d, -(length(p - uHoles[k].xyz) - r));
+  if (uDamage > 0.0) for (int k = 0; k < 3; k++) {   // each hole and its mirror across the centreline
+    float r = holeR(k);
+    d = max(d, -(length(p - uHoles[k].xyz) - r));
+    d = max(d, -(length(p - uHoles[k].xyz * vec3(-1.0, 1.0, 1.0)) - r * 0.8));
+  }
+  for (int k = 0; k < 24; k++) {   // the firing range: a torpedo blows a hole, a phaser cuts a shallow groove
+    if (k >= uHitN) break;
+    vec4 h = uHits[k];
+    d = max(d, -(length(p - h.xyz) - (h.w > 0.0 ? h.w : -h.w * 0.35)));
   }
   return d;
 }
@@ -559,12 +642,38 @@ vec3 shade(vec3 p, vec3 rd, float t, int used) {
   float fold = smoothstep(0.45, 0.95, 1.0 - ao) * 0.7 + smoothstep(0.6, 1.0, crowd) * 0.25 + smoothstep(0.3, 0.0, tw) * 0.35;
   col += uGlowCol * fold * uGlow * uFoldGlow * 0.8;
   col += uRim * fres * 0.6 * uGlow;
-  // Torn edges: the being's light leaks out round every hole.
+  // Damage: the hull charred in patches that spread as it grows, embers along the patches' edges, and the being's light
+  // leaking out round every torn hole.
   if (uDamage > 0.0) {
+    // char: three octaves, so its patches break into burns and streaks rather than blobs; at most about half the hull
+    float nz = vnoise(p * 9.0) * 0.5 + vnoise(p * 23.0) * 0.3 + vnoise(p * 57.0) * 0.2;
+    float edge = 1.0 - uDamage * 0.5;
+    float charK = smoothstep(edge, edge + 0.08, nz);
+    col = mix(col, mix(col * 0.25, vec3(0.03, 0.025, 0.024), 0.6) * (0.7 + nz), charK * 0.88);
+    col += vec3(1.0, 0.38, 0.08) * smoothstep(0.05, 0.0, abs(nz - edge)) * uDamage * 1.4 * (0.7 + 0.3 * sin(uTime * 7.0 + nz * 40.0));
     float dh = 1e9;
-    for (int k = 0; k < 3; k++) dh = min(dh, abs(length(p - uHoles[k].xyz) - uHoles[k].w * uDamage));
-    col += uGlowCol * exp(-dh * 40.0) * 3.0 * smoothstep(0.0, 0.15, uDamage);
-    col *= mix(1.0, 0.7, uDamage);
+    for (int k = 0; k < 3; k++) {
+      dh = min(dh, abs(length(p - uHoles[k].xyz) - holeR(k)));
+      dh = min(dh, abs(length(p - uHoles[k].xyz * vec3(-1.0, 1.0, 1.0)) - holeR(k) * 0.8));
+    }
+    col += uGlowCol * exp(-dh * 40.0) * 1.8 * smoothstep(0.0, 0.15, uDamage);
+    col *= mix(1.0, 0.8, uDamage);
+  }
+  // The firing range's hits: a torpedo's hole ringed by char and a rim of the being's light; a phaser's burn a dark scar
+  // with an ember line that cools over twenty seconds.
+  for (int k = 0; k < 24; k++) {
+    if (k >= uHitN) break;
+    vec4 h = uHits[k];
+    float age = uTime - uHitT[k], cool = exp(-age / 20.0);
+    float r = abs(h.w), e = length(p - h.xyz);
+    if (h.w > 0.0) {
+      col = mix(col, vec3(0.02), smoothstep(r * 2.0, r * 1.05, e) * 0.85);
+      col += uGlowCol * exp(-abs(e - r) * 50.0 / r * 0.12) * 2.2;
+      col += vec3(1.0, 0.45, 0.1) * smoothstep(r * 1.4, r, e) * 2.5 * cool;
+    } else {
+      col = mix(col, vec3(0.03, 0.025, 0.02), smoothstep(r * 1.6, r * 0.5, e) * 0.85);
+      col += vec3(1.0, 0.5, 0.12) * smoothstep(r * 0.6, r * 0.1, e) * 3.0 * cool;
+    }
   }
   return col;
 }
@@ -589,6 +698,15 @@ void main() {
     if (t > tmax) break;
   }
 
+#ifdef PICK
+  // The firing range's pick: the clicked pixel's hit point in the vessel's own space, and which vessel (its index + 1).
+  if (!hit) discard;
+  vec3 ph = ro + rd * t;
+  gl_FragColor = vec4(ph, uIndex + 1.0);
+  vec4 pc = uP * uMV * vec4(ph, 1.0);
+  gl_FragDepthEXT = clamp(pc.z / pc.w * 0.5 + 0.5, 0.0, 1.0);
+  return;
+#endif
   // A ray that passes within a pixel and a half of the surface without touching it is the silhouette's edge: the
   // surface there, faded by how near it came, so an edge is soft and scales up smoothly from half resolution.
   float edge = hit ? 1.0 : 1.0 - smoothstep(0.0, 1.5 * max(1e-4, tmin * uPix), dmin);
@@ -615,6 +733,8 @@ void main() {
 }`;
 
 const MARGIN = 0.22;   // room round each vessel for its halo, in the shader's units
+const MAX_HITS = 24;   // the firing range's hits a vessel keeps (the oldest goes first)
+const TIME = { value: 0 };   // seconds, shared: embers flicker, burns cool
 const vessels = FORMS.map((f, i) => {
   const uniforms = {
     uCam: { value: new THREE.Vector3() }, uLight: { value: LIGHT_DIR.clone() },
@@ -625,6 +745,8 @@ const vessels = FORMS.map((f, i) => {
     uTrap: { value: f.trap }, uFoldGlow: { value: f.foldGlow }, uAoK: { value: f.aoK }, uStepK: { value: f.stepK }, uTrapN: { value: f.trapN },
     uC: { value: new THREE.Vector4(...(f.c || [0, 0, 0, 0])) },
     uHoles: { value: f.holes.map((h) => new THREE.Vector4(...h)) },
+    uHits: { value: Array.from({ length: MAX_HITS }, () => new THREE.Vector4()) }, uHitT: { value: new Array(MAX_HITS).fill(0) }, uHitN: { value: 0 },
+    uTime: TIME, uIndex: { value: i },
     uHull: { value: lin(PALETTE.hull) }, uDeep: { value: lin(PALETTE.deep) }, uTrim: { value: lin(PALETTE.trim) },
     uGlowCol: { value: lin(PALETTE.glow) }, uRim: { value: lin(PALETTE.rim) },
   };
@@ -637,17 +759,22 @@ const vessels = FORMS.map((f, i) => {
   mesh.scale.setScalar(f.length_m / (2 * f.box[2]));
   mesh.name = 'vessel_' + f.id;
   mesh.layers.set(VESSELS);
+  // the same march, writing the clicked pixel's hit point (the firing range's pick: no second copy of any shape)
+  const pick = new THREE.ShaderMaterial({ vertexShader: VERT, fragmentShader: FRAG, uniforms, defines: { FORM: f.de, PICK: 1 }, side: THREE.BackSide });
+  pick.extensions.fragDepth = true;
   const inv = new THREE.Matrix4();
   mesh.onBeforeRender = (r, s, cam) => {
     inv.copy(mesh.matrixWorld).invert();
     uniforms.uCam.value.copy(cam.position).applyMatrix4(inv);
     uniforms.uMV.value.multiplyMatrices(cam.matrixWorldInverse, mesh.matrixWorld);
     uniforms.uP.value.copy(cam.projectionMatrix);
-    const rt = r.getRenderTarget(), h = rt ? rt.height : renderer.getDrawingBufferSize(tmpV2).y;   // a pixel's size where it is marched
+    // a pixel's size where it is marched: the half-resolution target's, or the screen's (the pick's 1 x 1 target stands for one
+    // screen pixel, so it takes the screen's size: its own would make a pixel the whole view and stop every ray at the box)
+    const rt = r.getRenderTarget(), h = rt && rt !== pickRT ? rt.height : renderer.getDrawingBufferSize(tmpV2).y;
     uniforms.uPix.value = 2 * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) / h * 1.2;
   };
   scene.add(mesh);
-  return { form: f, mesh, uniforms };
+  return { form: f, mesh, uniforms, mat, pick, hits: [] };
 });
 const tmpV2 = new THREE.Vector2();
 
@@ -756,7 +883,8 @@ function apply() {
     v.mesh.visible = state.lineup || i === state.form;
     v.mesh.position.set(state.lineup ? LINE.at[i].x : 0, SHIP_Y, state.lineup ? LINE.at[i].z : 0);
     const u = v.uniforms;
-    u.uIter.value = state.iter; u.uSteps.value = state.steps; u.uDamage.value = state.damage;
+    // a form whose estimate overshoots takes shorter steps, so more of them
+    u.uIter.value = state.iter; u.uSteps.value = Math.min(512, Math.round(state.steps * (v.form.stepsMul || 1))); u.uDamage.value = state.damage;
     u.uGlow.value = state.glow; u.uHalo.value = state.halo ? 1 : 0; u.uW.value = state.w;
   });
   petrel.visible = state.petrel;
@@ -829,6 +957,87 @@ $('aboutBtn').onclick = () => { const o = titleEl.classList.toggle('open'); $('a
 function fitSheet() { document.documentElement.style.setProperty('--sheet-h', side.getBoundingClientRect().height + 'px'); }
 if (matchMedia('(max-width: 760px) and (orientation: portrait)').matches) { side.classList.add('folded'); $('fold').textContent = 'Show'; $('fold').setAttribute('aria-expanded', 'false'); }
 
+// ---- The firing range (owner, 2026-11-11: "make a testing scene for me to shoot it with phasers and torpedos!"). A click
+// that does not drag fires the weapon picked at the vessel under it. Where it lands is found by the vessels' own march:
+// each visible vessel is drawn with its PICK program into a 1 x 1 target at the clicked pixel, which holds the hit point
+// in the vessel's own space and which vessel it was, so no shape has a second copy. A phaser is a beam that burns a groove
+// with a cooling ember line; a torpedo flies, bursts and blows a hole with a glowing rim. Repair clears them.
+const pickRT = new THREE.WebGLRenderTarget(1, 1, { type: THREE.FloatType, depthBuffer: true });
+const pickPx = new Float32Array(4);
+const WEAPON = { phaser: { r_m: 2.6, color: 0xffa040 }, torpedo: { r_m: 6.5, color: 0xff6a30, flight_s: 0.7 } };
+let weapon = 'off';
+function pickAt(cssX, cssY) {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  camera.setViewOffset(w, h, cssX, cssY, 1, 1);
+  renderer.setRenderTarget(pickRT); renderer.setClearColor(0x000000, 0); renderer.clear(true, true, true);
+  const auto = renderer.autoClear; renderer.autoClear = false; camera.layers.set(VESSELS);
+  for (const v of vessels) v.mesh.material = v.pick;
+  renderer.render(scene, camera);
+  for (const v of vessels) v.mesh.material = v.mat;
+  camera.layers.set(0); renderer.autoClear = auto; renderer.setRenderTarget(null); renderer.setClearColor(0x04050a, 1);
+  camera.clearViewOffset();
+  renderer.readRenderTargetPixels(pickRT, 0, 0, 1, 1, pickPx);
+  const i = Math.round(pickPx[3]) - 1;
+  return i >= 0 && vessels[i] ? { v: vessels[i], at: new THREE.Vector3(pickPx[0], pickPx[1], pickPx[2]) } : null;
+}
+// A hit on vessel v at a point in its own space: a torpedo's hole (radius > 0) or a phaser's burn (< 0).
+function addHit(v, at, kind) {
+  const r = WEAPON[kind].r_m / v.mesh.scale.x * (kind === 'torpedo' ? 1 : -1);
+  v.hits.push({ at: at.clone(), r, t: TIME.value });
+  if (v.hits.length > MAX_HITS) v.hits.shift();
+  v.hits.forEach((h, k) => { v.uniforms.uHits.value[k].set(h.at.x, h.at.y, h.at.z, h.r); v.uniforms.uHitT.value[k] = h.t; });
+  v.uniforms.uHitN.value = v.hits.length;
+}
+function repair() { for (const v of vessels) { v.hits = []; v.uniforms.uHitN.value = 0; } state.damage = 0; apply(); }
+// The effects: a beam that fades, a torpedo's glow in flight, a burst that grows and fades.
+const glowTex = (() => { const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.3, 'rgba(255,255,255,0.5)'); r.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = r; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+const fx = [];
+const sprite = (color, size) => { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false })); sp.scale.setScalar(size); scene.add(sp); return sp; };
+function muzzle() {   // where shots come from: the Petrel's bow, or just off the camera when it is hidden
+  if (petrel.visible) return petrel.position.clone().add(new THREE.Vector3(0, 6, 0));
+  return camera.position.clone().add(new THREE.Vector3(30, -20, 0).applyQuaternion(camera.quaternion));
+}
+function fire(hit, kind) {
+  const from = muzzle(), to = hit.v.mesh.localToWorld(hit.at.clone()), W = WEAPON[kind];
+  if (kind === 'phaser') {
+    const len = from.distanceTo(to), beam = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, len, 8, 1, true),
+      new THREE.MeshBasicMaterial({ color: W.color, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, toneMapped: false }));
+    beam.position.copy(from).lerp(to, 0.5); beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), to.clone().sub(from).normalize()); scene.add(beam);
+    const flash = sprite(W.color, 14); flash.position.copy(to);
+    addHit(hit.v, hit.at, kind);
+    fx.push({ age: 0, life: 0.45, step: (k) => { beam.material.opacity = 1 - k; flash.material.opacity = 1 - k; }, done: () => { scene.remove(beam); scene.remove(flash); } });
+  } else {
+    const ball = sprite(W.color, 9);
+    fx.push({ age: 0, life: W.flight_s, step: (k) => ball.position.copy(from).lerp(to, k), done: () => {
+      scene.remove(ball);
+      addHit(hit.v, hit.at, kind);
+      const burst = sprite(0xffd090, 10); burst.position.copy(to);
+      fx.push({ age: 0, life: 0.8, step: (k) => { burst.scale.setScalar(10 + 70 * k); burst.material.opacity = 1 - k; }, done: () => scene.remove(burst) });
+    } });
+  }
+}
+function stepFx(dt) {
+  for (let i = fx.length - 1; i >= 0; i--) { const f = fx[i]; f.age += dt; const k = Math.min(1, f.age / f.life); f.step(k); if (k >= 1) { fx.splice(i, 1); f.done(); } }
+}
+const weaponsEl = $('weapons');
+function setWeapon(w) { weapon = w; [...weaponsEl.children].forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.w === w)));
+  $('fireHint').textContent = w === 'off' ? 'Pick a weapon, then click or tap a vessel to fire at it.' : `${w === 'phaser' ? 'Phaser' : 'Torpedo'} armed: click or tap a vessel. Drag still orbits.`; }
+weaponsEl.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setWeapon(b.dataset.w); });
+$('repair').onclick = repair;
+setWeapon('off');
+// a click is a press and release that hardly moved: a drag still orbits the camera
+let down = null;
+renderer.domElement.addEventListener('pointerdown', (e) => { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+renderer.domElement.addEventListener('pointerup', (e) => {
+  if (!down || weapon === 'off') return;
+  const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y), quick = performance.now() - down.t < 500;
+  down = null;
+  if (moved > 6 || !quick) return;
+  const r = renderer.domElement.getBoundingClientRect(), hit = pickAt(e.clientX - r.left, e.clientY - r.top);
+  if (hit) fire(hit, weapon);
+});
+
 // ---- Views and shots. Each shot sets the whole state, so a shot is the same every run, and draws at once.
 // A view is framed for a wide screen; on a narrow one (a phone held upright) it steps back along its own line so the same
 // width fits. Only when a view is picked: the camera is never moved for the player otherwise (CLAUDE.md section 8).
@@ -870,6 +1079,21 @@ const SHOTS = {
   bulb_top: () => { set({ form: IDX.bulb, w: 0, petrel: false }); look([0, 330, 0.01], [0, SHIP_Y, 0]); draw(); },
   octa_turned: () => { set({ form: IDX.octa, w: 0.6 }); VIEWS.three_quarter(); draw(); },
   delta_damaged: () => { set({ form: IDX.delta, w: 0, damage: 0.8 }); VIEWS.three_quarter(); draw(); },
+  truss: () => { set({ form: IDX.truss, w: 0 }); VIEWS.three_quarter(); draw(); },
+  truss_close: () => { set({ form: IDX.truss, w: 0, petrel: false }); VIEWS.close(); draw(); },
+  truss_top: () => { set({ form: IDX.truss, w: 0, petrel: false }); look([0, 330, 0.01], [0, SHIP_Y, 0]); draw(); },
+  pine_side: () => { set({ form: IDX.pine, w: 0, petrel: false }); look([300, SHIP_Y + 4, 0], [0, SHIP_Y, 0]); draw(); },   // broadside, as the reference is drawn
+  lattice_wrecked: () => { set({ form: IDX.lattice, w: 0, damage: 1 }); VIEWS.three_quarter(); draw(); },
+  julia_wrecked: () => { set({ form: IDX.julia, w: 0, damage: 1 }); VIEWS.three_quarter(); draw(); },
+  // the firing range: torpedoes and phasers at fixed points on the screen, landed at once (no flight), so the shot is the
+  // same every run
+  range: () => { set({ form: IDX.lattice, w: 0, petrel: false }); repair(); VIEWS.three_quarter(); draw();
+    const W = stage.clientWidth, H = stage.clientHeight;
+    // aim at the vessel's own projected middle and around it, so the points land on it at any screen size
+    const c = vessels[IDX.lattice].mesh.position.clone().project(camera), cx = (c.x + 1) / 2 * W, cy = (1 - c.y) / 2 * H, k = Math.min(W, H) * 0.06;
+    [[-1.4, 0.2, 'torpedo'], [0.4, -0.6, 'torpedo'], [1.2, -0.9, 'phaser'], [-0.6, 0.9, 'phaser'], [0.2, 0.3, 'phaser'], [-2.2, 0.7, 'torpedo']].forEach(([dx, dy, kind]) => {
+      const hit = pickAt(cx + dx * k, cy + dy * k); if (hit) addHit(hit.v, hit.at, kind); });
+    draw(); },
   branch: () => { set({ form: IDX.branch, w: 0 }); VIEWS.three_quarter(); draw(); },
   branch_close: () => { set({ form: IDX.branch, w: 0, petrel: false }); VIEWS.close(); draw(); },
   branch_damaged: () => { set({ form: IDX.branch, w: 0, damage: 0.8 }); VIEWS.three_quarter(); draw(); },
@@ -901,6 +1125,8 @@ function frame(now) {
     if (now - shown > 250) { $('w').value = state.w; $('wOut').textContent = state.w.toFixed(2); }
   }
   for (const v of vessels) v.uniforms.uW.value = state.w;
+  TIME.value += dt;
+  stepFx(dt);
   controls.update();
   renderer.info.reset();
   render();

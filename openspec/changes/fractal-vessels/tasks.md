@@ -15,6 +15,7 @@
 - [x] 1.5 Survey questions FV1-FV5 on the culture framing, the faction, the forms, phones and the game's hits
 - [x] 1.7 v2 (owner, 2026-11-10: "Make this thing phone friendly please! Also half resolution ray match if you don't mind"): the vessels marched at half resolution into their own target with the occluders' depth (design D5a), the phone layout, every shot at desktop, phone and portrait sizes in `docs/screenshots/mockups/fractal-vessels/`, republished
 - [x] 1.8 v3 (owner, 2026-11-11: the lattice's artifacts, "more interesting ship shapes, triangles?", "Mandelbulb?", Benesi, icefractal.com): the lattice's speckle, grain and stepped edges fixed, the delta lattice, octahedral lattice, Benesi pine and Mandelbulb added (design D3a), shots at all sizes, republished
+- [x] 1.9 v4 (owner, 2026-11-11: the KIFS x T Benesi render, "100% should appear more damaged", "a testing scene for me to shoot it with phasers and torpedos"): the ribbed truss, the pine on Benesi's own rule, stronger damage, the firing range, the damage slider fixed (design D3b), shots at all sizes, republished
 - [ ] 1.6 The owner's review (approval for build, then for implementation)
 
 ## 2. In the game (once approved for implementation)
@@ -31,3 +32,4 @@
 ## 7. Forms still to try
 
 - [ ] 7.1 The Icebox with icefractal.com's own power and fold limit (v3's port, at a fold of 0.8 to 1, came out a solid cube)
+- [ ] 7.2 The Abox (Mod 13 x Mod Kali-V3) with the Kali modification's folds and rotations (v4's plain Mandelbox cut came out a block)
