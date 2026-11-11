@@ -14,6 +14,11 @@
 - [ ] 2.1 The owner approves the set or notes cues to redo (the tracker). The console keys approved for implementation
   (owner, 2026-11-07: "Console keys - this should be implemented in the game")
 - [ ] 2.2 Redo the noted cues
+- [x] 2.2a The weapons redone (owner, 2026-11-10: "Sfx are really goofy for the weapons. We need to fix that"): the
+  Lance, Disruptor and Pulse torpedo rebuilt without the arcade lasers, zaps and phaser rises and the synthesised snap,
+  from the doomsday laser cannon's blast and a ship's cannon (`tools/audio/cc0_cues.json`); the missile given a cannon's
+  ignition thump; point defence slowed and darkened; an old-against-new audition on Drive for the owner's ears
+- [ ] 2.2b The owner's verdict on the redone weapons
 
 ## 3. In the game (after approval for implementation)
 
