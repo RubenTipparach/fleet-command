@@ -1,6 +1,6 @@
 # Fleet Command Sounds (mockup 17; drafted as 16, renumbered on merging main, where 16 is the special weapons range)
 
-- Link: https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW (published from the cloud session's account, which cannot open the tracker or the survey)
+- Link: https://claude.ai/artifact/7zWthg14SmsRfaFZpj1vAE (published 2026-11-10 from the desktop session's account; versions 1-10 below were at https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW, made from the cloud session's account, which this account cannot update)
 - Shows: the first 30 sound effects with play buttons and waveform strips, grouped as the game uses them.
 - Made by: `tools/audio/render_sfx.sh` (which runs `tools/audio/gen_sfx_page.py`) into `docs/mockups/sounds.html`; the
   page's look is `tools/audio/audio_page.py`. The page (40 KB) names each sound's MP3 share copy under `output/`, and the
@@ -42,4 +42,4 @@
   thump, point defence darkened. The page was rebuilt on the Mac by `tools/audio/render_sfx.sh` (sources in a scratch
   folder, `SFX_SRC`); its MP3s are in `output/sfx` there. The account that published versions 1-10 is the cloud session's,
   so this goes out as a new artifact from the desktop account; record its link here and in the tracker.
-
+- 2026-11-10, desktop session (owner: "Can you update and publish the sfx artifact? There's some changes I want to suggest", "Publish new artifact"): published as a NEW artifact, https://claude.ai/artifact/7zWthg14SmsRfaFZpj1vAE, version 1, version id `1794367132-8556`, with its 36 MP3s beside it (`docs/mockups/sounds.files.json`). The page's text brought up to date: the weapons redone without the arcade lasers, every sound now in the game, no CC-BY pack in use. The tracker, `docs/design/README.md` and `mockup-work.md` point at the new link.
