@@ -571,7 +571,7 @@
    "name": "Vos corsair",
    "cls": "Raider",
    "battle_class": "vcr",
-   "schematic": "vos/vos_dd",
+   "schematic": "vos/vos_boarder",
    "for_sale": false
   },
   "freighter": {
@@ -714,38 +714,6 @@
    "cls": "Flagship",
    "battle_class": "redtithe_fl",
    "schematic": "redtithe/redtithe_fl"
-  },
-  "vos_ff": {
-   "side": "vos",
-   "tier": 1,
-   "name": "Skiff",
-   "cls": "Frigate",
-   "battle_class": "vos_ff",
-   "schematic": "vos/vos_ff"
-  },
-  "vos_dd": {
-   "side": "vos",
-   "tier": 2,
-   "name": "Corsair",
-   "cls": "Destroyer",
-   "battle_class": "vos_dd",
-   "schematic": "vos/vos_dd"
-  },
-  "vos_ca": {
-   "side": "vos",
-   "tier": 3,
-   "name": "Privateer",
-   "cls": "Cruiser",
-   "battle_class": "vos_ca",
-   "schematic": "vos/vos_ca"
-  },
-  "vos_cap": {
-   "side": "vos",
-   "tier": 4,
-   "name": "Galleon",
-   "cls": "Capital",
-   "battle_class": "vos_cap",
-   "schematic": "vos/vos_cap"
   },
   "kethran_ff": {
    "side": "kethran",
@@ -906,6 +874,46 @@
    "cls": "Carrier",
    "battle_class": "vhorr_cv",
    "schematic": "vhorr/vhorr_cv"
+  },
+  "vos_drum": {
+   "side": "vos",
+   "tier": 1,
+   "name": "Drum",
+   "cls": "Minelayer",
+   "battle_class": "vos_drum",
+   "schematic": "vos/vos_drum"
+  },
+  "vos_cross": {
+   "side": "vos",
+   "tier": 2,
+   "name": "Cross",
+   "cls": "Tractor ship",
+   "battle_class": "vos_cross",
+   "schematic": "vos/vos_cross"
+  },
+  "vos_boarder": {
+   "side": "vos",
+   "tier": 3,
+   "name": "Boarder",
+   "cls": "Boarding ship",
+   "battle_class": "vos_boarder",
+   "schematic": "vos/vos_boarder"
+  },
+  "vos_broadside": {
+   "side": "vos",
+   "tier": 4,
+   "name": "Broadside",
+   "cls": "Q-ship",
+   "battle_class": "vos_broadside",
+   "schematic": "vos/vos_broadside"
+  },
+  "vos_deck_runner": {
+   "side": "vos",
+   "tier": 5,
+   "name": "Deck runner",
+   "cls": "Carrier",
+   "battle_class": "vos_deck_runner",
+   "schematic": "vos/vos_deck_runner"
   }
  },
  "systems": {

@@ -1,9 +1,9 @@
 {
  "_doc": "The Vos Syndicate's fighters (mockup 37, change vos-ship-concepts): the detail laid over each low-poly hull by tools/blender/hull_detail.py and baked onto its own UVs by tools/blender/painted_bake.py --faction vos. The recipe is the Breakers' (the salvage yards), written from the Syndicate's accepted culture in openspec/changes/vos-ship-concepts/design.md, 'The fighters, detailed'. Sizes in metres, ship space (+x port, +y up, +z bow).",
  "faction": "vos",
- "out": "assets/ships/vos/baked",
- "_out": "The game's placeholder Vos hulls live in assets/ships/vos/; the bakes are a mockup's until approved for implementation, so they go in a folder Godot does not import.",
- "manifest_doc": "The Vos Syndicate's fighters (mockup 37): the Cutter (the standard fighter) and the Twin boom (the shuttle stand-in and bomber).",
+ "out": "assets/ships/vos",
+ "_out": "The Vos line's bakes, in the game's own folder since mockup 37 was approved for implementation (owner, 2026-11-11: \"everything else is good to go, implmenet it\"); before, a mockup's bakes went in a folder Godot does not import.",
+ "manifest_doc": "The Vos Syndicate's line (mockup 37): the specialists Boarder, Drum, Cross, Deck runner and Broadside, and the fighters Cutter (the standard fighter), Twin boom (the shuttle stand-in and bomber) and Stack.",
  "paint": {
   "armour": [
    "#6a2c16",
@@ -1075,120 +1075,6 @@
      ],
      "kind": "machinery",
      "w_m": 8,
-     "h_m": 3.2,
-     "cell_m": 1.1
-    }
-   ]
-  },
-  "vos_ram": {
-   "_doc": "12, the Ram (rock breaking): a Krai freighter's drive block and spine with a welded hammer head and drive pods. Its windows come from its room plan; its freighter parts wear the Krai freighters' look, dulled.",
-   "seed": 1201,
-   "makers": {
-    "krai": {
-     "look": "krai",
-     "dull": 0.4,
-     "paint": {
-      "ink_k": 0.12,
-      "ao_floor": 0.55,
-      "strip_k": 0.0,
-      "strip_cell_k": 0.0
-     }
-    }
-   },
-   "defaults": {
-    "light_ref": 3.0
-   },
-   "lamps": [
-    {
-     "face": "top",
-     "at": [
-      0,
-      46
-     ],
-     "size_m": 0.7,
-     "colour": "red"
-    }
-   ],
-   "liveries": [
-    {
-     "band_z_m": [
-      32,
-      34
-     ]
-    }
-   ],
-   "lighting": {
-    "floods": [],
-    "auto_floods": {}
-   },
-   "windows": [
-    {
-     "plan": "data/ships/vos/ram_plan.json",
-     "dz_m": 72,
-     "dy_m": 0,
-     "wall_m": 3.2,
-     "dark_share": 0.25,
-     "rooms": {
-      "crew": "quarters",
-      "command": "quarters",
-      "mess": "mess",
-      "workshop": "workshop"
-     }
-    }
-   ],
-   "domes": [],
-   "pods": [],
-   "fixtures": [
-    {
-     "face": "top",
-     "at": [
-      10,
-      40
-     ],
-     "kind": "antenna",
-     "h_m": 7.0,
-     "w_m": 2.0,
-     "r_m": 0.22
-    },
-    {
-     "face": "top",
-     "at": [
-      0,
-      54
-     ],
-     "kind": "dish",
-     "d_m": 5.5
-    },
-    {
-     "face": "top",
-     "at": [
-      0,
-      -36
-     ],
-     "kind": "antenna",
-     "h_m": 7.0,
-     "w_m": 0,
-     "r_m": 0.22
-    },
-    {
-     "face": "bow",
-     "at": [
-      16,
-      0
-     ],
-     "kind": "machinery",
-     "w_m": 14,
-     "h_m": 12,
-     "cell_m": 1.3
-    },
-    {
-     "face": "port",
-     "at": [
-      -52,
-      0
-     ],
-     "kind": "machinery",
-     "w_m": 10,
      "h_m": 3.2,
      "cell_m": 1.1
     }

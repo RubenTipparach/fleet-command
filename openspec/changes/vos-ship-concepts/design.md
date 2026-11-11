@@ -545,6 +545,15 @@ each light map); and the shared `baked-ship.js` `lenses` lays a shader lens on e
 hull: a hot core fading to a dark lip, a rim that lights as the view grazes it, slow rings drawn inward, a pulse on its own
 phase.
 
+## Version 16: approved for implementation, without the Ram (owner, 2026-11-11)
+
+### D22. The Ram is cut, the rest goes into the game
+
+The owner: "I woudl cut number 12 out (ram) , everything else is good to go, implmenet it". The 12 Ram is gone from the
+page, its plan, its detail and its bake, and rock breaking with it (survey Y8 decided, Y10 closed). The page now builds its
+ships on the shared baked fleet (`lib/baked-fleet.js`), so they take damage and break apart on the page as in the game, and
+the exporter reads them; how they go into the game is change `vos-ships-engine`.
+
 ## Open questions
 
 | # | Question | Provisional answer |

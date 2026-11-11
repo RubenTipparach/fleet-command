@@ -138,8 +138,8 @@
    },
    "ships_mockup": {
     "stage": "game",
-    "mockup": 36,
-    "note": "Placeholder line, four classes (owner, 2026-11-08: \"cool start implementation\")"
+    "mockup": 37,
+    "note": "Five specialists and three fighters, baked (owner, 2026-11-11: \"I woudl cut number 12 out (ram) , everything else is good to go, implmenet it\"); the placeholder line of mockup 36 retired"
    },
    "emblem_mockup": {
     "stage": "game",

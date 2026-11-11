@@ -1,0 +1,17 @@
+{
+ "_doc": "The Vos Syndicate's line in the game (mockup 37, change vos-ship-concepts, task 2.5; owner, 2026-11-11: \"I woudl cut number 12 out (ram) , everything else is good to go, implmenet it\"). It replaces the placeholder Vos line of mockup 36. Read by tools/factions/placeholder_classes.py, which writes each class into data/battle/classes.json, data/campaign/campaign.json and the systems files the way it writes a placeholder line: a class copies the battle numbers of its template class, at its true length times the battle framing (2.7), with these changes. length_m: the true length, metres, measured from the bake (assets/ships/vos/manifest.json). hull_x: the template's hull points times this (the Vos fly a weaker hull than a warship of their size: design D11). power_e: allocations that replace the template's. mines and fighters: the ship's load (data/battle/systems/tractor.json loadouts). marines: the marines aboard (data/battle/systems/cloak.json). Each ship has one trade (design D12); the trades the game has no system for yet (rock breaking was the Ram's, cut; the disguise, task 2.4) are not played. Names are the mockup's and provisional; the culture is the owner's (survey U7).",
+ "name": "Vos Syndicate",
+ "colours": { "hull": "#a8482a", "trim": "#d6a043", "dark": "#2a1410", "glow": "#3fb7a3" },
+ "classes": [
+  { "id": "vos_drum", "name": "Drum", "role": "Minelayer", "code": "ML", "template": "ca", "length_m": 122, "hull_x": 0.75, "mines": 12,
+    "why": "Twelve containers round its spine are mine racks: it sows a field as it runs" },
+  { "id": "vos_cross", "name": "Cross", "role": "Tractor ship", "code": "TB", "template": "ca", "length_m": 134, "hull_x": 0.75,
+    "power_e": { "tractor": 2 }, "why": "Four arms with a tractor emitter at each tip hold a ship fast" },
+  { "id": "vos_boarder", "name": "Boarder", "role": "Boarding ship", "code": "BD", "template": "ca", "length_m": 153, "hull_x": 0.75,
+    "power_e": { "transport": 2 }, "marines": 24, "why": "A welded grapple fork holds the prize while its crews go aboard" },
+  { "id": "vos_broadside", "name": "Broadside", "role": "Q-ship", "code": "QS", "template": "ca", "length_m": 170, "hull_x": 0.75,
+    "why": "Passes as a freighter: eight containers on its flanks are gun houses" },
+  { "id": "vos_deck_runner", "name": "Deck runner", "role": "Carrier", "code": "CV", "template": "kelvane_cv", "length_m": 150, "hull_x": 0.75, "fighters": 6,
+    "why": "A flight deck over its drive block carries six Cutters, the Syndicate's own fighters" }
+ ]
+}

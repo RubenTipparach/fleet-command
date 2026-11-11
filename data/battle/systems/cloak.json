@@ -116,10 +116,6 @@
    "redtithe_dd": 6,
    "redtithe_ca": 12,
    "redtithe_fl": 14,
-   "vos_ff": 4,
-   "vos_dd": 6,
-   "vos_ca": 12,
-   "vos_cap": 14,
    "kethran_ff": 4,
    "kethran_dd": 6,
    "kethran_ca": 12,
@@ -139,7 +135,12 @@
    "vhorr_ff": 4,
    "vhorr_dd": 6,
    "vhorr_ca": 12,
-   "vhorr_cv": 10
+   "vhorr_cv": 10,
+   "vos_drum": 12,
+   "vos_cross": 12,
+   "vos_boarder": 24,
+   "vos_broadside": 12,
+   "vos_deck_runner": 10
   }
  },
  "deck_plans": {
@@ -226,10 +227,6 @@
    "redtithe_dd": "petrel",
    "redtithe_ca": "petrel",
    "redtithe_fl": "petrel",
-   "vos_ff": "petrel",
-   "vos_dd": "petrel",
-   "vos_ca": "petrel",
-   "vos_cap": "petrel",
    "kethran_ff": "petrel",
    "kethran_dd": "petrel",
    "kethran_ca": "petrel",
@@ -249,7 +246,12 @@
    "vhorr_ff": "petrel",
    "vhorr_dd": "petrel",
    "vhorr_ca": "petrel",
-   "vhorr_cv": "petrel"
+   "vhorr_cv": "petrel",
+   "vos_drum": "petrel",
+   "vos_cross": "petrel",
+   "vos_boarder": "petrel",
+   "vos_broadside": "petrel",
+   "vos_deck_runner": "petrel"
   }
  }
 }

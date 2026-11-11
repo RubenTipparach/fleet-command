@@ -92,9 +92,9 @@
 ## 2. After the picks
 
 - [x] 2.1 Each ship's rooms (done as 1h.1: fitted into the parts, since a conversion's hull comes first)
-- [ ] 2.2 Detail, the ship's own unwrap and bake (`ship-detailing`): the fighters and the Saucer runner done; the other five in 1h.6
-- [ ] 2.3 Rock breaking as its own change (asteroids that split, a blast that hurts every ship near), after
-  `campaign-space` 2.3
+- [x] 2.2 Detail, the ship's own unwrap and bake (`ship-detailing`): every ship of the line (1h.6, 1i, 1j, 1k)
+- [x] 2.3 Rock breaking: dropped with the Ram (owner, 2026-11-11: "I woudl cut number 12 out (ram)")
 - [ ] 2.4 The disguise as its own change (how a Vos ship reads as a freighter until it acts)
-- [ ] 2.5 Once approved for implementation: export, six classes of about cruiser size with a weaker hull, and the
-  placeholder Vos line (mockup 36) retired
+- [x] 2.5 Approved for implementation without the Ram (owner, 2026-11-11: "everything else is good to go, implmenet it"):
+  the export, five classes of about cruiser size with a weaker hull and the placeholder Vos line retired are change
+  `vos-ships-engine`

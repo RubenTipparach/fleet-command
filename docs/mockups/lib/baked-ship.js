@@ -243,7 +243,8 @@ function lenses(meshes, isGlow, root, rgb) {
     let edge = 0; for (const p of pts) edge = Math.max(edge, V().subVectors(p, c).length());
     const R = Math.min(edge * 0.9, Math.max(rad, edge * 0.82));   // inside the mouth's lip
     const lens = new THREE.Mesh(new THREE.CircleGeometry(R, 48), mat(k++ * 1.37));
-    lens.position.copy(c).addScaledVector(nrm, 0.03); lens.quaternion.setFromUnitVectors(V(0, 0, 1), nrm); group.add(lens); });
+    lens.position.copy(c).addScaledVector(nrm, 0.03); lens.quaternion.setFromUnitVectors(V(0, 0, 1), nrm);
+    lens.userData.lens = { c: c.toArray(), n: nrm.toArray(), r_m: R, phase: (k - 1) * 1.37, rgb: [...rgb] }; group.add(lens); });   // what the game's lens is drawn from (tools/mockups/export_ships.mjs)
   root.add(group);
   return { group, time };
 }
