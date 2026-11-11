@@ -174,6 +174,40 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'Y', name: 'Vos Syndicate ships (mockup 37)',
+    lead: 'Mockup 37 (Vos Syndicate Ships, docs/mockups/vos-ship-concepts.html; its link is on the tracker) is now version 6: three fighters of the Vos\'s own (you: "pirate fighters need to be unique, like more fighter looking!") and six specialists, all about cruiser size (122 to 185 m), after your notes ("they are all roughly cruiser sized ships with hull on the lower side, but all are specialized", "and of course, disguising themselves as freighters too"). The Boarder and the Saucer runner are back; the Twin haul, the Prize frigate, the Castle and the Delta are off the board. Design: openspec/changes/vos-ship-concepts.',
+    qs: [
+      { id: 'Y13', q: 'The Saucer runner\'s taken parts keep their makers\' paint gone dull (the Hunt freighter\'s olive, the Concord Petrel\'s pale grey), but the plate cut over them is the same everywhere. Should each taken part also keep its maker\'s own plating (the Petrel\'s large panels, the Hunt\'s chevrons), so where a part came from shows in its shapes too?',
+        options: ['Paint only, as now', 'Paint and plating: each part plated its maker\'s way', 'Neither: everything in Vos plate, origin shown only by shape'], rec: 0,
+        why: 'Paint alone already tells the parts apart from the battle camera. Plating per maker means the detail tool cuts each part by its own faction\'s rules, a larger change to the bake, worth it if you look at these ships close.' },
+      { id: 'Y14', q: 'The 23 Stack (two short wings one above the other, four guns) has no job yet. What do the Vos fly it as?',
+        options: ['A heavy fighter: slow to turn, a hard first pass', 'An escort that stays by the carrier', 'Not flown: keep the Cutter and the Twin boom only'], rec: 0,
+        why: 'Four guns and a stiff braced wing read as a craft that hits hard once and is slow after; it would sit beside the Cutter as the heavier choice.' },
+      { id: 'Y12', q: 'The Vos fighters are plated in a patchwork of salvaged plate (rusts, and a few plates still in another navy\'s dulled colour). The patchwork is mirrored side to side, as every other navy\'s plating is. Should a Vos craft be patched unevenly instead, so its port side does not match its starboard?',
+        options: ['Mirrored, as now', 'Uneven: the plate colours differ side to side, the plate shapes stay mirrored', 'Uneven all through: shapes and colours both'], rec: 0,
+        why: 'Mirrored is what the bake does today and it reads clean from the battle camera. Uneven colour is a small change to the painter; uneven shapes is a larger one.' },
+      { id: 'Y8', q: 'Each of your picks now has one trade: 3 Boarder boards (a Hunt frigate\'s fork holds the prize); 10 Drum lays mines (twelve racks round the spine); 11 Cross holds with tractor beams (an emitter at each of four arm tips); 12 Ram breaks rocks (a driver in a hammer head of armour, which it hides behind when the pieces fly); 8 Saucer runner launches fighters (six of the Vos\'s own on a deck over its drive block); 9 Broadside passes as a freighter (eight gun houses behind container doors). Is each trade on the right hull?',
+        options: ['Yes, as drawn', 'Swap some (say which in the notes)', 'Bring back the Castle or the Delta for one of them (say which trade in the notes)', 'A new hull for one of the trades (say which in the notes)'], rec: 0,
+        why: 'Each trade went to the pick whose shape already suited it: the drum is a magazine, the cross spreads emitters wide, the hammer head is a shield against its own blast.' },
+      { id: 'Y9', q: 'Disguising themselves as freighters: is that one ship\'s trade, or something every Vos ship does?',
+        options: ['Every Vos ship reads as a freighter from far off, and the Broadside passes even close up', 'Every Vos ship, equally: no ship specialises in it', 'One ship\'s trade only: the others look like the raiders they are'], rec: 0,
+        why: 'All six are made of freighter parts, so all of them can pass at a distance; one that keeps its containers and hides its guns can pass an inspection.' },
+      { id: 'Y10', q: 'Rock breaking (you: "can split up asteroids causing high damage to ships near them including it self"). How does a captain use it?',
+        options: ['A slow charged shot at a rock in range: the rock splits, and every ship near it takes heavy damage, the breaker too if it is close', 'A charge carried to the rock and set, then run from', 'Different (say in the notes)'], rec: 0,
+        why: 'A shot keeps it a weapon the captain aims and times; the danger to the breaker comes from having to be near enough to hit. It needs rocks in battles first, which is its own piece of work.' },
+      { id: 'Y7', q: 'One pointed bow is left on the board: the Boarder\'s fork, a Hunt frigate\'s bow with two pointed tines. It is a taken part, and the fork is what holds a prize while the crew cross. Should a Vos crew blunt it?',
+        options: ['No: leave the fork as taken', 'Yes: cut the tines square', 'Swap the fork for another boarding bow (say what in the notes)'], rec: 0,
+        why: 'You picked the Boarder with its fork, and the tines are the tool the ship is for.' },
+      { id: 'Y1', q: 'Is this how the Vos get their ships: freighter drive blocks, spines and containers, with parts taken from warships, rearranged by a clan\'s yard, and no hull built from new?',
+        options: ['Yes', 'Mostly, but a rich clan builds a few hulls of its own (say what in the notes)', 'Different (say in the notes)'], rec: 0,
+        why: 'A clan has a breaking yard, not a shipyard. Every Vos ship then tells you who the clan has raided.' },
+      { id: 'Y3', q: 'Each taken part keeps a dulled version of its maker\'s colour, and the Vos\'s own metal is rust with a brass rail. Keep that?',
+        options: ['Yes, with each clan\'s paint and marks added when they are detailed', 'Repaint everything in Vos colours, so only the shapes show where a part came from', 'Different (say in the notes)'], rec: 0,
+        why: 'Leaving the makers\' colours showing is what makes a ship read as stolen at a glance; clan paint over it then says whose it is now.' },
+      { id: 'Y4', q: 'Whose parts may a Vos ship carry?',
+        options: ['Any faction the clan could have raided', 'Only the factions next to the Vos on the campaign map', 'One maker per ship: a clan sticks to parts it knows'], rec: 0,
+        why: 'It gives the most variety, and a mixed ship tells a longer story.' },
+    ] },
   { tag: 'V', name: 'Freighters (mockup 24)',
     lead: 'Mockup 24 (Fleet Command Freighters, docs/mockups/freighter-concepts.html; its link is on the tracker) now shows your four picks (decided below), each twice its drafted size with containers of 12 by 12 by 24 m, the board of eight beside them. No faction has a merchant tradition written down, so each concept comes from a tradition drafted inside its faction for you to keep, change or reject. Design: openspec/changes/freighters.',
     qs: [
@@ -537,6 +571,7 @@ const SECTIONS = [
 ];
 
 const DECIDED = [
+  { text: 'Y11 (owner, 2026-11-10): "love all 3 of those fighters, lets stick to 21 as standard fighter, twin boom as the shuttle stand in ( but also they will be used as bombers as well) and lets get highres versions fo these built out": the 21 Cutter is the Vos\'s standard fighter; the 22 Twin boom stands in for their shuttle and is also flown as a bomber; the 23 Stack is liked and has no job yet', where: 'openspec/changes/vos-ship-concepts (D14), mockup 37 v7' },
   { text: 'NP8, in part (owner, 2026-11-10): 15 km is the most a lock reaches through a nebula plume, so ships closer than that lock and fight inside a cloud column ("nebula battles - 15km is now max lockon range")', where: 'openspec/changes/nebula-plumes, data/battle/systems/cloak.json lock_km' },
   { text: 'V2 (owner, 2026-11-07): the freighters are blockouts 1 (the Concord Gauge carrier), 4 (the Krai Spear train), 5 (the Ssarith Tally carrier) and 8 (the Kelvane Twin ledger, made a loop: "really skinny arms and link.tbe arms together with a thin bridge at the end to keep the loop design ethos", "rounder at the tip")', where: 'openspec/changes/freighters, mockup 24 v6' },
   { text: 'V5 (owner, 2026-11-07): every freighter and its containers twice the drafted size, 300-360 m with 12 by 12 by 24 m containers ("this way cargo ships are much bigger than any combat ships..as they should be")', where: 'openspec/changes/freighters, mockup 24 v6' },
