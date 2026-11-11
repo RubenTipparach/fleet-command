@@ -43,3 +43,5 @@
   folder, `SFX_SRC`); its MP3s are in `output/sfx` there. The account that published versions 1-10 is the cloud session's,
   so this goes out as a new artifact from the desktop account; record its link here and in the tracker.
 - 2026-11-10, desktop session (owner: "Can you update and publish the sfx artifact? There's some changes I want to suggest", "Publish new artifact"): published as a NEW artifact, https://claude.ai/artifact/7zWthg14SmsRfaFZpj1vAE, version 1, version id `1794367132-8556`, with its 36 MP3s beside it (`docs/mockups/sounds.files.json`). The page's text brought up to date: the weapons redone without the arcade lasers, every sound now in the game, no CC-BY pack in use. The tracker, `docs/design/README.md` and `mockup-work.md` point at the new link.
+- 2026-11-11, desktop session (owner: "Shield hit bad, target select bad. Fix those"): version 2, version id `1794377172-fe48`: `shield_hit_short` and `target_lock` redone (commit `27ad65de`), their MP3s replaced at their served paths, the page's fingerprints updated; the other 34 sounds unchanged.
+
