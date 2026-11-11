@@ -4,6 +4,7 @@
 // drive: arm it with the warp key, keep the course plotted, turn on the safety override when it must, and jump once the
 // Warp page's risk is low enough (or the enemy is close). One captain: these are its beats, never a second bot.
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FleetCommand.Sim;
@@ -77,7 +78,18 @@ public sealed partial class ScriptedCaptain
                 if (B.Player.Reactor.Loops[j].Hp > 0.2 && B.Player.Reactor.Loops[j].Flow < R.FlowMax)
                 {
                     int before = B.Player.Reactor.Loops[j].Flow;
-                    await Click($"rx.f.{j}.{R.FlowMax - 1}");
+                    // every point of output spoken for: a box taken from a lesser system first (the Power page's
+                    // allocation), as a player frees power for the pumps, then back to the Reactor page
+                    if (B.Rules.PowerRoom(B.Player, before) <= before
+                        && new[] { "tractor", "transport", "sensors" }.FirstOrDefault(k => B.Player.Power.GetValueOrDefault(k) > 0) is { } spare)
+                    {
+                        int had = B.Player.Power[spare];
+                        await SetBoxes($"{spare}={had - 1}");
+                        GD.Print($"PLAYTEST_REACTOR {spare} {had} -> {B.Player.Power[spare]} boxes for the coolant");
+                        await Click("pw.mode.reactor");
+                    }
+                    int cap = Math.Min(R.FlowMax, B.Rules.PowerRoom(B.Player, before));
+                    if (cap > before) await Click($"rx.f.{j}.{cap - 1}");
                     GD.Print($"PLAYTEST_REACTOR loop {j + 1} flow {before} -> {B.Player.Reactor.Loops[j].Flow} (hp {B.Player.Reactor.Loops[j].Hp:0.00})");
                 }
         Press("back");
