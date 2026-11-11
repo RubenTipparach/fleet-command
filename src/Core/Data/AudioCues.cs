@@ -6,9 +6,13 @@ using System.Collections.Generic;
 
 namespace FleetCommand.Data;
 
-/// <summary>One sound: its file (relative to the repository, under assets/audio, an .ogg), its bus (Master or
-/// Effects) and its level at that bus in dB.</summary>
-public sealed record AudioCue(string Id, string File, string Bus, double VolumeDb);
+/// <summary>One sound: its takes (files relative to the repository, under assets/audio, .ogg; one is picked at random
+/// each time it plays, so a sound heard often varies), its bus (Master or Effects) and its level at that bus in dB.</summary>
+public sealed record AudioCue(string Id, IReadOnlyList<string> Files, string Bus, double VolumeDb)
+{
+    /// <summary>The first take (a cue of one take: its file).</summary>
+    public string File => Files[0];
+}
 
 /// <summary>Every cue by id.</summary>
 public sealed record AudioCues(IReadOnlyDictionary<string, AudioCue> Cues)
@@ -23,7 +27,7 @@ public sealed record AudioCues(IReadOnlyDictionary<string, AudioCue> Cues)
     public AudioCue Get(string id) =>
         Cues.TryGetValue(id, out AudioCue? c) ? c : throw new DataError($"data/audio/cues.json: no cue '{id}' ({string.Join(", ", Cues.Keys)})");
 
-    /// <summary>Reads data/audio/cues.json: every key but _doc is a cue; its file is an .ogg under assets/audio, its bus
+    /// <summary>Reads data/audio/cues.json: every key but _doc is a cue; its file (or files, its takes) an .ogg under assets/audio, its bus
     /// one of Buses (Effects when absent), its volume_db finite, from -40 to 6 (0 when absent); unknown keys are errors.</summary>
     public static AudioCues Load(StrictJson root)
     {
@@ -33,15 +37,18 @@ public sealed record AudioCues(IReadOnlyDictionary<string, AudioCue> Cues)
         {
             if (id == "_doc") continue;
             StrictJson c = root.Obj(id);
-            string file = c.Str("file");
-            if (!file.StartsWith("assets/audio/", StringComparison.Ordinal) || !file.EndsWith(".ogg", StringComparison.Ordinal) || file.Contains(".."))
-                throw new DataError($"{c.Where}.file: an .ogg under assets/audio/, not '{file}'");
+            if (c.Has("file") == c.Has("files")) throw new DataError($"{c.Where}: one of file or files, not {(c.Has("file") ? "both" : "neither")}");
+            string[] files = c.Has("file") ? new[] { c.Str("file") } : c.StrList("files");
+            if (files.Length == 0) throw new DataError($"{c.Where}.files: at least one take");
+            foreach (string file in files)
+                if (!file.StartsWith("assets/audio/", StringComparison.Ordinal) || !file.EndsWith(".ogg", StringComparison.Ordinal) || file.Contains(".."))
+                    throw new DataError($"{c.Where}.{(c.Has("file") ? "file" : "files")}: an .ogg under assets/audio/, not '{file}'");
             string bus = c.Str("bus", "Effects");
             if (Array.IndexOf(Buses, bus) < 0) throw new DataError($"{c.Where}.bus: one of {string.Join(", ", Buses)}, not '{bus}'");
             double db = c.Num("volume_db", 0);
             if (!double.IsFinite(db) || db < -40 || db > 6) throw new DataError($"{c.Where}.volume_db: from -40 to 6 dB");
             c.Done();
-            cues[id] = new AudioCue(id, file, bus, db);
+            cues[id] = new AudioCue(id, files, bus, db);
         }
         root.Done();
         return new AudioCues(cues);

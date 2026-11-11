@@ -26,6 +26,9 @@
 - [x] 2.2e The shield hit again (owner, 2026-11-11: "Shield hit still has an artificial retro game ding that's very out of
   place. It needs to sound like a low thump hit"): no bright layer; a ship's cannon striking, lowpassed at 500 Hz, over a
   distant explosion (T1 of three low thumps on Drive)
+- [x] 2.2f All three thumps in the game (owner, 2026-11-11: "Any variation of t1,t,2 and 3 are fine..we can use them all to
+  give the.sound variety"): a cue may name several takes (`files`), one picked at random each time it plays;
+  `shield_hit_short`, `_2` and `_3`
 
 ## 3. In the game (after approval for implementation)
 

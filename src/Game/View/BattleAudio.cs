@@ -54,7 +54,9 @@ public sealed partial class BattleAudio : Node3D
         {
             if (!e.Placed) { _console?.Key(e.Cue); continue; }
             AudioCue cue = _cues.Get(e.Cue);
-            if (GD.Load<AudioStream>("res://" + cue.File) is not { } stream) continue;
+            // one of its takes at random (a shield hit has three), so a sound heard often varies
+            string file = cue.Files[_rng.Next(cue.Files.Count)];
+            if (GD.Load<AudioStream>("res://" + file) is not { } stream) continue;
             AudioStreamPlayer3D v = Voice();
             v.Stream = stream;
             v.Bus = cue.Bus;

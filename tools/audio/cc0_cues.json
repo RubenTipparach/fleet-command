@@ -699,5 +699,45 @@
   "tail_fade": 0.03,
   "edits": "two clean interface tones, 0.07 s and 0.11 s, the second 0.09 s after the first; 0.25 s",
   "peak_db": -9.0
+ },
+ "shield_hit_short_2": {
+  "group": "Impacts",
+  "what": "The short shield hit's second take: a soft low boom (owner, 2026-11-11: \"Any variation of t1,t,2 and 3 are fine..we can use them all to give the.sound variety\": one of the three plays at random each hit; T2 of the thump audition).",
+  "layers": [
+   {
+    "src": "oga/explosion-somewhere-far:explosion_somewhere_far.mp3",
+    "start": 0.07,
+    "lp": 700,
+    "dur": 0.55,
+    "fadeout": 0.35
+   }
+  ],
+  "len": 0.6,
+  "tail_fade": 0.03,
+  "edits": "a distant explosion from its onset, lowpassed at 700 Hz, cut to 0.55 s; 0.6 s",
+  "peak_db": -8.0
+ },
+ "shield_hit_short_3": {
+  "group": "Impacts",
+  "what": "The short shield hit's third take: a deep thump with a sub body (owner, 2026-11-11: \"Any variation of t1,t,2 and 3 are fine..we can use them all to give the.sound variety\": one of the three plays at random each hit; T3 of the thump audition).",
+  "layers": [
+   {
+    "src": "oga/battle-at-sea:cannon_hit_ship_short.ogg",
+    "lp": 400,
+    "dur": 0.45,
+    "fadeout": 0.3
+   },
+   {
+    "src": "oga/space-ship-shield-sounds:space shield sounds - 3.wav",
+    "start": 0.1,
+    "dur": 0.4,
+    "fadeout": 0.3,
+    "gain": -8
+   }
+  ],
+  "len": 0.5,
+  "tail_fade": 0.03,
+  "edits": "a cannon striking a ship, lowpassed at 400 Hz, over the deepest shield take (about 70 Hz) 8 dB under it; 0.5 s",
+  "peak_db": -8.0
  }
 }
