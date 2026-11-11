@@ -177,6 +177,23 @@ public sealed class Crew
         return null;
     }
 
+    /// <summary>The admiral sends a member to a ship (owner, 2026-11-11: "I don't see how you are assigning crew members to a
+    /// specific ship"): to the flagship or a ship another member captains, they join its crew (holding no role until its
+    /// captain gives them some); to a ship the AI flies, they take it as its captain. A ship they captained goes back to the
+    /// AI. Returns why not, or null. <paramref name="aiShip"/>: the ship is one of the fleet the AI flies.</summary>
+    public string? Assign(int by, int member, string bridge, bool aiShip)
+    {
+        if (by != AdmiralId) return "only the admiral assigns crew to ships";
+        if (Member(member) == null || member == AdmiralId) return "no such crew member";
+        if (BridgeOf(member) == bridge) return null;
+        if (aiShip) return GiveShip(by, bridge, member);
+        if (bridge != Flag && !Ships.ContainsKey(bridge)) return "not a ship of the fleet";
+        foreach (string s in Ships.Where(kv => kv.Value == member).Select(kv => kv.Key).ToList()) GiveShip(by, s, AdmiralId);
+        foreach (string k in Held.Where(kv => kv.Value == member).Select(kv => kv.Key).ToList()) Held.Remove(k);
+        Aboard[member] = bridge;
+        return null;
+    }
+
     /// <summary>The bridges a member may be on: the flagship's and each ship a member captains.</summary>
     public IEnumerable<string> Bridges() => new[] { Flag }.Concat(Ships.Keys);
 

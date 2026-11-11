@@ -447,6 +447,22 @@ public sealed class Lockstep
                     Battle.SetHelmed(ship, to != Crew.AdmiralId);
                 }
                 break;
+            case "assign":
+            {
+                string at = (string?)op["bridge"] ?? "";
+                int mem = (int?)op["member"] ?? 0;
+                bool ai = at != Crew.Flag && !Crew.Ships.ContainsKey(at);
+                if (ai && Battle != null && (Battle.ShipById(at) is not { Alive: true, Side: 0, Fixed: false } sa || sa == (_flag ?? Battle.Player))) { why = "not a ship of the fleet"; break; }
+                string? held0 = Crew.Ships.Where(kv => kv.Value == mem).Select(kv => kv.Key).FirstOrDefault();
+                why = Crew.Assign(by, mem, at, ai);
+                if (why == null && Battle != null)
+                {
+                    if (held0 != null && !Crew.Ships.ContainsKey(held0)) Battle.SetHelmed(held0, false);
+                    if (ai) Battle.SetHelmed(at, true);
+                }
+                to = mem;
+                break;
+            }
             case "bridge":
                 string to2 = (string?)op["bridge"] ?? "";
                 if (by == Crew.AdmiralId && to2 != Crew.Flag && Battle != null && Battle.ShipById(to2) is not { Alive: true, Side: 0, Fixed: false }) { why = "not a ship of the fleet"; break; }
@@ -468,6 +484,14 @@ public sealed class Lockstep
             string what = (string?)op["op"] == "role" ? Crew.Roles[(string)op["role"]!].Name
                 : Battle?.ShipById((string?)op["ship"])?.Name is { } sn ? $"command of the {sn}" : "a ship";
             bool ship = (string?)op["op"] == "ship";
+            if ((string?)op["op"] == "assign")
+            {
+                string at = (string?)op["bridge"] ?? "";
+                string place = at == Crew.Flag ? $"the {_flag?.Name ?? "flagship"}" : $"the {Battle?.ShipById(at)?.Name ?? at}";
+                LocalEvent(by, Crew.CaptainOf(at) == to ? $"gave command of {place} to {Crew.NameOf(to)}" : $"sent {Crew.NameOf(to)} to {place}");
+                CrewChanged?.Invoke();
+                return;
+            }
             if ((string?)op["op"] == "bridge")
             {
                 string where = (string?)op["bridge"] == Crew.Flag ? $"the {_flag?.Name ?? "flagship"}'s" : $"the {Battle?.ShipById((string?)op["bridge"])?.Name ?? "ship"}'s";

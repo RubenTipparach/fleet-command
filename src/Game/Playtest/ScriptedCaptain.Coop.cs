@@ -134,10 +134,10 @@ public sealed partial class ScriptedCaptain
                     if (i < 0 || i >= others.Length) return $"crew_ship: the fleet has {others.Length} ships besides the flagship";
                     what = others[i].Id;
                 }
-                // a role in the captain's menu; a ship on the Fleet station, its tab, then its captain's key
-                string? open = b.Do == "crew_role" ? await OpenCrew() : await Click("st.fleet") ?? (_x.State.CrewShown ? await Click("fl.view.fleet") : null) ?? await Click($"fl.{what}");
+                // a role in the roles grid, a ship in the assignments: both on the Fleet station's Crew view
+                string? open = await OpenCrew();
                 if (open != null) return open;
-                string id = b.Do == "crew_role" ? $"crew.role.{what}.{to}" : $"fl.cap.{what}.{to}";
+                string id = b.Do == "crew_role" ? $"crew.role.{what}.{to}" : $"fl.as.{to}.{what}";
                 // a role held by the member already is a lit box: pressing it would hand it back, so leave it
                 bool held = b.Do == "crew_role" && co.Crew.HolderOf(co.Crew.BridgeOf(co.Me), what) == to;
                 string? st = held ? null : await Click(id);

@@ -239,6 +239,31 @@ public class CoopTests
     }
 
     [Fact]
+    public void The_admiral_assigns_crew_to_ships_as_captains_or_as_crew()
+    {
+        var p = new Pair(Sc("concord_battle"));
+        int third = p.Host.HostJoin("Third");
+        p.Flush();
+        Ship wing = p.HB.Fleet().First(s => s != p.HB.Player);
+        // to an AI ship: its captain, every role theirs, the AI off it
+        p.Host.AskCrew(new JsonObject { ["op"] = "assign", ["member"] = p.Guest.Me, ["bridge"] = wing.Id });
+        // to that ship again: its crew under that captain
+        p.Host.AskCrew(new JsonObject { ["op"] = "assign", ["member"] = third, ["bridge"] = wing.Id });
+        p.Steps(1);
+        Assert.Equal(p.Guest.Me, p.Host.Crew.CaptainOf(wing.Id));
+        Assert.Equal(wing.Id, p.Host.Crew.BridgeOf(third));
+        Assert.Contains(wing.Id, p.HB.Helmed);
+        // back to the flagship: the ship goes back to the AI
+        p.Host.AskCrew(new JsonObject { ["op"] = "assign", ["member"] = p.Guest.Me, ["bridge"] = Crew.Flag });
+        p.Steps(1);
+        Assert.Equal(Crew.Flag, p.Host.Crew.BridgeOf(p.Guest.Me));
+        Assert.DoesNotContain(wing.Id, p.HB.Helmed);
+        // only the admiral assigns
+        Assert.NotNull(p.Host.Crew.Assign(p.Guest.Me, third, Crew.Flag, false));
+        Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+    }
+
+    [Fact]
     public void A_game_takes_eight_players_and_no_more()
     {
         var host = new Lockstep(new Crew(R, "Admiral"), host: true);
