@@ -10,13 +10,13 @@ This file is written by `python3 tools/audio/list_sources.py` (run by `tools/aud
 | [50 cc0 sci fi sfx](https://opengameart.org/content/50-cc0-sci-fi-sfx) | OpenGameArt | rubberduck | CC0 | `amb_bridge`, `torpedo_detonate`, `torpedo_detonate_short` |
 | [51 ui sound effects buttons switches and clicks](https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks) | OpenGameArt | Kenney | CC0 | `ui_clunk` |
 | [60 cc0 sci fi sfx](https://opengameart.org/content/60-cc0-sci-fi-sfx) | OpenGameArt | rubberduck | CC0 | `amb_bridge` |
-| [63 digital sound effects lasers phasers space etc](https://opengameart.org/content/63-digital-sound-effects-lasers-phasers-space-etc) | OpenGameArt | Kenney | CC0 | `disruptor_fire`, `lance_fire`, `torpedo_launch` |
 | [alarm 1](https://opengameart.org/content/alarm-1) | OpenGameArt | EZduzziteh | CC0 | `red_alert_twotone` |
 | [alarm 2](https://opengameart.org/content/alarm-2) | OpenGameArt | Frenchyboy | CC0 | `red_alert` |
-| [battle at sea](https://opengameart.org/content/battle-at-sea) | OpenGameArt | Thimras | CC0 | `hull_hit`, `hull_hit_short`, `torpedo_launch` |
-| [boost or launch or thruster sound effect](https://opengameart.org/content/boost-or-launch-or-thruster-sound-effect) | OpenGameArt | EZduzziteh | CC0 | `thruster_burst` |
+| [battle at sea](https://opengameart.org/content/battle-at-sea) | OpenGameArt | Thimras | CC0 | `disruptor_fire`, `hull_hit`, `hull_hit_short`, `lance_fire`, `missile_launch`, `torpedo_launch` |
+| [boost or launch or thruster sound effect](https://opengameart.org/content/boost-or-launch-or-thruster-sound-effect) | OpenGameArt | EZduzziteh | CC0 | `thruster_burst`, `torpedo_launch` |
 | [chunky explosion](https://opengameart.org/content/chunky-explosion) | OpenGameArt | Joth | CC0 | `ship_destroyed` |
-| [electricity game sound pack](https://opengameart.org/content/electricity-game-sound-pack) | OpenGameArt | faxcorp | CC0 | `disruptor_fire`, `lance_fire`, `overload_charge`, `shield_hit`, `shield_hit_short`, `shields_collapse`, `shields_raise`, `ship_destroyed` |
+| [doomsday laser cannon sound effect](https://opengameart.org/content/doomsday-laser-cannon-sound-effect) | OpenGameArt | TAD | CC0 | `disruptor_fire`, `lance_fire` |
+| [electricity game sound pack](https://opengameart.org/content/electricity-game-sound-pack) | OpenGameArt | faxcorp | CC0 | `disruptor_fire`, `overload_charge`, `shield_hit`, `shield_hit_short`, `shields_collapse`, `shields_raise`, `ship_destroyed` |
 | [explosions 4](https://opengameart.org/content/explosions-4) | OpenGameArt | EZduzziteh | CC0 | `explosion_small`, `explosion_small_short`, `hull_hit`, `hull_hit_short`, `ship_destroyed`, `torpedo_detonate`, `torpedo_detonate_short` |
 | [generator loop](https://opengameart.org/content/generator-loop) | OpenGameArt | YCbCr | CC0 | `engine_hum` |
 | [interface beeps](https://opengameart.org/content/interface-beeps) | OpenGameArt | bart | CC0 | `amb_bridge` |
@@ -32,6 +32,6 @@ This file is written by `python3 tools/audio/list_sources.py` (run by `tools/aud
 
 ## Not recorded
 
-- Layered with our own synthesis (`tools/audio/gen_sfx.py`): `amb_bridge`, `disruptor_fire`, `lance_fire`, `missile_launch`, `shield_hit`, `shield_hit_short`, `torpedo_detonate`, `torpedo_detonate_short`, `torpedo_launch`.
+- Layered with our own synthesis (`tools/audio/gen_sfx.py`): `amb_bridge`, `shield_hit`, `shield_hit_short`, `torpedo_detonate`, `torpedo_detonate_short`.
 - Synthesised outright: `core_breach`, `hail`, `hull_critical`, `pause_off`, `pause_on`, `shields_failing`, `target_lock`, `ui_chirp`, `ui_confirm`, `ui_deny`, `weapon_charged`.
 - Music: LMMS's own synths and the GeneralUser GS soundfont (S. Christian Collins, GeneralUser GS License v2.0: free for music creation, private or commercial), rendered from the scores in `music/` (`music-authoring` skill).

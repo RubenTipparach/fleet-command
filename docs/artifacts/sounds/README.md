@@ -36,3 +36,10 @@
   hash), so a changed sound is never played from the viewer's cache.
 - Version 10 published 2026-11-07, version id `1793956237-fd25`: the brown-noise bed is the bridge (owner: "delete
   amb_bridge, use amb_bridge_brown"); the space ambience removed, and with it the only CC-BY pack.
+- Version 11 ready to publish 2026-11-10, not yet published (the artifact tools stopped working in the desktop session that
+  made it): the weapons redone without the arcade lasers (owner: "Sfx are really goofy for the weapons. We need to fix
+  that"), the doomsday laser cannon and a ship's cannon in the Lance, Disruptor and Pulse torpedo, the missile's ignition
+  thump, point defence darkened. The page was rebuilt on the Mac by `tools/audio/render_sfx.sh` (sources in a scratch
+  folder, `SFX_SRC`); its MP3s are in `output/sfx` there. The account that published versions 1-10 is the cloud session's,
+  so this goes out as a new artifact from the desktop account; record its link here and in the tracker.
+
