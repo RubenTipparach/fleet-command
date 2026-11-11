@@ -1,7 +1,7 @@
 # Fractal vessels (mockup 37)
 
 - Link: https://claude.ai/artifact/2mUTtEaxfqSAnX94REdZHj
-- Shows: three raymarched fractal vessels with no mesh, one per school of the Axiom's draft culture:
+- Shows: raymarched fractal vessels with no mesh (seven forms since v3), first one per school of the Axiom's draft culture:
   - a 4D quaternion Julia set sliced into 3D;
   - a chain of folded Menger blocks;
   - a branching tree.
@@ -15,3 +15,7 @@
   phone friendly (a folding sheet upright, a narrow column sideways, 44 px targets) and marched at half resolution with
   the Petrel's depth kept. Published from the cloud session on `claude/vigilant-keller-s93pth`, artifact version 2,
   version id `1794341490-ee6b`.
+- 2026-11-11, version 3 (owner: "theres someartifacts with the square one", "more interesting ship shapes, triangles?",
+  "Mandelbulb?", Benesi, icefractal.com): the lattice's speckle, grain and stepped edges fixed; the delta lattice,
+  octahedral lattice, Benesi pine and Mandelbulb added (the Icebox tried and left out). Published from the cloud session on
+  `claude/vigilant-keller-s93pth`, artifact version 3, version id `1794380439-435c`.

@@ -48,7 +48,7 @@ Three numbers are set per form, because the forms differ in how open they are:
 - **how strong the occlusion is** (1.0, 0.6, 1.0). A Menger sponge is porous at every level, so full-strength occlusion reads
   it as dark everywhere.
 
-## D3. The three forms
+## D3. The first three forms
 
 | Form | Length | Function | The slider |
 |---|---|---|---|
@@ -62,6 +62,46 @@ Three numbers are set per form, because the forms differ in how open they are:
   lattice and the first Mandelbox both drew as speckled eggs. So every form's outline is its own.
 - **The palette is provisional**, the Axiom placeholder line's: hull `#e8ecf6`, deep `#2f2696`, trim `#4b3fd8`, glow
   `#3fe0e6`, plus a rim `#b99cff`. It waits for FV1 and FV2.
+
+## D3a. Version 3: the lattice's artifacts, and four more forms
+
+The owner, 2026-11-11: "I like the square one and the julia slice, but theres someartifacts with the square one, I'd like
+more interesting ship shapes, triangles? more distinct looking shapes, the fold latice looks most like a spaceship to me";
+then "Mandelbulb?"; then two Benesi fractals from Wikimedia Commons ("benisi is most structurally sound tome"); then
+icefractal.com.
+
+**The lattice's artifacts** were the shader's, not half resolution's (a full-resolution shot showed the same):
+- **Purple speckle.** It came from real tunnels two or three pixels wide, coloured deep by the orbit trap. Two fixes:
+  - the trap now colours from the first `trapN` iterations only (2 for the lattices), so colour comes in broad panels;
+  - the tilers' folds stop once a cell is under 4 pixels (`LOD_PX`). The marcher sets a pixel's width at each sample
+    (`gPix`), so a far block folds less than a near one.
+- **Grain.** The normal is now read over 2.5 pixels (it was 1.5), and the occlusion samples at least 2 pixels a step.
+- **Stair-stepped edges.** A ray that passes within 1.5 pixels of the surface without touching it now shades the surface
+  at its nearest point, faded by how near it came. Silhouettes are soft, and a half-resolution march scales up without
+  steps.
+- Each form has its own step share (`uStepK`): 0.85 for the exact folds, 0.8 for the Mandelbulb and 0.5 for the Benesi
+  pine, whose estimate overshoots.
+
+**The new forms**, each in its own program as before:
+
+| Form | Length | Function | The slider |
+|---|---|---|---|
+| Delta lattice | 140 m | The fold lattice's Menger blocks laid out as an arrowhead: a spine of five (half sides 0.42 to 0.14) and two swept wings of three (0.28 to 0.14), mirrored about the centreline. From above it is a narrow nose on swept wings | the turn per fold |
+| Octahedral lattice | 130 m | A Sierpinski octahedron: mirror the axes, sort toward the nearest corner, scale by 2 toward it (six copies at the corners); three blocks (half sizes 0.8, 0.56, 0.4) overlapping into one spear. Its faces open into triangles of triangles | the turn per fold (0 is clean) |
+| Benesi pine | 150 m | After Benesi's power 2 rule (his "pine tree", posted on fractalforums.com): `(x, r) -> (x^2 - r^2, 2 x r)` along and away from the axis, the angle round the axis doubled, plus the point's own seed. In any plane through the axis it is the Mandelbrot set: the heavy bulb aft, the needle at the bow. The estimate `0.5 log r r / dr` overshoots, so it steps at 0.5 | shifts the seed along the axis |
+| Mandelbulb | 120 m | The power P bulb, `z -> r^P (sin P theta cos P phi, sin P theta sin P phi, cos P theta) + c`, its pole along the hull | the power, 5 to 11 |
+
+- **The Benesi turn.** The Commons hybrid ("KIFS x T Benesi", a Sierpinski octahedron crossed with Benesi's transform) is
+  CC BY-SA 4.0, so only its idea is taken. Its idea is to turn space so the diagonal lies along an axis, fold there, and
+  turn back.
+  - Tried on the octahedron, the turn collapsed the triangles into round blobs: its second mirror plane, x + y = 2z, is
+    not one of the octahedron's symmetries. So the octahedral lattice is the plain Sierpinski fold, and Benesi's own form
+    is the pine.
+  - The CC0 "Benesi - Pwr2" image is the pine's kind of shape. Nothing of either image is copied.
+- **The Icebox** (icefractal.com's article, its code MIT): a Mandelbulb with a box radius, then a box fold and a ball fold.
+  It was ported and left out, because it came out a solid cube: its folds keep every point within the box from escaping.
+  The article gives no values for its power and fold limit, and those are what decide whether it opens up. A port with
+  the article's own values is a task (7.1).
 
 ## D4. Damage
 
@@ -132,6 +172,6 @@ open).
 |---|---|---|---|
 | FV1 | Whose vessels are these? | The Axiom's. They replace the placeholder line once approved | FV1 |
 | FV2 | Is the vessel the being (framing 1), or made by a people who think in fractals (framing 2)? | Framing 2, which keeps the Axiom's draft culture and console | FV2 |
-| FV3 | Which forms make the line? | All three, one per school: the frigate a tree, the cruiser a lattice, the capital a Julia slice | FV3 |
+| FV3 | Which forms make the line? | Since v3, from the owner's notes (the lattice "looks most like a spaceship", the Julia slice liked): the frigate the octahedral lattice, the cruiser the fold or delta lattice, the capital the Julia slice; the Benesi pine and the Mandelbulb as other options, the tree dropped unless asked for | FV3 |
 | FV4 | How do phones draw them? | A mesh baked from the same field (marching cubes, a few LODs) on phones; the raymarch on desktop | FV4 |
 | FV5 | How does the game hit them? | The C# copy of the field, tied to the shader's by a test (D6) | FV5 |

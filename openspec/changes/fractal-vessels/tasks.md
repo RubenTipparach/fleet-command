@@ -14,6 +14,7 @@
 - [x] 1.4 Published. Then recorded in `mockup-work.md`, the tracker's repository copy and `docs/artifacts/fractal-vessels/`
 - [x] 1.5 Survey questions FV1-FV5 on the culture framing, the faction, the forms, phones and the game's hits
 - [x] 1.7 v2 (owner, 2026-11-10: "Make this thing phone friendly please! Also half resolution ray match if you don't mind"): the vessels marched at half resolution into their own target with the occluders' depth (design D5a), the phone layout, every shot at desktop, phone and portrait sizes in `docs/screenshots/mockups/fractal-vessels/`, republished
+- [x] 1.8 v3 (owner, 2026-11-11: the lattice's artifacts, "more interesting ship shapes, triangles?", "Mandelbulb?", Benesi, icefractal.com): the lattice's speckle, grain and stepped edges fixed, the delta lattice, octahedral lattice, Benesi pine and Mandelbulb added (design D3a), shots at all sizes, republished
 - [ ] 1.6 The owner's review (approval for build, then for implementation)
 
 ## 2. In the game (once approved for implementation)
@@ -26,3 +27,7 @@
 - [ ] 2.4 Damage from the simulation's zones: fold levels lost and holes cut, passed to the shader as uniforms
 - [ ] 2.5 Phones, per survey FV4
 - [ ] 2.6 Game stills beside the mockup's shots, `docs/design/mockup-sync.md`, and a playtest on the owner's PC
+
+## 7. Forms still to try
+
+- [ ] 7.1 The Icebox with icefractal.com's own power and fold limit (v3's port, at a fold of 0.8 to 1, came out a solid cube)
