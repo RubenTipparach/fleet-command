@@ -156,3 +156,4 @@
 - Version 161 published 2026-11-08, version id `1794141205-9779`: M1 v30, M34 v8 (approved for implementation in the owner's words, recorded in the tracker's reviews), merged onto the live version (M4 v33, M36 Placeholder fleets, the Faction readiness page).
 - 2026-11-10, desktop session: version 171, version id `1794367258-1e3f`: the Sounds page (M17) at its new link, version 1; the survey at version 43; the live page's Vos ships entry (M37, published from another session) merged into `docs/mockups/tracker.html` first.
 - 2026-11-11, desktop session: version 172, version id `1794377182-f2fa`: the Sounds page (M17) at version 2.
+- 2026-11-11, desktop session: version 173, version id `1794377846-f62d`: the Sounds page (M17) at version 3.
