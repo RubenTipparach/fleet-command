@@ -23,3 +23,8 @@
   damaged, make a testing scene for me to shoot it with phasers and torpedos!"): the ribbed truss, the pine on Benesi's own
   rule, stronger damage, a firing range for phasers and torpedoes, the damage slider fixed; the Abox tried and left out.
   Published from the cloud session on `claude/vigilant-keller-s93pth`, artifact version 4, version id `1794384206-9c47`.
+- 2026-11-11, version 5 (owner, of the KIFS x T Benesi It2 render: "go make it, also add some more colors and shading to
+  the ships"; then "I liek the blue, purple green solors"): Benesi KIFS replaces the ribbed truss (Mandelbulber's octahedral
+  KIFS with Benesi's turn before the third fold, matched to the render's silhouette at its own camera); every form in its
+  own blues, purples and greens, with accent masks and a fuller light. Published from the cloud session on
+  `claude/vigilant-keller-s93pth`, artifact version 5, version id `1794391519-5368`.
