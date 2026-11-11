@@ -69,6 +69,17 @@ public sealed partial class ScriptedCaptain
         for (int i = 0; i < c.Length; i++)
             for (int k = 0; k < 40 && Math.Abs(c[i]) > nudge / 2; k++)
                 if (await Click(c[i] > 0 ? $"rx.m.{i}" : $"rx.p.{i}") is { } s4) return s4;
+        // a hot core: the coolant flow on every loop still working turned up to its most (the flow boxes), as the AI's crew
+        // moves flow onto the loops that carry heat (Battle.Reactor's Tend)
+        var R = B.Data.Systems.Reactor;
+        if (B.Player.Reactor.Temp >= R.CriticalPct * 0.8)
+            for (int j = 0; j < B.Player.Reactor.Loops.Length; j++)
+                if (B.Player.Reactor.Loops[j].Hp > 0.2 && B.Player.Reactor.Loops[j].Flow < R.FlowMax)
+                {
+                    int before = B.Player.Reactor.Loops[j].Flow;
+                    await Click($"rx.f.{j}.{R.FlowMax - 1}");
+                    GD.Print($"PLAYTEST_REACTOR loop {j + 1} flow {before} -> {B.Player.Reactor.Loops[j].Flow} (hp {B.Player.Reactor.Loops[j].Hp:0.00})");
+                }
         Press("back");
         await Frames(3);
         return null;
