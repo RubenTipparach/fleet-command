@@ -84,6 +84,9 @@ public sealed class Lockstep
         Battle = null;
     }
 
+    /// <summary>The admiral's ship (the flagship) in the battle being shared.</summary>
+    public Ship? Flag => _flag;
+
     /// <summary>The ship this peer's member commands or crews.</summary>
     public Ship? OwnShip()
     {
@@ -107,6 +110,9 @@ public sealed class Lockstep
     // an order given on this peer (a key, a click, the scripted captain, the game flow): to the host, or the host's queue
     private void Local(string name, object?[] args)
     {
+        // refused here as the host would refuse it, and said on this console's log only (the log is no part of the battle's
+        // checksum)
+        if (Crew.Refuses(Me, name) is { } why) { Battle?.Say("Bridge", $"Not yours to order: {why}."); Note($"COOP_REFUSED {Crew.NameOf(Me)} {name}: {why}"); return; }
         var o = new JsonObject { ["t"] = "order", ["tab"] = OpenTab(), ["name"] = name, ["args"] = Args(args) };
         if (IsHost) HostOrder(Me, o);
         else Send(o);
@@ -159,6 +165,8 @@ public sealed class Lockstep
     private void HostCrew(int by, JsonObject op)
     {
         op["by"] = by;
+        // between battles a crew change takes effect at once, and the roster goes out; in a battle it waits for the next tick
+        if (Battle == null) { ApplyCrew(op); SendRoster(); return; }
         _ops.Add(op);
     }
 

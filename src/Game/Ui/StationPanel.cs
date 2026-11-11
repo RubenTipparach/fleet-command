@@ -22,7 +22,14 @@ public sealed partial class StationPanel : ConsolePanel
 
     protected override void DrawPanel()
     {
-        string cur = X.State.Station;
+        // in co-op a station this player does not hold is shut: the console opens the first they do (ConsoleContext.Opens)
+        if (OpenOr("st", Stations, X.State.Station) is not { } cur)
+        {
+            Rect2 none = Frame("No station");
+            Rail("st", none.Position.X, none.Position.Y, Stations, "", X.Act.Station);
+            Lbl("The captain assigns your stations (Crew)", none.Position.X + 64, none.Position.Y + 30, none.Size.X - 70);
+            return;
+        }
         var st = Array.Find(Stations, s => s.Id == cur);
         Rect2 p = Frame(st.Label);
         Rail("st", p.Position.X, p.Position.Y, Stations, cur, X.Act.Station);

@@ -24,6 +24,9 @@ public sealed partial class PlatePanel : ConsolePanel
         int i = Array.IndexOf(fleet, Me);
         Button("fleet", new Rect2(Size.X - 90, 6, 86, 30), $"Fleet {i + 1}/{fleet.Length}", () => B.TakeCommand(fleet[(i + 1) % fleet.Length].Id),
             tip: new Tip("Take command of the next ship"), shortLabel: $"{i + 1}/{fleet.Length}");
+        // co-op: the captain's menu (the bridge crew), left of the Fleet key
+        if (X.Coop != null)
+            Button("crew", new Rect2(Size.X - 168, 6, 74, 30), "Crew", () => X.CrewOpen = !X.CrewOpen, X.CrewOpen, tip: new Tip("The bridge crew: who holds which station"));
     }
 }
 
@@ -298,7 +301,7 @@ public sealed partial class MenuCard : ConsolePanel
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("sheet.block", new Rect2(Vector2.Zero, Size));
         // sized to its four keys, 56 px a row, and the frame round them (it held five before Display moved to Options)
-        const int Rows = 4;
+        int Rows = X.Coop != null ? 5 : 4;
         float w = 600, h = 76 + Rows * 56;
         var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
         // a solid background inside the frame (owner, 2026-11-03: "Pause menu should have a background"), so the dimmed
@@ -330,6 +333,7 @@ public sealed partial class MenuCard : ConsolePanel
         y += 56;
         // the window mode lives in Options with the volumes (owner, 2026-11-06: "also this display button should be in options")
         Button("m.options", new Rect2(b.Position.X, y, bw, 44), "Options", X.Act.Options, center: false); y += 56;
+        if (X.Coop != null) { Button("m.crew", new Rect2(b.Position.X, y, bw, 44), "Crew", () => { X.State.MenuOpen = false; X.CrewOpen = true; }, center: false); y += 56; }
         Button("m.quit", new Rect2(b.Position.X, y, bw, 44), "Quit", X.Act.Quit, center: false);
     }
 }
