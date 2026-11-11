@@ -26,5 +26,5 @@ itself a retreat, with time to change one's mind, and a real price for a ship th
 - `src/Core/Sim`: the zone (`Battle.Zone.cs`), its countdown and outcome; `Over` gains `abandoned`.
 - `data/battle/systems/zone.json` (size, countdown), a scenario's own zone where it names one.
 - The console: the warning banner, the zone on the radar and the map, the border in the 3D view. **New UI: mockup first**
-  (mockup 37 in `mockup-work.md`), then the game.
+  (mockup 38 in `mockup-work.md`), then the game.
 - The campaign: an abandoned mission's consequences (`campaign-missions`).

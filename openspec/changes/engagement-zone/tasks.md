@@ -9,7 +9,7 @@
 - [ ] 1.5 AI captains keep inside the zone; an enemy that leaves has fled
 - [ ] 1.6 Tests: the countdown, the call-off, the warp-out, the self-destruct, a replay from the seed
 
-## 2. Mockup first (mockup 37)
+## 2. Mockup first (mockup 38)
 
 - [ ] 2.1 The warning banner (retreat and self-destruct), the zone on the radar and the map, the border in the 3D view,
   in `docs/mockups/battle-console.html` (the Concord master), then every faction's page

@@ -57,7 +57,8 @@ account and every link here is updated.
 | 35 | Hull texture designs: the Concord and Krai frigates, five culture-led texture designs each (owner, 2026-11-06: "Pitch a few different texture designs. Start with frigate of each and propose4-5 different texturing approaches for each. Goal is to follow culture and ideology"; "Concord could also use a bit of detail on their ships too to avoid them looking to much like primitives") | Drafted (2026-11-08, v22: the Condor's windows to three decks; v21: windows on every Concord class, Krai nacelle studs gone; v20: renumbered 35; v19: neutral hangar light; v18: softer warm-white window light; v17: warm yellow windows; v16: the Concord's original light arrangement back; v15: the whole of both lines, the Krai dreadnought added; v14: the Condor, Pelican and Krai cruiser added; v13: the Swift, Albatross and Krai corvette added; v12: designed bow pieces, K1 plan windows, the rest of both lines baking; v11: K1 ends plated, detail tiles by hull area, roughness in the painted look; v10: C1 bow and stern plated, soft light, the detail layer; v9: C1 half the panels, light grey seams, varied plates, plan windows; v8: C1 in rows too, windows and fans fixed, lighter seams; v7: K1 in staggered rows of plates; v6: K1 on it too; v5: C1 on the Kelvane Institute's hull method, the owner's "lets try a new dirtection"; v4: ten designs baked as the Hunt's); **not for the game until the owner enthusiastically approves** | `hull-texture-designs` | `docs/mockups/hull-texture-designs.html` | https://claude.ai/artifact/GyVMZ9s6hxwbDhmeBC9Fqu |
 
 | 36 | Placeholder fleets | **Approved for implementation** (2026-11-08, owner in conversation: "cool start implementation"; the 36 hulls exported to the game, their classes and campaign hulls in the data, the emblems on the faction screen). Drafted (2026-11-08, v1) (owner, 2026-11-08: "generate place holders for all of their ships, class design is your discretion, and a place holder logo for the factions too"): four placeholder classes and a placeholder emblem for each of the nine factions with no ships | `placeholder-fleets` | `docs/mockups/placeholder-fleets.html` | https://claude.ai/artifact/2oi3YHbpmssfDjwZ2WpzPT |
-| 37 | Engagement zone: the warning banner for leaving the zone and for self-destruct, the zone on the radar dial and the tactical map, its border in the 3D view (owner, 2026-11-10: "zone of engagement, a big square, leaving means you are leaving engagement zone and retreating. give players 30 seconds to turn around before abandoning a mission", "abandoning a mision without functional warp drive means you are self destructing", "have the warning for self destruct show up on screen lol") | Listed (2026-11-10) | `engagement-zone` | `docs/mockups/battle-console.html` (to be drafted) | none yet |
+| 37 | Fractal vessels | Drafted (2026-11-10, v2: phone friendly and marched at half resolution; v1) (owner, 2026-11-10: "a faction is designed to be a fractal type of life form. and interdimensional being", "can we build raymarched fractal ships?", "do the mockup yo", "dont worry about phone"): three raymarched vessels with no mesh, one per school of the Axiom's draft culture, beside the Petrel at true scale; desktop only | `fractal-vessels` | `docs/mockups/fractal-vessels.html` | https://claude.ai/artifact/2mUTtEaxfqSAnX94REdZHj |
+| 38 | Engagement zone: the warning banner for leaving the zone and for self-destruct, the zone on the radar dial and the tactical map, its border in the 3D view (owner, 2026-11-10: "zone of engagement, a big square, leaving means you are leaving engagement zone and retreating. give players 30 seconds to turn around before abandoning a mission", "abandoning a mision without functional warp drive means you are self destructing", "have the warning for self destruct show up on screen lol") | Listed (2026-11-10) | `engagement-zone` | `docs/mockups/battle-console.html` (to be drafted) | none yet |
 New mockups are added at the bottom with the owner's words, never renumbered.
 
 ---
@@ -1159,3 +1160,28 @@ frigate stand-in. The reference game's convoys: SFC3 manual, printed pages 37 an
 - **Stage:** **Approved for build** (2026-11-07, owner in conversation: "After that change. Now I approve. Detail them").
   Drafted v10. Survey V2 and V5 decided.
 - **Questions:** survey V1, V3, V4 (traditions, one class or two, arms).
+
+## 37. Fractal vessels
+
+Owner, 2026-11-10: "im just curious, a faction is designed to be a fractal type of life form. and interdimensional being.
+what would that look like in our game? can we build raymarched fractal ships?" Then: "do the mockup yo", "dont worry
+about phone", "I dont really need this stuff to work on a phone", "three js mockup lets go".
+
+- **The page**: three vessels drawn by raymarching a distance field (each a 12-triangle box whose shader marches to the
+  surface and writes its depth):
+  - a 4D quaternion Julia set sliced into our space (the escape-time school), 132 m;
+  - a chain of five folded Menger blocks (the tilers), 112 m;
+  - a branching tree (the branchers), 128 m.
+- The Concord's Petrel (86 m) sits beside them for scale.
+- **Controls**: the 4th-dimension slice (or the fold turn, or the branch angle), drift, damage, glow, halo, iterations, march
+  steps, render scale, and a frame-time readout.
+- **Damage**: fold levels lost and holes cut from the field, with glowing rims.
+- **v1** (2026-11-10): first draft. Shot at desktop only.
+- **v2** (2026-11-10; owner: "Make this thing phone friendly please! Also half resolution ray match if you don't mind"):
+  - the vessels are marched at half the screen's resolution (a quarter of the pixels), the Petrel still hiding what is
+    behind it, with a switch for full size;
+  - on a phone the controls are a sheet you can fold away (upright) or a narrow column (sideways), every control a 44 px
+    target, the view buttons a strip that scrolls;
+  - shots at desktop, phone and portrait sizes.
+- **Stage:** Drafted.
+- **Questions:** survey FV1-FV5 (whose vessels, what a vessel is, which forms, phones, hits).
