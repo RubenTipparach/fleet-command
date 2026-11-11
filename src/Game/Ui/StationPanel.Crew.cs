@@ -46,17 +46,21 @@ public sealed partial class StationPanel
         else Text((cap == 0 ? "AI" : crew.NameOf(cap)).ToUpperInvariant(), x + 110, y + 26, 18, cap == 0 ? C.Lilac : CrewColors.Of(cap, C.Sky), HorizontalAlignment.Left, w - 110, 600, 1);
         y += 44;
         // who stands on this bridge: name, then each station they hold with its lock
-        foreach (CrewMember m in crew.Members.Where(m => crew.BridgeOf(m.Id) == key))
+        // the admiral first, on every ship, every station theirs to work (those another holds dimmed); then its own crew
+        foreach (CrewMember m in crew.Members.Where(m => m.Id == Crew.AdmiralId || crew.BridgeOf(m.Id) == key).OrderBy(m => m.Id))
         {
             Text(m.Name.ToUpperInvariant(), x, y + 18, 15, CrewColors.Of(m.Id, C.Sky), HorizontalAlignment.Left, 104, 600, 1);
             float xx = x + 110;
-            foreach (RoleDef r in crew.Roles.List.Where(r => crew.HolderOf(key, r.Id) == m.Id))
+            bool adm = m.Id == Crew.AdmiralId;
+            foreach (RoleDef r in crew.Roles.List.Where(r => adm || crew.HolderOf(key, r.Id) == m.Id))
             {
-                Kit.Icon(this, r.Icon, new Rect2(xx, y + 2, 20, 20), CrewColors.Of(m.Id, C.Sky));
-                string lockOn = r.Targets && f.RoleTargets != null && B.ShipById(Battle.RoleTargetId(f, r.Id)) is { Alive: true } lt ? Aiming.ContactName(B, lt) : "";
-                Text(lockOn, xx + 23, y + 17, 12, C.Lilac, HorizontalAlignment.Left, 90, 500);
-                xx += lockOn.Length > 0 ? 116 : 26;
-                if (xx > x + w - 40) break;
+                bool theirs = crew.HolderOf(key, r.Id) == m.Id;
+                // each station's icon (dimmed: the admiral's access to a station another holds), its lock on hover
+                var ir = new Rect2(xx, y + 2, 22, 22);
+                Kit.Icon(this, r.Icon, ir, new Color(CrewColors.Of(m.Id, C.Sky), theirs ? 1 : 0.4f));
+                string lockOn = r.Targets && f.RoleTargets != null && B.ShipById(Battle.RoleTargetId(f, r.Id)) is { Alive: true } lt ? Aiming.ContactName(B, lt) : "no lock";
+                Ui.Reg($"fl.role.{f.Id}.{m.Id}.{r.Id}", ir, null, null, new Tip(r.Targets ? $"{r.Name}: {lockOn}" : r.Name));
+                xx += 30;
             }
             y += 26;
         }
@@ -77,6 +81,32 @@ public sealed partial class StationPanel
         return (y - y0 + 6, cap > 1);
     }
 
+    // the Fleet station's Crew view: change bridge and lock for, then the bridge's roles grid (the captain gives stations here)
+    private void CrewPage(Rect2 b)
+    {
+        if (X.Coop is not { } co) return;
+        Rect2 rest = CrewStrip(b);
+        // rows sized to fit everyone on this bridge (up to eight players), the admiral's list of the others under them
+        Crew crew = co.Crew;
+        string here = crew.BridgeOf(co.Me);
+        int rows = crew.Members.Count(m => m.Id == Crew.AdmiralId || crew.BridgeOf(m.Id) == here);
+        var elsewhere = co.Me == Crew.AdmiralId ? crew.Members.Where(m => m.Id != Crew.AdmiralId && crew.BridgeOf(m.Id) != here).ToList() : new();
+        float room = rest.Size.Y - 60 - (elsewhere.Count > 0 ? 24 + elsewhere.Count * 22 : 0);
+        float rowH = Math.Clamp(room / Math.Max(1, rows), 26, 44);
+        float y = rest.Position.Y + RolesGrid(co, rest.Position.X, rest.Position.Y, rest.Size.X, rowH) + 8;
+        if (elsewhere.Count == 0) return;
+        Lbl("On other bridges", rest.Position.X, y + 14, rest.Size.X);
+        y += 22;
+        foreach (CrewMember m in elsewhere)
+        {
+            string at = crew.BridgeOf(m.Id);
+            string ship = B.ShipById(at)?.Name ?? at;
+            X.Fonts.DrawRich(this, new[] { (m.Name.ToUpperInvariant() + "  ", CrewColors.Of(m.Id, C.Sky)),
+                ((crew.CaptainOf(at) == m.Id ? "captain of the " : "on the ") + ship, C.Text) }, rest.Position.X, y + 16, 15, rest.Size.X);
+            y += 22;
+        }
+    }
+
     /// <summary>Draws the co-op strip at the top of <paramref name="b"/> and returns the room left under it.</summary>
     private Rect2 CrewStrip(Rect2 b)
     {
@@ -84,15 +114,20 @@ public sealed partial class StationPanel
         Crew crew = co.Crew;
         float x = b.Position.X, y = b.Position.Y, lw = 86, w = b.Size.X - lw, h = 34;
         string here = crew.BridgeOf(co.Me);
-        bool canMove = co.Me != Crew.AdmiralId && !crew.Ships.ContainsValue(co.Me);
+        bool admiral = co.Me == Crew.AdmiralId;
+        bool canMove = admiral || !crew.Ships.ContainsValue(co.Me);
         Lbl("Bridge", x, y + 22, lw - 6);
-        string[] bridges = crew.Bridges().ToArray();
+        // the admiral steps onto any ship of the fleet; a crew member onto the flagship's or a crewed ship's bridge
+        string[] bridges = admiral
+            ? new[] { Crew.Flag }.Concat(B.Fleet().Where(s => s != co.Flag && !s.Fixed).Select(s => s.Id)).ToArray()
+            : crew.Bridges().ToArray();
         float bw = w / Math.Max(1, bridges.Length);
         for (int i = 0; i < bridges.Length; i++)
         {
             string k = bridges[i];
             Ship? s = k == Crew.Flag ? co.Flag : B.ShipById(k);
-            string label = $"{s?.Name ?? k} · {crew.NameOf(crew.CaptainOf(k))}";
+            int cap = k == Crew.Flag ? Crew.AdmiralId : crew.Ships.GetValueOrDefault(k, 0);
+            string label = $"{s?.Name ?? k} · {(cap == 0 ? "AI" : crew.NameOf(cap))}";
             Tab($"cs.br.{k}", new Rect2(x + lw + i * bw, y, bw - 4, h), label,
                 () => co.AskCrew(new JsonObject { ["op"] = "bridge", ["bridge"] = k }), k == here, null, !canMove || k == here || s is not { Alive: true });
         }

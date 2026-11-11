@@ -71,7 +71,7 @@ public sealed partial class ScriptedCaptain
             {
                 _directed = true;
                 // each crew member's ship on the Fleet station: its tab, then Attack my target
-                if (await Click("st.fleet") == null)
+                if (await Click("st.fleet") == null && (!_x.State.CrewShown || await Click("fl.view.fleet") == null))
                 {
                     foreach (var (ship, m) in co.Crew.Ships.ToList())
                         if (await Click($"fl.{ship}") == null && await Click("fl.dir.attack") == null) GD.Print($"PLAYTEST_COOP directed {co.Crew.NameOf(m)} to attack the {t.Name}");
@@ -135,7 +135,7 @@ public sealed partial class ScriptedCaptain
                     what = others[i].Id;
                 }
                 // a role in the captain's menu; a ship on the Fleet station, its tab, then its captain's key
-                string? open = b.Do == "crew_role" ? await OpenCrew() : await Click("st.fleet") ?? await Click($"fl.{what}");
+                string? open = b.Do == "crew_role" ? await OpenCrew() : await Click("st.fleet") ?? (_x.State.CrewShown ? await Click("fl.view.fleet") : null) ?? await Click($"fl.{what}");
                 if (open != null) return open;
                 string id = b.Do == "crew_role" ? $"crew.role.{what}.{to}" : $"fl.cap.{what}.{to}";
                 // a role held by the member already is a lit box: pressing it would hand it back, so leave it
@@ -158,7 +158,7 @@ public sealed partial class ScriptedCaptain
     {
         if (_x.CrewOpen) return null;
         if (_flow is { Screen: FlowScreen.Battle } || _flow == null)
-            return await Click("st.comms") ?? (_x.State.CrewShown ? null : await Click("com.crew"));
+            return await Click("st.fleet") ?? (_x.State.CrewShown ? null : await Click("fl.view.crew"));
         return await Click("top.menu") ?? await Click("m.crew");
     }
 

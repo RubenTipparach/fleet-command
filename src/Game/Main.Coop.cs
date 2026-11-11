@@ -170,6 +170,10 @@ public sealed partial class Main
                 _crew.Status = $"Battle over: {(string?)m["over"] ?? "the admiral left it"}. Waiting for the admiral.";
                 Waiting(true);
                 break;
+            case "full":
+                _crew.Status = $"The admiral's bridge is full ({(int?)m["max"]} players).";
+                Waiting(true);
+                break;
             case "pause":
                 _x.State.Paused = (bool?)m["on"] ?? false;
                 break;

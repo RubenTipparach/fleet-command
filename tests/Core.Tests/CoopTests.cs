@@ -192,7 +192,6 @@ public class CoopTests
         Assert.Null(p.Host.Crew.MoveTo(third, wing.Id));
         Assert.Equal(wing.Id, p.Host.Crew.BridgeOf(third));
         Assert.NotNull(p.Host.Crew.MoveTo(p.Guest.Me, Crew.Flag));   // a captain stays on their own bridge
-        Assert.NotNull(p.Host.Crew.MoveTo(Crew.AdmiralId, wing.Id));  // the admiral takes command instead
         // the admiral, holding every station of the flagship, locks for Science alone
         Ship[] foes = p.HB.EnemiesOf(p.HB.Player).OrderBy(s => s.Order).ToArray();
         p.HB.Lock(foes[0].Id);
@@ -204,6 +203,48 @@ public class CoopTests
         Assert.Equal(foes[1].Id, p.HB.TargetOf(flag, "science")?.Id);
         Assert.Equal(foes[0].Id, p.HB.TargetOf(flag, "weapons")?.Id);
         Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+    }
+
+    [Fact]
+    public void A_member_alone_on_a_ship_holds_every_role_and_the_admiral_works_any_ship()
+    {
+        var p = new Pair(Sc("concord_battle"));
+        Ship[] wings = p.HB.Fleet().Where(s => s != p.HB.Player).ToArray();
+        p.Host.AskCrew(new JsonObject { ["op"] = "ship", ["ship"] = wings[0].Id, ["to"] = p.Guest.Me });
+        p.Steps(1);
+        // the one player on the wingman holds every role there
+        foreach (RoleDef r in R.List) Assert.Equal(p.Guest.Me, p.Host.Crew.HolderOf(wings[0].Id, r.Id));
+        // the admiral opens every role and every tab wherever they stand, and steps onto an AI wingman to fly it
+        Assert.All(R.List, r => Assert.True(p.Host.Crew.Opens(Crew.AdmiralId, r.Id)));
+        p.Host.AskCrew(new JsonObject { ["op"] = "bridge", ["bridge"] = wings[1].Id });
+        p.Steps(1);
+        Assert.Contains(wings[1].Id, p.HB.Helmed);
+        Assert.Equal(wings[1].Id, p.HB.Player.Id);          // the admiral's console is that ship's
+        Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+        p.HB.AllStop();
+        p.Steps(1);
+        Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+        p.Steps(29);
+        Assert.Equal(0, p.HB.ShipById(wings[1].Id)!.VOrder);
+        // and onto the crew member's ship, where the admiral's orders are obeyed too
+        p.Host.AskCrew(new JsonObject { ["op"] = "bridge", ["bridge"] = wings[0].Id });
+        p.Steps(1);
+        Assert.DoesNotContain(wings[1].Id, p.HB.Helmed);    // the AI has the first wingman back
+        double h = p.HB.ShipById(wings[0].Id)!.HOrder;
+        p.HB.Turn(45);
+        p.Steps(1);
+        Assert.NotEqual(h, p.HB.ShipById(wings[0].Id)!.HOrder);
+        Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+        Assert.Equal(0, p.Guest.Desyncs);
+    }
+
+    [Fact]
+    public void A_game_takes_eight_players_and_no_more()
+    {
+        var host = new Lockstep(new Crew(R, "Admiral"), host: true);
+        for (int i = 2; i <= Lockstep.MaxPlayers; i++) Assert.Equal(i, host.HostJoin($"P{i}"));
+        Assert.Equal(0, host.HostJoin("Ninth"));
+        Assert.Equal(Lockstep.MaxPlayers, host.Crew.Members.Count);
     }
 
     [Fact]

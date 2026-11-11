@@ -48,20 +48,8 @@ public sealed partial class StationPanel
                 tip: new Tip(wing ? $"Every wingman: {label.ToLowerInvariant()}" : "No wingmen"));
         }
         y += 76;
-        // co-op: the Crew key beside the Event log, the page's lower half the bridge's roles grid (the captain gives stations here)
-        if (X.Coop is { } co)
-        {
-            float lw2 = (w - 6) / 2;
-            Button("com.log", new Rect2(x, y, lw2, 36), "Event log", OpenLog, X.State.LogOpen, tip: new Tip("The whole log, over the view"));
-            Button("com.crew", new Rect2(x + lw2 + 6, y, lw2, 36), "Crew", () => X.State.CrewShown = !X.State.CrewShown, X.State.CrewShown, tip: new Tip("Who holds which station on your bridge"));
-            y += 44;
-            if (X.State.CrewShown) { RolesGrid(co, x, y, w, Big ? 44 : 34); return; }
-        }
-        else
-        {
-            Button("com.log", new Rect2(x, y, w, 36), "Event log", OpenLog, X.State.LogOpen, tip: new Tip("The whole log, over the view"));
-            y += 44;
-        }
+        Button("com.log", new Rect2(x, y, w, 36), "Event log", OpenLog, X.State.LogOpen, tip: new Tip("The whole log, over the view"));
+        y += 44;
         Lbl("Latest", x, y + 13);
         y += 22;
         int n = Big ? B.Comms.LogLinesExpanded : B.Comms.LogLinesDocked;

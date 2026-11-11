@@ -36,8 +36,16 @@ public sealed partial class StationPanel : ConsolePanel
         // the station's officer slot, on the frame's top edge left of its title (StationPanel.Reactor.cs)
         OfficerSlot(p.Position.X + 56, 0, Math.Min(Big ? 340 : 230, TitleLeft - 14 - (p.Position.X + 56)), cur);
         var b = new Rect2(p.Position.X + 56, p.Position.Y, p.Size.X - 56, p.Size.Y);
-        // co-op: change bridge and choose which stations a lock is for, over the fleet and targeting stations (StationPanel.Crew.cs)
-        if (X.Coop != null && cur is "tactical" or "fleet") b = CrewStrip(b);
+        // co-op: the Fleet station toggles between the fleet and the crew (owner, 2026-11-11: "I would opt for crew manager to be
+        // in the fleet panel", "You can toggle between fleet and crew panels there"); the crew view and the Tactical station
+        // carry the Bridge and Lock for rows (StationPanel.Crew.cs)
+        if (X.Coop != null && cur == "fleet")
+        {
+            Tabs("fl.view", new Rect2(b.Position.X, b.Position.Y, b.Size.X, 36), new[] { ("fleet", "Fleet"), ("crew", "Crew") }, X.State.CrewShown ? "crew" : "fleet", v => X.State.CrewShown = v == "crew");
+            b = new Rect2(b.Position.X, b.Position.Y + 44, b.Size.X, b.Size.Y - 44);
+            if (X.State.CrewShown) { CrewPage(b); return; }
+        }
+        else if (X.Coop != null && cur == "tactical") b = CrewStrip(b);
         bool drawn = false;
         switch (cur)
         {

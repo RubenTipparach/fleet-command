@@ -20,12 +20,14 @@ public abstract partial class ConsolePanel
         string bridge = crew.BridgeOf(co.Me);
         int captain = crew.CaptainOf(bridge);
         bool amCaptain = captain == co.Me;
-        var aboard = crew.Members.Where(m => crew.BridgeOf(m.Id) == bridge && (m.Id == captain || !crew.Ships.ContainsValue(m.Id))).ToList();
+        // the admiral is on every bridge's list: every role is theirs to work (owner, 2026-11-11: "The admiral has access to all
+        // roles and all ships at all times")
+        var aboard = crew.Members.Where(m => m.Id == Crew.AdmiralId || crew.BridgeOf(m.Id) == bridge && (m.Id == captain || !crew.Ships.ContainsValue(m.Id))).ToList();
         float y0 = y;
         string shipName = bridge == Crew.Flag ? (co.Flag ?? B.Player).Name : B.ShipById(bridge)?.Name ?? bridge;
         Text($"BRIDGE · {shipName.ToUpperInvariant()}", x, y + 16, 15, C.Lilac, HorizontalAlignment.Left, w, 700, 1);
         y += 24;
-        float nameW = Math.Min(220, w * 0.24f), cw = (w - nameW) / roles.Count, ic = Math.Min(26, cw - 8);
+        float nameW = Math.Min(220, w * 0.3f), cw = (w - nameW) / roles.Count, ic = Math.Min(26, cw - 8);
         for (int i = 0; i < roles.Count; i++)
         {
             var r = new Rect2(x + nameW + i * cw + (cw - ic) / 2, y, ic, ic);
@@ -42,6 +44,9 @@ public abstract partial class ConsolePanel
                 int memberId = m.Id;
                 bool held = crew.HolderOf(bridge, rd.Id) == m.Id;
                 var cell = new Rect2(x + nameW + i * cw + 2, y + 3, cw - 4, rowH - 6);
+                // the admiral's access to a role another holds: lit, dimmed (theirs to work, the holder's to keep)
+                bool access = !held && m.Id == Crew.AdmiralId;
+                if (access) { Kit.Piece(this, "tab.active", cell, 0.4f); continue; }
                 Tab($"crew.role.{rd.Id}.{m.Id}", cell, held && cw > 90 ? rd.Name : "", () => co.AskCrew(new JsonObject { ["op"] = "role", ["role"] = rd.Id, ["to"] = held ? captain : memberId }),
                     held, null, !amCaptain);
             }

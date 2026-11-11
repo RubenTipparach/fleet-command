@@ -39,7 +39,7 @@ public sealed partial class CoopNet : Node
     {
         Lock = ls; IsHost = true;
         _peer = new ENetMultiplayerPeer();
-        Error e = _peer.CreateServer(port, 8);
+        Error e = _peer.CreateServer(port, Lockstep.MaxPlayers);
         if (e != Error.Ok) return e;
         _peer.PeerConnected += id => Log($"COOP_PEER connected {id}");
         _peer.PeerDisconnected += id =>
@@ -115,6 +115,12 @@ public sealed partial class CoopNet : Node
         {
             if (_members.ContainsKey(from)) return;
             int id = Lock.HostJoin((string?)m["name"] ?? "");
+            if (id == 0)
+            {
+                SendTo(from, new JsonObject { ["t"] = "full", ["max"] = Lockstep.MaxPlayers });
+                _peer.DisconnectPeer(from, false);
+                return;
+            }
             _members[from] = id;
             SendTo(from, new JsonObject { ["t"] = "welcome", ["you"] = id });
             Lock.SendRoster();

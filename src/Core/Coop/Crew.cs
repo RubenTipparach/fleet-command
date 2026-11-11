@@ -30,6 +30,8 @@ public sealed class Crew
     /// <summary>The bridge each member moved to themselves (owner, 2026-11-11: the fleet and targeting managers "should let
     /// you change bridge and change targets"), until they are given a ship or move again.</summary>
     public SortedDictionary<int, string> Aboard { get; } = new();
+    /// <summary>The bridge the admiral stands on: the flagship's, or any other ship of the fleet they stepped onto.</summary>
+    public string AdmiralAt { get; set; } = Flag;
     /// <summary>Roles given away on each bridge: (bridge, role) to the member holding it.</summary>
     public SortedDictionary<string, int> Held { get; } = new(StringComparer.Ordinal);
 
@@ -47,6 +49,9 @@ public sealed class Crew
     /// <summary>The bridge a member stands on: the ship they captain, the bridge they hold a role on, else the flagship's.</summary>
     public string BridgeOf(int member)
     {
+        // the admiral stands on any bridge of the fleet (owner, 2026-11-11: "The admiral has access to all roles and all ships
+        // at all times"), the flagship's until they step onto another
+        if (member == AdmiralId) return AdmiralAt;
         foreach (var (ship, cap) in Ships) if (cap == member) return ship;
         if (Aboard.TryGetValue(member, out string? at) && (at == Flag || Ships.ContainsKey(at))) return at;
         foreach (var (k, m) in Held) if (m == member) return k[..k.IndexOf('|')];
@@ -56,12 +61,17 @@ public sealed class Crew
     /// <summary>The captain of a bridge: the admiral's on the flagship, else the member the ship was given to.</summary>
     public int CaptainOf(string bridge) => bridge == Flag ? AdmiralId : Ships.GetValueOrDefault(bridge, AdmiralId);
 
+    /// <summary>Whether the admiral stands on a bridge another member captains (the admiral then opens every station there,
+    /// but the stations stay its captain's).</summary>
+    public bool AdmiralVisiting(string bridge) => bridge != Flag && Ships.ContainsKey(bridge);
+
     /// <summary>Who holds a role on a bridge: the member given it, else the bridge's captain.</summary>
     public int HolderOf(string bridge, string role) => Held.TryGetValue(Key(bridge, role), out int m) ? m : CaptainOf(bridge);
 
     /// <summary>Whether a member's console opens a role on their bridge: they hold it, or they are its captain.</summary>
     public bool Opens(int member, string role)
     {
+        if (member == AdmiralId) return true;   // every role, on every ship
         string b = BridgeOf(member);
         return CaptainOf(b) == member || HolderOf(b, role) == member;
     }
@@ -70,6 +80,7 @@ public sealed class Crew
     /// is the captain's.</summary>
     public bool OpensTab(int member, string tab)
     {
+        if (member == AdmiralId) return true;
         string? role = Roles.RoleOfTab(tab);
         return role != null ? Opens(member, role) : CaptainOf(BridgeOf(member)) == member;
     }
@@ -96,6 +107,7 @@ public sealed class Crew
             var picked = chosen.Where(r => Roles.Has(r) && Roles[r].Targets && Opens(member, r)).Distinct().OrderBy(r => r, StringComparer.Ordinal).ToArray();
             if (picked.Length > 0) return picked;
         }
+        if (member == AdmiralId && AdmiralVisiting(b)) return Roles.List.Where(x => x.Targets).Select(x => x.Id).ToArray();
         if (openTab != null && Roles.RoleOfTab(openTab) is { } r && Roles[r].Targets && Opens(member, r) && HolderOf(b, r) != member)
             return new[] { r };
         return Roles.List.Where(x => x.Targets && HolderOf(b, x.Id) == member).Select(x => x.Id).ToArray();
@@ -156,7 +168,7 @@ public sealed class Crew
     public string? MoveTo(int member, string bridge)
     {
         if (Member(member) == null) return "not aboard";
-        if (member == AdmiralId) return "the admiral takes command of a ship instead";
+        if (member == AdmiralId) { AdmiralAt = bridge; return null; }   // any ship of the fleet (the lockstep checks it is one)
         if (Ships.ContainsValue(member)) return "a captain stays on their own bridge";
         if (bridge != Flag && !Ships.ContainsKey(bridge)) return "no crewed bridge there";
         if (BridgeOf(member) == bridge) return "already there";

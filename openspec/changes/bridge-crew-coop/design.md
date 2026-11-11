@@ -9,7 +9,7 @@ menu here is a plain sheet in the Concord's kit; its mockup follows (task 6.1).
 
 | Seat | Who | Opens | Orders |
 |---|---|---|---|
-| **Admiral** | the host, member 1, for the whole game ("whoeever is designated as captain remains captain the whole game") | every tab of the flagship | every order, and the fleet's (take command, stances, withdraw, end the battle) |
+| **Admiral** | the host, member 1, for the whole game ("whoeever is designated as captain remains captain the whole game") | every tab, on any ship of the fleet whose bridge they step onto ("The admiral has access to all roles and all ships at all times") | every order, and the fleet's (take command, stances, withdraw, end the battle) |
 | **Captain of a ship** | a member the admiral gave a ship ("if you have more than one ship, you can asing whole ships to other players", "other players can be captains of their own ship, the main captain is technically admiral of the fleet") | every tab of that ship | every order on it but the admiral's |
 | **Officer** | a member holding roles on a bridge | the tabs of the roles they hold; the rest are shown disabled | their roles' orders, and a lock |
 
@@ -17,7 +17,7 @@ The roles (data/coop/roles.json): Navigation (helm), Weapons (tactical, the craf
 repair, the shields page), Science (science, the sensors page), Tractor (the tractor page), Transporters (transport). Comms,
 the fleet and the ship's systems page stay with the captain. A role no one was given is the captain's ("by default -
 captain has access to all roles"); one member may hold several ("some players can assume the roles of multiple stations").
-The captain gives and takes back roles in the captain's menu; the admiral gives ships there.
+The Fleet station is the one fleet and crew manager (a Fleet | Crew toggle): the captain gives and takes back roles in its Crew view; the admiral gives ships and sends directives in its Fleet view. A player alone on a ship holds every role there. Up to eight players, the admiral included.
 
 ## 2. Independent targets
 

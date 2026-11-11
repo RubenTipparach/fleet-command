@@ -30,6 +30,8 @@
 
 ## 6. The crew layer (owner, 2026-11-11: "someway for players to see and interact with crew members in game")
 - [x] 6.0 Player names in the log, chat, pings, the admiral's directives with Aye, crew notes, the fleet manifest
+- [x] 6.2 The Fleet station is the one fleet and crew manager: a Fleet | Crew toggle; Fleet: each ship's captain, its bridge crew, the admiral's directives; Crew: Bridge, Lock for and the roles grid (owner, 2026-11-11: "I would opt for crew manager to be in the fleet panel", "You can toggle between fleet and crew panels there"); `docs/screenshots/game/coop-fleet-crew.png`
+- [x] 6.3 The admiral opens every role and steps onto any ship's bridge; one player alone on a ship holds every role there (owner: "The admiral has access to all roles and all ships at all times"); up to eight players (owner: "can be up to 8 players")
 - [x] 6.1 Change bridge and Lock for over the Fleet and Tactical stations (owner, 2026-11-11: "There's the fleet manager and a targeting manager tap both should let you change bridge and change targets"): `docs/screenshots/game/coop-crew-strip.png`
 
 ## 7. Later
