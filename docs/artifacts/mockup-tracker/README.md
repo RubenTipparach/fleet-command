@@ -157,3 +157,4 @@
 - 2026-11-10, desktop session: version 171, version id `1794367258-1e3f`: the Sounds page (M17) at its new link, version 1; the survey at version 43; the live page's Vos ships entry (M37, published from another session) merged into `docs/mockups/tracker.html` first.
 - 2026-11-11, desktop session: version 172, version id `1794377182-f2fa`: the Sounds page (M17) at version 2.
 - 2026-11-11, desktop session: version 173, version id `1794377846-f62d`: the Sounds page (M17) at version 3.
+- 2026-11-11, desktop session: version 175, version id `1794382882-61c4`: the Sounds page (M17) at version 4 (38 cues); merged onto the live version 174 first (M37 Vos ships at v9 and the survey at v44, both published from another session).
