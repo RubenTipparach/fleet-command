@@ -56,10 +56,11 @@ public sealed partial class ViewOverlay
         if (_x.State.PlacingPing) f.Draw(this, "CLICK A SHIP OR A POINT TO MARK IT FOR THE CREW", Size.X / 2, 74, 20, C.Lilac, HorizontalAlignment.Center, 0, 600, 1);
     }
 
-    // the Ping key, top left of the view under the objective (the Target box holds the top right)
+    // the Ping key, bottom left beside the chat's Chat key (a mission's goals hold the top left, the Target box the top
+    // right; the campaign take of 2026-11-11 found the goals over a key placed under the objective)
     private void CoopKeys()
     {
         if (_x.Coop == null) return;
-        Key("v.ping", new Rect2(14, 92, 90, 30), "Ping", () => _x.State.PlacingPing = !_x.State.PlacingPing, _x.State.PlacingPing, "Mark a ship or a point for the crew");
+        Key("v.ping", new Rect2(122, Size.Y - 132, 90, 32), "Ping", () => _x.State.PlacingPing = !_x.State.PlacingPing, _x.State.PlacingPing, "Mark a ship or a point for the crew");
     }
 }
