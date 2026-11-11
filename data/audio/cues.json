@@ -43,7 +43,7 @@
  "shield_hit_short": {
   "file": "assets/audio/sfx/shield_hit_short.ogg",
   "bus": "Effects",
-  "volume_db": -7
+  "volume_db": 0
  },
  "hull_hit_short": {
   "file": "assets/audio/sfx/hull_hit_short.ogg",
@@ -73,7 +73,7 @@
  "target_lock": {
   "file": "assets/audio/sfx/target_lock.ogg",
   "bus": "Effects",
-  "volume_db": 0
+  "volume_db": 1
  },
  "hull_critical": {
   "file": "assets/audio/sfx/hull_critical.ogg",

@@ -530,33 +530,27 @@
  },
  "shield_hit_short": {
   "group": "Impacts",
-  "what": "The short shield hit, for hits that come fast: the thud and the shimmer, cut short.",
+  "what": "The short shield hit, for hits that come fast: a soft dark crack over a deep shield thump (owner, 2026-11-11: \"Shield hit bad ... Fix those\": the electric zap, our shimmer and the spark are gone; candidate A of the audition).",
   "layers": [
    {
-    "src": "oga/electricity-game-sound-pack:shieldhit.wav",
-    "dur": 0.5,
-    "fadeout": 0.3
+    "src": "oga/10-impactshield-blocks:impact.8.ogg",
+    "start": 0.166,
+    "lp": 3500,
+    "dur": 0.15,
+    "fadeout": 0.1
    },
    {
-    "src": "oga/space-ship-shield-sounds:space shield sounds - 4.wav",
-    "dur": 0.5,
-    "fadeout": 0.3,
-    "gain": -3
-   },
-   {
-    "synth": "shield_shimmer",
-    "dur": 0.5,
-    "fadeout": 0.3,
-    "gain": -7
-   },
-   {
-    "src": "oga/electricity-game-sound-pack:groundhit.wav",
-    "gain": -11
+    "src": "oga/space-ship-shield-sounds:space shield sounds - 1.wav",
+    "start": 0.036,
+    "dur": 0.55,
+    "fadeout": 0.35,
+    "gain": -9.9
    }
   ],
   "len": 0.6,
-  "tail_fade": 0.15,
-  "edits": "the layers of shield_hit, each cut short and faded, to 0.6 s"
+  "tail_fade": 0.03,
+  "edits": "the darkest shield impact from its onset, lowpassed at 3.5 kHz, cut to 0.15 s, over the first shield take from its onset cut to 0.55 s, 10 dB under it; 0.6 s",
+  "peak_db": -8.0
  },
  "hull_hit_short": {
   "group": "Impacts",
@@ -685,5 +679,26 @@
   "loop_fade": 0.1,
   "peak_db": -5.0,
   "edits": "three wails cut from a siren, crossfaded into a loop"
+ },
+ "target_lock": {
+  "group": "Console",
+  "what": "A target locked: a rising two-note pip, about 1 kHz then 2 kHz (owner, 2026-11-11: \"target select bad. Fix those\": our synthesised sweep and pips are gone; candidate A of the audition).",
+  "layers": [
+   {
+    "src": "oga/interface-beeps:beep-13.wav",
+    "dur": 0.07,
+    "fadeout": 0.02
+   },
+   {
+    "src": "oga/interface-beeps:beep-14.wav",
+    "delay": 0.09,
+    "dur": 0.11,
+    "fadeout": 0.05
+   }
+  ],
+  "len": 0.25,
+  "tail_fade": 0.03,
+  "edits": "two clean interface tones, 0.07 s and 0.11 s, the second 0.09 s after the first; 0.25 s",
+  "peak_db": -9.0
  }
 }

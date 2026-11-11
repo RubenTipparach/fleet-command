@@ -19,6 +19,10 @@
   from the doomsday laser cannon's blast and a ship's cannon (`tools/audio/cc0_cues.json`); the missile given a cannon's
   ignition thump; point defence slowed and darkened; an old-against-new audition on Drive for the owner's ears
 - [ ] 2.2b The owner's verdict on the redone weapons
+- [x] 2.2c The shield hit and the lock tone redone (owner, 2026-11-11: "Shield hit bad, target select bad. Fix those"):
+  three candidates of each in an audition on Drive; candidate A of each in the game (a soft dark crack over a deep shield
+  thump; a rising two-note pip from recorded interface tones, in place of our synthesised sweep)
+- [ ] 2.2d The owner's pick from the shield and lock audition (A, B or C of each)
 
 ## 3. In the game (after approval for implementation)
 
