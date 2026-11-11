@@ -1,0 +1,11 @@
+{
+ "source": "The owner's survey picks, section W (2026-11-01), carried to the battle console's slots (openspec/changes/vhorr-battle-console): W2 ship systems display E (hang) for the ship panel that holds it, W4 weapons D (wrap) for the station, weapons and expanded panels, W5 bottom row D (wrap) for the radar's pocket and the crest, W6 name plate B (plain), W7 keys: larvae for the big keys, low warts for the small keys and the tabs, W8 backing A, tissue. The strips are ridge, not W1 H (mixed): the battle console draws a strip inside its own rectangle, where the mixed style's crown of tentacles would be cut (open question V2).",
+ "styles": {
+  "strip.top": "ridge", "strip.bottom": "ridge",
+  "panel.station": "wrap", "panel.ship": "hang", "panel.weapons": "wrap", "panel.expanded": "wrap",
+  "dial": "wrap", "crest": "wrap", "nameplate": "plain",
+  "tray": "plain", "inset": "plain"
+ },
+ "key_body": {"key": "larva", "key.square": "wart"},
+ "backing": "tissue"
+}

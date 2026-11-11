@@ -65,17 +65,19 @@ public sealed partial class Battle
 
     public void ToggleOrbitDir() => Player.OrbitDir = -Player.OrbitDir;
 
-    private double HalfKm(double v) => Math.Clamp(Math.Round(v * 2) / 2, Tuning.HoldMinKm, Tuning.HoldMaxKm);
+    // the helm's ranges move in steps of RangeStepKm, inside the tuning's hold limits
+    private const double RangeStepKm = 5;
+    private double StepKm(double v) => Math.Clamp(Math.Round(v / RangeStepKm) * RangeStepKm, Tuning.HoldMinKm, Tuning.HoldMaxKm);
 
-    /// <summary>The distance hold range keeps, in half kilometres.</summary>
-    public void SetHoldKm(double km) { if (double.IsFinite(km)) Player.HoldKm = HalfKm(km); }
+    /// <summary>The distance hold range keeps, in steps of 5 km.</summary>
+    public void SetHoldKm(double km) { if (double.IsFinite(km)) Player.HoldKm = StepKm(km); }
 
-    /// <summary>Hit and run's nearest and farthest range, at least half a kilometre apart.</summary>
+    /// <summary>Hit and run's nearest and farthest range, at least one step (5 km) apart.</summary>
     public void SetRunRange(double lo, double hi)
     {
         if (!double.IsFinite(lo) || !double.IsFinite(hi)) return;
-        Player.RunMinKm = Math.Min(HalfKm(lo), HalfKm(hi) - 0.5);
-        Player.RunMaxKm = Math.Max(HalfKm(hi), Player.RunMinKm + 0.5);
+        Player.RunMinKm = Math.Min(StepKm(lo), StepKm(hi) - RangeStepKm);
+        Player.RunMaxKm = Math.Max(StepKm(hi), Player.RunMinKm + RangeStepKm);
     }
 
     /// <summary>True while a high energy turn cannot be ordered (one under way, broken down, or the battery short).</summary>
@@ -163,6 +165,24 @@ public sealed partial class Battle
     }
 
     public void ToggleVolley() => Player.Volley = !Player.Volley;
+
+    /// <summary>Auto fire on or off for the ship you command (owner, 2026-11-08: "Fire button should be divided into two
+    /// sections. Auto and Fire. Auto is a toggle that will enable the ship to fire all currently active weapons").</summary>
+    public void ToggleAutoFire()
+    {
+        Player.AutoFire = !Player.AutoFire;
+        Say("Tactical", Player.AutoFire ? "Auto fire: every selected weapon fires as it bears." : "Auto fire off.");
+    }
+
+    // Auto fire, every step: the mounts Fire would loose on Multiple (Fireable: selected, armed, ready, in arc and in range
+    // of a pinned ship or the locked enemy) fire now, so the Fire key's count is what auto fire looses. Never while cloaked,
+    // never at a friendly, and nothing is said, so the log is not flooded.
+    private void AutoFireStep()
+    {
+        Ship p = Player;
+        if (!p.AutoFire || !p.Alive || p.Struck || p.Cloaking) return;
+        foreach (var (m, t, aim) in Fireable()) FireMount(p, m, t, aim);
+    }
 
     /// <summary>Selects the mounts of one weapon type for the volley (null: every weapon but point defence).</summary>
     public void SelectGroup(string? weapon)

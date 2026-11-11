@@ -27,6 +27,8 @@ public sealed class ShipDamage
     public const double ChunkBelowHull = 0.6, ChunkHpShare = 0.14;
     /// <summary>The core breach: outer pieces blow off between First and Last seconds, the main blast at Main; Share of the main hull's cells go early.</summary>
     public const float BreachFirstS = 0.5f, BreachLastS = 3.0f, BreachMainS = 3.6f, BreachShare = 0.55f;
+    /// <summary>How long the nova is watched before a finished battle may leave the view, seconds (the star holds 4.8 s).</summary>
+    public const float NovaSeenS = 3f;
     /// <summary>Hull points of damage a scar of each kind marks at most (24 of each, as the mockups).</summary>
     public const int MaxScars = 24;
 
@@ -59,11 +61,13 @@ public sealed class ShipDamage
     private readonly Vector4[] _holes = new Vector4[MaxScars];
     private readonly Vector4[] _holeN = new Vector4[MaxScars];
     private int _scorchN, _holeN0;
-    private float _breachT = -1;
+    private float _breachT = -1, _endT = -1;   // seconds into the breach, and into the whole end
     private readonly List<(float At, Action Do)> _breach = new();
 
     /// <summary>The whole ship is gone to pieces (the main blast has gone off).</summary>
     public bool Broken { get; private set; }
+    /// <summary>The ship's end is playing: its breach has begun and its nova has not yet been seen for <see cref="NovaSeenS"/>.</summary>
+    public bool Ending => _endT >= 0 && _endT < BreachMainS + NovaSeenS;
 
     private sealed class Piece
     {
@@ -107,12 +111,15 @@ public sealed class ShipDamage
         {
             if (n is not MeshInstance3D mi || mi.Mesh == null) return;
             for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++)
-                if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && ShipSkin.IsHull(sm.Shader))
+                if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && (ShipSkin.IsHull(sm.Shader) || sm.Shader == ShipSkin.PaneShader))
                 {
                     if (!_mats.Contains(sm)) _mats.Add(sm);
-                    Sample(mi, i);
+                    if (ShipSkin.IsHull(sm.Shader)) Sample(mi, i);   // the windows and bays take the hull's damage, but shots land on the plating
                 }
         });
+        // a placeholder hull (mockup 36) has no hull shader: shots land on its plain surfaces, so it still takes fireballs
+        if (_skin.Count == 0)
+            Walk(_ship, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) Sample(mi, i); });
         _centre = _skin.Count > 0 ? _skin.Aggregate(Vector3.Zero, (a, s) => a + s.P) / _skin.Count : Vector3.Zero;
         foreach (JsonElement b in brk.GetProperty("bodies").EnumerateArray())
             if (Find(b.GetProperty("node").GetString()!) is { } node)
@@ -121,7 +128,7 @@ public sealed class ShipDamage
             if (Find(p.GetProperty("node").GetString()!) is { } node)
             {
                 var piece = new Piece { Node = node, Centre = V(p.GetProperty("center")) };
-                Walk(node, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && ShipSkin.IsHull(sm.Shader) && !piece.Mats.Contains(sm)) piece.Mats.Add(sm); });
+                Walk(node, n => { if (n is MeshInstance3D mi && mi.Mesh != null) for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++) if (mi.GetSurfaceOverrideMaterial(i) is ShaderMaterial sm && (ShipSkin.IsHull(sm.Shader) || sm.Shader == ShipSkin.PaneShader) && !piece.Mats.Contains(sm)) piece.Mats.Add(sm); });
                 _parts.Add(new Part { P = piece, Def = p });
             }
     }
@@ -141,12 +148,14 @@ public sealed class ShipDamage
         float s = Math.Max(0.6f, _lenM / 150f);
         if (e.HullDamage <= 0)
         {
-            Fx.ShieldFlare(_fx, World(p + dir * (6f + 0.12f * _lenM)), Math.Max(0.04f, 0.05f * _lenU), (World(p + dir) - at).Normalized());
+            Vector3 on = World(p + dir * (6f + 0.12f * _lenM));
+            Fx.ShieldFlare(_fx, on, Fx.Readable(_fx, on, Math.Max(0.04f, 0.05f * _lenU), Fx.ShieldMinShare), (World(p + dir) - at).Normalized());
             return;
         }
         bool beam = e.Kind == "beam", big = e.Kind == "torpedo";
-        Fx.Fireball(_fx, at, Math.Max(0.04f, (beam ? 0.03f : big ? 0.07f : 0.05f) * _lenU), outward);
-        Fx.Flash(_fx, at + outward * 0.02f, 0.9f * _lenU, beam ? 1.5f : 3f, beam ? 0.25f : 0.45f);
+        float r = Fx.Readable(_fx, at, Math.Max(0.04f, (beam ? 0.03f : big ? 0.07f : 0.05f) * _lenU));
+        Fx.Fireball(_fx, at, r, outward);
+        Fx.Flash(_fx, at + outward * 0.02f, Math.Max(0.9f * _lenU, 8 * r), beam ? 1.5f : 3f, beam ? 0.25f : 0.45f);
         Scorch(p, beam ? 1.6f : big ? 5f : 3.2f, beam ? 0f : 1f);
         if (big) Hole(p, n, (2.6f + (float)_rng.NextDouble() * 1.8f) * s);
         if (e.Destroyed) { StartBreach(); return; }
@@ -267,7 +276,8 @@ public sealed class ShipDamage
             pivot.AddChild(copy);
             var cell = new Piece { Node = pivot, Centre = centres.Length > i ? centres[i] : b.Seeds[i] };
             int ci = i;
-            // a hull surface keeps only this cell's skin; anything else (glows, windows, lamps) stays with the cell it is nearest
+            // a hull surface (and the Hunt's window and bay quads, pane.gdshader) keeps only this cell's skin; anything else
+            // (glows, windows, lamps) stays with the cell it is nearest
             Walk(copy, n =>
             {
                 if (n is MeshInstance3D mi && mi.Mesh != null)
@@ -443,9 +453,9 @@ public sealed class ShipDamage
             }
             foreach (ShaderMaterial m in p.Mats) { m.SetShaderParameter("cuts", cv); m.SetShaderParameter("cut_c", cc); m.SetShaderParameter("cut_count", cuts.Length); }
         }
-        // its lamps go out, and a baked hull's own lights with them (baked_hull.gdshader lit)
-        Walk(p.Node, n => { if (n is Light3D l) l.Visible = false; });
-        foreach (ShaderMaterial m in p.Mats) if (m.Shader == ShipSkin.BakedHullShader) m.SetShaderParameter("lit", 0f);
+        // its lamps (and their glows) go out, and a baked hull's own lights and its rooms with them (baked_hull.gdshader and pane.gdshader lit)
+        Walk(p.Node, n => { if (n is Light3D l) l.Visible = false; else if (n is MeshInstance3D g && g.Name == "glow") g.Visible = false; });
+        foreach (ShaderMaterial m in p.Mats) if (m.Shader == ShipSkin.BakedHullShader || m.Shader == ShipSkin.PaneShader) m.SetShaderParameter("lit", 0f);
     }
 
     // A broken piece burns: flames from its broken side for about 20 s.
@@ -462,7 +472,7 @@ public sealed class ShipDamage
     private void StartBreach()
     {
         if (_breachT >= 0) return;
-        _breachT = 0;
+        _breachT = 0; _endT = 0;
         foreach (Body b in _bodies) { Swap(b); Cluster(b); }
         var early = _bodies.Count > 0 ? Chunks(_bodies[0]).OrderByDescending(c => c.Centre.DistanceTo(_core)).ToList() : new List<Piece>();
         var pick = early.Take((int)Math.Ceiling(early.Count * BreachShare)).Concat(_parts.Select(pt => pt.P).Where(q => !q.Off)).ToList();
@@ -532,15 +542,14 @@ public sealed class ShipDamage
             Burn(p);
         }
         Vector3 w = World(_core);
-        // twice the first size (owner, 2026-11-04: "2x nova side"), growing slower than the ship so a dreadnought's does not
-        // white out the whole view
-        Fx.Nova(_fx, w, 1.8f * Mathf.Pow(_lenU, 0.7f));
+        Fx.ShipEnd(_fx, w, _lenU);
     }
 
     /// <summary>Steps the damage on by dt seconds of battle time: embers cool, the breach runs, broken pieces drift and tumble.</summary>
     public void Step(float dt)
     {
         if (dt <= 0) return;
+        if (_endT >= 0) _endT += dt;
         for (int i = _aims.Count - 1; i >= 0; i--) { var a = _aims[i]; if ((a.Age += dt) > AimWaitS) _aims.RemoveAt(i); else _aims[i] = a; }
         bool cooled = false;
         for (int i = 0; i < MaxScars; i++) if (_heat[i] > 0) { _heat[i] = Math.Max(0, _heat[i] - dt / ScorchCoolS); cooled = true; }

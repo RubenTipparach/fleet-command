@@ -47,7 +47,7 @@ public class RangeTests
         Assert.Equal("t_kca", hit.ShipId);
         Assert.Equal("beam", hit.Kind);
         // it came from 90 degrees to starboard of a ship heading east: from the south, 3 km out
-        Assert.True(hit.FromZ > t.Z + 2900);
+        Assert.True(hit.FromZ > t.Z + 29000);
     }
 
     [Fact]

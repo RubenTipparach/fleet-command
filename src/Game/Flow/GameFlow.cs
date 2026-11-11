@@ -187,8 +187,10 @@ public sealed partial class GameFlow : Node
         // the battle as it ended, frozen, or the map for a mission done on arrival
         FlowScreen behind = s == FlowScreen.Debrief ? (Screen == FlowScreen.Battle ? FlowScreen.Battle : FlowScreen.Map) : s;
         Screen = s;
+        X.State.OnMap = s == FlowScreen.Map;
+        if (s != FlowScreen.Map && s != FlowScreen.Battle) X.State.MenuOpen = false;
         foreach (var (k, c) in _screens) c.Visible = k == s || (k == behind && k != FlowScreen.Battle);
-        _strip.Visible = s == FlowScreen.Battle && Running != null;
+        _strip.Visible = s == FlowScreen.Battle && Running != null && X.State.GoalsShown;
         _showBattle(behind == FlowScreen.Battle);
         if (s == FlowScreen.Map) _map.Refresh();
     }
@@ -229,7 +231,7 @@ public sealed partial class GameFlow : Node
             {
                 await Step(report, 0.1f, "Charting the sectors", () =>
                 {
-                    Camp = Campaign.Campaign.New(Data, side);
+                    Camp = Campaign.Campaign.New(Data, side, unfinished: GameSettings.UnfinishedFactions);
                     Camp.S.Log.Add($"Turn 1: {Camp.S.Fleet[0].Name} takes her first command at {Camp.Home.PortName}.");
                 });
                 await Begin(report);
@@ -293,10 +295,14 @@ public sealed partial class GameFlow : Node
     public void MoveHere()
     {
         if (Camp == null || Path == null) return;
-        if (Path.Legs[0].Count == 0) { Msg = "No moves left this turn to make the first step. End the turn."; return; }
         Course = (Path, (Camp.S.AtC, Camp.S.AtR));
+        // with no moves left the course is still set: it is the fleet's order, flown from the next End turn (owner,
+        // 2026-11-07: "pressing the move button if move is already exhasuted wont queue up move for the next turns")
+        bool none = Path.Legs[0].Count == 0;
         var steps = Camp.Move(Path);
-        Msg = Camp.S.OrderC != null ? $"Under way: {Path.Turns - 1} more turn{(Path.Turns > 2 ? "s" : "")} to go." : "";
+        Msg = none ? $"Course set: under way at End turn, {Path.Turns - 1} turn{(Path.Turns > 2 ? "s" : "")} to go."
+            : Camp.S.OrderC != null ? $"Under way: {Path.Turns - 1} more turn{(Path.Turns > 2 ? "s" : "")} to go." : "";
+        if (none) { SelectHex(Sel); Save(); return; }
         _map.Map?.Rebuild(null, steps);
         SelectHex(Sel);
         Arrived();
@@ -314,6 +320,7 @@ public sealed partial class GameFlow : Node
         Msg = $"Turn {Camp.S.Turn}.";
         SelectHex(Sel);
         if (own != null) Arrived();
+        else Hunted();
         Save();
     }
 
@@ -343,10 +350,50 @@ public sealed partial class GameFlow : Node
         if (Path != null) MoveHere();
     }
 
+    /// <summary>Draws the map again from the campaign as it stands (its fleets, freighters and missions).</summary>
+    public void Redraw() => _map.Refresh();
+
+    /// <summary>Meets a freighter in the fleet's sector: her encounter (an escort, or a raid) opens as a briefing to launch.</summary>
+    public void Meet(Freighter f)
+    {
+        if (Camp?.Meet(f) is not { } m) return;
+        Save();
+        OpenBrief(m);
+    }
+
+    /// <summary>Cashes out the cargo of the freighters taken, at a port that deals with you.</summary>
+    public void CashOut()
+    {
+        if (Camp == null) return;
+        int before = Camp.S.Credits;
+        Msg = Camp.CashOut() ?? $"Cargo sold for {Camp.S.Credits - before:N0} cr.";
+        Save();
+        Redraw();
+    }
+
+    /// <summary>Patches the most damaged ship with a repair kit.</summary>
+    public void FieldRepair()
+    {
+        if (Camp?.S.Fleet.OrderBy(s => s.HullPct).FirstOrDefault() is not { } s) return;
+        Msg = Camp.FieldRepair(s) ?? $"The {s.Name} is patched: hull {s.HullPct:0} %.";
+        Save();
+    }
+
     // an accepted mission in the sector the fleet has reached opens its briefing (as the mockup does on arrival)
     private void Arrived()
     {
         if (Camp?.MissionAt(Camp.S.AtC, Camp.S.AtR) is { } m && Camp.S.Active.Contains(m.Id)) OpenBrief(m);
+        Hunted();
+    }
+
+    // hunters in the fleet's sector catch it: their fight's briefing opens (fight, or slip away by moving on)
+    private void Hunted()
+    {
+        if (Camp?.Caught() is { Count: > 0 } caught)
+        {
+            OpenBrief(caught[0]);
+            Msg = $"Caught by the {Camp.HuntersOf(caught[0])?.Name ?? "hunters"}!";
+        }
     }
 
     /// <summary>Starts the briefed mission here: its battle on the console, or done on arrival.</summary>
@@ -369,6 +416,7 @@ public sealed partial class GameFlow : Node
         Brief = null;
         X.State.InMission = true;
         X.State.SceneOpen = false;
+        X.State.Goals = Goals;
         _ = Battle(plan.Scenario);
     }
 
@@ -378,6 +426,7 @@ public sealed partial class GameFlow : Node
         Plan = null;
         Skirmish = true;
         X.State.InMission = false;
+        X.State.Goals = null;
         _overT = 0;
         _ = Battle(sc);
     }
@@ -402,10 +451,25 @@ public sealed partial class GameFlow : Node
 
     public void Withdraw() => X.Battle.Withdraw();
 
+    /// <summary>The running mission's goals as they stand (MissionRun.MetNow, the rule the debrief grades by), for the goals
+    /// over the view and the Comms station.</summary>
+    private IReadOnlyList<Ui.GoalLine> Goals()
+    {
+        if (Plan is not { } p || Camp is not { } c) return Array.Empty<Ui.GoalLine>();
+        var met = MissionRun.MetNow(c, p, X.Battle);
+        return p.Battle.Objectives.Select(o => new Ui.GoalLine(o.Text.Eval(new OfferScope(c, p.Mission)), o.Primary, met.GetValueOrDefault(o.Id))).ToList();
+    }
+
+    /// <summary>The longest a finished battle waits for a ship's end to play before the debrief, seconds.</summary>
+    private const double EndWaitMaxS = 10;
+
     /// <summary>Each frame while a battle plays: a mission whose own fleet is gone is lost; a battle that is over goes to
-    /// the debrief a moment later, so the last hit is seen.</summary>
+    /// the debrief a moment later, so the last hit is seen, and once the last ship's end has played (its breach and nova, up
+    /// to <see cref="EndWaitMaxS"/>), so the battle's finale is not cut off.</summary>
     public override void _Process(double delta)
     {
+        // the goals over the view: a mission's, until their X shuts them (Comms shows them again)
+        _strip.Visible = Screen == FlowScreen.Battle && Running != null && X.State.GoalsShown;
         if (Screen != FlowScreen.Battle) return;
         Sim.Battle b = X.Battle;
         if (Plan != null && b.Over == null && Plan.Groups["fleet"].All(id => b.ShipById(id) is not { Alive: true })) b.Lose();
@@ -417,7 +481,7 @@ public sealed partial class GameFlow : Node
         }
         if (b.Over == null) return;
         _overT += delta;
-        if (_overT < 2.5) return;
+        if (_overT < 2.5 || (X.State.ShipsEnding && _overT < EndWaitMaxS)) return;
         if (_busy) return;
         if (Running != null && Plan != null && Camp != null)
         {
@@ -426,7 +490,7 @@ public sealed partial class GameFlow : Node
             Plan = null;
             Save();
         }
-        else Last = new Debrief { Mission = b.Scenario.Name, Grade = b.Over == "won" ? "victory" : b.Over is "withdrawn" or "jumped" ? "draw" : "defeat",
+        else Last = new Debrief { Mission = b.Scenario.Name, Grade = b.Over == "won" ? "victory" : b.Over is "withdrawn" or "jumped" or "stalemate" ? "draw" : "defeat",
             Win = b.Over == "won", How = MissionRun.HowOf(b) };
         _ = Show(FlowScreen.Debrief);
     }

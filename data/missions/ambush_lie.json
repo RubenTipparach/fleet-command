@@ -1,0 +1,55 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "ambush_lie",
+ "name": "Ambush",
+ "glyph": "V",
+ "type": "Ambush",
+ "reward_cr": 800,
+ "weight": 0.4,
+ "where": "plain && (hostile || neutral) && on_route(rival || 'vos')",
+ "objective": "Lie in wait and destroy the convoy before it escapes.",
+ "brief": "A {enemy_name} supply group passes this way. Go to passive sensors, let it come to you, and destroy it before it gets clear: it will run, not fight.",
+ "battle": [
+  {
+   "intel": "A group passing",
+   "time_limit_s": 200,
+   "groups": [
+    {
+     "id": "convoy",
+     "faction": "{enemy}",
+     "count": "strength + 1",
+     "role": "enemy",
+     "label": "Supply group",
+     "tag": "scout",
+     "range_km": 40,
+     "bearing_deg": 70,
+     "arrive_s": 30
+    }
+   ],
+   "objectives": [
+    {
+     "id": "stop",
+     "text": "Destroy or take every ship before it escapes",
+     "primary": true,
+     "done": "alive(convoy) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{enemy}": -4,
+    "{side}": 3
+   },
+   "log": "The ambush was sprung."
+  }
+ ]
+}

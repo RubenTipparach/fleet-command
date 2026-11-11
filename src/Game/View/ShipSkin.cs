@@ -9,7 +9,9 @@
 // strobes flash as their extras say ("double flash every 1.4 s"). A hull that carries its own baked maps (the Ssarith
 // Hunt's, mockup 12: the manifest marks its material baked_hull and names its maps in shader_params.maps) gets
 // src/Game/View/baked_hull.gdshader instead, its floods already baked into its light map (light_baked_flood_* empties draw
-// no light). It lives in the view because it only changes how a ship looks: the simulation never reads it. One
+// no light), and its windows and launch bays are quads of their own (Panes, pane.gdshader: the rooms and hangars behind
+// them, from the window_* and bay_* empties). A lamp whose extras carry a glow_m (the Hunt's running lights, strobes and
+// beacons, which the mockup draws as glowing sprites) gets that glow too (lamp_glow.gdshader). It lives in the view because it only changes how a ship looks: the simulation never reads it. One
 // implementation for every ship of every faction.
 using System;
 using System.Collections.Generic;
@@ -30,6 +32,12 @@ public static class ShipSkin
     public static Shader BakedHullShader => _baked ??= GD.Load<Shader>("res://src/Game/View/baked_hull.gdshader");
     /// <summary>Whether a shader is one of the hull shaders (ShipDamage finds the hull surfaces by it).</summary>
     public static bool IsHull(Shader? s) => s != null && (s == HullShader || s == BakedHullShader);
+    private static Shader? _pane;
+    /// <summary>The shader of a ship's window and bay quads (ShipDamage gives them the hull's damage).</summary>
+    public static Shader PaneShader => _pane ??= GD.Load<Shader>("res://src/Game/View/pane.gdshader");
+    private static Shader? _glow;
+    /// <summary>The shader of a lamp's glow sprite.</summary>
+    public static Shader GlowShader => _glow ??= GD.Load<Shader>("res://src/Game/View/lamp_glow.gdshader");
 
     /// <summary>Range of a running light, strobe or beacon, metres: enough to tint the plating round it, no more.</summary>
     public const float RunningLightRangeM = 6f;
@@ -65,7 +73,7 @@ public static class ShipSkin
         JsonElement? sp = entry.TryGetProperty("shader_params", out JsonElement p) ? p : null;
         var cache = new Dictionary<string, Material>();
         var strobes = new List<OmniLight3D>();
-        int hullSurfaces = 0, lamps = 0;
+        int hullSurfaces = 0, lamps = 0, glows = 0;
         Walk(ship, n =>
         {
             if (n is MeshInstance3D mi && mi.Mesh != null)
@@ -88,16 +96,19 @@ public static class ShipSkin
             }
             else if (n is Node3D e && e.Name.ToString().StartsWith("light_") && e.HasMeta("extras"))
             {
-                Light3D? l = Lamp(e.GetMeta("extras").AsGodotDictionary(), unitsPerMetre, out bool strobe);
+                var x = e.GetMeta("extras").AsGodotDictionary();
+                Light3D? l = Lamp(x, unitsPerMetre, out bool strobe);
                 if (l == null) return;
                 l.Name = "lamp";
                 e.AddChild(l);
                 lamps++;
+                if (Glow(x) is { } g) { e.AddChild(g); glows++; }   // on the empty, not the light: a light's global scale is 1, not the ship's   // on the light, so a strobe's glow flashes with it
                 if (strobe && l is OmniLight3D om) strobes.Add(om);
             }
         });
         int pools = Pools(ship, offset, cache.Values);
-        GD.Print($"SHIP_SKIN {file}: hull shader on {hullSurfaces} surfaces, {pools} floodlight pools, {lamps} lamps ({strobes.Count} strobes)");
+        int panes = Panes(ship, offset);
+        GD.Print($"SHIP_SKIN {file}: hull shader on {hullSurfaces} surfaces, {pools} floodlight pools, {lamps} lamps ({strobes.Count} strobes, {glows} glows), {panes} windows and bays");
         return strobes;
     }
 
@@ -132,6 +143,93 @@ public static class ShipSkin
         return n;
     }
 
+    /// <summary>A ship's windows and launch bays (mockup 12's paneMesh): one quad each, the pane and its frame, laid on the hull
+    /// where its window_* or bay_* empty says (its centre, normal, up and across axes, glass size and frame width), drawn by
+    /// pane.gdshader on the same node as the empties, so a breaking body takes its panes into every cell copy. Returns how many.</summary>
+    private static int Panes(Node3D ship, Vector3 offset)
+    {
+        var byNode = new Dictionary<Node3D, List<Node3D>>();
+        Walk(ship, n =>
+        {
+            if (n is not Node3D e || !e.HasMeta("extras") || e.GetParent() is not Node3D parent) return;
+            string name = e.Name.ToString();
+            if (!name.StartsWith("window_") && !(name.StartsWith("bay_") && e.GetMeta("extras").AsGodotDictionary().ContainsKey("across"))) return;
+            if (!byNode.TryGetValue(parent, out var list)) byNode[parent] = list = new List<Node3D>();
+            list.Add(e);
+        });
+        int count = 0;
+        foreach (var (parent, list) in byNode)
+        {
+            var pos = new List<Vector3>(); var nrm = new List<Vector3>(); var idx = new List<int>();
+            var c0 = new List<float>(); var c1 = new List<float>(); var c2 = new List<float>(); var c3 = new List<float>();
+            foreach (Node3D e in list)
+            {
+                var x = e.GetMeta("extras").AsGodotDictionary();
+                Vector3 n = Vec(x["normal"]).Normalized(), v = Vec(x["up"]).Normalized(), u = Vec(x["across"]).Normalized();
+                float hw = (float)x["w_m"].AsDouble() / 2, hh = (float)x["h_m"].AsDouble() / 2, f = (float)x["frame_m"].AsDouble();
+                int kind = PaneKind(x["room"].AsString()) + (x["lit"].AsBool() ? 8 : 0);
+                Vector3 c = e.Position, at = c + n * PaneStandOffM;
+                int b = pos.Count;
+                foreach (var (qx, qy) in new[] { (-hw - f, -hh - f), (hw + f, -hh - f), (hw + f, hh + f), (-hw - f, hh + f) })
+                {
+                    pos.Add(at + u * qx + v * qy); nrm.Add(n);
+                    c0.AddRange(new[] { qx, qy, hw, hh });
+                    c1.AddRange(new[] { u.X, u.Y, u.Z, kind });
+                    c2.AddRange(new[] { v.X, v.Y, v.Z, 0f });
+                    c3.AddRange(new[] { c.X, c.Y, c.Z, 0f });
+                }
+                idx.AddRange(new[] { b, b + 2, b + 1, b, b + 3, b + 2 });
+                count++;
+            }
+            var arr = new Godot.Collections.Array();
+            arr.Resize((int)Mesh.ArrayType.Max);
+            arr[(int)Mesh.ArrayType.Vertex] = pos.ToArray();
+            arr[(int)Mesh.ArrayType.Normal] = nrm.ToArray();
+            arr[(int)Mesh.ArrayType.Custom0] = c0.ToArray();
+            arr[(int)Mesh.ArrayType.Custom1] = c1.ToArray();
+            arr[(int)Mesh.ArrayType.Custom2] = c2.ToArray();
+            arr[(int)Mesh.ArrayType.Custom3] = c3.ToArray();
+            arr[(int)Mesh.ArrayType.Index] = idx.ToArray();
+            long rgba = (long)Mesh.ArrayCustomFormat.RgbaFloat;
+            var fmt = (Mesh.ArrayFormat)((rgba << (int)Mesh.ArrayFormat.FormatCustom0Shift) | (rgba << (int)Mesh.ArrayFormat.FormatCustom1Shift)
+                | (rgba << (int)Mesh.ArrayFormat.FormatCustom2Shift) | (rgba << (int)Mesh.ArrayFormat.FormatCustom3Shift));
+            var mesh = new ArrayMesh();
+            mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arr, null, null, fmt);
+            Vector3 piv = PlaceInShip(parent, ship);
+            var mat = new ShaderMaterial { Shader = PaneShader };
+            mat.SetShaderParameter("mockup_offset", offset + new Vector3(-piv.X, piv.Y, -piv.Z));
+            var mi = new MeshInstance3D { Name = "panes", Mesh = mesh, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
+            mi.SetSurfaceOverrideMaterial(0, mat);
+            parent.AddChild(mi);
+        }
+        return count;
+    }
+
+    /// <summary>How far a pane's quad stands off the plating, metres (the page's 0.05 m).</summary>
+    public const float PaneStandOffM = 0.05f;
+
+    // a pane's room kind, as the page's PANE_KIND
+    private static int PaneKind(string room) => room switch
+    {
+        "quarters" => 0, "mess" => 1, "workshop" => 2, "hold" => 3, "bay" => 4,
+        _ => throw new InvalidOperationException($"a pane of unknown kind: {room}"),
+    };
+
+    private static Vector3 Vec(Variant v) { float[] a = v.AsFloat32Array(); return new Vector3(a[0], a[1], a[2]); }
+
+    /// <summary>A lamp's glow sprite, when its extras carry a glow_m (its width in metres): a quad facing the camera, its
+    /// colour the lamp's, a beacon's pulsing. Null for a lamp without one.</summary>
+    private static MeshInstance3D? Glow(Godot.Collections.Dictionary x)
+    {
+        if (!x.TryGetValue("glow_m", out Variant gm) || !x.TryGetValue("colour", out Variant cv)) return null;
+        float[] c = cv.AsFloat32Array(); float w = (float)gm.AsDouble();
+        string kind = x.TryGetValue("kind", out Variant k) ? k.AsString() : "";
+        var mat = new ShaderMaterial { Shader = GlowShader };
+        mat.SetShaderParameter("colour", new Color(c[0], c[1], c[2]));
+        mat.SetShaderParameter("pulse", kind.Contains("beacon") ? 1 : 0);
+        return new MeshInstance3D { Name = "glow", Mesh = new QuadMesh { Size = new Vector2(w, w), Material = mat }, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
+    }
+
     /// <summary>Where a mesh's own origin sits in its ship's glb frame (metres): its parents' offsets, up to the ship node.</summary>
     private static Vector3 PlaceInShip(Node3D n, Node3D ship)
     {
@@ -140,12 +238,16 @@ public static class ShipSkin
         return xf.Origin;
     }
 
-    /// <summary>Turns each strobe on during its double flash at time t (seconds).</summary>
+    /// <summary>Turns each strobe (and its glow) on during its double flash at time t (seconds).</summary>
     public static void Flash(IEnumerable<OmniLight3D> strobes, double t)
     {
         float ph = (float)(t % StrobePeriodS);
         bool on = ph < StrobeFlashS || (ph >= StrobeSecondS && ph < StrobeSecondS + StrobeFlashS);
-        foreach (OmniLight3D s in strobes) s.Visible = on;
+        foreach (OmniLight3D s in strobes)
+        {
+            s.Visible = on;
+            if (s.GetParent()?.GetNodeOrNull<Node3D>("glow") is { } g) g.Visible = on;   // its glow flashes with it
+        }
     }
 
     private static Shader? _bell;

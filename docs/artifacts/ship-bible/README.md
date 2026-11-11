@@ -27,3 +27,7 @@
   sphereical portions of armor, and specifically shaped vents", "no repeating elemnts, single axis symmetry, and lots of
   shading"): version 3, version id `1793873085-5bf7`. Chapter 15 gains T5-T8 (armour in layers, distinct features,
   nothing repeats with one axis of symmetry, shading for depth) and a checklist line.
+- 2026-11-07, cloud session (owner: "update the institute ship guide"): version 4 on the cloud account, version id
+  `1794023426-75c0`. Chapter 17, The Kelvane Institute (the line, its traditions, rules KI1-KI9, four captures from mockup 23
+  v8: `kelvane_lineup`, `kelvane_inside`, `kelvane_carrier`, `kelvane_craft`, published as supporting files); the checklist
+  is now chapter 18 with a KI line.

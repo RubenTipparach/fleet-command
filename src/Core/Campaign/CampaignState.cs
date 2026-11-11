@@ -92,6 +92,10 @@ public sealed class Sector
     public string? Station { get; set; }
     public bool IsPort => Planet != null || Station != null;
     public string? PortName => Planet ?? Station;
+    /// <summary>The fog of war: true once the sector has been seen (revealed); an unexplored sector is drawn black.</summary>
+    public bool Known { get; set; }
+    /// <summary>Who held the sector when it was last seen: a revealed sector shows its empire as last known.</summary>
+    public string KnownOwner { get; set; } = "neutral";
 }
 
 /// <summary>A faction's fleet on the map, moved by its faction every few turns toward a goal near its home.</summary>
@@ -110,9 +114,14 @@ public sealed class FactionFleet
     public double Dir { get; set; }
     public int? GoalC { get; set; }
     public int? GoalR { get; set; }
+    /// <summary>Hunters sent after your fleet by a hostile faction (Campaign.Pursue): they make for the fleet each turn; once
+    /// the alarm dies down they are Recalled and go home, where they disband.</summary>
+    public bool Pursuit { get; set; }
+    public bool Recalled { get; set; }
 }
 
-/// <summary>A freighter running between two of its faction's ports, one sector a turn, turning back at each end.</summary>
+/// <summary>A freighter running between two of its faction's ports, one sector a turn, turning back at each end. One that
+/// was destroyed or taken is off the route for Out turns (rules.freighter_refit_turns), then sails again from where she was.</summary>
 public sealed class Freighter
 {
     public string Fac { get; set; } = "";
@@ -123,6 +132,9 @@ public sealed class Freighter
     public int I { get; set; }
     public int Step { get; set; } = 1;
     public double Dir { get; set; }
+    public int Out { get; set; }
+    /// <summary>Her sector now.</summary>
+    public (int C, int R) Here() => (Route[I][0], Route[I][1]);
 }
 
 /// <summary>One ship of the player's fleet: its hull, fittings by hardpoint group, supplies, and hull left (percent).</summary>
@@ -136,6 +148,9 @@ public sealed class CampShip
     public Dictionary<string, int> Supplies { get; set; } = new();
     public string Behaviour { get; set; } = "Escort";
     public double HullPct { get; set; } = 100;
+    /// <summary>A freighter taken with her cargo: what her cargo pays when cashed out at a port (Campaign.CashOut), credits;
+    /// 0 for every other ship. A ship with a haul sails with the fleet but stays out of its battles.</summary>
+    public int Haul { get; set; }
 }
 
 /// <summary>A mission on offer (or accepted): its script, sector, turns left (null for a story mission), strength, reward
@@ -191,6 +206,9 @@ public sealed class CampaignState
 {
     public int Version { get; set; } = 1;
     public string Side { get; set; } = "";
+    /// <summary>Whether this campaign holds the unfinished factions (the Options setting when it was started; owner,
+    /// 2026-11-09: "this flag is override by any save"). A save from before the setting had every faction, so true.</summary>
+    public bool Unfinished { get; set; } = true;
     public uint Seed { get; set; }
     public uint Rng { get; set; }
     public int Cols { get; set; }
@@ -198,6 +216,8 @@ public sealed class CampaignState
     /// <summary>Every sector, column-major: index c * Rows + r.</summary>
     public List<Sector> Sectors { get; set; } = new();
     public List<FactionFleet> Groups { get; set; } = new();
+    /// <summary>Each hostile faction's alarm at your fleet in its territory (Campaign.Pursue).</summary>
+    public Dictionary<string, int> Heat { get; set; } = new();
     public List<Freighter> Freighters { get; set; } = new();
     public List<CampShip> Fleet { get; set; } = new();
     public int AtC { get; set; }

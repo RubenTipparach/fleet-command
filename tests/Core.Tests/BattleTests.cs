@@ -121,7 +121,7 @@ public class BattleTests
     {
         Battle b = TestData.NewBattle();
         Ship t = b.ShipById("vorrak")!;
-        t.X = b.Player.X; t.Z = b.Player.Z - 5000; // dead ahead, 5 km
+        t.X = b.Player.X; t.Z = b.Player.Z - 50000; // dead ahead, 50 km
         b.Lock("vorrak");
         foreach (Mount m in b.Player.Mounts) m.Charge = 1;
         Mount[] would = b.WouldFire();
@@ -131,6 +131,40 @@ public class BattleTests
         b.ToggleVolley();
         Assert.Single(b.WouldFire());
         Assert.Equal(1, b.Fire());
+    }
+
+    [Fact]
+    public void Auto_fire_looses_every_selected_armed_mount_that_bears_without_a_press_even_on_single()
+    {
+        Battle b = TestData.NewBattle();
+        Ship t = b.ShipById("vorrak")!;
+        t.X = b.Player.X; t.Z = b.Player.Z - 50000;
+        b.Lock("vorrak");
+        b.ToggleVolley();   // Single: one weapon per press of Fire, but auto fire looses every one
+        foreach (Mount m in b.Player.Mounts) m.Charge = 1;
+        b.Player.Mounts[1].Selected = false;
+        b.ToggleAutoFire();
+        Assert.True(b.Player.AutoFire);
+        b.Step();
+        // the forward lance left out of the volley holds its charge; every other selected mount that bears has fired
+        Assert.Equal(1, b.Player.Mounts[1].Charge);
+        Assert.All(new[] { 0, 2, 3, 4, 5, 6, 10 }, i => Assert.True(b.Player.Mounts[i].Charge < 1));
+        Assert.Equal(1, b.Player.Mounts[7].Charge);   // the aft lance does not bear
+    }
+
+    [Fact]
+    public void Auto_fire_off_fires_nothing_on_its_own()
+    {
+        Battle b = TestData.NewBattle();
+        Ship t = b.ShipById("vorrak")!;
+        t.X = b.Player.X; t.Z = b.Player.Z - 50000;
+        b.Lock("vorrak");
+        foreach (Mount m in b.Player.Mounts) m.Charge = 1;
+        b.ToggleAutoFire();
+        b.ToggleAutoFire();
+        b.Step();
+        Assert.All(new[] { 0, 1, 2, 3, 4, 5, 6, 10 }, i => Assert.Equal(1, b.Player.Mounts[i].Charge));
+        Assert.Contains(b.Log, l => l.Text == "Auto fire off.");
     }
 
     [Fact]

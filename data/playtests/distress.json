@@ -9,7 +9,7 @@
   },
   {
    "do": "select",
-   "arg": "lark|skarr"
+   "arg": "lark|skarr|parallax|hunt_prow"
   },
   {
    "do": "station",

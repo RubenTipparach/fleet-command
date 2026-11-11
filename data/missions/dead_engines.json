@@ -1,0 +1,54 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "dead_engines",
+ "name": "Dead engines",
+ "glyph": "%",
+ "type": "Dead engines",
+ "reward_cr": 900,
+ "weight": 0.4,
+ "where": "nebula && !port",
+ "objective": "Win the drift battle while the anomaly kills every drive.",
+ "brief": "An anomaly in this cloud drains every drive in reach at times: for half a minute in every one and a half, no ship can make way. {enemy_name} raiders are drifting in it with you. Fight it out.",
+ "battle": [
+  {
+   "intel": "Raiders in the anomaly",
+   "dead_engines": {
+    "every_s": 90,
+    "for_s": 30
+   },
+   "groups": [
+    {
+     "id": "raiders",
+     "faction": "{enemy}",
+     "count": "strength + 1",
+     "role": "enemy",
+     "label": "Raiders",
+     "range_km": 60
+    }
+   ],
+   "objectives": [
+    {
+     "id": "win",
+     "text": "Destroy the raiders",
+     "primary": true,
+     "done": "alive(raiders) == 0"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 3
+   },
+   "log": "The drift battle is won."
+  }
+ ]
+}

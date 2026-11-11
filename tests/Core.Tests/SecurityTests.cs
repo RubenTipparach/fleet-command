@@ -147,7 +147,7 @@ public class SecurityTests
     [Fact]
     public void The_repel_scenes_run_from_both_sides_to_an_end_or_a_fight_aboard()
     {
-        foreach (string id in new[] { "concord_repel", "krai_repel" })
+        foreach (string id in new[] { "concord_repel", "krai_repel", "kelvane_repel", "ssarith_repel" })
         {
             var b = new Battle(TestData.Data, TestData.Data.ScenarioById(id));
             Run(b, 60);

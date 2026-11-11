@@ -85,7 +85,7 @@ public sealed class EditorWindow : Window
 
     private static readonly (string Key, string Label, bool Number)[] Fields =
     {
-        ("id", "Id", false), ("name", "Name", false), ("glyph", "Map letter", false), ("kind", "Kind (contract or story)", false),
+        ("id", "Id", false), ("name", "Name", false), ("glyph", "Map letter", false), ("kind", "Kind (contract, story, special, encounter or event)", false),
         ("type", "Mission type", false), ("reward_cr", "Reward, cr", true), ("turns", "Turns on offer", true), ("where", "Where (expression)", false),
         ("objective", "Objective", false),
     };

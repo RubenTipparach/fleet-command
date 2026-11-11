@@ -43,6 +43,12 @@ public sealed partial class Main : Node
     public override void _Ready()
     {
         ParseArgs();
+        // the planet gallery (the planet-shaders skill's stills): every planet and rock kind alone, then quit
+        if (_args.TryGetValue("planet-gallery", out string? gallery))
+        {
+            AddChild(new PlanetGallery { Out = gallery.Length > 0 ? gallery : "docs/screenshots/game/planets" });
+            return;
+        }
         // the player's window mode (borderless fullscreen unless they chose a window); a scripted run keeps the window it
         // was started in
         if (!_args.ContainsKey("playtest") && !_args.ContainsKey("still") && !_args.ContainsKey("layout-test")) DisplaySettings.ApplySaved();
@@ -80,6 +86,7 @@ public sealed partial class Main : Node
         _view = new BattleView();
         AddChild(_view);
         _view.Init(_x);
+        act.OnPlanetView = () => _view.TogglePlanetView();
 
         var layer = _console = new CanvasLayer { Name = "Console" };
         AddChild(layer);
@@ -100,7 +107,10 @@ public sealed partial class Main : Node
         _menu = new MenuCard();
         _menu.Init(_x, Region.Station);
         _menu.Name = "Menu";
-        _root.AddChild(_menu);
+        // the menu sheet on its own layer over the game flow (layer 4), so the campaign map's Menu opens it too
+        var menuLayer = new CanvasLayer { Name = "MenuLayer", Layer = 10 };
+        AddChild(menuLayer);
+        menuLayer.AddChild(_menu);
         var tips = new TooltipLayer();
         tips.Init(_x);
         _root.AddChild(tips);
@@ -126,6 +136,7 @@ public sealed partial class Main : Node
             _flow = new GameFlow();
             AddChild(_flow);
             _flow.Init(_x, camp, Start, ShowBattle, UseSkin);
+            act.OnMainMenu = _flow.ToMenu;
             act.OnQuit = () => { if (_flow.Screen == FlowScreen.Battle) { _x.State.MenuOpen = false; _flow.ToMenu(); } else GetTree().Quit(); };
         }
 
@@ -184,9 +195,11 @@ public sealed partial class Main : Node
     private void Start(Scenario sc)
     {
         _x.Battle = new Battle(_x.Data, sc);
-        Engine.TimeScale = 1;   // the damage range's slow motion ends with its scene
+        Engine.TimeScale = sc.TimeScale;   // a weapons test scene's quarter speed; the damage range's slow motion ends with its scene
         UseKit(SkinOf(_x.Battle.Player));
         _x.State.Expanded = null;
+        _x.State.Station = "comms";
+        _x.State.GoalsShown = true;
         _view.Rebuild();
         _acc = 0;
         Relayout();
@@ -243,6 +256,7 @@ public sealed partial class Main : Node
         double step = _x.Data.Tuning.StepS;
         _acc = Math.Min(_acc + delta, step * 6);
         while (_acc >= step) { _x.Battle.Step(); _acc -= step; }
+        _x.StepShare = _acc / step;
     }
 
     public override void _UnhandledInput(InputEvent e)
@@ -339,6 +353,9 @@ public sealed partial class Main : Node
             states.Add(("transport." + tb, () => { _x.State.Station = "transport"; _x.State.TransportTab = tb; }));
             states.Add(("expand.transport." + tb, () => { _x.State.Station = "transport"; _x.State.TransportTab = tb; _x.State.Expanded = Region.Station; }));
         }
+        // the Cargo tab's Sites view (a planet's installations and away teams, StationPanel.TransportSites.cs), docked and expanded
+        states.Add(("transport.cargo.sites", () => { _x.State.Station = "transport"; _x.State.TransportTab = "cargo"; _x.State.CargoView = "sites"; }));
+        states.Add(("expand.transport.cargo.sites", () => { _x.State.Station = "transport"; _x.State.TransportTab = "cargo"; _x.State.CargoView = "sites"; _x.State.Expanded = Region.Station; }));
         states.Add(("transport.hit.pick", () => { _x.State.Station = "transport"; _x.State.TransportTab = "hit"; _x.State.RaidMountOpen = true; }));
         states.Add(("expand.comms", () => { _x.State.Station = "comms"; _x.State.Expanded = Region.Station; }));
         states.Add(("log", () => _x.State.LogOpen = true));
@@ -371,7 +388,7 @@ public sealed partial class Main : Node
                 _x.State.Station = "helm"; _x.State.ShipPage = "systems"; _x.State.Expanded = null; _x.State.MenuOpen = false; _x.State.SceneOpen = false;
                 _x.State.HitInfo = null; _x.State.LogOpen = false; _x.State.FleetPick = null;
                 _x.State.PowerMode = "alloc";
-                _x.State.RaidMountOpen = false; _x.State.TransportTab = "hit";
+                _x.State.RaidMountOpen = false; _x.State.TransportTab = "hit"; _x.State.CargoView = "sup";
                 set();
                 Relayout();
                 _menu.Visible = _x.State.MenuOpen;
@@ -477,7 +494,7 @@ public sealed partial class Main : Node
         // a click lands where the player pointed: points of the battle plane drawn by ScreenOf come back through PlaneAt
         _view.Sync();
         double miss = _view.RayMissM();
-        if (!(miss < 1.0)) fails.Add($"a click cast back onto the battle plane misses by {miss:0.0} m");
+        if (!(miss < 10.0)) fails.Add($"a click cast back onto the battle plane misses by {miss:0.0} m");
         foreach (string s in fails) GD.PrintErr("LAYOUT_FAIL " + s);
         GD.Print(fails.Count == 0 ? $"LAYOUT_TEST PASS ({string.Join(", ", Kits.Ids)})" : $"LAYOUT_TEST FAIL ({fails.Count})");
         GetTree().Quit(fails.Count == 0 ? 0 : 1);
@@ -489,21 +506,25 @@ public sealed partial class Main : Node
     };
 
     /// <summary>Plays the battle for --steps (default 600) as the mockup's scripted shots do (target locked, intercepting), sets the console as asked
-    /// (--station, --page, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor, --target-view: the camera glided
+    /// (--station, --page, --tab (Transport), --cargo-view, --expand, --reinforce, --menu, --paused, --scene-list, --zoom=factor, --target-view: the camera glided
     /// to the target), saves a PNG and quits. The window size is
     /// Godot's own --resolution flag.</summary>
     private async System.Threading.Tasks.Task Still(string path)
     {
         int steps = _args.TryGetValue("steps", out string? n) ? int.Parse(n) : 600;
+        if (StillScenario() is { } alt) { _x.Battle = new Battle(_x.Data, alt); _view.Rebuild(); }
         // the same set-up as the mockup's scripted shots: target locked, intercepting at full speed, a volley six
-        // steps before the end
+        // steps before the end (a scene with no enemy locks the --target given, or nothing)
         Battle b = _x.Battle;
-        b.Lock(_args.GetValueOrDefault("target", b.EnemiesOf(b.Player).First().Id));
+        if ((_args.GetValueOrDefault("target") ?? b.EnemiesOf(b.Player).FirstOrDefault()?.Id) is { } tgt) b.Lock(tgt);
         b.HelmOrder("intercept");
         b.SetSpeed(b.Rules.MaxSpeed(b.Player));
         for (int i = 0; i < steps; i++) { b.Step(); if (i == steps - 6) b.Fire(); }
+        await StillField(b);
         if (_args.TryGetValue("station", out string? st)) _x.State.Station = st;
         if (_args.TryGetValue("page", out string? pg)) _x.State.ShipPage = pg;
+        if (_args.TryGetValue("tab", out string? tb)) _x.State.TransportTab = tb;
+        if (_args.TryGetValue("cargo-view", out string? cv)) _x.State.CargoView = cv;
         if (_args.TryGetValue("expand", out string? ex) && Enum.TryParse(ex, true, out Region er)) _x.State.Expanded = er;
         if (_args.TryGetValue("reinforce", out string? rf)) b.Reinforce(int.Parse(rf));
         if (_args.ContainsKey("menu")) _x.State.MenuOpen = true;
@@ -523,8 +544,66 @@ public sealed partial class Main : Node
         GetTree().Quit(err == Error.Ok ? 0 : 1);
     }
 
+    /// <summary>The still's scenario changed for a shot of field operations (openspec/changes/mission-systems), or null:
+    /// --swap=ship:class[:faction] flies a ship as another class (each placeholder stand-in in turn), --planet-kind=kind draws
+    /// every planet of the scene as that kind, and --sites puts the still's three sites on each (an outpost, an armed
+    /// battery and a ruin, the second hostile), as a mission's planet would have them.</summary>
+    private Scenario? StillScenario()
+    {
+        Scenario sc = _x.Battle.Scenario;
+        bool changed = false;
+        if (_args.TryGetValue("swap", out string? sw))
+        {
+            string[] a = sw.Split(':');
+            sc = sc with { Ships = sc.Ships.Select(o => o.Id == a[0] ? o with { Class = a[1], Faction = a.Length > 2 ? a[2] : o.Faction } : o).ToList() };
+            changed = true;
+        }
+        if (sc.Planets is { Count: > 0 } pls && (_args.ContainsKey("planet-kind") || _args.ContainsKey("sites")))
+        {
+            string? kind = _args.GetValueOrDefault("planet-kind");
+            InstallationDef[] sites =
+            {
+                new("still_outpost", "Hollin Outpost", "outpost", 24, -12, false, 0, false),
+                new("still_battery", "Ridge Battery", "battery", 34, 14, true, 6, false),
+                new("still_ruin", "Old Spire", "ruin", 12, 6, false, 0, false),
+            };
+            sc = sc with { Planets = pls.Select(p => p with { Kind = kind ?? p.Kind, Installations = _args.ContainsKey("sites") ? sites : p.Installations }).ToList() };
+            changed = true;
+        }
+        return changed ? sc : null;
+    }
+
+    /// <summary>A still's field operations, after the steps: --select-planet selects the first planet, --survey finishes its
+    /// survey, --near-planet brings your ship to its surface, --beam sends an away team to its first site, --secure marks its
+    /// last site held and the second driven back (as away teams would), --planet-view=height (radii) takes the planet view
+    /// down to that height, and --yaw and --pitch (radians) turn the camera.</summary>
+    private async System.Threading.Tasks.Task StillField(Battle b)
+    {
+        Planet? pl = b.Planets.FirstOrDefault();
+        if (pl == null) return;
+        if (_args.ContainsKey("near-planet"))
+        {
+            double d = Math.Max(1, Math.Sqrt(pl.X * pl.X + pl.Z * pl.Z));
+            b.Player.X = pl.X - pl.X / d * (pl.RadiusM + 1500); b.Player.Z = pl.Z - pl.Z / d * (pl.RadiusM + 1500);
+        }
+        if (_args.ContainsKey("select-planet") || _args.ContainsKey("planet-view")) b.SelectPlanet(pl.Id);
+        if (_args.ContainsKey("survey")) { pl.ScanP = 1; foreach (Installation i in pl.Installations) i.Known = true; }
+        if (_args.ContainsKey("secure") && pl.Installations.Count >= 3) { pl.Installations[^1].Secured = true; pl.Installations[1].Failed = true; }
+        if (_args.ContainsKey("beam") && pl.Installations.Count > 0) b.BeamDown(pl.Id, pl.Installations[0].Id);
+        for (int i = 0; i < 4; i++) b.Step();
+        if (_args.TryGetValue("yaw", out string? yw)) _view.Yaw = float.Parse(yw, System.Globalization.CultureInfo.InvariantCulture);
+        if (_args.TryGetValue("pitch", out string? pt)) _view.Pitch = float.Parse(pt, System.Globalization.CultureInfo.InvariantCulture);
+        if (_args.TryGetValue("planet-view", out string? pv))
+        {
+            _view.TogglePlanetView();
+            _view.Zoom(float.Parse(pv, System.Globalization.CultureInfo.InvariantCulture) / BattleView.PlanetAltStart);
+            for (int i = 0; i < 90; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        }
+    }
+
     /// <summary>A still of a game flow screen (--flow=loading, menu, factions, skirmish, map, route, brief, accept, port, outfit, battle,
-    /// debrief or debrief-battle; --side=concord or krai; --out=path.png), for the mockup comparison (CLAUDE.md section 12). It sets the
+    /// debrief, debrief-battle, freighter (the fleet beside a rival freighter, her Raid key), raid (its briefing) or haul (a freighter
+    /// taken, at your home port with Cash out, a damaged ship and repair kits); --side=concord or krai; --out=path.png), for the mockup comparison (CLAUDE.md section 12). It sets the
     /// screen up as a player would reach it, through the flow's own actions, waits for it to draw, saves and quits.</summary>
     private async System.Threading.Tasks.Task FlowStill(string what)
     {
@@ -557,6 +636,7 @@ public sealed partial class Main : Node
                     f.Accept(m);
                     _flow!.MapCentre(m.C, m.R);
                 }
+                if (what == "map-menu") _x.State.MenuOpen = true;
                 if (what == "map-far") { f.MapCentre(15, 11); f.MapView(64, null); }
                 if (what == "map-close") { f.MapCentre(c.S.AtC + 1, c.S.AtR - 1); f.MapView(6.5f, null); }
                 if (what == "log") { Offer m = Find("shakedown")!; c.Accept(m); f.MapView(null, true); }
@@ -579,6 +659,27 @@ public sealed partial class Main : Node
                     f.SelectHex((cal.C, cal.R));
                     f.Port = "market";
                 }
+                if (what is "freighter" or "raid")
+                {
+                    // the fleet beside a freighter of another faction (the rival's, or, with none, the first not your own)
+                    Freighter fr = c.S.Freighters.FirstOrDefault(x => x.Fac == c.Rival) ?? c.S.Freighters.First(x => x.Fac != side);
+                    (c.S.AtC, c.S.AtR) = fr.Here();
+                    c.Reveal();
+                    f.Redraw();
+                    f.SelectHex(fr.Here());
+                    f.MapCentre(fr.Here().C, fr.Here().R);
+                    f.MapView(6.5f, null);
+                    if (what == "raid") f.Meet(fr);
+                }
+                if (what == "haul")
+                {
+                    CampShip h = c.NewShip(c.Data.FreighterOf(c.Rival ?? "vos").Id, "Larkspur");
+                    h.Maker = c.Rival ?? "vos"; h.Haul = 1050; h.HullPct = 22;
+                    c.S.Fleet.Add(h);
+                    c.S.Fleet[0].HullPct = 46;
+                    c.S.Fleet[0].Supplies[Campaign.Campaign.KitSupply] = 2;
+                    f.SelectHex((c.S.AtC, c.S.AtR));
+                }
                 if (what == "debrief") { Offer m = Find("shakedown")!; FlyTo(m); f.Launch(m); await Settle(); }
                 if (what is "battle" or "debrief-battle")
                 {
@@ -591,7 +692,7 @@ public sealed partial class Main : Node
                     b.HelmOrder("intercept");
                     b.SetSpeed(b.Rules.MaxSpeed(b.Player));
                     for (int i = 0; i < 600; i++) b.Step();
-                    if (what == "debrief-battle") { b.Withdraw(); while (f.Screen == FlowScreen.Battle) await Frames(10); await Settle(); }
+                    if (what == "debrief-battle") { b.EndWithdrawn(); while (f.Screen == FlowScreen.Battle) await Frames(10); await Settle(); }
                 }
                 break;
         }

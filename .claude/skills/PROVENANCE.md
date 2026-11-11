@@ -39,6 +39,12 @@ Data and code borrowed for the mockups (not skills, recorded here so they are fo
   unchanged (`data/space/SOURCE.md`). The sky and streak shaders in `docs/mockups/game-flow.html` are ported from its
   `crates/sc-render/shaders/sky.glsl` and `docs/mockups/nebula-skies.html`.
 
+- `planet-shaders` (2026-11-09): written here. Its method and shaders are ported from godot-sandbox
+  (`RubenTipparach/godot-sandbox` at `d5d8e461`: `comic_dirt_ground`, `comic_crater_overlay`, `comic_cloud_layer`,
+  `comic_atmosphere_shell`, `planet_body_3d.tscn`), its detail by distance from Falchion (`RubenTipparach/falchion` at
+  `5d128af8`, `src/render/planets/PlanetMaterial.ts`), its hash from Jarzynski and Olano, "Hash Functions for GPU
+  Rendering" (2020, PCG3D). The gas giant, rings and asteroid shaders are new.
+
 Not copied, and why:
 - Crab Breeze's `bevy-architecture`, `deterministic-simulation` and `perf-measure`: Bevy and Rust
   specific. Determinism is in `godot-architecture`; a Godot `perf-measure` comes with the first

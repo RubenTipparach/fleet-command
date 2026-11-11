@@ -1,8 +1,9 @@
 // MapPieces: the campaign map's miniatures, built as the mockup builds them (game-flow mockup v15: flightStand,
-// stationModel, freighterModel, makeStandee's planet, labelSprite, bannerMesh, strengthFlag, missionStandee, turnBadge).
+// stationModel, makeStandee's planet, labelSprite, bannerMesh, strengthFlag, missionStandee, turnBadge).
 // Ships and stations stand on clear flight posts over a black hex base ringed in their faction's colour (the player's own
 // on gold); planets float in their hex with an atmosphere and an orbit ring; banners are cloth (banner.gdshader). Every
-// piece is drawn from what the campaign says it is; nothing here decides anything. CampaignMap places them.
+// piece is drawn from what the campaign says it is; nothing here decides anything. CampaignMap places them. A freighter is
+// her faction's approved freighter with her containers (CampaignMap.ShipModel), no longer the mockup's freighterModel.
 using System;
 using System.Collections.Generic;
 using FleetCommand.Campaign;
@@ -26,7 +27,7 @@ public static class MapPieces
     /// <summary>The hull tints of the factions' stand-in parts (the mockup's HULL_TINT).</summary>
     public static Color HullTint(string fac) => fac switch
     {
-        "concord" => new Color("#b9c6d6"), "krai" => new Color("#6a6062"), "ssarith" => new Color("#8a9478"), "vos" => new Color("#b39a6e"), _ => new Color("#a0a6ae"),
+        "concord" => new Color("#b9c6d6"), "krai" => new Color("#6a6062"), "ssarith" => new Color("#8a9478"), "kelvane" => new Color("#c9bfa9"), "vos" => new Color("#b39a6e"), _ => new Color("#a0a6ae"),
     };
 
     public static StandardMaterial3D Unlit(Color c, float a = 1) => new()
@@ -84,22 +85,6 @@ public static class MapPieces
             g.AddChild(sp);
         }
         g.AddChild(M(new CylinderMesh { TopRadius = 0.03f, BottomRadius = 0.05f, Height = 0.42f, RadialSegments = 8 }, metal, Vector3.Zero));
-        return g;
-    }
-
-    /// <summary>A freighter placeholder: a spine with three cargo pods (the middle in the faction's colour), a bridge aft and
-    /// a drive. Bow +z.</summary>
-    public static Node3D Freighter(string fac, Color col)
-    {
-        var g = new Node3D { Name = "Freighter" };
-        var hull = new StandardMaterial3D { AlbedoColor = HullTint(fac), Metallic = 0.4f, Roughness = 0.55f };
-        var band = new StandardMaterial3D { AlbedoColor = col, EmissionEnabled = true, Emission = col, EmissionEnergyMultiplier = 0.2f, Roughness = 0.6f };
-        g.AddChild(M(new BoxMesh { Size = new Vector3(0.03f, 0.03f, 0.4f) }, hull, Vector3.Zero));
-        for (int k = 0; k < 3; k++) g.AddChild(M(new BoxMesh { Size = new Vector3(0.085f, 0.07f, 0.085f) }, k == 1 ? band : hull, new Vector3(0, 0, 0.1f - k * 0.1f)));
-        g.AddChild(M(new BoxMesh { Size = new Vector3(0.06f, 0.05f, 0.06f) }, hull, new Vector3(0, 0.02f, -0.17f)));
-        var drive = M(new CylinderMesh { TopRadius = 0.022f, BottomRadius = 0.03f, Height = 0.04f, RadialSegments = 10 }, Unlit(new Color("#9fd2ff")), new Vector3(0, 0, -0.215f));
-        drive.RotationDegrees = new Vector3(90, 0, 0);
-        g.AddChild(drive);
         return g;
     }
 
@@ -180,8 +165,12 @@ public static class MapPieces
         return g;
     }
 
-    /// <summary>A name label that keeps its size on screen (the mockup's labelSprite), in the faction's colour, outlined.</summary>
-    public static Label3D Label(string text, Color col) => new()
+    /// <summary>Whether names are hand-lettered in ink (the paper chart) rather than the console's outlined capitals.</summary>
+    public static bool Ink;
+
+    /// <summary>A name label that keeps its size on screen (the mockup's labelSprite), in the faction's colour, outlined; on
+    /// the paper chart, the page's inkLabel (ChartRoom.InkLabel).</summary>
+    public static Label3D Label(string text, Color col) => Ink ? ChartRoom.InkLabel(text) : new()
     {
         Text = text.ToUpperInvariant(), Modulate = col, FontSize = 44, OutlineSize = 12, OutlineModulate = new Color(0.012f, 0.024f, 0.04f, 0.9f),
         FixedSize = true, PixelSize = 0.00036f, Billboard = BaseMaterial3D.BillboardModeEnum.Enabled, NoDepthTest = true, RenderPriority = 4, OutlineRenderPriority = 3,

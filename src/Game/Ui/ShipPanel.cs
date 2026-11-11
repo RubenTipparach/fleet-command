@@ -156,7 +156,7 @@ public static class SystemsDisplay
         // the ship from above: its schematic (two white layers, tinted here in the skin's colours: the hull dark, the wire
         // bright), or a stand-in by hull shape for a class whose ship is not designed yet
         float L = R * 0.72f;
-        if (!Schematics.Draw(ci, Schematics.KeyOfModel(s.Class.Model), centre, L, c.Signal, c.Sky)) Schematic(ci, s.Class.Shape, centre, L, c.Sky);
+        if (!Schematics.Draw(ci, Schematics.KeyOfModel(s.Class.Model), centre, L, c.Signal, c.Sky)) StandIn(ci, s.Class.Shape, centre, L, c.Sky);
 
         // subsystems in two columns
         for (int side = 0; side < 2; side++)
@@ -198,7 +198,7 @@ public static class SystemsDisplay
             double? cd = Rules.CooldownS(m);
             var rows = new List<(string, string, Color?)> { ("Health", $"{Math.Round(m.Hp * 100)} %", null), ("Status", st.ToString(), sc), ("Arming", m.State.ToString(), null) };
             if (cd is { } secs) rows.Add(("Ready in", Rules.FormatCooldown(secs) + " s", null));
-            if (own && t != null) rows.Add(("To hit " + t.Name, $"{Math.Round(bt.Rules.HitChance(s, m, t) * 100)} %", null));
+            if (own && t != null) rows.Add(("To hit " + Aiming.ContactName(bt, t), $"{Math.Round(bt.Rules.HitChance(s, m, t) * 100)} %", null));
             if (own && !m.Weapon.IsPointDefence) rows.Add(("Aims", m.Weapon.Precise ? "Precise" : "By arc", null));
             Ship? pinned = own ? bt.PinTarget(m) : null;
             if (pinned != null) rows.Add(("Pinned", m.Pin!.Aim == "hull" ? pinned.Name : $"{pinned.Name} · {Strike.Name(m.Pin.Aim, pinned)}", null));
@@ -293,8 +293,9 @@ public static class SystemsDisplay
         }
     }
 
-    // A stand-in schematic by hull shape: saucer and nacelles, a wedge, or a claw (mockup 5 sets the real silhouettes).
-    private static void Schematic(CanvasItem ci, string shape, Vector2 c, float L, Color ink)
+    /// <summary>A stand-in schematic by hull shape, nose up, <paramref name="L"/> its half-length: saucer and nacelles, a
+    /// wedge, or a claw, for a ship with no schematic yet (the systems display's and the port's).</summary>
+    public static void StandIn(CanvasItem ci, string shape, Vector2 c, float L, Color ink)
     {
         switch (shape)
         {

@@ -38,13 +38,15 @@ public class HelmTests
         b.Lock("vorrak");
         b.HelmOrder("intercept");
         Assert.True(b.Player.Engaged);
-        // intercept steers for where the target will be when we arrive, not where it is (positions before the step)
+        // intercept steers for where the target will be when we arrive, not where it is (positions before the step), but
+        // never more than intercept_max_lead_deg off the target, so the forward arcs keep it
         Ship me = b.Player, t = b.ShipById("vorrak")!;
-        double tti = Geometry.Dist(me.X, me.Z, t.X, t.Z) / Math.Max(100, Math.Abs(me.V));
+        double tti = Geometry.Dist(me.X, me.Z, t.X, t.Z) / Math.Max(1000, Math.Abs(me.V));
         var f = Geometry.Forward(t.H);
-        double lead = Geometry.HeadingTo(me.X, me.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
+        double toT = Geometry.HeadingTo(me.X, me.Z, t.X, t.Z), lead = Geometry.HeadingTo(me.X, me.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
+        double max = b.Tuning.InterceptMaxLeadDeg * Geometry.Deg, want = toT + Math.Clamp(Geometry.Wrap(lead - toT), -max, max);
         b.Step();
-        Assert.True(Math.Abs(Geometry.Wrap(me.HOrder - lead)) < 0.02);
+        Assert.True(Math.Abs(Geometry.Wrap(me.HOrder - want)) < 0.02, $"HOrder {me.HOrder / Geometry.Deg:0.0} want {want / Geometry.Deg:0.0} toT {toT / Geometry.Deg:0.0} lead {lead / Geometry.Deg:0.0}");
         b.HelmOrder("intercept");
         Assert.False(b.Player.Engaged);
     }
@@ -67,7 +69,7 @@ public class HelmTests
         for (int i = 0; i < 60 && b.Player.EstopT <= 0; i++) b.Step();
         Assert.Equal(0, b.Player.V);
         Assert.True(b.Player.EstopT > 0);
-        b.SetSpeed(120);
+        b.SetSpeed(1200);
         b.Step();
         Assert.Equal(0, b.Player.VOrder);
     }
@@ -77,21 +79,21 @@ public class HelmTests
     {
         Battle b = TestData.NewBattle();
         Ship t = b.ShipById("vorrak")!, me = b.Player;
-        t.X = me.X; t.Z = me.Z + 3000; // dead astern, in the aft lance's arc
+        t.X = me.X; t.Z = me.Z + 30000; // dead astern, in the aft lance's arc
         double plain = b.Rules.HitChance(t, t.Mounts[3], me);
         b.ToggleErratic();
         Assert.Equal(plain * b.Tuning.ErraticHit, b.Rules.HitChance(t, t.Mounts[3], me), 6);
     }
 
     [Fact]
-    public void Hold_and_run_ranges_snap_to_half_kilometres_inside_their_limits()
+    public void Hold_and_run_ranges_snap_to_five_kilometres_inside_their_limits()
     {
         Battle b = TestData.NewBattle();
-        b.SetHoldKm(6.3);
-        Assert.Equal(6.5, b.Player.HoldKm);
-        b.SetRunRange(5, 4);
-        Assert.True(b.Player.RunMaxKm - b.Player.RunMinKm >= 0.5);
-        b.SetHoldKm(99);
+        b.SetHoldKm(63);
+        Assert.Equal(65, b.Player.HoldKm);
+        b.SetRunRange(50, 40);
+        Assert.True(b.Player.RunMaxKm - b.Player.RunMinKm >= 5);
+        b.SetHoldKm(999);
         Assert.Equal(b.Tuning.HoldMaxKm, b.Player.HoldKm);
     }
 }

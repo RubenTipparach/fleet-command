@@ -1,0 +1,20 @@
+{
+ "_doc": "The scripted captain tries faction standing and the hunters as the krai (openspec/changes/faction-standing and mission-systems; a cloud session's handoff, 2026-11-08, after PR #65): a new campaign, the fleet sailed to a Kelvane port at the starting standing and again at standing 70 (set by the port beat, as offer sets a mission), its sector panel opened each time to see what it opens, then sailed into the nearest hostile space and kept there turn after turn until the alarm sends hunters and they catch it, and their fight played out. It saves to user://campaign-playtest-krai.json, never over the player's campaign. In a window, snap saves stills into docs/screenshots/game/standing-krai/.",
+ "flow": true,
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "wait_screen", "arg": "menu", "s": 120},
+  {"do": "hold", "s": 20},
+  {"do": "click", "arg": "menu.campaign"},
+  {"do": "wait_screen", "arg": "factions"},
+  {"do": "click", "arg": "fac.krai"},
+  {"do": "click", "arg": "fac.krai.new"},
+  {"do": "wait_screen", "arg": "map", "s": 120},
+  {"do": "port", "arg": "kelvane"},
+  {"do": "hold", "s": 4},
+  {"do": "port", "arg": "kelvane=70"},
+  {"do": "hold", "s": 4},
+  {"do": "loiter", "s": 12},
+  {"do": "snap", "arg": "after"}
+ ]
+}

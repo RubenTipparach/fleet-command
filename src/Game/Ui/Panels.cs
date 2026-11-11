@@ -23,11 +23,11 @@ public sealed partial class PlatePanel : ConsolePanel
         Ship[] fleet = B.Fleet();
         int i = Array.IndexOf(fleet, Me);
         Button("fleet", new Rect2(Size.X - 90, 6, 86, 30), $"Fleet {i + 1}/{fleet.Length}", () => B.TakeCommand(fleet[(i + 1) % fleet.Length].Id),
-            tip: new Tip("Take command of the next ship"));
+            tip: new Tip("Take command of the next ship"), shortLabel: $"{i + 1}/{fleet.Length}");
     }
 }
 
-/// <summary>Fire, Multiple or Single, and the arming state of the selected mounts. Expanded (owner, 2026-11-02: "show
+/// <summary>Auto and Fire, Multiple or Single, and the arming state of the selected mounts. Expanded (owner, 2026-11-02: "show
 /// weapons as they are on the ship in the expanded menu, then when you hover over them and click on them, detail menu
 /// appears on the lower half. Also add a fire button underneath each weapon"): groups to select, the systems display
 /// with a Fire key under each mount, and the picked mount's details.</summary>
@@ -44,8 +44,13 @@ public sealed partial class WeaponsPanel : ConsolePanel
         Mount[] sel = s.Mounts.Where(m => m.Selected && !m.Weapon.IsPointDefence).ToArray();
         string cur = sel.Length > 0 && sel.All(m => m.State == sel[0].State) ? sel[0].State.ToString().ToLowerInvariant() : "";
         float w1 = (b.Size.X - 6) * 0.62f, x0 = b.Position.X, y0 = b.Position.Y;
-        Button("fire", new Rect2(x0, y0, w1, 48), $"Fire · {B.WouldFire().Length}", () => B.Fire(), center: false,
-            tip: new Tip(t == null ? "Fire: lock a target first" : $"Fire the selected weapons at {t.Name} (F)"));
+        // the Fire key in two (owner, 2026-11-08: "Fire button should be divided into two sections. Auto and Fire"): Auto, a
+        // toggle that fires every selected armed weapon as it bears, then Fire
+        float wa = (w1 - 6) * 0.4f;
+        Button("auto", new Rect2(x0, y0, wa, 48), "Auto", () => B.ToggleAutoFire(), s.AutoFire, center: true,
+            tip: new Tip(s.AutoFire ? "Auto fire on: every selected weapon fires as it bears (R)" : "Auto fire: fire every selected weapon as it bears (R)"));
+        Button("fire", new Rect2(x0 + wa + 6, y0, w1 - wa - 6, 48), $"Fire · {B.WouldFire().Length}", () => B.Fire(), center: false,
+            tip: new Tip(t == null ? "Fire: lock a target first" : $"Fire the selected weapons at {Aiming.ContactName(B, t)} (F)"));
         Button("volley", new Rect2(x0 + w1 + 6, y0, b.Size.X - w1 - 6, 48), s.Volley ? "Multiple" : "Single", () => B.ToggleVolley(), s.Volley, center: false,
             tip: new Tip(s.Volley ? "Multiple: every ready weapon fires (M)" : "Single: one weapon per press (M)"));
         // every arming mode; one no selected weapon has is dimmed (weapon-arming design)
@@ -91,7 +96,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
         if (t != null)
         {
             bool arc = Rules.InArc(s, m, t), rng = Rules.InRange(s, m, t);
-            Pairs("wd.t", rx, y + 62, new (string, string, Color?)[] { ("Target", t.Name, null), ("To hit", Pct(B.Rules.HitChance(s, m, t)), null),
+            Pairs("wd.t", rx, y + 62, new (string, string, Color?)[] { ("Target", Aiming.ContactName(B, t), null), ("To hit", Pct(B.Rules.HitChance(s, m, t)), null),
                 ("In arc", arc ? "Yes" : "No", arc ? C.Accord : C.Alert), ("In range", rng ? "Yes" : "No", rng ? C.Accord : C.Alert) }, 20);
         }
         else Lbl("No target", rx, y + 62);
@@ -108,7 +113,7 @@ public sealed partial class WeaponsPanel : ConsolePanel
 /// and Next target, and the crest. Expanded, it is the tactical map (RadarPanel.Map.cs).</summary>
 public sealed partial class RadarPanel : ConsolePanel
 {
-    private const double ScaleKm = 15;
+    private const double ScaleKm = 150;
 
     protected override void DrawPanel()
     {
@@ -120,6 +125,8 @@ public sealed partial class RadarPanel : ConsolePanel
         Vector2 c = dr.GetCenter();
         float rr = 120 * 0.4f;
         foreach (float f in new[] { 0.5f, 1f }) DrawArc(c, rr * f, 0, Mathf.Tau, 48, C.Deep, 1.5f, true);
+        // your sensors' reach, a faint ring (beyond it an enemy is an unknown contact: Battle.Identified)
+        DrawArc(c, (float)Math.Min(1.08, B.SensorKm(Me) / ScaleKm) * rr, 0, Mathf.Tau, 48, new Color(C.Sky, 0.35f), 1, true);
         foreach (Ship o in B.Ships)
         {
             if (!o.Alive || o == Me || !B.Detected(Me, o)) continue;   // a cloaked ship unseen is not on the radar
@@ -138,7 +145,8 @@ public sealed partial class RadarPanel : ConsolePanel
     }
 }
 
-/// <summary>The top strip: own hull, the weapon capacitor in cells, the target's hull, the clock, Pause and Menu. A skin
+/// <summary>The top strip: own hull, the weapon capacitor in cells, the target's hull, the clock (the time left under a time
+/// limit), Pause and Menu. A skin
 /// whose strips join its column draws the joined strip, its content moved into the strip's channel.</summary>
 public sealed partial class TopStrip : ConsolePanel
 {
@@ -155,9 +163,20 @@ public sealed partial class TopStrip : ConsolePanel
         Lbl("Weapon capacitor", xx, cy + 13, u * 1.2f);
         CellRow("cap", new Rect2(xx, cy + 19, u * 1.2f, 16), 14, s.Capacitor / s.Class.CapacitorE * 14, null, null); xx += u * 1.2f + gap;
         Ship? t = B.TargetOf(s);
-        Bar(xx, cy, u, t != null ? $"Target hull · {t.Name}" : "Target hull", t != null ? t.Hull / t.Class.HullHp : 0, true); xx += u + gap;
-        int secs = (int)B.T;
-        Num($"{secs / 60:00}:{secs % 60:00}", xx + 70, cy + 30, 0, null, HorizontalAlignment.Right); xx += 70 + gap;
+        Bar(xx, cy, u, t != null ? $"Target hull · {Aiming.ContactName(B, t)}" : "Target hull", t != null ? t.Hull / t.Class.HullHp : 0, true); xx += u + gap;
+        // the mission clock, or with a time limit the time left (Battle.TimeLeftS), in Caution for its last minute
+        if (B.TimeLeftS is { } left)
+        {
+            int ls = (int)Math.Ceiling(left);
+            Lbl("Time left", xx + 70, cy + 11, 0, null, HorizontalAlignment.Right, 12);
+            Num($"{ls / 60:00}:{ls % 60:00}", xx + 70, cy + 33, 0, left < 60 ? C.Caution : null, HorizontalAlignment.Right);
+        }
+        else
+        {
+            int secs = (int)B.T;
+            Num($"{secs / 60:00}:{secs % 60:00}", xx + 70, cy + 30, 0, null, HorizontalAlignment.Right);
+        }
+        xx += 70 + gap;
         Button("pause", new Rect2(xx, cy + 4, 100, 30), X.State.Paused ? "Resume" : "Pause", X.Act.Pause, X.State.Paused, tip: new Tip("Pause (Space): orders still work")); xx += 100 + gap;
         Button("menu", new Rect2(xx, cy + 4, 80, 30), "Menu", X.Act.Menu, X.State.MenuOpen);
     }
@@ -250,7 +269,7 @@ public sealed partial class BottomStrip : ConsolePanel
         Ship s = Me;
         double box = B.Tuning.SpeedPerBoxMS, top = box * 10;
         CellRow("spd", new Rect2(x, y + (h - 24) / 2, w, 24), 10, Math.Max(0, s.VOrder) / box, null, (int)Math.Floor(B.Rules.MaxSpeed(s) / box + 1e-6));
-        Ui.Reg("spd", new Rect2(x - 8, y, w + 16, h), null, (p, _) => B.SetSpeed(Math.Round(Math.Clamp((p.X - x) / w, 0, 1) * top / 5) * 5),
+        Ui.Reg("spd", new Rect2(x - 8, y, w + 16, h), null, (p, _) => B.SetSpeed(Math.Round(Math.Clamp((p.X - x) / w, 0, 1) * top / 50) * 50),
             new Tip($"Speed: ordered {Math.Round(s.VOrder)} m/s, limit {Math.Round(B.Rules.MaxSpeed(s))} m/s"));
         float f = (float)Math.Clamp(s.VOrder / top, 0, 1);
         Kit.Piece(this, "button.pressed", new Rect2(x + f * w - 11, y + (h - 36) / 2, 22, 36));
@@ -258,7 +277,7 @@ public sealed partial class BottomStrip : ConsolePanel
 }
 
 /// <summary>The in-battle menu: a sheet over everything that dims the console and takes all input while it is up
-/// (the mockup's uiSheet): resume, restart the battle, options, quit.</summary>
+/// (the mockup's uiSheet): resume, restart the battle (Withdraw in a mission, Main menu on the campaign map), options, quit.</summary>
 public sealed partial class MenuCard : ConsolePanel
 {
     /// <summary>The sheet is over everything, never a panel in the column.</summary>
@@ -268,7 +287,9 @@ public sealed partial class MenuCard : ConsolePanel
     {
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("sheet.block", new Rect2(Vector2.Zero, Size));
-        float w = 600, h = 356;
+        // sized to its four keys, 56 px a row, and the frame round them (it held five before Display moved to Options)
+        const int Rows = 4;
+        float w = 600, h = 76 + Rows * 56;
         var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
         // a solid background inside the frame (owner, 2026-11-03: "Pause menu should have a background"), so the dimmed
         // console does not show through the keys; it stops short of the frame's end caps (near black with the skin's dark
@@ -279,10 +300,22 @@ public sealed partial class MenuCard : ConsolePanel
         Button("m.resume", new Rect2(b.Position.X, y, bw, 44), "Resume", X.Act.Menu, center: false); y += 56;
         // in a campaign mission the menu holds Withdraw (owner, 2026-11-06: "withdraw button should be in main meny"), and a
         // mission's battle is not restarted
-        if (X.State.InMission)
-            Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), X.Battle.Over != null ? "Battle over" : "Withdraw",
-                X.Battle.Over != null ? null : () => { X.State.MenuOpen = false; X.Battle.Withdraw(); }, center: false, dis: X.Battle.Over != null,
-                tip: new Tip("Withdraw", new (string, string, Color?)[] { ("Ends", "the battle where it stands", null), ("Grade", "a draw, unless an objective says otherwise", null) }));
+        if (X.State.OnMap)
+            Button("m.main", new Rect2(b.Position.X, y, bw, 44), "Main menu", X.Act.MainMenu, center: false, tip: new Tip("Saves the campaign"));
+        else if (X.State.InMission)
+        {
+            // Withdraw warps the ship out (owner, 2026-11-07: "select withdraw from menu, then warp out"): the drive arms,
+            // plots a course and jumps when ready; a story or special mission refuses it
+            Battle bt = X.Battle;
+            // pressed again while withdrawing, it calls the withdrawal off (Mac playtest 2026-11-08: the key locked on a
+            // withdrawal that could never jump)
+            bool can = bt.Scenario.CanWithdraw, go = bt.Over == null && can;
+            string lab = bt.Over != null ? "Battle over" : bt.Withdrawing ? "Call off withdrawal" : can ? "Withdraw" : "No withdrawal";
+            Button("m.withdraw", new Rect2(b.Position.X, y, bw, 44), lab, go ? () => { X.State.MenuOpen = false; bt.ToggleWithdraw(); } : null, center: false, dis: !go,
+                tip: new Tip("Withdraw", can
+                    ? new (string, string, Color?)[] { ("Does", bt.Withdrawing ? "stops waiting to jump; the drive stays charged" : "charges the warp drive, plots a course out and jumps when ready", null), ("Grade", "a draw, unless an objective says otherwise", null) }
+                    : new (string, string, Color?)[] { ("Refused", "this mission must be seen through", null) }));
+        }
         else Button("m.restart", new Rect2(b.Position.X, y, bw, 44), "Restart battle", X.Act.Restart, center: false);
         y += 56;
         // the window mode lives in Options with the volumes (owner, 2026-11-06: "also this display button should be in options")
@@ -301,7 +334,7 @@ public sealed partial class OptionsCard : ConsolePanel
     {
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("opt.block", new Rect2(Vector2.Zero, Size));
-        float w = Math.Min(640, Size.X - 32), h = 64 + 56 * AudioSettings.Buses.Length + 72 + 48;
+        float w = Math.Min(640, Size.X - 32), h = 64 + 56 * AudioSettings.Buses.Length + 72 + 72 + 48;
         var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
         Shapes.RoundRect(this, new Rect2(at.Position, new Vector2(w - 21, h)), Sk.R.Sheet, 24, 0, 0, 24);
         Rect2 b = Frame(at, "Options", false);
@@ -325,6 +358,13 @@ public sealed partial class OptionsCard : ConsolePanel
         float hw = (bw - 8) / 2;
         Tab("opt.full", new Rect2(bx, y, hw, 44), "Fullscreen", () => { if (!DisplaySettings.Fullscreen) X.Act.Fullscreen(); }, DisplaySettings.Fullscreen);
         Tab("opt.window", new Rect2(bx + hw + 8, y, hw, 44), "Window", () => { if (DisplaySettings.Fullscreen) X.Act.Fullscreen(); }, !DisplaySettings.Fullscreen);
+        y += 72;
+        // unfinished factions, off by default; a campaign keeps the setting it was started with (GameSettings)
+        Ui.Reg("opt.unfinished", new Rect2(b.Position.X, y, lw - 12, 44), null, null, new Tip("Unfinished factions", new (string, string, Color?)[] { ("Off", "the factions in the game", null), ("On", "every faction, finished or not", null), ("Saves", "keep their own setting", null) }));
+        Text("UNFINISHED FACTIONS", b.Position.X, y + 29, 17, C.Lilac, HorizontalAlignment.Left, lw - 12, 600, 1);
+        bool un = GameSettings.UnfinishedFactions;
+        Tab("opt.unfinished.off", new Rect2(bx, y, hw, 44), "Off", () => GameSettings.UnfinishedFactions = false, !un);
+        Tab("opt.unfinished.on", new Rect2(bx + hw + 8, y, hw, 44), "On", () => GameSettings.UnfinishedFactions = true, un);
         y += 72;
         Button("opt.done", new Rect2(b.End.X - 200, y, 200, 48), "Done", X.Act.Options);
     }

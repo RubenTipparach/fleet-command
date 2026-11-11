@@ -22,6 +22,7 @@ public static partial class DataLoader
         "audio/cues.json",
         "battle/scenes/comms.json", "battle/scenes/tractor.json", "battle/scenes/reactor.json", "battle/scenes/cloak.json", "battle/scenes/tactical.json",
         "battle/systems/comms.json", "battle/systems/tractor.json", "battle/systems/reactor.json", "battle/systems/cloak.json", "battle/systems/tactical.json",
+        "battle/systems/field.json",
     };
 
     /// <summary>Loads everything; <paramref name="read"/> returns a file's text given its path relative to data/.</summary>
@@ -123,7 +124,7 @@ public static partial class DataLoader
         return d;
     }
 
-    private static readonly string[] Shapes = { "saucer", "wedge", "claw", "station" };
+    private static readonly string[] Shapes = { "saucer", "wedge", "claw", "station", "yard", "rock_base", "outpost", "battery", "monster", "pod" };
 
     /// <summary>The special weapons (data/battle/special_weapons.json). The chorus, the quell and the forge are added to
     /// weapons as mounts (kinds chorus, quell, slug), so classes can carry them; every number is validated.</summary>
@@ -235,11 +236,19 @@ public static partial class DataLoader
                 throw new DataError($"{o.Where}.model: expected a glb under assets/ships/, got '{model}'");
             d[id] = new ShipClass(id, o.Str("name"), o.Str("code"), shape, model, Positive(o, "length_m"), Positive(o, "hull_hp") * tuning.DemoToughX,
                 NonNeg(o, "speed_max_m_s"), NonNeg(o, "accel_m_s2"), NonNeg(o, "turn_deg_s"), reactor, NonNeg(o, "capacitor_e"), NonNeg(o, "battery_e"),
-                shields, power, mounts);
+                shields, power, mounts, Layers(o)) { FrameM = Positive(o, "length_m") * tuning.ShipFrameX };
             o.Done();
         }
         root.Done();
         return d;
+    }
+
+    // a class's shield bands at full strength (shield_layers, 1 to 3; 3 when absent)
+    private static int Layers(StrictJson o)
+    {
+        int n = o.Has("shield_layers") ? o.Int("shield_layers") : 3;
+        if (n is < 1 or > 3) throw new DataError($"{o.Where}.shield_layers: 1 to 3");
+        return n;
     }
 
     public static Dictionary<string, Faction> LoadFactions(StrictJson root)
@@ -306,7 +315,7 @@ public static partial class DataLoader
                 st, rg, s.Bool("erratic", false), s.Bool("hold_fire", false), hullFrac, shieldsFrac,
                 Start: s.ObjOrNull("start") is { } so ? ShipStartState.Read(so, classes[cls]) : null, Cloak: CloakShipStart(s),
                 Setup: CommsScenes.LoadSetup(s.ObjOrNull("setup"))));
-            ships[^1] = ScenarioExtras.Ship(s, ships[^1]);
+            ships[^1] = ScenarioExtras.Ship(s, ships[^1], classes[cls]);
             s.Done();
         }
         if (ships.Count == 0 || ships[0].Side != 0) throw new DataError($"{root.Where}.ships: the first ship is the player's and must be on side 0");
@@ -342,7 +351,7 @@ public static partial class DataLoader
             Frac(o, "mount_hit_chance"), Frac(o, "mount_damage"),
             Positive(o, "het_rate_deg_s"), NonNeg(o, "het_cost_e"), Frac(o, "het_chance_drop"), NonNeg(o, "het_recover_per_s"), Frac(o, "het_erratic_penalty"),
             NonNeg(o, "het_breakdown_s"), Frac(o, "het_breakdown_engines"), Positive(o, "estop_decel_x"), NonNeg(o, "estop_hold_s"), Frac(o, "erratic_hit"), Frac(o, "erratic_turn"),
-            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"), Frac(o, "capture_hull_frac"));
+            Positive(o, "orbit_km"), Positive(o, "hold_min_km"), Positive(o, "hold_max_km"), Frac(o, "capture_hull_frac")) { ShipFrameX = Positive(o, "ship_frame_x"), AiCloseAfterS = Positive(o, "ai_close_after_s"), StalemateS = Positive(o, "stalemate_s"), InterceptMaxLeadDeg = Positive(o, "intercept_max_lead_deg") };
         o.Done();
         return t;
     }

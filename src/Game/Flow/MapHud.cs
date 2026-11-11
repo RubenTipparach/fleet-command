@@ -2,7 +2,8 @@
 // bar hangs from the top of the screen: Menu, the captain, credits, prestige, turn, moves, the Missions key with the log of
 // accepted missions, standing with each faction, and the fleet's ships with their hull bars. The sector panel names the
 // picked sector (or your position) and what is in it, the route there with Move here, each mission's row with its Briefing
-// key, and the port's keys (Shipyard, Loadout, Supplies, Crew, and Market at a port that deals with you). The zoom and Fleet
+// key, each freighter your ships see there (with the fleet beside her, her Escort or Raid key: Campaign.Meet), the cargo
+// of the freighters taken with Cash out, the repair kits with Use a kit, and the port's keys (Shipyard, Loadout, Supplies, Crew, and Market at a port that deals with you). The zoom and Fleet
 // keys sit bottom left, End turn bottom right. The briefing shows a mission's file as the captain reads it; the port is
 // its own panel (PortPanel.cs). Hovering the map names whose space the pointer is over. Every action goes to GameFlow or
 // Campaign; nothing here decides anything.
@@ -25,10 +26,12 @@ public sealed partial class MapHud : FlowPanel
         if (c == null) return;
         TopBar(c);
         Keys(c);
+        Search(c);
         // the port is its own panel over the map (PortPanel.cs); a briefing takes the sector panel's place
         if (F.Port == null && F.Brief != null) Briefing(c, F.Brief);
         if (F.Port == null && F.Brief == null) SectorPanel(c, (F.Sel ?? (c.S.AtC, c.S.AtR)).C, (F.Sel ?? (c.S.AtC, c.S.AtR)).R);
         if (LogOpen && F.Port == null) MissionLog(c);
+        if (StandingOpen && F.Port == null) StandingSheet(c);
         HoverName(c);
         if (F.Msg.Length > 0)
         {
@@ -41,6 +44,8 @@ public sealed partial class MapHud : FlowPanel
 
     /// <summary>The mission log is open (the top bar's Missions key).</summary>
     public bool LogOpen;
+    /// <summary>The standing sheet is open (the top bar's Standings key).</summary>
+    public bool StandingOpen;
 
     // the top bar, as the mockup's: Menu, the captain, credits, prestige, turn, moves, the Missions key (the log of accepted
     // missions), standing with each other faction, and each ship of the fleet with its hull bar
@@ -53,7 +58,7 @@ public sealed partial class MapHud : FlowPanel
         Shapes.RoundRect(this, new Rect2(4, 0, Size.X - 8, 64), Sk.R.Sheet, 0, 0, 22, 22);
         Kit.Piece(this, "frame.panel", new Rect2(0, -10, Size.X, 76));
         float x = 22;
-        Button("top.menu", new Rect2(x, 12, 104, 40), "Menu", F.ToMenu, center: true);
+        Button("top.menu", new Rect2(x, 12, 104, 40), "Menu", X.Act.Menu, X.State.MenuOpen, center: true);
         x += 124;
         void Stat(string label, string value, float max = 160)
         {
@@ -67,23 +72,44 @@ public sealed partial class MapHud : FlowPanel
         Stat("Turn", c.S.Turn.ToString());
         Stat("Moves", $"{c.S.Mp} / {c.Data.Rules.MovePoints}");
         int active = c.S.Missions.Count(m => c.S.Active.Contains(m.Id));
-        Button("top.missions", new Rect2(x, 12, 150, 40), $"Missions {active}", () => LogOpen = !LogOpen, on: LogOpen, tip: new Tip("Mission log", new (string, string, Color?)[] { ("Shows", "the missions you have taken, and recent news", null) }));
+        Button("top.missions", new Rect2(x, 12, 150, 40), $"Missions {active}", () => { LogOpen = !LogOpen; StandingOpen = false; }, on: LogOpen, tip: new Tip("Mission log", new (string, string, Color?)[] { ("Shows", "the missions you have taken, and recent news", null) }));
         x += 168;
         if (Narrow) return;
-        Lbl("Standing with", x, 26, 200, null, HorizontalAlignment.Left, 13);
+        // standing, as friends and enemies (owner, 2026-11-09: "standing just show friends and enemies, with logos, and not
+        // full names. If I hover over icons then show the name"): each a faction's emblem, its name and standing on hover;
+        // the factions you are neither friends nor enemies with are left out
         float cx = x;
-        foreach (string f in new[] { "concord", "krai", "ssarith", "vos" }.Where(f => f != c.S.Side && c.S.Standing.ContainsKey(f)))
+        void Group(string label, string key, IEnumerable<string> facs)
         {
-            int st = c.Standing(f);
-            string t = $"{c.Data.Factions[f].Short} {(st > 0 ? "+" : "")}{st}";
-            float w = X.Fonts.Width(t, 17, 600) + 30;
-            var chip = new Rect2(cx, 32, w, 26);
-            Ui.Reg($"top.st.{f}", chip, null, null, new Tip(c.Data.Factions[f].Name, new (string, string, Color?)[] { ("Standing", st.ToString(), null), ("Ports", st >= 0 ? "open to you" : "closed to you", st >= 0 ? C.Accord : C.Alert) }));
-            Shapes.RoundRect(this, chip, new Color(Sk.R.Plate, 0.9f), 6);
-            DrawRect(new Rect2(chip.Position + new Vector2(8, 9), new Vector2(9, 9)), FacColor(f));
-            Text(t, chip.Position.X + 22, chip.Position.Y + 19, 17, C.Text, HorizontalAlignment.Left, w, 600);
-            cx += w + 6;
+            Lbl(label, cx, 26, 120, null, HorizontalAlignment.Left, 13);
+            float gx = cx;
+            List<string> list = facs.ToList();
+            if (list.Count == 0) Text("None", gx, 50, 17, C.Lilac, HorizontalAlignment.Left, 80, 600);
+            foreach (string f in list)
+            {
+                int st = c.Standing(f);
+                var icon = new Rect2(gx, 30, 30, 30);
+                HitState hs = Ui.Reg($"top.{key}.{f}", icon, _ => { StandingOpen = true; LogOpen = false; }, null, new Tip(c.Data.Factions[f].Name, new (string, string, Color?)[] { ("Standing", $"{(st > 0 ? "+" : "")}{st}", st > 0 ? C.Accord : st < 0 ? C.Alert : null), ("Ports", c.GrantsOf(f) is { Count: > 0 } gr ? string.Join(", ", gr) : st >= 0 ? "market only" : "closed to you", st >= 0 ? C.Accord : C.Alert) }));
+                Shapes.RoundRect(this, icon, new Color(Sk.R.Plate, hs.Hot ? 1 : 0.9f), 6);
+                if (FactionScreen.Tex(f) is { } tex)
+                {
+                    float q = Math.Min(26f / tex.GetWidth(), 26f / tex.GetHeight());
+                    var sz = new Vector2(tex.GetWidth(), tex.GetHeight()) * q;
+                    DrawTextureRect(tex, new Rect2(icon.GetCenter() - sz / 2, sz), false);
+                }
+                else DrawRect(new Rect2(icon.GetCenter() - new Vector2(6, 6), new Vector2(12, 12)), FacColor(f));
+                gx += 34;
+            }
+            cx = Math.Max(gx, cx + Math.Max(X.Fonts.Width(label.ToUpperInvariant(), 13, 600, 1), 60)) + 18;
         }
+        // the Standings key opens every faction's standing (owner, 2026-11-09: "If I click on the standings button I can see
+        // the status of all standings")
+        Button("top.standing", new Rect2(cx, 12, 140, 40), "Standings", () => { StandingOpen = !StandingOpen; LogOpen = false; }, on: StandingOpen,
+            tip: new Tip("Standings", new (string, string, Color?)[] { ("Shows", "your standing with every faction", null) }));
+        cx += 158;
+        var others = Others(c);
+        Group("Friends", "friend", others.Where(c.FriendlyTo));
+        Group("Enemies", "enemy", others.Where(c.HostileTo));
         x = Math.Max(cx, x + 120) + 16;
         // the fleet: each ship's name and hull; a tap glides the view to the fleet
         foreach (CampShip sh in c.S.Fleet)
@@ -113,6 +139,125 @@ public sealed partial class MapHud : FlowPanel
         Button("keys.fleet", new Rect2(kx + 164, y, box.End.X - Sk.Pad.R - 4 - (kx + 164), 42), "Fleet", () => { F.SelectHex((c.S.AtC, c.S.AtR)); MapOf()?.CentreOnFleet(); }, tip: new Tip("Go to your fleet"));
         Button("top.end", new Rect2(Size.X - 196, Size.Y - 66, 180, 50), "End turn", F.EndTurn, on: true,
             tip: new Tip("End turn", new (string, string, Color?)[] { ("Then", "the factions move, missions change", null) }));
+    }
+
+    // the search box over the map keys (owner, 2026-11-09: "add a search box to find ships"): it finds every ship the chart
+    // shows by any part of its name (CampaignMap.ShipsShown), and a pick (or Enter for the first) glides the view there and
+    // picks its sector, which shows its name
+    private LineEdit? _search;
+    private Color _searchInk;
+    private const int SearchMax = 6;
+
+    private void Search(Campaign.Campaign c)
+    {
+        _search ??= MakeSearch();
+        bool on = F.Port == null;
+        _search.Visible = on;
+        if (!on) return;
+        var box = new Rect2(14, Size.Y - 84 - 58, 330, 50);
+        Ui.Reg("map.search", box, _ => _search.GrabFocus());
+        Kit.Piece(this, "frame.panel", box);
+        _search.Position = box.Position + new Vector2(Sk.Pad.L + 4, 6);
+        _search.Size = new Vector2(box.Size.X - Sk.Pad.L - Sk.Pad.R - 8, box.Size.Y - 12);
+        if (_searchInk != C.Text)
+        {
+            _searchInk = C.Text;
+            var (font, size) = X.Fonts.Get(17, 600);
+            _search.AddThemeFontOverride("font", font);
+            _search.AddThemeFontSizeOverride("font_size", size);
+            _search.AddThemeColorOverride("font_color", C.Text);
+            _search.AddThemeColorOverride("font_placeholder_color", new Color(C.Lilac, 0.8f));
+            _search.AddThemeColorOverride("caret_color", C.Sky);
+            _search.AddThemeColorOverride("selection_color", new Color(C.Sky, 0.35f));
+        }
+        var found = Found(c);
+        if (found.Count == 0)
+        {
+            if (_search.Text.Trim().Length > 0) Text("No ship by that name", box.Position.X + 16, box.Position.Y - 14, 15, C.Lilac, HorizontalAlignment.Left, box.Size.X - 20, 600);
+            return;
+        }
+        const float Row = 40;
+        var list = new Rect2(box.Position.X, box.Position.Y - 8 - found.Count * Row - 12, box.Size.X, found.Count * Row + 12);
+        Ui.Reg("map.found", list);
+        Shapes.RoundRect(this, list, new Color(Sk.R.Sheet, 0.96f), 12);
+        float y = list.Position.Y + 6;
+        foreach (var (name, fac, hc, hr) in found)
+        {
+            var row = new Rect2(list.Position.X + 6, y, list.Size.X - 12, Row - 4);
+            HitState hs = Ui.Reg($"map.found.{name}", row, _ => Go(hc, hr));
+            if (hs.Hot) Shapes.RoundRect(this, row, new Color(Sk.R.Plate, 0.95f), 8);
+            DrawRect(new Rect2(row.Position.X + 10, row.Position.Y + 13, 10, 10), FacColor(fac));
+            Text(name, row.Position.X + 30, row.Position.Y + 24, 17, C.Text, HorizontalAlignment.Left, row.Size.X - 140, 600);
+            Text(fac == c.S.Side ? "Your fleet" : FacName(fac), row.End.X - 10, row.Position.Y + 24, 14, C.Lilac, HorizontalAlignment.Right, 110, 600);
+            y += Row;
+        }
+    }
+
+    private LineEdit MakeSearch()
+    {
+        var e = new LineEdit { Name = "Search", PlaceholderText = "Find a ship", ClearButtonEnabled = true, CaretBlink = true, SelectAllOnFocus = true };
+        foreach (string st in new[] { "normal", "focus", "read_only" }) e.AddThemeStyleboxOverride(st, new StyleBoxEmpty());
+        e.TextSubmitted += _ => { if (Camp is { } c && Found(c) is { Count: > 0 } f) Go(f[0].C, f[0].R); };
+        AddChild(e);
+        return e;
+    }
+
+    // the ships whose names hold what is typed, nearest the start of the name first
+    private List<(string Name, string Fac, int C, int R)> Found(Campaign.Campaign c)
+    {
+        string q = _search?.Text.Trim() ?? "";
+        if (q.Length == 0 || MapOf()?.Map is not { } map) return new();
+        return map.ShipsShown.Where(s => s.Name.Contains(q, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(s => s.Name.IndexOf(q, StringComparison.OrdinalIgnoreCase)).ThenBy(s => s.Name, StringComparer.Ordinal).Take(SearchMax).ToList();
+    }
+
+    private void Go(int hc, int hr)
+    {
+        MapOf()?.Map?.GlideTo(hc, hr);
+        F.SelectHex((hc, hr));
+        if (_search == null) return;
+        _search.Text = "";
+        _search.ReleaseFocus();
+    }
+
+    /// <summary>Every faction you can hold a standing with, in the data's order.</summary>
+    private static List<string> Others(Campaign.Campaign c) =>
+        c.Data.Factions.Keys.Where(f => f != "neutral" && f != c.S.Side && c.S.Standing.ContainsKey(f)).ToList();
+
+    // the standing sheet (the Standings key): every faction's emblem, name, standing and its bar, friend or enemy, and
+    // what its ports open to you
+    private void StandingSheet(Campaign.Campaign c)
+    {
+        List<string> facs = Others(c);
+        const float Row = 40;
+        float w = Math.Min(560, Size.X - 32), h = 40 + facs.Count * Row;
+        Rect2 b = Sheet(new Rect2(16, 80, w, h), "Standings");
+        float x = b.Position.X, y = b.Position.Y + 8, bw = b.Size.X;
+        foreach (string f in facs)
+        {
+            int st = c.Standing(f);
+            bool friend = c.FriendlyTo(f), enemy = c.HostileTo(f);
+            Color tone = friend ? C.Accord : enemy ? C.Alert : C.Lilac;
+            if (FactionScreen.Tex(f) is { } tex)
+            {
+                float q = Math.Min(30f / tex.GetWidth(), 30f / tex.GetHeight());
+                var sz = new Vector2(tex.GetWidth(), tex.GetHeight()) * q;
+                DrawTextureRect(tex, new Rect2(new Vector2(x + 15, y + 17) - sz / 2, sz), false);
+            }
+            else DrawRect(new Rect2(x + 9, y + 11, 12, 12), FacColor(f));
+            Text(c.Data.Factions[f].Name, x + 40, y + 23, 17, C.Text, HorizontalAlignment.Left, 170, 600);
+            // the bar: -100 to +100, 0 in the middle
+            var bar = new Rect2(x + 214, y + 13, 120, 10);
+            Shapes.RoundRect(this, bar, C.Deep, 4);
+            float mid = bar.Position.X + bar.Size.X / 2, len = bar.Size.X / 2 * Math.Clamp(Math.Abs(st) / 100f, 0, 1);
+            DrawRect(new Rect2(st >= 0 ? mid : mid - len, bar.Position.Y, len, bar.Size.Y), tone);
+            DrawRect(new Rect2(mid - 0.5f, bar.Position.Y - 2, 1, bar.Size.Y + 4), C.Lilac);
+            Text($"{(st > 0 ? "+" : "")}{st}", x + 376, y + 23, 17, tone, HorizontalAlignment.Right, 40, 700);
+            Text(friend ? "Friend" : enemy ? "Enemy" : "Neutral", x + 386, y + 23, 15, tone, HorizontalAlignment.Left, 70, 600);
+            string ports = c.GrantsOf(f) is { Count: > 0 } gr ? string.Join(", ", gr) : st >= 0 ? "market only" : "closed";
+            Ui.Reg($"standing.{f}", new Rect2(x, y, bw, Row - 4), null, null, new Tip(c.Data.Factions[f].Name, new (string, string, Color?)[] { ("Standing", $"{(st > 0 ? "+" : "")}{st}", tone), ("Ports", ports, st >= 0 ? C.Accord : C.Alert) }));
+            y += Row;
+        }
     }
 
     // the mission log (the Missions key): the accepted missions, each a key that glides to it and opens its briefing, and
@@ -156,22 +301,41 @@ public sealed partial class MapHud : FlowPanel
     {
         Sector h = c.Hex(col, row);
         var missions = c.S.Missions.Where(m => m.C == col && m.R == row).ToList();
-        var groups = c.S.Groups.Where(g => g.C == col && g.R == row).ToList();
+        // the fog of war: other fleets only where you see now; an unexplored sector shows nothing of what is in it
+        bool seen = c.IsVisible(col, row);
+        var groups = seen ? c.S.Groups.Where(g => g.C == col && g.R == row).ToList() : new List<FactionFleet>();
         bool here = c.S.AtC == col && c.S.AtR == row;
         Sector at = c.At;
         bool port = c.IsPort(at), market = c.IsMarket(at);
         Terrain t = c.TerrainOf(h);
-        float hgt = 286 + missions.Count * 84 + (groups.Count > 0 ? 28 : 0) + (!here && !t.Impassable ? 56 : 0) + (market ? 54 : 0);
+        // the freighters here that your ships see; with the fleet beside one, her encounter's key (an escort or a raid)
+        var freighters = seen || here ? c.FreightersAt(col, row) : new List<Freighter>();
+        // in a hostile faction's space, its alarm at your fleet and its hunters (Campaign.Alarm)
+        string? alarmFac = here && c.Hostile(h) && c.Data.Factions.ContainsKey(h.Owner) ? h.Owner : null;
+        bool hauls = here && c.HaulValue > 0, kits = here && (c.Kits > 0 || c.S.Fleet.Any(s => s.HullPct < 100));
+        float hgt = 286 + missions.Count * 84 + (groups.Count > 0 ? 28 : 0) + (alarmFac != null ? 28 : 0) + (!here && !t.Impassable ? 56 : 0) + (market ? 54 : 0)
+            + freighters.Count * 54 + (hauls ? 54 : 0) + (kits ? 54 : 0);
         Rect2 b = Sheet(SidePanel(hgt), here ? "Your position" : "Selected sector");
         float x = b.Position.X, y = b.Position.Y + 30, w = b.Size.X;
-        Text((h.PortName ?? t.Name).ToUpperInvariant(), x, y + 6, 28, C.Text, HorizontalAlignment.Left, w, 700, 1);
+        Text((h.Known ? h.PortName ?? t.Name : "Unexplored").ToUpperInvariant(), x, y + 6, 28, C.Text, HorizontalAlignment.Left, w, 700, 1);
         y += 34;
-        DrawRect(new Rect2(x, y - 11, 11, 11), FacColor(h.Owner));
-        Text($"{FacName(h.Owner)} · {t.Name}{(t.Impassable ? "" : $" · move cost {t.Cost}")}", x + 18, y, 18, C.Sky, HorizontalAlignment.Left, w - 18, 600);
+        if (h.Known)
+        {
+            DrawRect(new Rect2(x, y - 11, 11, 11), FacColor(h.KnownOwner));
+            Text($"{FacName(h.KnownOwner)}{(seen ? "" : " (last seen)")} · {t.Name}{(t.Impassable ? "" : $" · move cost {t.Cost}")}", x + 18, y, 18, C.Sky, HorizontalAlignment.Left, w - 18, 600);
+        }
+        else Text("No charts of this sector yet", x, y, 18, C.Lilac, HorizontalAlignment.Left, w, 600);
         y += 28;
         if (groups.Count > 0)
         {
             Text(string.Join(", ", groups.Select(g => $"{g.Name} ({g.Size} {(g.Size > 1 ? "ships" : "ship")})")), x, y, 17, C.Text, HorizontalAlignment.Left, w, 600);
+            y += 28;
+        }
+        if (alarmFac != null)
+        {
+            int lv = c.AlarmLevel(alarmFac), n = c.HuntersOf(alarmFac)?.Size ?? 0;
+            Text($"{FacName(alarmFac)} alarm {lv} of {c.Data.Rules.Pursuit.Levels.Count}" + (n > 0 ? $" · {n} hunters after you" : " · no hunters yet"),
+                x, y, 17, lv > 0 ? C.Alert : C.Lilac, HorizontalAlignment.Left, w, 600);
             y += 28;
         }
         if (!here && !t.Impassable)
@@ -201,19 +365,46 @@ public sealed partial class MapHud : FlowPanel
             Button($"sec.brief.{m.Id}", new Rect2(rr.End.X - 128, rr.Position.Y + 15, 118, 44), "Briefing", () => F.OpenBrief(mm), on: true);
             y += 84;
         }
+        foreach (Freighter f in freighters)
+        {
+            Freighter ff = f;
+            bool escort = c.EncounterOf(f) == Campaign.Campaign.EscortScript;
+            DrawRect(new Rect2(x, y + 15, 11, 11), FacColor(f.Fac));
+            Text($"Freighter {f.Name} · {FacName(f.Fac)}", x + 18, y + 26, 18, C.Text, HorizontalAlignment.Left, w - 190, 600);
+            if (here) Button($"sec.meet.{f.Name}", new Rect2(b.End.X - 170, y, 170, 44), escort ? "Escort" : "Raid", () => F.Meet(ff), on: true,
+                tip: new Tip(escort ? "Escort" : "Raid", new (string, string, Color?)[] { ("Then", escort ? "see her through the raiders" : "take her cargo, or stop her", null) }));
+            y += 54;
+        }
+        if (hauls)
+        {
+            Text($"Cargo aboard: {c.HaulValue:N0} cr", x, y + 26, 18, C.Sky, HorizontalAlignment.Left, w - 190, 600);
+            Button("sec.cashout", new Rect2(b.End.X - 170, y, 170, 44), "Cash out", F.CashOut, on: true, dis: !(port || market),
+                tip: new Tip("Cash out", new (string, string, Color?)[] { ("Where", "a port that deals with you", null) }));
+            y += 54;
+        }
+        if (kits)
+        {
+            CampShip? worst = c.S.Fleet.OrderBy(s => s.HullPct).FirstOrDefault();
+            Text($"Repair kits: {c.Kits}" + (worst != null && worst.HullPct < 100 ? $" · {worst.Name} {worst.HullPct:0} %" : ""), x, y + 26, 18, C.Lilac, HorizontalAlignment.Left, w - 190, 600);
+            Button("sec.kit", new Rect2(b.End.X - 170, y, 170, 44), "Use a kit", F.FieldRepair, dis: c.Kits == 0 || worst == null || worst.HullPct >= 100,
+                tip: new Tip("Use a kit", new (string, string, Color?)[] { ("Mends", $"{c.Data.Rules.KitRepairPct:0} % of the most damaged hull", null) }));
+            y += 54;
+        }
         // the port where the fleet stands: its keys, open only at a friendly port; a port that deals with you has a market
-        string plate = port ? $"Port: {at.PortName}" : market ? $"{FacName(at.Owner)} port: {at.PortName}"
+        string plate = port ? $"Port: {at.PortName}" : market ? $"{FacName(at.Owner)} port: {at.PortName} · standing {c.Standing(at.Owner)}"
             : at.IsPort ? $"Closed to you: standing {c.Standing(at.Owner)}" : "No friendly port here";
         Lbl(plate, x, y + 16, w);
         y += 28;
         // the port's tabs (PortPanel), as the mockup's sector panel names them
         float kw = (w - 8) / 2;
-        void PortKey(string id, string label, int i) =>
-            Button($"sec.port.{id}", new Rect2(x + (i % 2) * (kw + 8), y + (i / 2) * 50, kw, 44), label, () => { F.Port = id; F.Brief = null; }, dis: !port);
-        PortKey("yard", "Shipyard", 0);
-        PortKey("outfit", "Loadout", 1);
-        PortKey("supply", "Supplies", 2);
-        PortKey("crew", "Crew", 3);
+        // each key opens at your own port, or at a friendly faction's once your standing with it has earned that grant
+        void PortKey(string id, string label, int i, string grant) =>
+            Button($"sec.port.{id}", new Rect2(x + (i % 2) * (kw + 8), y + (i / 2) * 50, kw, 44), label, () => { F.Port = id; F.Brief = null; }, dis: !c.Allows(grant),
+                tip: !port && market && !c.Allows(grant) ? new Tip(label, new (string, string, Color?)[] { ("Opens at standing", $"{c.StandingFor(grant)}", null) }) : null);
+        PortKey("yard", "Shipyard", 0, "ships");
+        PortKey("outfit", "Loadout", 1, "weapons");
+        PortKey("supply", "Supplies", 2, "parts");
+        PortKey("crew", "Crew", 3, "officers");
         y += 104;
         if (market) Button("sec.market", new Rect2(x, y, w, 44), "Market", () => { F.Port = "market"; F.Brief = null; }, on: true);
     }

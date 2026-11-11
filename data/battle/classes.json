@@ -1,13 +1,13 @@
 {
- "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. kelvane_rv is a stand-in (no model, drawn as its shape), the Kelvane Institute having no designed ships: the battle console mockup's research cruiser Patience (mockup 2, the Four races scene), flown in that scene alone, with the heavy cruiser's figures less the Concord's chorus lance. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json).",
+ "_doc": "Ship classes (openspec/changes/battle-console-engine/design.md section 3), ported from the battle console mockup's CLASSES (v65). Mounts: weapon, x to starboard and y forward in half-lengths of the hull, firing arc centre and width in degrees. shield_layers is how many bands the shield display shows at full strength, 1 to 3, 3 when absent (owner, 2026-11-06: frigates have one layer, larger ships more). hull is before the demo toughness (tuning.json demo_tough_x). shape is the systems display's silhouette. model is the approved ship's glb (assets/ships/, exported from the ship mockups by tools/mockups/export_ships.mjs): the Concord line (mockup 6) as the battle console mockup maps it (CA Albatross, DD Petrel level, FF Swift level) and the Krai line (mockup 7); a class without one is drawn as its shape's stand-in. length_m is the battle's length (the battle console mockup draws ships at this framing, about 2.7 times the ship's true length). The Krai figures are placeholders until the combat change, written to the Krai's culture (openspec/changes/krai-ship-concepts): forward guns on knife hulls, spinal cannons as disruptors. A missile rack's grade (red, orange, blue, green; data/battle/missiles.json) is its load: every faction fits missiles (owner, 2026-11-04: \"all factions can have missiles too\"), the Concord cruiser blue, the Krai cruiser orange and the dreadnought green, the Vos corsair red and orange. The special weapons are mounts too (data/battle/special_weapons.json; owner, 2026-11-05: \"Implement weapons in game\"): the Concord cruiser's chorus lance on its deflector, the destroyer's torpedo tube loaded with quells, and a forge driver in each Krai spinal cannon; every Krai ship can order a blood charge from the helm. The Ssarith Hunt (mockup 12; owner, 2026-11-06: \"looks good, implement in game\"): four frigates (the owner's picks), a cruiser and a carrier, each drawn as its own baked ship (assets/ships/ssarith/); their figures and weapons are placeholders at the Krai's sizes until the combat change, the Hunt's own weapons not designed yet (its culture is the owner's, survey H1); battle lengths 2.7 times the true length, as the other lines. The Kelvane Institute (mockup 23; owner, 2026-11-07: \"perfect, implment these ships in game\"): its line, frigate, destroyer, cruiser, battlecruiser and carrier, each drawn as its own baked ship (assets/ships/kelvane/), battle lengths 2.7 times the true length; kelvane_rv keeps its id as the cruiser, the Patience-class research cruiser, which the battle console mockup's Patience (mockup 2, the Four races scene) now flies, with the heavy cruiser's figures less the Concord's chorus lance; the others' figures and weapons are placeholders at the Hunt's sizes until the combat change, the Institute's own weapons not designed yet (its culture is the owner's), the carrier slower and tougher, carrying fighters (data/battle/systems/tractor.json loadouts) that park on its pads in the view. Its mounts sit on its own hulls (2026-11-08, with the schematics' bake detail): each moved across to the nearest hull at its station, 15 % in from the edge, read from the ship's schematic, so the systems display shows them on the plating, not beside a slim hull. Every class's reactor_e leaves room for its coolant pumps (data/battle/systems/reactor.json, 2 E at the start), as the mockup's classes do: the Krai and Hunt ratings were raised by what the pumps draw when the reactor came into the game, so their allocations fight as before. The troop ship (tr, the Concord Pelican) and the starbase (sb, drawn as the mockup's station: a ring, a hub and four spokes, scenes/standins/station.tscn) are the mockup's, for the transport and boarding scenes (data/battle/scenes/comms.json). The freighters (mockup 24; owner, 2026-11-07: \"implement in game\"): one for each approved faction, fr the Concord's Gauge carrier, krai_fr the Warhost's Spear train, hunt_fr the Hunt's Tally carrier, kelvane_fr the Institute's Twin ledger, each drawn as its own baked ship with its containers (assets/ships/freighters/, the cargo in assets/ships/manifest.json), battle lengths 2.7 times the true length, longer than any warship; slow, tough and nearly unarmed (two point defence mounts), the figures openspec/changes/freighters/design.md's provisional ones until the combat change. Placeholders for stations and monsters (openspec/changes/mission-systems; owner, 2026-11-08: \"Design placeholders for: monsters and stations\"): yd the shipyard, ab the asteroid base, op the outpost, pb the planetary battery, all fixed in place and drawn about three times the length they first had, so a station dwarfs the ships round it (owner, 2026-11-09: \"Space station models need to be bigger\"; the starbase and shipyard outsize even the freighters), mon the void leviathan (a monster of no faction, the fauna), and pod a salvage container to beam cargo from; each drawn by its shape's stand-in (scenes/standins/) until its own design, figures provisional.",
  "ca": {
   "name": "Heavy cruiser",
   "code": "CA",
   "shape": "saucer",
   "model": "assets/ships/concord/albatross.glb",
   "length_m": 320,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 45,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
   "turn_deg_s": 26,
   "reactor_e": 22,
   "capacitor_e": 14,
@@ -117,8 +117,8 @@
   "shape": "saucer",
   "model": "assets/ships/concord/petrel_level.glb",
   "length_m": 230,
-  "speed_max_m_s": 330,
-  "accel_m_s2": 55,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
   "turn_deg_s": 34,
   "reactor_e": 16,
   "capacitor_e": 10,
@@ -160,6 +160,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    32,
    24,
@@ -185,8 +186,8 @@
   "shape": "saucer",
   "model": "assets/ships/concord/swift_level.glb",
   "length_m": 160,
-  "speed_max_m_s": 360,
-  "accel_m_s2": 70,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
   "turn_deg_s": 44,
   "reactor_e": 12,
   "capacitor_e": 8,
@@ -214,6 +215,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    24,
    18,
@@ -238,8 +240,8 @@
   "code": "KDD",
   "shape": "wedge",
   "length_m": 250,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 50,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 500,
   "turn_deg_s": 30,
   "reactor_e": 18,
   "capacitor_e": 12,
@@ -274,6 +276,7 @@
     "arc_width_deg": 180
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    36,
    26,
@@ -291,15 +294,16 @@
    "transport": 0,
    "repair": 0
   },
-  "hull_hp": 105
+  "hull_hp": 105,
+  "model": "assets/ships/kethran/kethran_dd.glb"
  },
  "kff": {
   "name": "Kethran frigate",
   "code": "KFF",
   "shape": "wedge",
   "length_m": 170,
-  "speed_max_m_s": 350,
-  "accel_m_s2": 65,
+  "speed_max_m_s": 3500,
+  "accel_m_s2": 650,
   "turn_deg_s": 40,
   "reactor_e": 12,
   "capacitor_e": 8,
@@ -327,6 +331,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    26,
    18,
@@ -344,15 +349,16 @@
    "transport": 0,
    "repair": 0
   },
-  "hull_hp": 65
+  "hull_hp": 65,
+  "model": "assets/ships/kethran/kethran_ff.glb"
  },
  "vcr": {
   "name": "Vos corsair",
   "code": "VCR",
   "shape": "claw",
   "length_m": 200,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 38,
   "reactor_e": 14,
   "capacitor_e": 10,
@@ -382,6 +388,7 @@
     "arc_width_deg": 120
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    28,
    22,
@@ -399,7 +406,8 @@
    "transport": 0,
    "repair": 0
   },
-  "hull_hp": 80
+  "hull_hp": 80,
+  "model": "assets/ships/vos/vos_dd.glb"
  },
  "krai_cv": {
   "name": "Krai corvette",
@@ -407,8 +415,8 @@
   "shape": "wedge",
   "model": "assets/ships/krai/corvette.glb",
   "length_m": 140,
-  "speed_max_m_s": 380,
-  "accel_m_s2": 75,
+  "speed_max_m_s": 3800,
+  "accel_m_s2": 750,
   "turn_deg_s": 46,
   "reactor_e": 12,
   "capacitor_e": 8,
@@ -436,6 +444,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    26,
    18,
@@ -461,8 +470,8 @@
   "shape": "wedge",
   "model": "assets/ships/krai/frigate.glb",
   "length_m": 230,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -497,6 +506,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -522,8 +532,8 @@
   "shape": "wedge",
   "model": "assets/ships/krai/cruiser.glb",
   "length_m": 340,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 45,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
   "turn_deg_s": 26,
   "reactor_e": 23,
   "capacitor_e": 14,
@@ -619,8 +629,8 @@
   "shape": "wedge",
   "model": "assets/ships/krai/dreadnought.glb",
   "length_m": 570,
-  "speed_max_m_s": 250,
-  "accel_m_s2": 32,
+  "speed_max_m_s": 2500,
+  "accel_m_s2": 320,
   "turn_deg_s": 18,
   "reactor_e": 28,
   "capacitor_e": 18,
@@ -737,8 +747,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/hooded_lance.glb",
   "length_m": 297,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -773,6 +783,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -798,8 +809,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/forked_prow.glb",
   "length_m": 297,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -834,6 +845,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -859,8 +871,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/harpoon.glb",
   "length_m": 313,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -895,6 +907,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -920,8 +933,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/trident.glb",
   "length_m": 302,
-  "speed_max_m_s": 340,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3400,
+  "accel_m_s2": 600,
   "turn_deg_s": 36,
   "reactor_e": 17,
   "capacitor_e": 10,
@@ -956,6 +969,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 1,
   "shields_hp": [
    34,
    24,
@@ -981,8 +995,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/cruiser.glb",
   "length_m": 405,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 45,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
   "turn_deg_s": 26,
   "reactor_e": 23,
   "capacitor_e": 14,
@@ -1078,8 +1092,8 @@
   "shape": "wedge",
   "model": "assets/ships/ssarith/carrier.glb",
   "length_m": 455,
-  "speed_max_m_s": 260,
-  "accel_m_s2": 35,
+  "speed_max_m_s": 2600,
+  "accel_m_s2": 350,
   "turn_deg_s": 20,
   "reactor_e": 24,
   "capacitor_e": 14,
@@ -1170,13 +1184,159 @@
   },
   "hull_hp": 170
  },
- "kelvane_rv": {
-  "name": "Research cruiser",
-  "code": "RV",
+ "kelvane_ff": {
+  "name": "Kelvane frigate",
+  "code": "FF",
   "shape": "saucer",
-  "length_m": 320,
-  "speed_max_m_s": 300,
-  "accel_m_s2": 45,
+  "model": "assets/ships/kelvane/kelvane_frigate.glb",
+  "length_m": 340,
+  "speed_max_m_s": 3200,
+  "accel_m_s2": 560,
+  "turn_deg_s": 32,
+  "reactor_e": 17,
+  "capacitor_e": 10,
+  "battery_e": 7,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.18,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 100
+   },
+   {
+    "weapon": "lance",
+    "x": 0.18,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 100
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 1,
+  "shields_hp": [
+   34,
+   26,
+   22,
+   18,
+   22,
+   26
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 4,
+   "engines": 5,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 85
+ },
+ "kelvane_dd": {
+  "name": "Kelvane destroyer",
+  "code": "DD",
+  "shape": "saucer",
+  "model": "assets/ships/kelvane/kelvane_destroyer.glb",
+  "length_m": 367,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 580,
+  "turn_deg_s": 34,
+  "reactor_e": 19,
+  "capacitor_e": 12,
+  "battery_e": 7,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.12,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 80
+   },
+   {
+    "weapon": "lance",
+    "x": 0.12,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 80
+   },
+   {
+    "weapon": "lance",
+    "x": -0.45,
+    "y": 0.1,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.45,
+    "y": 0.1,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "pd",
+    "x": -0.31,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.31,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 2,
+  "shields_hp": [
+   38,
+   28,
+   24,
+   20,
+   24,
+   28
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 4,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 100
+ },
+ "kelvane_rv": {
+  "name": "Kelvane cruiser",
+  "code": "CA",
+  "shape": "saucer",
+  "model": "assets/ships/kelvane/kelvane_cruiser.glb",
+  "length_m": 448,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
   "turn_deg_s": 26,
   "reactor_e": 22,
   "capacitor_e": 14,
@@ -1184,28 +1344,28 @@
   "mounts": [
    {
     "weapon": "lance",
-    "x": -0.42,
+    "x": -0.22,
     "y": 0.62,
     "arc_centre_deg": -50,
     "arc_width_deg": 200
    },
    {
     "weapon": "lance",
-    "x": 0.42,
+    "x": 0.22,
     "y": 0.62,
     "arc_centre_deg": 50,
     "arc_width_deg": 200
    },
    {
     "weapon": "lance",
-    "x": -0.62,
+    "x": -0.22,
     "y": 0.05,
     "arc_centre_deg": -90,
     "arc_width_deg": 180
    },
    {
     "weapon": "lance",
-    "x": 0.62,
+    "x": 0.22,
     "y": 0.05,
     "arc_centre_deg": 90,
     "arc_width_deg": 180
@@ -1233,14 +1393,14 @@
    },
    {
     "weapon": "pd",
-    "x": -0.32,
+    "x": -0.22,
     "y": -0.3,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
    },
    {
     "weapon": "pd",
-    "x": 0.32,
+    "x": 0.22,
     "y": -0.3,
     "arc_centre_deg": 0,
     "arc_width_deg": 360
@@ -1273,14 +1433,410 @@
   },
   "hull_hp": 140
  },
+ "kelvane_bc": {
+  "name": "Kelvane battlecruiser",
+  "code": "BC",
+  "shape": "saucer",
+  "model": "assets/ships/kelvane/kelvane_battlecruiser.glb",
+  "length_m": 529,
+  "speed_max_m_s": 2900,
+  "accel_m_s2": 420,
+  "turn_deg_s": 24,
+  "reactor_e": 26,
+  "capacitor_e": 16,
+  "battery_e": 10,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.26,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.26,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.04,
+    "y": -0.75,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0.29,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ],
+  "shield_layers": 3,
+  "shields_hp": [
+   52,
+   40,
+   34,
+   28,
+   34,
+   40
+  ],
+  "power_e": {
+   "weapons": 9,
+   "shields": 6,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 160
+ },
+ "kelvane_cv": {
+  "name": "Kelvane carrier",
+  "code": "CV",
+  "shape": "saucer",
+  "model": "assets/ships/kelvane/kelvane_carrier.glb",
+  "length_m": 578,
+  "speed_max_m_s": 2600,
+  "accel_m_s2": 340,
+  "turn_deg_s": 19,
+  "reactor_e": 24,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.31,
+    "y": 0.3,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.31,
+    "y": 0.3,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": -0.37,
+    "y": -0.2,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.37,
+    "y": -0.2,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "pd",
+    "x": -0.21,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.21,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.1,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": -0.24,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   },
+   {
+    "weapon": "missile",
+    "x": 0.24,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ],
+  "shield_layers": 3,
+  "shields_hp": [
+   48,
+   36,
+   30,
+   26,
+   30,
+   36
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 6,
+   "engines": 5,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 175
+ },
+ "fr": {
+  "name": "Concord freighter",
+  "code": "FR",
+  "shape": "saucer",
+  "model": "assets/ships/freighters/freighter_concord.glb",
+  "length_m": 810,
+  "speed_max_m_s": 2400,
+  "accel_m_s2": 300,
+  "turn_deg_s": 16,
+  "reactor_e": 11,
+  "capacitor_e": 4,
+  "battery_e": 4,
+  "mounts": [
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": 0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 1,
+  "shields_hp": [
+   16,
+   14,
+   12,
+   10,
+   12,
+   14
+  ],
+  "power_e": {
+   "weapons": 1,
+   "shields": 3,
+   "engines": 4,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 1,
+   "repair": 0
+  },
+  "hull_hp": 90
+ },
+ "krai_fr": {
+  "name": "Krai freighter",
+  "code": "FR",
+  "shape": "wedge",
+  "model": "assets/ships/freighters/freighter_krai.glb",
+  "length_m": 864,
+  "speed_max_m_s": 2400,
+  "accel_m_s2": 300,
+  "turn_deg_s": 16,
+  "reactor_e": 11,
+  "capacitor_e": 4,
+  "battery_e": 4,
+  "mounts": [
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": 0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 1,
+  "shields_hp": [
+   16,
+   14,
+   12,
+   10,
+   12,
+   14
+  ],
+  "power_e": {
+   "weapons": 1,
+   "shields": 3,
+   "engines": 4,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 1,
+   "repair": 0
+  },
+  "hull_hp": 90
+ },
+ "hunt_fr": {
+  "name": "Hunt freighter",
+  "code": "FR",
+  "shape": "wedge",
+  "model": "assets/ships/freighters/freighter_ssarith.glb",
+  "length_m": 918,
+  "speed_max_m_s": 2400,
+  "accel_m_s2": 300,
+  "turn_deg_s": 16,
+  "reactor_e": 11,
+  "capacitor_e": 4,
+  "battery_e": 4,
+  "mounts": [
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": 0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 1,
+  "shields_hp": [
+   16,
+   14,
+   12,
+   10,
+   12,
+   14
+  ],
+  "power_e": {
+   "weapons": 1,
+   "shields": 3,
+   "engines": 4,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 1,
+   "repair": 0
+  },
+  "hull_hp": 90
+ },
+ "kelvane_fr": {
+  "name": "Kelvane freighter",
+  "code": "FR",
+  "shape": "saucer",
+  "model": "assets/ships/freighters/freighter_kelvane.glb",
+  "length_m": 740,
+  "speed_max_m_s": 2400,
+  "accel_m_s2": 300,
+  "turn_deg_s": 16,
+  "reactor_e": 11,
+  "capacitor_e": 4,
+  "battery_e": 4,
+  "mounts": [
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": 0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 1,
+  "shields_hp": [
+   16,
+   14,
+   12,
+   10,
+   12,
+   14
+  ],
+  "power_e": {
+   "weapons": 1,
+   "shields": 3,
+   "engines": 4,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 1,
+   "repair": 0
+  },
+  "hull_hp": 90
+ },
  "tr": {
   "name": "Troop ship",
   "code": "TR",
   "shape": "saucer",
   "model": "assets/ships/concord/pelican.glb",
   "length_m": 180,
-  "speed_max_m_s": 320,
-  "accel_m_s2": 60,
+  "speed_max_m_s": 3200,
+  "accel_m_s2": 600,
   "turn_deg_s": 40,
   "reactor_e": 14,
   "capacitor_e": 6,
@@ -1301,6 +1857,7 @@
     "arc_width_deg": 360
    }
   ],
+  "shield_layers": 2,
   "shields_hp": [
    22,
    18,
@@ -1324,7 +1881,7 @@
   "name": "Starbase",
   "code": "SB",
   "shape": "station",
-  "length_m": 420,
+  "length_m": 1260,
   "speed_max_m_s": 0,
   "accel_m_s2": 0,
   "turn_deg_s": 0,
@@ -1407,5 +1964,3271 @@
    "repair": 1
   },
   "hull_hp": 260
+ },
+ "yd": {
+  "name": "Shipyard",
+  "code": "YD",
+  "shape": "yard",
+  "length_m": 1680,
+  "speed_max_m_s": 0,
+  "accel_m_s2": 0,
+  "turn_deg_s": 0,
+  "reactor_e": 26,
+  "capacitor_e": 12,
+  "battery_e": 10,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": 0.5,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "lance",
+    "x": -0.5,
+    "y": 0.6,
+    "arc_centre_deg": 330,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "lance",
+    "x": 0.5,
+    "y": -0.6,
+    "arc_centre_deg": 150,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "lance",
+    "x": -0.5,
+    "y": -0.6,
+    "arc_centre_deg": 210,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": 0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 2,
+  "shields_hp": [
+   30,
+   30,
+   30,
+   30,
+   30,
+   30
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 6,
+   "engines": 0,
+   "sensors": 2,
+   "tractor": 1,
+   "transport": 1,
+   "repair": 1
+  },
+  "hull_hp": 300
+ },
+ "ab": {
+  "name": "Asteroid base",
+  "code": "AB",
+  "shape": "rock_base",
+  "length_m": 1140,
+  "speed_max_m_s": 0,
+  "accel_m_s2": 0,
+  "turn_deg_s": 0,
+  "reactor_e": 24,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "mounts": [
+   {
+    "weapon": "disruptor",
+    "x": 0,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0.7,
+    "y": 0,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0,
+    "y": -0.8,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "disruptor",
+    "x": -0.7,
+    "y": 0,
+    "arc_centre_deg": 270,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "missile",
+    "x": 0,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 2,
+  "shields_hp": [
+   34,
+   34,
+   34,
+   34,
+   34,
+   34
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 5,
+   "engines": 0,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 1,
+   "repair": 1
+  },
+  "hull_hp": 320
+ },
+ "op": {
+  "name": "Outpost",
+  "code": "OP",
+  "shape": "outpost",
+  "length_m": 600,
+  "speed_max_m_s": 0,
+  "accel_m_s2": 0,
+  "turn_deg_s": 0,
+  "reactor_e": 14,
+  "capacitor_e": 8,
+  "battery_e": 6,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": 0.7,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ],
+  "shield_layers": 2,
+  "shields_hp": [
+   20,
+   20,
+   20,
+   20,
+   20,
+   20
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 4,
+   "engines": 0,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 1,
+   "repair": 1
+  },
+  "hull_hp": 140
+ },
+ "pb": {
+  "name": "Planetary battery",
+  "code": "PB",
+  "shape": "battery",
+  "length_m": 360,
+  "speed_max_m_s": 0,
+  "accel_m_s2": 0,
+  "turn_deg_s": 0,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "mounts": [
+   {
+    "weapon": "torpedo",
+    "x": 0,
+    "y": 0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": 0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 200
+   }
+  ],
+  "shield_layers": 2,
+  "shields_hp": [
+   16,
+   16,
+   16,
+   16,
+   16,
+   16
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 0,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 90
+ },
+ "mon": {
+  "name": "Void leviathan",
+  "code": "MON",
+  "shape": "monster",
+  "length_m": 620,
+  "speed_max_m_s": 1600,
+  "accel_m_s2": 200,
+  "turn_deg_s": 14,
+  "reactor_e": 24,
+  "capacitor_e": 12,
+  "battery_e": 8,
+  "mounts": [
+   {
+    "weapon": "disruptor",
+    "x": 0,
+    "y": 0.9,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "disruptor",
+    "x": 0.3,
+    "y": 0.6,
+    "arc_centre_deg": 20,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "disruptor",
+    "x": -0.3,
+    "y": 0.6,
+    "arc_centre_deg": 340,
+    "arc_width_deg": 120
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 200
+   }
+  ],
+  "shield_layers": 2,
+  "shields_hp": [
+   18,
+   14,
+   12,
+   10,
+   12,
+   14
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 3,
+   "engines": 6,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 420
+ },
+ "pod": {
+  "name": "Cargo pod",
+  "code": "POD",
+  "shape": "pod",
+  "length_m": 40,
+  "speed_max_m_s": 0,
+  "accel_m_s2": 0,
+  "turn_deg_s": 0,
+  "reactor_e": 2,
+  "capacitor_e": 1,
+  "battery_e": 1,
+  "mounts": [],
+  "shield_layers": 1,
+  "shields_hp": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ],
+  "power_e": {
+   "weapons": 0,
+   "shields": 0,
+   "engines": 0,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 20
+ },
+ "axiom_ff": {
+  "name": "Axiom frigate (Lemma)",
+  "code": "FF",
+  "shape": "wedge",
+  "model": "assets/ships/axiom/axiom_ff.glb",
+  "length_m": 157,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "shield_layers": 1,
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "axiom_dd": {
+  "name": "Axiom destroyer (Corollary)",
+  "code": "DD",
+  "shape": "wedge",
+  "model": "assets/ships/axiom/axiom_dd.glb",
+  "length_m": 232,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "shield_layers": 2,
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "axiom_ca": {
+  "name": "Axiom cruiser (Theorem)",
+  "code": "CA",
+  "shape": "wedge",
+  "model": "assets/ships/axiom/axiom_ca.glb",
+  "length_m": 346,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "axiom_bb": {
+  "name": "Axiom battleship (Proof)",
+  "code": "BB",
+  "shape": "wedge",
+  "model": "assets/ships/axiom/axiom_bb.glb",
+  "length_m": 513,
+  "speed_max_m_s": 2900,
+  "accel_m_s2": 420,
+  "turn_deg_s": 24,
+  "reactor_e": 26,
+  "capacitor_e": 16,
+  "battery_e": 10,
+  "shield_layers": 3,
+  "shields_hp": [
+   52,
+   40,
+   34,
+   28,
+   34,
+   40
+  ],
+  "power_e": {
+   "weapons": 9,
+   "shields": 6,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 160,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.26,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.26,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.04,
+    "y": -0.75,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0.29,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ]
+ },
+ "exponent_ff": {
+  "name": "Exponent frigate (Tender)",
+  "code": "FF",
+  "shape": "saucer",
+  "model": "assets/ships/exponent/exponent_ff.glb",
+  "length_m": 173,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "shield_layers": 1,
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "exponent_dd": {
+  "name": "Exponent destroyer (Salvor)",
+  "code": "DD",
+  "shape": "saucer",
+  "model": "assets/ships/exponent/exponent_dd.glb",
+  "length_m": 259,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "shield_layers": 2,
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "exponent_ca": {
+  "name": "Exponent cruiser (Hulk)",
+  "code": "CA",
+  "shape": "saucer",
+  "model": "assets/ships/exponent/exponent_ca.glb",
+  "length_m": 405,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "exponent_cv": {
+  "name": "Exponent carrier (Reef)",
+  "code": "CV",
+  "shape": "saucer",
+  "model": "assets/ships/exponent/exponent_cv.glb",
+  "length_m": 621,
+  "speed_max_m_s": 2600,
+  "accel_m_s2": 340,
+  "turn_deg_s": 19,
+  "reactor_e": 24,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shield_layers": 3,
+  "shields_hp": [
+   48,
+   36,
+   30,
+   26,
+   30,
+   36
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 6,
+   "engines": 5,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 175,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.31,
+    "y": 0.3,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.31,
+    "y": 0.3,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": -0.37,
+    "y": -0.2,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.37,
+    "y": -0.2,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "pd",
+    "x": -0.21,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.21,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.1,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": -0.24,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   },
+   {
+    "weapon": "missile",
+    "x": 0.24,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ]
+ },
+ "redtithe_ff": {
+  "name": "Red Tithe frigate (Cutter)",
+  "code": "FF",
+  "shape": "claw",
+  "model": "assets/ships/redtithe/redtithe_ff.glb",
+  "length_m": 146,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "shield_layers": 1,
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "redtithe_dd": {
+  "name": "Red Tithe destroyer (Reaver)",
+  "code": "DD",
+  "shape": "claw",
+  "model": "assets/ships/redtithe/redtithe_dd.glb",
+  "length_m": 221,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "shield_layers": 2,
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "redtithe_ca": {
+  "name": "Red Tithe cruiser (Bloodship)",
+  "code": "CA",
+  "shape": "claw",
+  "model": "assets/ships/redtithe/redtithe_ca.glb",
+  "length_m": 335,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "redtithe_fl": {
+  "name": "Red Tithe flagship (Tithe Hall)",
+  "code": "FL",
+  "shape": "claw",
+  "model": "assets/ships/redtithe/redtithe_fl.glb",
+  "length_m": 475,
+  "speed_max_m_s": 2900,
+  "accel_m_s2": 420,
+  "turn_deg_s": 24,
+  "reactor_e": 26,
+  "capacitor_e": 16,
+  "battery_e": 10,
+  "shield_layers": 3,
+  "shields_hp": [
+   52,
+   40,
+   34,
+   28,
+   34,
+   40
+  ],
+  "power_e": {
+   "weapons": 9,
+   "shields": 6,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 160,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.26,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.26,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.04,
+    "y": -0.75,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0.29,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ]
+ },
+ "vos_ff": {
+  "name": "Vos Syndicate frigate (Skiff)",
+  "code": "FF",
+  "shape": "claw",
+  "model": "assets/ships/vos/vos_ff.glb",
+  "length_m": 135,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "shield_layers": 1,
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "vos_dd": {
+  "name": "Vos Syndicate destroyer (Corsair)",
+  "code": "DD",
+  "shape": "claw",
+  "model": "assets/ships/vos/vos_dd.glb",
+  "length_m": 211,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "shield_layers": 2,
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "vos_ca": {
+  "name": "Vos Syndicate cruiser (Privateer)",
+  "code": "CA",
+  "shape": "claw",
+  "model": "assets/ships/vos/vos_ca.glb",
+  "length_m": 319,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "vos_cap": {
+  "name": "Vos Syndicate capital (Galleon)",
+  "code": "CC",
+  "shape": "claw",
+  "model": "assets/ships/vos/vos_cap.glb",
+  "length_m": 454,
+  "speed_max_m_s": 2900,
+  "accel_m_s2": 420,
+  "turn_deg_s": 24,
+  "reactor_e": 26,
+  "capacitor_e": 16,
+  "battery_e": 10,
+  "shield_layers": 3,
+  "shields_hp": [
+   52,
+   40,
+   34,
+   28,
+   34,
+   40
+  ],
+  "power_e": {
+   "weapons": 9,
+   "shields": 6,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 160,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.26,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.26,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.04,
+    "y": -0.75,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0.29,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ]
+ },
+ "kethran_ff": {
+  "name": "Kethran Hegemony frigate (Lancer)",
+  "code": "FF",
+  "shape": "wedge",
+  "model": "assets/ships/kethran/kethran_ff.glb",
+  "length_m": 162,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "shield_layers": 1,
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "kethran_dd": {
+  "name": "Kethran Hegemony destroyer (Warden)",
+  "code": "DD",
+  "shape": "wedge",
+  "model": "assets/ships/kethran/kethran_dd.glb",
+  "length_m": 248,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "shield_layers": 2,
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "kethran_ca": {
+  "name": "Kethran Hegemony cruiser (Bastion)",
+  "code": "CA",
+  "shape": "wedge",
+  "model": "assets/ships/kethran/kethran_ca.glb",
+  "length_m": 378,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "kethran_dn": {
+  "name": "Kethran Hegemony dreadnought (Throne)",
+  "code": "DN",
+  "shape": "wedge",
+  "model": "assets/ships/kethran/kethran_dn.glb",
+  "length_m": 567,
+  "speed_max_m_s": 2900,
+  "accel_m_s2": 420,
+  "turn_deg_s": 24,
+  "reactor_e": 26,
+  "capacitor_e": 16,
+  "battery_e": 10,
+  "shield_layers": 3,
+  "shields_hp": [
+   52,
+   40,
+   34,
+   28,
+   34,
+   40
+  ],
+  "power_e": {
+   "weapons": 9,
+   "shields": 6,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 160,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.26,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.26,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.04,
+    "y": -0.75,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0.29,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ]
+ },
+ "tarsine_ff": {
+  "name": "Tarsine Remnant frigate (Votary)",
+  "code": "FF",
+  "shape": "saucer",
+  "model": "assets/ships/tarsine/tarsine_ff.glb",
+  "length_m": 194,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "shield_layers": 1,
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "tarsine_dd": {
+  "name": "Tarsine Remnant destroyer (Custodian)",
+  "code": "DD",
+  "shape": "saucer",
+  "model": "assets/ships/tarsine/tarsine_dd.glb",
+  "length_m": 297,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "shield_layers": 2,
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "tarsine_ca": {
+  "name": "Tarsine Remnant cruiser (Monument)",
+  "code": "CA",
+  "shape": "saucer",
+  "model": "assets/ships/tarsine/tarsine_ca.glb",
+  "length_m": 459,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "tarsine_dn": {
+  "name": "Tarsine Remnant dreadnought (Dominion)",
+  "code": "DN",
+  "shape": "saucer",
+  "model": "assets/ships/tarsine/tarsine_dn.glb",
+  "length_m": 729,
+  "speed_max_m_s": 2900,
+  "accel_m_s2": 420,
+  "turn_deg_s": 24,
+  "reactor_e": 26,
+  "capacitor_e": 16,
+  "battery_e": 10,
+  "shield_layers": 3,
+  "shields_hp": [
+   52,
+   40,
+   34,
+   28,
+   34,
+   40
+  ],
+  "power_e": {
+   "weapons": 9,
+   "shields": 6,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 160,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.26,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.26,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.04,
+    "y": -0.75,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0.29,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ]
+ },
+ "aelith_ff": {
+  "name": "Aelith Conclave frigate (Seeker)",
+  "code": "FF",
+  "shape": "saucer",
+  "model": "assets/ships/aelith/aelith_ff.glb",
+  "length_m": 151,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "shield_layers": 1,
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "aelith_dd": {
+  "name": "Aelith Conclave destroyer (Envoy)",
+  "code": "DD",
+  "shape": "saucer",
+  "model": "assets/ships/aelith/aelith_dd.glb",
+  "length_m": 227,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "shield_layers": 2,
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "aelith_ca": {
+  "name": "Aelith Conclave cruiser (Archive)",
+  "code": "CA",
+  "shape": "saucer",
+  "model": "assets/ships/aelith/aelith_ca.glb",
+  "length_m": 351,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "aelith_cap": {
+  "name": "Aelith Conclave capital (Sanctum)",
+  "code": "CC",
+  "shape": "saucer",
+  "model": "assets/ships/aelith/aelith_cap.glb",
+  "length_m": 529,
+  "speed_max_m_s": 2900,
+  "accel_m_s2": 420,
+  "turn_deg_s": 24,
+  "reactor_e": 26,
+  "capacitor_e": 16,
+  "battery_e": 10,
+  "shield_layers": 3,
+  "shields_hp": [
+   52,
+   40,
+   34,
+   28,
+   34,
+   40
+  ],
+  "power_e": {
+   "weapons": 9,
+   "shields": 6,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 160,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.26,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.26,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.04,
+    "y": -0.75,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0.29,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ]
+ },
+ "ombrai_ff": {
+  "name": "Ombrai frigate (Veil)",
+  "code": "FF",
+  "shape": "saucer",
+  "model": "assets/ships/ombrai/ombrai_ff.glb",
+  "length_m": 146,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "shield_layers": 1,
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "ombrai_dd": {
+  "name": "Ombrai destroyer (Shade)",
+  "code": "DD",
+  "shape": "saucer",
+  "model": "assets/ships/ombrai/ombrai_dd.glb",
+  "length_m": 221,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "shield_layers": 2,
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "ombrai_ca": {
+  "name": "Ombrai cruiser (Vigil)",
+  "code": "CA",
+  "shape": "saucer",
+  "model": "assets/ships/ombrai/ombrai_ca.glb",
+  "length_m": 340,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "ombrai_cap": {
+  "name": "Ombrai capital (Eclipse)",
+  "code": "CC",
+  "shape": "saucer",
+  "model": "assets/ships/ombrai/ombrai_cap.glb",
+  "length_m": 502,
+  "speed_max_m_s": 2900,
+  "accel_m_s2": 420,
+  "turn_deg_s": 24,
+  "reactor_e": 26,
+  "capacitor_e": 16,
+  "battery_e": 10,
+  "shield_layers": 3,
+  "shields_hp": [
+   52,
+   40,
+   34,
+   28,
+   34,
+   40
+  ],
+  "power_e": {
+   "weapons": 9,
+   "shields": 6,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 160,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0.14,
+    "y": 0.8,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.1,
+    "y": 0.85,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 60
+   },
+   {
+    "weapon": "lance",
+    "x": -0.26,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.26,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.04,
+    "y": -0.75,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.3,
+    "y": -0.35,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": 0.29,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ]
+ },
+ "vhorr_ff": {
+  "name": "Vhorr Brood frigate (Drone)",
+  "code": "FF",
+  "shape": "claw",
+  "model": "assets/ships/vhorr/vhorr_ff.glb",
+  "length_m": 140,
+  "speed_max_m_s": 3600,
+  "accel_m_s2": 700,
+  "turn_deg_s": 44,
+  "reactor_e": 12,
+  "capacitor_e": 8,
+  "battery_e": 4,
+  "shield_layers": 1,
+  "shields_hp": [
+   24,
+   18,
+   16,
+   14,
+   16,
+   18
+  ],
+  "power_e": {
+   "weapons": 4,
+   "shields": 3,
+   "engines": 3,
+   "sensors": 0,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 60,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.35,
+    "y": 0.6,
+    "arc_centre_deg": -30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "lance",
+    "x": 0.35,
+    "y": 0.6,
+    "arc_centre_deg": 30,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "vhorr_dd": {
+  "name": "Vhorr Brood destroyer (Ravager)",
+  "code": "DD",
+  "shape": "claw",
+  "model": "assets/ships/vhorr/vhorr_dd.glb",
+  "length_m": 216,
+  "speed_max_m_s": 3300,
+  "accel_m_s2": 550,
+  "turn_deg_s": 34,
+  "reactor_e": 16,
+  "capacitor_e": 10,
+  "battery_e": 6,
+  "shield_layers": 2,
+  "shields_hp": [
+   32,
+   24,
+   22,
+   20,
+   22,
+   24
+  ],
+  "power_e": {
+   "weapons": 5,
+   "shields": 3,
+   "engines": 5,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 0
+  },
+  "hull_hp": 95,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.4,
+    "y": 0.6,
+    "arc_centre_deg": -40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.4,
+    "y": 0.6,
+    "arc_centre_deg": 40,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.7,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": 0,
+    "y": -0.2,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "vhorr_ca": {
+  "name": "Vhorr Brood cruiser (Broodship)",
+  "code": "CA",
+  "shape": "claw",
+  "model": "assets/ships/vhorr/vhorr_ca.glb",
+  "length_m": 351,
+  "speed_max_m_s": 3000,
+  "accel_m_s2": 450,
+  "turn_deg_s": 26,
+  "reactor_e": 22,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shields_hp": [
+   42,
+   32,
+   28,
+   26,
+   28,
+   32
+  ],
+  "power_e": {
+   "weapons": 6,
+   "shields": 5,
+   "engines": 6,
+   "sensors": 1,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 1
+  },
+  "hull_hp": 140,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.42,
+    "y": 0.62,
+    "arc_centre_deg": -50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": 0.42,
+    "y": 0.62,
+    "arc_centre_deg": 50,
+    "arc_width_deg": 200
+   },
+   {
+    "weapon": "lance",
+    "x": -0.62,
+    "y": 0.05,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "lance",
+    "x": 0.62,
+    "y": 0.05,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 180
+   },
+   {
+    "weapon": "torpedo",
+    "x": -0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "torpedo",
+    "x": 0.14,
+    "y": 0.86,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 90
+   },
+   {
+    "weapon": "lance",
+    "x": 0,
+    "y": -0.72,
+    "arc_centre_deg": 180,
+    "arc_width_deg": 160
+   },
+   {
+    "weapon": "pd",
+    "x": -0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.32,
+    "y": -0.3,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "grade": "blue",
+    "x": 0,
+    "y": -0.4,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   }
+  ]
+ },
+ "vhorr_cv": {
+  "name": "Vhorr Brood carrier (Hive)",
+  "code": "CV",
+  "shape": "claw",
+  "model": "assets/ships/vhorr/vhorr_cv.glb",
+  "length_m": 594,
+  "speed_max_m_s": 2600,
+  "accel_m_s2": 340,
+  "turn_deg_s": 19,
+  "reactor_e": 24,
+  "capacitor_e": 14,
+  "battery_e": 10,
+  "shield_layers": 3,
+  "shields_hp": [
+   48,
+   36,
+   30,
+   26,
+   30,
+   36
+  ],
+  "power_e": {
+   "weapons": 7,
+   "shields": 6,
+   "engines": 5,
+   "sensors": 2,
+   "tractor": 0,
+   "transport": 0,
+   "repair": 2
+  },
+  "hull_hp": 175,
+  "mounts": [
+   {
+    "weapon": "lance",
+    "x": -0.31,
+    "y": 0.3,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.31,
+    "y": 0.3,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": -0.37,
+    "y": -0.2,
+    "arc_centre_deg": -90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "lance",
+    "x": 0.37,
+    "y": -0.2,
+    "arc_centre_deg": 90,
+    "arc_width_deg": 150
+   },
+   {
+    "weapon": "pd",
+    "x": -0.21,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.21,
+    "y": 0.5,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "pd",
+    "x": 0.1,
+    "y": -0.6,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360
+   },
+   {
+    "weapon": "missile",
+    "x": -0.24,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   },
+   {
+    "weapon": "missile",
+    "x": 0.24,
+    "y": 0,
+    "arc_centre_deg": 0,
+    "arc_width_deg": 360,
+    "grade": "blue"
+   }
+  ]
  }
 }

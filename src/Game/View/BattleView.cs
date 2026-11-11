@@ -25,14 +25,21 @@ namespace FleetCommand.Game.View;
 
 public sealed partial class BattleView : Node3D
 {
-    /// <summary>Metres per scene unit (the mockup's scale: 1 unit is 100 m).</summary>
-    public const float MPerU = 100f;
+    /// <summary>Metres per scene unit: 1 unit is 1 km, ten times the mockup's 100 m, as every battle distance is ten times the
+    /// mockup's (owner, 2026-11-06: "1km -> 10km"); ships are drawn at their framed length (ShipClass.FrameM), so the picture is
+    /// the mockup's.</summary>
+    public const float MPerU = 1000f;
+    /// <summary>How far out the camera stays from the hull it watches, in the hull's framed lengths.</summary>
+    private const float HullClearX = 0.85f;
 
     private ConsoleContext _x = null!;
     private Camera3D _cam = null!;
     private readonly Dictionary<string, Node3D> _models = new();
     private readonly List<OmniLight3D> _strobes = new();
     private readonly Dictionary<string, ShipDamage> _damage = new();
+    private readonly Dictionary<string, ParkedCraft> _parked = new();   // a carrier's craft on its pads
+    private readonly Dictionary<string, Cargo> _cargo = new();   // a freighter's containers
+    private float _standInEnd;   // seconds a stand-in's nova still has to be seen
     private readonly Dictionary<string, ShieldShell> _shields = new();
     private long _hitSeq;
     private NebulaSky? _sky;
@@ -103,7 +110,7 @@ public sealed partial class BattleView : Node3D
         _sun = sun;
         _cam = new Camera3D { Name = "Camera", Current = true };
         AddChild(_cam);
-        _shots = new ShotView { Name = "Shots" };
+        _shots = new ShotView { Name = "Shots", Lift = LiftOf };
         AddChild(_shots);
         Rebuild();
     }
@@ -115,7 +122,11 @@ public sealed partial class BattleView : Node3D
         _models.Clear();
         _strobes.Clear();
         _damage.Clear();
+        _parked.Clear();
+        _cargo.Clear();
         _shields.Clear();
+        _extent.Clear();
+        _lift.Clear();
         _hitSeq = _x.Battle.Hits.Count > 0 ? _x.Battle.Hits[^1].Seq : 0;
         // the scenario's own nebula sky (each scene its own: data/battle/scenarios.json "sky")
         if (_sky == null || _sky.Name != "Sky_" + _x.Battle.Scenario.Sky)
@@ -128,15 +139,20 @@ public sealed partial class BattleView : Node3D
         _sun.LightEnergy = (float)_x.Battle.Scenario.SunEnergy;   // the scene's own sun (scenarios.json "sun_energy")
         foreach (Ship s in _x.Battle.Ships)
         {
-            Node3D model = s.Class.Model is { } path ? ShipModel(path, s.Class.LengthM, _strobes) : StandIn(s);
+            Node3D model = s.Class.Model is { } path ? ShipModel(path, s.Class.FrameM, _strobes) : StandIn(s);
             model.Name = s.Id;
             AddChild(model);
             _models[s.Id] = model;
-            var shell = new ShieldShell((float)(s.Class.LengthM / MPerU));   // every ship's (owner, 2026-11-04: "add shield display to all ships")
+            Measure(s, model);   // before its shield shell joins it
+            var shell = new ShieldShell((float)(s.Class.FrameM / MPerU));   // every ship's (owner, 2026-11-04: "add shield display to all ships")
             model.AddChild(shell);
             _shields[s.Id] = shell;
             if (s.Class.Model is { } file && model.GetChild(0) is Node3D glb)
+            {
                 _damage[s.Id] = new ShipDamage(glb, this, s, file["assets/ships/".Length..], glb.Scale.X);
+                if (ParkedCraft.Park(glb) is { } pc) _parked[s.Id] = pc;   // after the damage has walked the ship, so it never reads them
+                if (Cargo.Load(glb, file["assets/ships/".Length..]) is { } cg) _cargo[s.Id] = cg;   // the same
+            }
         }
     }
 
@@ -170,23 +186,38 @@ public sealed partial class BattleView : Node3D
         return box ?? new Aabb();
     }
 
-    /// <summary>The stand-in for a class's shape, in its faction's stand-in colours.</summary>
+    /// <summary>The stand-in for a class's shape, in its faction's stand-in colours, scaled inside an unscaled holder as an
+    /// approved ship is (<see cref="ShipModel"/>), so what joins the holder (the shield display, the stacking's measure) is in
+    /// scene units: scaled on the holder itself, a station's shields were drawn its length squared wide (owner, 2026-11-10:
+    /// "The shield display is super far from the the stations").</summary>
     private static Node3D StandIn(Ship s)
     {
         var model = GD.Load<PackedScene>($"res://scenes/standins/{s.Class.Shape}.tscn").Instantiate<Node3D>();
-        model.Scale = Vector3.One * (float)(s.Class.LengthM / MPerU);
+        model.Scale = Vector3.One * (float)(s.Class.FrameM / MPerU);
         Paint(model, new Color(s.Faction.Hull), new Color(s.Faction.Trim));
-        return model;
+        var holder = new Node3D();
+        holder.AddChild(model);
+        return holder;
     }
 
     private static void Paint(Node n, Color hull, Color trim)
     {
         foreach (Node c in n.GetChildren())
         {
-            if (c is MeshInstance3D mi)
-                mi.MaterialOverride = new StandardMaterial3D { AlbedoColor = mi.Name.ToString().StartsWith("Trim") ? trim : hull, Metallic = 0.35f, Roughness = 0.45f };
+            if (c is MeshInstance3D mi) mi.MaterialOverride = StandInMaterial(mi.Name.ToString(), hull, trim);
             Paint(c, hull, trim);
         }
+    }
+
+    /// <summary>A stand-in part's material by its name: Trim* in the trim colour, Glow* lit in the trim colour (lamps, a
+    /// monster's maw), Rock* dark stone with a little of the hull's colour (an asteroid base), the rest the hull colour.</summary>
+    private static StandardMaterial3D StandInMaterial(string name, Color hull, Color trim)
+    {
+        if (name.StartsWith("Glow", StringComparison.Ordinal))
+            return new StandardMaterial3D { AlbedoColor = trim, EmissionEnabled = true, Emission = trim, EmissionEnergyMultiplier = 1.2f, Roughness = 0.6f };
+        if (name.StartsWith("Rock", StringComparison.Ordinal))
+            return new StandardMaterial3D { AlbedoColor = new Color("#4a4540").Lerp(hull, 0.2f), Metallic = 0.05f, Roughness = 0.95f };
+        return new StandardMaterial3D { AlbedoColor = name.StartsWith("Trim", StringComparison.Ordinal) ? trim : hull, Metallic = 0.35f, Roughness = 0.45f };
     }
 
     /// <summary>The view rectangle and the whole screen, in console units.</summary>
@@ -210,12 +241,16 @@ public sealed partial class BattleView : Node3D
         // the mockup's other systems in 3D (transporter beams, tractor beams, mines, craft, cloaks), each in BattleView.<Package>.cs
         double sdt = _x.State.Paused || _x.State.MenuOpen ? 0 : dt;
         SyncComms(b, sdt); SyncTractor(b, sdt); SyncReactor(b, sdt); SyncCloak(b, sdt); SyncTactical(b, sdt);
+        Stack(b, sdt);
         foreach (Ship s in b.Ships)
         {
             if (!_models.TryGetValue(s.Id, out Node3D? m)) continue;
             m.Visible = !s.Jumped && (s.Alive || _damage.ContainsKey(s.Id)) && (!s.Alive || b.Detected(b.Player, s));   // an approved ship stays to come apart; a stand-in just goes; a ship gone to warp is gone; a cloaked ship unseen is not drawn
-            m.Position = new Vector3((float)(s.X / MPerU), 0, (float)(s.Z / MPerU));
+            m.Position = new Vector3((float)(s.X / MPerU), LiftOf(s.Id), (float)(s.Z / MPerU));
             m.Rotation = new Vector3(0, -(float)s.H, 0);
+            bool broken = !s.Alive || (_damage.TryGetValue(s.Id, out ShipDamage? dm) && dm.Broken);
+            if (_parked.TryGetValue(s.Id, out ParkedCraft? pc)) pc.Show(s.Fighters, broken);
+            if (_cargo.TryGetValue(s.Id, out Cargo? cg)) cg.Show(broken);
             if (_shields.TryGetValue(s.Id, out ShieldShell? sh)) { sh.Visible = s.Alive && s.CloakK <= 0; if (sh.Visible) sh.Show(s, _x.Kit.C); }   // a cloak's shields are down
         }
         Ship p = b.Player;
@@ -223,18 +258,33 @@ public sealed partial class BattleView : Node3D
         LockStep(p, dt);
         Ship? tv = TargetView ? b.TargetOf(p) ?? Wreck(b) : null;
         Ship f = tv ?? p;
-        var want = new Vector3((float)(f.X / MPerU), 0, (float)(f.Z / MPerU));
+        Planet? pv = ViewedPlanet();
+        if (PlanetView && pv == null) { PlanetView = false; StartGlide(_shipDist); }   // the planet is gone with its battle
+        var want = pv != null ? PlanetCentre(pv) : new Vector3((float)(f.X / MPerU), LiftOf(f.Id), (float)(f.Z / MPerU));
         if (!_focusSet) { _focus = want; _focusSet = true; }
         _glideT = Math.Min(GlideS, _glideT + (float)dt);
         float k = _glideT / GlideS, e = k * k * (3 - 2 * k);   // eased in and out
-        _focus = _glideT < GlideS ? _glideFrom.Lerp(want, e) : want;
+        bool gliding = _glideT < GlideS;
+        _focus = gliding ? _glideFrom.Lerp(want, e) : want;
+        // the distance glides with the focus: to the planet view's height, or back to the ship's distance
+        if (pv != null) _distTo = (float)(pv.RadiusM / MPerU) * (1 + _planetAlt);
+        if (gliding) Dist = Mathf.Lerp(_distFrom, _distTo, e);
+        else if (pv != null) Dist = _distTo;
         Vector3 focus = _focus;
-        var off = new Vector3(Mathf.Sin(Yaw) * Mathf.Cos(Pitch), Mathf.Sin(Pitch), Mathf.Cos(Yaw) * Mathf.Cos(Pitch)) * Dist;
-        _cam.Position = focus + off;
-        _cam.LookAt(focus, Vector3.Up);
+        if (pv != null) PlanetCamera(pv, focus, gliding ? 1 - e : 0);
+        else
+        {
+            // never inside the hull it watches: a station or freighter longer than the closest zoom keeps the camera out
+            // past its own size (the player's zoom is kept, and wins again once the hull is a smaller one)
+            float clear = _x.Battle.Scenario.DamageRange ? 0 : (float)(f.Class.FrameM / MPerU) * HullClearX;
+            var off = new Vector3(Mathf.Sin(Yaw) * Mathf.Cos(Pitch), Mathf.Sin(Pitch), Mathf.Cos(Yaw) * Mathf.Cos(Pitch)) * Mathf.Max(Dist, clear);
+            _cam.Position = focus + off;
+            _cam.LookAt(focus, Vector3.Up);
+        }
         _sky?.Follow(_cam.GlobalPosition);
         Project();
-        _shots.Sync(b);
+        _shots.Sync(b, _x.StepShare);
+        SyncPlanets(b);
     }
 
     // Battle damage (ShipDamage): each hit that has landed since the last frame makes its effect and scar, then every
@@ -247,9 +297,16 @@ public sealed partial class BattleView : Node3D
             _hitSeq = e.Seq;
             if (_damage.TryGetValue(e.ShipId, out ShipDamage? d)) d.OnHit(e);
             else if (_models.TryGetValue(e.ShipId, out Node3D? m))
-                Fx.Fireball(this, m.GlobalPosition, e.HullDamage > 0 ? 0.12f : 0.06f, Vector3.Up);
+            {
+                // a stand-in has no pieces to break, but it ends as every ship does (it is gone the frame after)
+                if (e.Destroyed && b.ShipById(e.ShipId) is { } dead) { Fx.ShipEnd(this, m.GlobalPosition, (float)(dead.Class.FrameM / MPerU)); _standInEnd = ShipDamage.NovaSeenS; }
+                else if (e.HullDamage > 0) Fx.Fireball(this, m.GlobalPosition, Fx.Readable(this, m.GlobalPosition, 0.12f), Vector3.Up);
+                else Fx.ShieldFlare(this, m.GlobalPosition, Fx.Readable(this, m.GlobalPosition, 0.06f, Fx.ShieldMinShare), Vector3.Up);
+            }
         }
         foreach (ShipDamage d in _damage.Values) d.Step((float)dt);
+        _standInEnd = Math.Max(0, _standInEnd - (float)dt);
+        _x.State.ShipsEnding = _standInEnd > 0 || _damage.Values.Any(d => d.Ending);
     }
 
     // A perspective frustum whose centre lands on the ship's point in the view rectangle (ship_screen_y down the view).
@@ -257,10 +314,11 @@ public sealed partial class BattleView : Node3D
     {
         if (_screen.X <= 0 || _view.Size.Y <= 0) return;
         LayoutDef l = _x.Data.Layout;
-        float near = 0.5f, fov = (float)(l.ViewFovDeg * Math.PI / 180);
+        // in the planet view the near plane comes in with the camera, so the ground is never cut off as it comes down
+        float near = PlanetView ? Mathf.Clamp(PlanetAltU() * 0.3f, 0.004f, 0.5f) : 0.5f, fov = (float)(l.ViewFovDeg * Math.PI / 180);
         float hs = 2 * near * Mathf.Tan(fov / 2) * (_screen.Y / _view.Size.Y), ws = hs * _screen.X / _screen.Y;
         // the damage range centres the ship it watches, so a hull looked at up close is not cut off by the view's foot
-        float shipY = _x.Battle.Scenario.DamageRange ? 0.5f : (float)l.ShipScreenY;
+        float shipY = _x.Battle.Scenario.DamageRange || PlanetView ? 0.5f : (float)l.ShipScreenY;
         float cx = _view.Position.X + _view.Size.X / 2, cy = _view.Position.Y + _view.Size.Y * shipY;
         _cam.SetFrustum(hs, new Vector2(ws * (0.5f - cx / _screen.X), hs * (cy / _screen.Y - 0.5f)), near, 4000);
     }
@@ -319,7 +377,7 @@ public sealed partial class BattleView : Node3D
         double worst = 0;
         for (int i = 0; i < 16; i++)
         {
-            double a = i * Math.PI / 8, r = 400 + 600 * (i % 4);
+            double a = i * Math.PI / 8, r = 4000 + 6000 * (i % 4);
             double x = p.X + Math.Sin(a) * r, z = p.Z - Math.Cos(a) * r;
             if (ScreenOf(x, z) is not { } sp || PlaneAt(sp) is not { } q) continue;
             worst = Math.Max(worst, Math.Sqrt((q.X - x) * (q.X - x) + (q.Z - z) * (q.Z - z)));
@@ -336,13 +394,20 @@ public sealed partial class BattleView : Node3D
     }
 
     /// <summary>The wheel: closer or further, down to 500 m in a battle, or 120 m on the damage range, where the player
-    /// looks at a hull's scars up close (owner, 2026-11-05: "and batle scars").</summary>
-    public void Zoom(float factor) => Dist = Mathf.Clamp(Dist * factor, _x.Battle.Scenario.DamageRange ? 1.2f : 5, 220);
+    /// looks at a hull's scars up close (owner, 2026-11-05: "and batle scars").
+    /// In the planet view the wheel moves the camera's height over the surface instead, from PlanetAltMax down to PlanetAltMin
+    /// radii (owner, 2026-11-08: "just zooming down to planets is supper cool").</summary>
+    public void Zoom(float factor)
+    {
+        if (PlanetView) { _planetAlt = Mathf.Clamp(_planetAlt * factor, PlanetAltMin, PlanetAltMax); return; }
+        Dist = Mathf.Clamp(Dist * factor, _x.Battle.Scenario.DamageRange ? 1.2f : 5, 220);
+    }
 
     /// <summary>The Camera lock key: back to your own ship (out of Target view) with the camera locked on the target.</summary>
     public void LockCamera()
     {
         if (_x.Battle.TargetOf(_x.Battle.Player) == null) return;
+        if (PlanetView) { PlanetView = false; StartGlide(_shipDist); }
         if (TargetView) { TargetView = false; StartGlide(); }
         CamLock = true;
     }
@@ -351,12 +416,15 @@ public sealed partial class BattleView : Node3D
     public void ToggleTargetView()
     {
         TargetView = !TargetView && _x.Battle.TargetOf(_x.Battle.Player) != null;
+        if (TargetView && PlanetView) { PlanetView = false; Dist = _shipDist; }
         if (TargetView) _watched = _x.Battle.TargetOf(_x.Battle.Player)!.Id;
         if (TargetView) CamLock = false;
         StartGlide();
     }
 
-    private void StartGlide() { _glideFrom = _focus; _glideT = 0; }
+    // a glide of the focus from where it is now; distTo, the distance to glide to (null: the planet view's height, or the
+    // distance it has)
+    private void StartGlide(float? distTo = null) { _glideFrom = _focus; _glideT = 0; _distFrom = Dist; _distTo = distTo ?? Dist; }
 
     // Follows the player's target: camera lock is the default when targeting a ship (owner, 2026-11-04: "camera lock is
     // the default when targeting other ships"), so a new lock locks the camera (in Target view it glides there instead);
@@ -376,6 +444,7 @@ public sealed partial class BattleView : Node3D
             return;
         }
         _watched = id;
+        if (PlanetView) return;   // the planet view stays until the player leaves it
         if (TargetView) StartGlide();
         else CamLock = true;
     }

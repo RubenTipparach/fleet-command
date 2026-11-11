@@ -1,0 +1,65 @@
+{
+ "_doc": "Mission file (openspec/changes/mission-systems; the format is docs/design/mission-files.md). Edit with tools/mission-editor or by hand.",
+ "id": "scout",
+ "name": "Scout",
+ "glyph": "I",
+ "type": "Scout",
+ "reward_cr": 900,
+ "weight": 0.4,
+ "follow_group": true,
+ "where": "hostile && has_group",
+ "objective": "Scan two ships of the {group} and get clear.",
+ "brief": "The {group} is gathering here. Get close enough to scan two of its ships, then reach the jump point behind you before they catch you. A scan needs a lock and time: run on full sensors.",
+ "battle": [
+  {
+   "intel": "A battle group",
+   "markers": [
+    {
+     "id": "out",
+     "label": "Jump point",
+     "bearing_deg": 180,
+     "range_km": 60
+    }
+   ],
+   "groups": [
+    {
+     "id": "watched",
+     "faction": "{group_fac}",
+     "count": "group_size",
+     "role": "enemy",
+     "label": "{group}",
+     "range_km": 90
+    }
+   ],
+   "objectives": [
+    {
+     "id": "scan",
+     "text": "Scan two of their ships",
+     "primary": true,
+     "done": "scanned(watched) >= 2"
+    },
+    {
+     "id": "out",
+     "text": "Reach the jump point",
+     "primary": true,
+     "done": "reached('out')"
+    },
+    {
+     "id": "intact",
+     "text": "Lose no ships",
+     "done": "destroyed(fleet) == 0"
+    }
+   ]
+  }
+ ],
+ "result": [
+  {
+   "when": "win",
+   "credits": "pay",
+   "standing": {
+    "{side}": 4
+   },
+   "log": "The {group} is charted."
+  }
+ ]
+}

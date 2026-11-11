@@ -175,7 +175,7 @@ public class WarpTests
     [Fact]
     public void The_warp_scene_starts_in_a_field_strong_enough_to_need_the_override()
     {
-        foreach (string id in new[] { "concord_warp", "krai_warp" })
+        foreach (string id in new[] { "concord_warp", "krai_warp", "kelvane_warp", "ssarith_warp" })
         {
             var b = new Battle(TestData.Data, TestData.Data.ScenarioById(id));
             Ship s = b.Player;

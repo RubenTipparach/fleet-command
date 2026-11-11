@@ -1,0 +1,50 @@
+[gd_scene load_steps=5 format=3]
+
+[sub_resource type="BoxMesh" id="box"]
+size = Vector3(0.42, 0.42, 0.9)
+
+[sub_resource type="BoxMesh" id="rib"]
+size = Vector3(0.46, 0.46, 0.05)
+
+[sub_resource type="SphereMesh" id="lamp"]
+radius = 0.04
+height = 0.08
+radial_segments = 8
+rings = 4
+
+[sub_resource type="BoxMesh" id="clamp"]
+size = Vector3(0.12, 0.06, 0.06)
+
+[node name="Pod" type="Node3D"]
+
+[node name="HullBox" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+mesh = SubResource("box")
+
+[node name="TrimRib0" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.43)
+mesh = SubResource("rib")
+
+[node name="TrimRib1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15)
+mesh = SubResource("rib")
+
+[node name="TrimRib2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.15)
+mesh = SubResource("rib")
+
+[node name="TrimRib3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.43)
+mesh = SubResource("rib")
+
+[node name="HullClampF" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.23, -0.3)
+mesh = SubResource("clamp")
+
+[node name="HullClampA" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.23, 0.3)
+mesh = SubResource("clamp")
+
+[node name="GlowBeacon" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+mesh = SubResource("lamp")

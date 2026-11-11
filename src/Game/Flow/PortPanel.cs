@@ -34,6 +34,8 @@ public sealed partial class PortPanel : FlowPanel
     };
 
     private const float Top = 72;
+    /// <summary>The grant each tab needs at another faction's port (Campaign.Allows).</summary>
+    private static readonly Dictionary<string, string> GrantOfTab = new() { ["yard"] = "ships", ["outfit"] = "weapons", ["supply"] = "parts", ["crew"] = "officers" };
 
     protected override void DrawPanel()
     {
@@ -42,7 +44,8 @@ public sealed partial class PortPanel : FlowPanel
         DrawRect(new Rect2(0, Top, Size.X, Size.Y - Top), new Color(0, 0, 0, 0.55f));
         Ui.Reg("port.block", new Rect2(0, Top, Size.X, Size.Y - Top));
         bool own = c.IsPort(c.At);
-        var tabs = own ? OwnTabs : MarketTabs;
+        // a friendly faction's port opens the tabs your standing with it has earned, beside its market
+        var tabs = own ? OwnTabs : MarketTabs.Concat(OwnTabs.Where(t => c.Allows(GrantOfTab[t.Id]))).ToArray();
         if (!tabs.Any(t => t.Id == F.Port)) F.Port = tabs[0].Id;
         F.PortShip = Math.Clamp(F.PortShip, 0, c.S.Fleet.Count - 1);
 
@@ -84,21 +87,21 @@ public sealed partial class PortPanel : FlowPanel
                 HitState st = Ui.Reg($"pf.{s.Id}", r, _ => F.PortShip = idx);
                 Card(r, on, st.Hot);
                 float sw = h * 0.55f;
-                Schematics.DrawFit(this, Key(hull), new Rect2(r.Position.X + 10, r.Position.Y + 8, sw, h - 16), C.Signal, C.Sky);
+                ShipPic(hull, new Rect2(r.Position.X + 10, r.Position.Y + 8, sw, h - 16));
                 float tx = r.Position.X + sw + 20, tww = r.End.X - tx - 10;
                 Text(s.Name, tx, r.Position.Y + 28, 19, on ? C.Sky : C.Text, HorizontalAlignment.Left, tww, 700);
                 Text(i == 0 ? $"{hull.Cls} · flagship" : $"{hull.Cls} · {s.Behaviour}", tx, r.Position.Y + 50, 15, C.Lilac, HorizontalAlignment.Left, tww, 600);
                 Bar(tx, r.Position.Y + 56, tww, $"Hull {s.HullPct:0} %", s.HullPct / 100, s.HullPct < 50, s.HullPct >= 100);
                 int cost = c.RepairCost(s);
-                if (own && cost > 0)
+                if (c.Allows("parts") && cost > 0)
                     Button($"pf.repair.{s.Id}", new Rect2(tx, r.End.Y - 34, tww, 28), $"Repair {cost:N0} cr", () => Say(c.Repair(s), $"The {s.Name} is repaired."), dis: cost > c.S.Credits);
             }
             else
             {
-                HitState st = Ui.Reg($"pf.berth.{i}", r, own ? _ => F.Port = "yard" : null);
+                HitState st = Ui.Reg($"pf.berth.{i}", r, c.Allows("ships") ? _ => F.Port = "yard" : null);
                 Kit.Piece(this, "frame.inset", r, st.Hot ? 0.7f : 0.35f);
                 Text("FREE BERTH", r.GetCenter().X, r.GetCenter().Y - 2, 17, C.Lilac, HorizontalAlignment.Center, r.Size.X - 20, 600, 1);
-                if (own) Text("buy a ship at the shipyard", r.GetCenter().X, r.GetCenter().Y + 20, 14, C.Lilac, HorizontalAlignment.Center, r.Size.X - 20, 500);
+                if (c.Allows("ships")) Text("buy a ship at the shipyard", r.GetCenter().X, r.GetCenter().Y + 20, 14, C.Lilac, HorizontalAlignment.Center, r.Size.X - 20, 500);
             }
             y += h + 8;
         }
@@ -124,11 +127,16 @@ public sealed partial class PortPanel : FlowPanel
     private void Schematic(Hull h, Rect2 box, bool frame = true)
     {
         if (frame) Kit.Piece(this, "frame.inset", box);
-        if (!Schematics.DrawFit(this, Key(h), box.Grow(-10), C.Signal, C.Sky))
-        {
-            Text("NO SCHEMATIC", box.GetCenter().X, box.GetCenter().Y - 4, 15, C.Lilac, HorizontalAlignment.Center, box.Size.X - 8, 600, 1);
-            Text("a stand-in hull", box.GetCenter().X, box.GetCenter().Y + 18, 14, C.Lilac, HorizontalAlignment.Center, box.Size.X - 8, 500);
-        }
+        ShipPic(h, box.Grow(-10));
+    }
+
+    /// <summary>A hull fitted in a box, nose up: its schematic, or the battle's stand-in by its class's shape while it has
+    /// none (the systems display's, so a card's text never sits beside an empty space).</summary>
+    private void ShipPic(Hull h, Rect2 box)
+    {
+        if (Schematics.DrawFit(this, Key(h), box, C.Signal, C.Sky)) return;
+        float half = Math.Min(box.Size.Y * 0.46f, box.Size.X * 0.46f / 0.62f);
+        SystemsDisplay.StandIn(this, X.Data.Classes[h.BattleClass].Shape, box.GetCenter(), half, C.Sky);
     }
 
     // ---- Shipyard ----------------------------------------------------------------------------------------------------
@@ -143,7 +151,7 @@ public sealed partial class PortPanel : FlowPanel
 
     private void Yard(Campaign.Campaign c, Rect2 b)
     {
-        var hulls = c.Data.HullsOf(c.S.Side).Where(h => h.ForSale).ToList();
+        var hulls = c.Data.HullsOf(c.YardSide).Where(h => h.ForSale).ToList();
         if (F.YardHull == null || hulls.All(h => h.Id != F.YardHull)) F.YardHull = hulls[Math.Min(1, hulls.Count - 1)].Id;
         float lw = Math.Min(520, b.Size.X * 0.46f), ch = Math.Min(118, (b.Size.Y - 8) / hulls.Count - 8);
         float y = b.Position.Y;
@@ -154,7 +162,7 @@ public sealed partial class PortPanel : FlowPanel
             string id = h.Id;
             HitState st = Ui.Reg($"yard.pick.{h.Id}", r, _ => F.YardHull = id);
             Card(r, on, st.Hot);
-            Schematics.DrawFit(this, Key(h), new Rect2(r.Position.X + 10, r.Position.Y + 6, ch * 0.62f, ch - 12), C.Signal, C.Sky);
+            ShipPic(h, new Rect2(r.Position.X + 10, r.Position.Y + 6, ch * 0.62f, ch - 12));
             float tx = r.Position.X + ch * 0.62f + 22;
             Text(h.Name.ToUpperInvariant(), tx, r.Position.Y + 32, 22, on ? C.Sky : C.Text, HorizontalAlignment.Left, lw - 280, 700, 1);
             Text($"{h.Cls} · tier {h.Tier}", tx, r.Position.Y + 56, 16, C.Lilac, HorizontalAlignment.Left, lw - 280, 600);
@@ -252,8 +260,9 @@ public sealed partial class PortPanel : FlowPanel
         Kit.Piece(this, "frame.inset", box);
         string? key = Key(hull);
         Rect2 inner = box.Grow(-14);
-        float half = Schematics.FitHalf(key, inner);
-        Schematics.Draw(this, key, inner.GetCenter(), half, C.Signal, C.Sky, 0.75f);
+        // a stand-in (no schematic) is 1.1 half-lengths across, so it is held to the box's width too
+        float half = Schematics.HullRect(key, inner.GetCenter(), 1) != null ? Schematics.FitHalf(key, inner) : Math.Min(inner.Size.Y * 0.46f, inner.Size.X * 0.46f / 0.62f);
+        if (!Schematics.Draw(this, key, inner.GetCenter(), half, C.Signal, C.Sky, 0.75f)) SystemsDisplay.StandIn(this, X.Data.Classes[hull.BattleClass].Shape, inner.GetCenter(), half, new Color(C.Sky, 0.75f));
         Rect2 hr = Schematics.HullRect(key, inner.GetCenter(), half) ?? new Rect2(inner.GetCenter().X - half * 0.3f, inner.GetCenter().Y - half, half * 0.6f, half * 2);
         foreach (var (gid, _) in c.Data.Groups)
         {
@@ -316,8 +325,8 @@ public sealed partial class PortPanel : FlowPanel
             int held = c.InStores(o.Id);
             Card(r, isOn, false);
             Text(o.Name, r.Position.X + 14, r.Position.Y + 24, 19, isOn ? C.Sky : C.Text, HorizontalAlignment.Left, cw - 290, 700);
-            if (oh >= 60) Para(o.Desc, r.Position.X + 14, r.Position.Y + 46, cw - 300, 14, C.Lilac, 2);
-            Text(held > 0 ? $"{held} in stores" : "none in stores", r.End.X - 186, r.Position.Y + oh / 2 + 6, 15, held > 0 ? C.Accord : C.Lilac, HorizontalAlignment.Right, 110, 600, 1);
+            if (oh >= 60) Para(o.Desc, r.Position.X + 14, r.Position.Y + 46, cw - 350, 14, C.Lilac, 2);
+            Text(held > 0 ? $"{held} in stores" : "none in stores", r.End.X - 186, r.Position.Y + oh / 2 + 6, 15, held > 0 ? C.Accord : C.Lilac, HorizontalAlignment.Right, 150, 600, 1);
             string sid = o.Id;
             if (isOn) Text("FITTED", r.End.X - 14, r.Position.Y + oh / 2 + 6, 17, C.Accord, HorizontalAlignment.Right, 160, 700, 1);
             else Button($"lo.fit.{o.Id}", new Rect2(r.End.X - 170, r.Position.Y + (oh - 40) / 2, 160, 40), "Fit",
@@ -334,7 +343,7 @@ public sealed partial class PortPanel : FlowPanel
         // the store: buy into the stores, sell from them
         Lbl($"Store: {gn.ToLowerInvariant()} systems", cx, cy + 16, cw);
         cy += 26;
-        bool port = c.IsPort(c.At);
+        bool port = c.Allows("weapons");
         foreach (ShipSystem o in options)
         {
             var r = new Rect2(cx, cy, cw, sh);
@@ -377,8 +386,10 @@ public sealed partial class PortPanel : FlowPanel
     {
         CampShip s = c.S.Fleet[F.PortShip];
         Text($"{s.Name.ToUpperInvariant()} · SUPPLIES", b.Position.X, b.Position.Y + 24, 24, C.Sky, HorizontalAlignment.Left, b.Size.X, 700, 1);
+        // a friendly faction's port sells the supplies your standing has earned: repair kits first, the rest later
+        var sold = c.Data.Supplies.Where(u => c.Allows(Campaign.Campaign.GrantOfSupply(u.Id))).ToList();
         float y = b.Position.Y + 48, rh = Math.Min(110, (b.Size.Y - 140) / c.Data.Supplies.Count - 8), x = b.Position.X, w = b.Size.X;
-        foreach (Supply u in c.Data.Supplies)
+        foreach (Supply u in sold)
         {
             var r = new Rect2(x, y, w, rh);
             Kit.Piece(this, "frame.inset", r);
@@ -502,13 +513,19 @@ public sealed partial class PortPanel : FlowPanel
         CampFaction f = c.Data.Factions[buyer];
         Para($"{f.Name} buyers. They pay {(buyer == "vos" ? "less than a shipyard, and dealing with them raises your standing with them" : "a quarter of a ship's price, more for a rival's hull")}.",
             b.Position.X, b.Position.Y + 20, b.Size.X, 18, C.Lilac);
-        float y = b.Position.Y + 60;
+        // what their ports give you at your standing, and the next grant
+        int st = c.Standing(buyer);
+        var grants = c.GrantsOf(buyer);
+        var next = c.Data.Rules.Privileges.FirstOrDefault(p => !grants.Contains(p.Grant));
+        Text($"Standing {st}: " + (grants.Count == 0 ? "they sell you nothing yet" : "they give you " + string.Join(", ", grants))
+            + (next.Grant != null ? $" · {next.Grant} at {next.Standing}" : ""), b.Position.X, b.Position.Y + 52, 17, C.Sky, HorizontalAlignment.Left, b.Size.X, 600);
+        float y = b.Position.Y + 72;
         foreach (CampShip s in c.S.Fleet.ToList())
         {
             var r = new Rect2(b.Position.X, y, b.Size.X, 90);
             Kit.Piece(this, "frame.inset", r);
             Hull h = c.Data.Hulls[s.Hull];
-            Schematics.DrawFit(this, Key(h), new Rect2(r.Position.X + 10, r.Position.Y + 6, 60, 78), C.Signal, C.Sky);
+            ShipPic(h, new Rect2(r.Position.X + 10, r.Position.Y + 6, 60, 78));
             Text(s.Name, r.Position.X + 90, r.Position.Y + 34, 20, C.Text, HorizontalAlignment.Left, 400, 700);
             Text($"{c.Data.Factions[s.Maker].Short}-built {h.Cls.ToLowerInvariant()} · hull {s.HullPct:0} %", r.Position.X + 90, r.Position.Y + 60, 16, C.Lilac, HorizontalAlignment.Left, 400, 600);
             int value = c.SaleQuote(s, buyer);

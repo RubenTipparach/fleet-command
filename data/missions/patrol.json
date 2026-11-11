@@ -5,6 +5,7 @@
  "glyph": "P",
  "type": "Patrol",
  "reward_cr": 300,
+ "weight": 4,
  "where": "plain && (own || neutral)",
  "objective": "Sweep the sector and engage what you find.",
  "brief": [

@@ -5,7 +5,7 @@
 // the role keys and the queue above, the pads and the target's portrait with the tug of war below; Hit and run adds the
 // target's subsystems as keys, the weapon pick and Shoot or Bomb; expanded, Capture shows the party's marines' health and
 // the boarding log. Cargo moves supplies, trade goods and the envoy to or from the friendly ship, station or planet
-// selected. Mines and Security are other systems' tabs, drawn by their own files when built. Every readout calls the rule
+// selected, and Sites the selected planet's installations and away teams (StationPanel.TransportSites.cs). Mines and Security are other systems' tabs, drawn by their own files when built. Every readout calls the rule
 // the battle uses (Battle.Transport), and everything is drawn with the kit, so every skin draws it; a part that does not
 // fit the docked panel is left out rather than spilling (the panel is a fixed size).
 using System;
@@ -65,7 +65,7 @@ public sealed partial class StationPanel
         {
             // the target's subsystems as keys, coloured by their status; the picked one ringed in Sky
             string[] subs = Rules.Subsystems;
-            float bs = Math.Min(Big ? 56 : 34, (w - (subs.Length - 1) * 6) / subs.Length);
+            float bs = Math.Min(Big ? 56 : 34, (w - (subs.Length - 1) * 6 - (Big ? 0 : 80)) / subs.Length); // docked, room kept for the weapon pick
             for (int i = 0; i < subs.Length; i++)
             {
                 string key = subs[i];
@@ -80,26 +80,32 @@ public sealed partial class StationPanel
                 float ik = Sk.RenderedKeys ? 0.21f : 0.15f;
                 Kit.Icon(this, key, r.Grow(-bs * ik), KeyFace.Ink(Kit, fill, true));
             }
-            y += bs + gap;
             // weapons: which one (owner: "need a drop down or something to pick from weapons"): a pill showing the pick,
-            // its list opening over the queue
+            // its list opening over the queue. Docked, the pill sits in the room left of the subsystem row, so picking
+            // weapons never pushes the panel's content past its bottom (owner, 2026-11-08: "weapn controls can push stuff
+            // off screen"); expanded, it has its own row.
+            float keysW = subs.Length * bs + (subs.Length - 1) * 6, room = w - keysW - 8;
+            bool inline = !Big;
+            if (!inline) y += bs + gap;
             if (s.RaidSys == "weapons")
             {
-                float ph = Big ? 40 : 30;
+                float ph = inline ? bs : Big ? 40 : 30, px = inline ? x + keysW + 8 : x, pw = inline ? room : w;
                 Mount? m = t != null && s.RaidMount is { } mi && mi < t.Mounts.Count ? t.Mounts[mi] : null;
-                var r = new Rect2(x, y, w, ph);
-                HitState st = Ui.Reg("tr.wpick", r, _ => X.State.RaidMountOpen = !X.State.RaidMountOpen, null, new Tip("Pick the weapon to raid"));
+                string full = m != null ? $"{m.Label} · {m.Weapon.Name} · {Pct(Math.Clamp(m.Hp, 0, 1))}" : "Weapons control (any weapon)";
+                var r = new Rect2(px, y, pw, ph);
+                HitState st = Ui.Reg("tr.wpick", r, _ => X.State.RaidMountOpen = !X.State.RaidMountOpen, null, new Tip(inline ? full : "Pick the weapon to raid"));
                 Color wf = st.Hot || X.State.RaidMountOpen ? C.Sky : C.Signal, ink = KeyFace.Ink(Kit, wf);
                 KeyFace.Draw(Kit, this, r, ph / 2, wf);
-                string lab = m != null ? $"{m.Label} · {m.Weapon.Name} · {Pct(Math.Clamp(m.Hp, 0, 1))}" : "Weapons control (any weapon)";
-                Text(lab, x + 16, y + ph * 0.68f, Big ? 20 : 16, ink, HorizontalAlignment.Left, w - 48);
-                float ax = x + w - 20, ay = y + ph / 2;
+                string lab = inline ? (m != null ? $"{m.Label} · {Pct(Math.Clamp(m.Hp, 0, 1))}" : "Any") : full;
+                Text(lab, px + (inline ? 12 : 16), y + ph * 0.66f, Big ? 20 : 16, ink, HorizontalAlignment.Left, pw - (inline ? 34 : 48));
+                float ax = px + pw - (inline ? 14 : 20), ay = y + ph / 2;
                 Pen.FillAbs(this, X.State.RaidMountOpen
                     ? new[] { new Vector2(ax - 6, ay + 3), new Vector2(ax + 6, ay + 3), new Vector2(ax, ay - 4) }
                     : new[] { new Vector2(ax - 6, ay - 3), new Vector2(ax + 6, ay - 3), new Vector2(ax, ay + 4) }, ink);
                 pick = new Rect2(x, y + ph + 4, w, b.End.Y - (y + ph + 4) - 4);
-                y += ph + gap;
+                if (!inline) y += ph + gap;
             }
+            if (inline) y += bs + gap;
         }
         // the role keys (Hit and run: Shoot and Bomb share their row)
         string[] roles = Battle.QueueRoles[mode];
@@ -512,11 +518,14 @@ public sealed partial class StationPanel
         Ship s = Me;
         float x = b.Position.X, y = b.Position.Y, w = b.Size.X, gap = Big ? 14 : 8;
         {
-            float tw = (w - 6) / 2, th = Big ? 30 : 24;
+            float tw = (w - 12) / 3, th = Big ? 30 : 24;
             Button("tr.cv.sup", new Rect2(x, y, tw, th), "Supplies", () => X.State.CargoView = "sup", X.State.CargoView == "sup");
             Button("tr.cv.misc", new Rect2(x + tw + 6, y, tw, th), "Misc", () => X.State.CargoView = "misc", X.State.CargoView == "misc");
+            // a planet's installations and the away teams (StationPanel.TransportSites.cs)
+            Button("tr.cv.sites", new Rect2(x + 2 * (tw + 6), y, tw, th), "Sites", () => X.State.CargoView = "sites", X.State.CargoView == "sites");
             y += th + 8;
         }
+        if (X.State.CargoView == "sites") { Sites(new Rect2(x, y, w, b.End.Y - y)); return; }
         TransportDest? d = B.InvPick();
         bool reach = B.InvReach(s, d);
         double range = B.Comms.Transport.RangeKm;
@@ -544,7 +553,7 @@ public sealed partial class StationPanel
             y += ks + 8;
         }
         Row("Aboard · click to send", "us", k => B.Transfer(k, 1), k => k == "vip" ? (s.Vip != null ? 1 : 0) : s.Hold[k],
-            k => dest != null && k != "vip" && Battle.StillNeeds(dest, k) > 0 && s.Hold[k] > 0);
+            k => k == "vip" ? d?.Planet is { TakesEnvoy: true, EnvoyLanded: null } && s.Vip != null : dest != null && Battle.StillNeeds(dest, k) > 0 && s.Hold[k] > 0);
         if (d?.Ship is { } o) Row($"At {d.Name} · click to take", "them", k => B.Transfer(k, -1), k => k == "vip" ? (o.Vip != null ? 1 : 0) : o.Hold[k], _ => false);
         else if (d?.Planet is { } pl)
         {
@@ -563,6 +572,16 @@ public sealed partial class StationPanel
                 Num(left > 0 ? left.ToString() : "done", cx + sz2 + 6, y + sz2 * 0.72f, 0, f, HorizontalAlignment.Left, (int)MathF.Round(sz2 * 0.55f));
             }
             if (want.Length > 0) y += sz2 + 8;
+            // the envoy received there, or someone on the surface waiting to come up (the envoy key beams them aboard)
+            if (pl.Waiting != null && y + ks <= b.End.Y)
+            {
+                Lbl($"{pl.Waiting} waits on {d.Name} · click to beam up", x, y + 13, w, C.Lilac, HorizontalAlignment.Left, 13);
+                y += 18;
+                IconKey("tr.inv.them.vip", new Rect2(x, y, ks, ks), (cx, cy, r, col) => TransportGlyphs.Item(this, "vip", cx, cy, r, col), 1, () => B.Transfer("vip", -1), s.Vip == null, !reach,
+                    new Tip($"Beam {pl.Waiting} aboard"));
+                y += ks + 8;
+            }
+            else if (pl.EnvoyLanded != null) { Lbl($"{pl.EnvoyLanded} is on {d.Name}", x, y + 13, w, C.Accord, HorizontalAlignment.Left, 13); y += 20; }
         }
         if (y + 40 <= b.End.Y) PadRow("tr.pad.inv", x, y, w, s, "inv");
     }

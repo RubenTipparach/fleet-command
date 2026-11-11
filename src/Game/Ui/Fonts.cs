@@ -44,6 +44,14 @@ public sealed class Fonts
     /// <summary>The skin's face for a size (pixels) and weight (100 to 700) the console asks for.</summary>
     public Face Map(int size, int weight) => _type.Map(size, weight);
 
+    /// <summary>The skin's font and pixel size for a size and weight the console asks for, for a Godot control that draws
+    /// its own text (the star chart's search box).</summary>
+    public (Font Font, int Size) Get(int size, int weight)
+    {
+        Face f = Map(size, weight);
+        return (FontOf(f, 0), f.Size);
+    }
+
     /// <summary>A face at its weight with extra glyph spacing in pixels.</summary>
     private Font FontOf(Face face, int spacing)
     {

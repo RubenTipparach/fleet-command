@@ -17,3 +17,13 @@ blown off leaves no open hole.
 #### Scenario: A piece off a Hunt hull
 - **WHEN** a Hunt ship on the damage range loses a piece
 - **THEN** the piece and the hull it left are closed where they broke, by faces showing decks and rooms
+
+### Requirement: A Hunt ship's windows and bays show what is behind them
+
+Each window and launch bay of a Hunt ship SHALL be drawn as its own pane, with the room or hangar behind its glass drawn by
+interior mapping level with the decks, and its running lights, strobes and beacons SHALL each carry a glow, while its
+floodlights show only by the light on the plating.
+
+#### Scenario: A Hunt ship is dressed for the battle
+- **WHEN** a Hunt ship's glb is dressed from the export manifest
+- **THEN** every window_* and bay_* empty has a pane, every running light, strobe and beacon a glow, and no flood a glow or a lamp

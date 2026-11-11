@@ -97,7 +97,7 @@ public sealed partial class Battle
             {
                 s.DecoysLeft--;
                 var f = Geometry.Forward(s.H);
-                var d = new Lure { Kind = "decoy", Owner = s.Id, X = s.X - f.X * s.Class.LengthM * 0.5, Z = s.Z - f.Z * s.Class.LengthM * 0.5, VX = -f.X * md.Decoy.SpeedMS, VZ = -f.Z * md.Decoy.SpeedMS, LifeS = md.Decoy.LifeS };
+                var d = new Lure { Kind = "decoy", Owner = s.Id, X = s.X - f.X * s.Class.FrameM * 0.5, Z = s.Z - f.Z * s.Class.FrameM * 0.5, VX = -f.X * md.Decoy.SpeedMS, VZ = -f.Z * md.Decoy.SpeedMS, LifeS = md.Decoy.LifeS };
                 s.Decoy = d; _lures.Add(d);
                 foreach (Shot sh in closing) if (_cm.Next() < sh.Grade!.FooledByDecoyX) sh.Lure = d;
                 if (s == Player) Say("Tactical", "Decoy launched.");

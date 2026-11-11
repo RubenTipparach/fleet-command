@@ -80,17 +80,35 @@ public class ReactorTests
     {
         Battle b = TestData.NewBattle();
         Ship s = b.Player, near = b.ShipById("tallis")!;
-        near.X = s.X + 1000; near.Z = s.Z; near.ShieldsUp = false;
+        near.X = s.X + 10000; near.Z = s.Z; near.ShieldsUp = false;
         double hull = near.Hull;
         foreach (CoolantLoop l in s.Reactor.Loops) l.Flow = 0;
         Run(b, b.Data.Systems.Reactor.MeltdownS - 1);
         Assert.True(s.Alive);
         Assert.Contains(b.Log, l => l.Text == "Coolant offline. The core will melt down.");
-        near.X = s.X + 1000; near.Z = s.Z;
+        near.X = s.X + 10000; near.Z = s.Z;
         Run(b, 1.5);
         Assert.False(s.Alive);
         Assert.Contains(b.Log, l => l.Text.EndsWith("reactor meltdown."));
         Assert.True(near.Hull < hull);
+    }
+
+    [Fact]
+    public void A_prize_whose_core_goes_critical_strikes_and_her_shut_down_core_never_melts_down()
+    {
+        // freighter-missions design, "Taken": a raided freighter with her coolant shot away is given up, not lost
+        Battle b = TestData.NewBattle();
+        Ship prize = b.Ships.First(s => s.Side != b.Player.Side);
+        prize.Prize = true;
+        foreach (CoolantLoop l in prize.Reactor.Loops) l.Hp = 0;
+        Assert.True(prize.Hull > prize.Class.HullHp * b.Tuning.CaptureHullFrac);
+        b.Player.Target = prize.Id;
+        Run(b, 1);
+        Assert.True(prize.Struck);
+        Assert.Null(b.Player.Target);   // the lock on her dropped: no one fires into the boarding party
+        Run(b, b.Data.Systems.Reactor.MeltdownS * 2);
+        Assert.True(prize.Alive);
+        Assert.Equal(0, prize.Reactor.Melt);
     }
 
     [Fact]
@@ -192,6 +210,8 @@ public class ReactorTests
         {
             Assert.Equal("concord", TestData.Data.ScenarioById("concord_" + scene).Side);
             Assert.Equal("krai", TestData.Data.ScenarioById("krai_" + scene).Side);
+            Assert.Equal("kelvane", TestData.Data.ScenarioById("kelvane_" + scene).Side);
+            Assert.Equal("ssarith", TestData.Data.ScenarioById("ssarith_" + scene).Side);
         }
     }
 

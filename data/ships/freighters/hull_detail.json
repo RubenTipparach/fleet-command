@@ -1,0 +1,687 @@
+{
+ "_doc": "The freighters' hull detail (openspec/changes/freighters; mockup 24, docs/mockups/freighter-concepts.html; the ship-detailing skill). One file for the four picks, each ship naming its faction's look: the Ssarith Hunt's and the Kelvane Institute's are their own hull_detail.json files (\"from\"), one copy each; the Concord's and the Krai Warhost's are here until their warship lines move onto this standard (Ship Design Bible chapter 15), then they move to data/ships/<faction>/hull_detail.json. Coordinates are ship space at the size shown (twice the drafted hull: +x port, +y up, +z bow, metres). The file's defaults lie over every look's: a freighter is lit by more floods over more hull than a warship, so its light map is graded against light_ref 2.4.",
+ "manifest_doc": "The freighters (mockup 24), baked by tools/blender/painted_bake.py --faction freighters from data/ships/freighters/hull_detail.json, each in its faction's look.",
+ "defaults": {
+  "auto_floods": {
+   "step_m": 44,
+   "from_stern_m": 8,
+   "top_x_frac": 0
+  },
+  "light_ref": 2.4
+ },
+ "looks": {
+  "concord": {
+   "faction": "concord",
+   "paint": {
+    "armour": [
+     "#e6e3db",
+     "#dcd9d0",
+     "#ece9e2",
+     "#d3d1c9",
+     "#e1ded6",
+     "#cfccc4",
+     "#efece5"
+    ],
+    "accent": "#1a66db",
+    "sub": [
+     "#9aa1a9",
+     "#8d939b",
+     "#a5abb2",
+     "#80868e"
+    ],
+    "under": "#2a2e34",
+    "greeble": [
+     "#4a5058",
+     "#8d939b"
+    ],
+    "dome": "#0e1724",
+    "dome_glow": 0.2,
+    "slat": "#7d838b",
+    "vent": "#12161c",
+    "glass": "#0e1724",
+    "livery": "#1a66db",
+    "ink": "#1c2128",
+    "light_edge": "#f6f4ee",
+    "strip": "centre",
+    "strip_m": 0.7,
+    "pbr": {
+     "armour": [
+      0.4,
+      0.35
+     ],
+     "sub": [
+      0.5,
+      0.5
+     ],
+     "under": [
+      0.7,
+      0.6
+     ],
+     "greeble": [
+      0.55,
+      0.7
+     ],
+     "dome": [
+      0.1,
+      0.0
+     ],
+     "glass": [
+      0.06,
+      0.0
+     ],
+     "slat": [
+      0.5,
+      0.7
+     ],
+     "vent": [
+      0.9,
+      0.3
+     ],
+     "strip": [
+      0.4,
+      0.0
+     ],
+     "lamp": [
+      0.3,
+      0.0
+     ]
+    },
+    "livery_pbr": [
+     0.45,
+     0.1
+    ]
+   },
+   "defaults": {
+    "cuts": "grid",
+    "armour_t_m": 0.4,
+    "sub_t_m": 0.16,
+    "lift_m": 0.12,
+    "gap_m": [
+     0.3,
+     0.5
+    ],
+    "trench_m": [
+     1.2,
+     2.0
+    ],
+    "trench_share": 0.15,
+    "top_station_m": [
+     9.0,
+     18.0
+    ],
+    "spine_half_m": [
+     1.4,
+     3.0
+    ],
+    "flank_station_m": [
+     9.0,
+     18.0
+    ],
+    "flank_rake": [
+     -0.1,
+     0.1
+    ],
+    "greebles_per_m2": 0.5,
+    "overlay_min_m2": 40.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+     "window": 0.1,
+     "bay": 0.35
+    },
+    "auto_floods": {
+     "step_m": 44,
+     "from_stern_m": 8,
+     "top_x_frac": 0
+    },
+    "flood": {
+     "standoff_m": 4.8,
+     "cone_deg": 120,
+     "tilt_deg": 22,
+     "power_w": 6400
+    },
+    "strip_rgb": [
+     0.66,
+     0.83,
+     1.0
+    ]
+   }
+  },
+  "krai": {
+   "faction": "krai",
+   "paint": {
+    "armour": [
+     "#46536a",
+     "#3e4a5f",
+     "#4f5d74",
+     "#38445a",
+     "#55637a",
+     "#424e64",
+     "#4a576d"
+    ],
+    "accent": "#b07a3a",
+    "sub": [
+     "#2b333d",
+     "#323b47",
+     "#262d36",
+     "#38414d"
+    ],
+    "under": "#14181d",
+    "greeble": [
+     "#262c34",
+     "#5a6372"
+    ],
+    "dome": "#0c1016",
+    "dome_glow": 0.25,
+    "slat": "#3a4452",
+    "vent": "#0a0c10",
+    "glass": "#0c1016",
+    "livery": "#b07a3a",
+    "ink": "#0c0f13",
+    "light_edge": "#ffe2a0",
+    "strip": "centre",
+    "strip_m": 0.7,
+    "pbr": {
+     "armour": [
+      0.32,
+      0.8
+     ],
+     "sub": [
+      0.45,
+      0.7
+     ],
+     "under": [
+      0.7,
+      0.6
+     ],
+     "greeble": [
+      0.5,
+      0.75
+     ],
+     "dome": [
+      0.1,
+      0.0
+     ],
+     "glass": [
+      0.06,
+      0.0
+     ],
+     "slat": [
+      0.45,
+      0.75
+     ],
+     "vent": [
+      0.9,
+      0.3
+     ],
+     "strip": [
+      0.4,
+      0.0
+     ],
+     "lamp": [
+      0.3,
+      0.0
+     ]
+    },
+    "livery_pbr": [
+     0.3,
+     0.9
+    ]
+   },
+   "defaults": {
+    "armour_t_m": 0.5,
+    "sub_t_m": 0.22,
+    "lift_m": 0.3,
+    "gap_m": [
+     0.45,
+     0.9
+    ],
+    "trench_m": [
+     2.0,
+     3.6
+    ],
+    "trench_share": 0.3,
+    "top_station_m": [
+     6.0,
+     12.0
+    ],
+    "top_sweep": [
+     0.5,
+     1.2
+    ],
+    "spine_half_m": [
+     0.8,
+     1.8
+    ],
+    "flank_station_m": [
+     7.0,
+     13.0
+    ],
+    "flank_rake": [
+     -0.5,
+     0.8
+    ],
+    "greebles_per_m2": 0.9,
+    "overlay_min_m2": 24.0,
+    "overlay_inset": 0.86,
+    "overlay_lift_m": 0.25,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+     "window": 0.1,
+     "bay": 0.35
+    },
+    "auto_floods": {
+     "step_m": 44,
+     "from_stern_m": 6,
+     "top_x_frac": 0
+    },
+    "flood": {
+     "standoff_m": 4.8,
+     "cone_deg": 120,
+     "tilt_deg": 22,
+     "power_w": 6400
+    },
+    "strip_rgb": [
+     1.0,
+     0.89,
+     0.63
+    ]
+   }
+  },
+  "ssarith": {
+   "from": "ssarith"
+  },
+  "kelvane": {
+   "from": "kelvane"
+  }
+ },
+ "ships": {
+  "freighter_concord": {
+   "look": "concord",
+   "seed": 301,
+   "domes": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -112
+     ],
+     "r_m": 3.2,
+     "h_m": 0.9,
+     "straps": []
+    }
+   ],
+   "lamps": [
+    {
+     "face": "bow",
+     "at": [
+      0,
+      0
+     ],
+     "size_m": 0.6,
+     "colour": "amber"
+    },
+    {
+     "face": "top",
+     "at": [
+      0,
+      -134
+     ],
+     "size_m": 0.45,
+     "colour": "red",
+     "housing": true
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      -104.0,
+      -101.0
+     ]
+    },
+    {
+     "band_z_m": [
+      128.0,
+      130.0
+     ]
+    }
+   ],
+   "logo": {
+    "at": [
+     0,
+     -123
+    ],
+    "size_m": 9.0
+   },
+   "lighting": {
+    "floods": [
+     {
+      "face": "port",
+      "at": [
+       -126,
+       26
+      ],
+      "aim": "fwd"
+     }
+    ],
+    "auto_floods": {
+     "to_z_m": 140
+    }
+   },
+   "windows": [
+    {
+     "z_m": [
+      -130,
+      -108
+     ],
+     "rows_y_m": [
+      25.5,
+      29.0
+     ]
+    }
+   ]
+  },
+  "freighter_krai": {
+   "look": "krai",
+   "seed": 302,
+   "lamps": [
+    {
+     "face": "bow",
+     "at": [
+      0,
+      0
+     ],
+     "size_m": 0.5,
+     "colour": "amber"
+    },
+    {
+     "face": "top",
+     "at": [
+      0,
+      -144
+     ],
+     "size_m": 0.55,
+     "colour": "red",
+     "housing": true
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      -113.0,
+      -112.1
+     ]
+    },
+    {
+     "band_z_m": [
+      -111.0,
+      -110.1
+     ]
+    },
+    {
+     "band_z_m": [
+      -109.0,
+      -108.1
+     ]
+    },
+    {
+     "band_z_m": [
+      -107.0,
+      -106.1
+     ]
+    },
+    {
+     "band_z_m": [
+      -105.0,
+      -104.1
+     ]
+    }
+   ],
+   "logo": {
+    "at": [
+     0,
+     -130
+    ],
+    "size_m": 8.0
+   },
+   "lighting": {
+    "floods": [
+     {
+      "face": "port",
+      "at": [
+       -134,
+       2.3
+      ],
+      "aim": "fwd"
+     }
+    ],
+    "auto_floods": {
+     "to_z_m": 140
+    }
+   },
+   "windows": [
+    {
+     "z_m": [
+      -146,
+      -120
+     ],
+     "rows_y_m": [
+      2.3
+     ]
+    }
+   ]
+  },
+  "freighter_ssarith": {
+   "look": "ssarith",
+   "seed": 303,
+   "domes": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -146
+     ],
+     "r_m": 4.0,
+     "h_m": 1.0,
+     "straps": [
+      [
+       0,
+       0.8
+      ]
+     ]
+    }
+   ],
+   "fans": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -162
+     ],
+     "r_m": 3.4,
+     "fins": 17,
+     "lamps": 11,
+     "tilt_deg": 25,
+     "lamp": "amber"
+    }
+   ],
+   "louvres": [
+    {
+     "face": "top",
+     "at": [
+      15,
+      -150
+     ],
+     "shape": "chevron",
+     "len_m": 3.4,
+     "span_m": 4.6,
+     "w_m": 1.1,
+     "pitch_m": 0.34,
+     "slant_deg": 35
+    },
+    {
+     "face": "port",
+     "at": [
+      -138,
+      -6.0
+     ],
+     "shape": "slot",
+     "len_m": 5.0,
+     "span_m": 1.4,
+     "rake_m": 0.8,
+     "pitch_m": 0.4,
+     "slant_deg": 40
+    }
+   ],
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -121
+     ],
+     "size_m": 0.6,
+     "colour": "red",
+     "housing": true
+    },
+    {
+     "face": "bow",
+     "at": [
+      0,
+      0
+     ],
+     "size_m": 0.45,
+     "colour": "green"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      -118.0,
+      -116.6
+     ]
+    },
+    {
+     "chevron": {
+      "z_m": -128,
+      "sweep": 0.6,
+      "w_m": 1.3
+     }
+    }
+   ],
+   "logo": {
+    "at": [
+     0,
+     -132
+    ],
+    "size_m": 6.5
+   },
+   "lighting": {
+    "floods": [
+     {
+      "face": "port",
+      "at": [
+       -152,
+       -4
+      ],
+      "aim": "fwd"
+     }
+    ],
+    "auto_floods": {
+     "to_z_m": 140
+    }
+   },
+   "windows": [
+    {
+     "z_m": [
+      -166,
+      -124
+     ],
+     "rows_y_m": [
+      -8.0,
+      -4.5
+     ]
+    }
+   ]
+  },
+  "freighter_kelvane": {
+   "look": "kelvane",
+   "seed": 304,
+   "domes": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -152
+     ],
+     "r_m": 3.4,
+     "h_m": 0.9,
+     "straps": []
+    }
+   ],
+   "pods": [
+    {
+     "face": "top",
+     "at": [
+      22,
+      -146
+     ],
+     "len_m": 12.0,
+     "w_m": 2.6,
+     "h_m": 0.8
+    }
+   ],
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      36.8,
+      96
+     ],
+     "size_m": 0.4,
+     "colour": "amber"
+    },
+    {
+     "face": "top",
+     "at": [
+      20,
+      -128
+     ],
+     "size_m": 0.3,
+     "colour": "amber"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      -124.0,
+      -122.6
+     ]
+    }
+   ],
+   "logo": {
+    "at": [
+     0,
+     -134
+    ],
+    "size_m": 9.0
+   },
+   "lighting": {
+    "floods": [
+     {
+      "face": "top",
+      "at": [
+       20,
+       -156
+      ],
+      "aim": "fwd"
+     }
+    ],
+    "auto_floods": {
+     "to_z_m": 100
+    }
+   }
+  }
+ }
+}

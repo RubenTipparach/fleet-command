@@ -1,0 +1,1157 @@
+{
+ "_doc": "The paper chart, exported from mockup 1 (docs/mockups/game-flow.html, buildRoom, paperSheet, paperMesh, the drawn pieces) by tools/mockups/export_chart.mjs. Map units (1 unit = 5 cm), +Y up. Drawn by src/Game/Flow/ChartRoom.cs.",
+ "source": {
+  "page": "docs/mockups/game-flow.html",
+  "sha256": "910c8149dd72b8de551ccea81c6de527846109e0ca7aa4592de7038acf13ee73"
+ },
+ "sheet": {
+  "bounds": [
+   -3.3,
+   -3.166025,
+   46.8,
+   40.405118
+  ],
+  "print": [
+   -1.5,
+   -1.366025,
+   45,
+   38.605118
+  ],
+  "px_per_unit": 56,
+  "unit_m": 0.05,
+  "table_top": -0.03
+ },
+ "lights": {
+  "hemisphere": {
+   "sky": "#fff0dc",
+   "ground": "#6a1d18",
+   "intensity": 0.12
+  },
+  "sun": {
+   "colour": "#ffe2b8",
+   "intensity": 0.08,
+   "position": [
+    10,
+    20,
+    6
+   ]
+  },
+  "room": [
+   {
+    "kind": "point",
+    "colour": "#ffc98a",
+    "intensity": 0.45,
+    "position": [
+     21.75,
+     22.97,
+     -40.980454
+    ],
+    "range": 52,
+    "decay": 1.8
+   },
+   {
+    "kind": "point",
+    "colour": "#ffc98a",
+    "intensity": 0.45,
+    "position": [
+     -37.85,
+     22.97,
+     18.619546
+    ],
+    "range": 52,
+    "decay": 1.8
+   },
+   {
+    "kind": "point",
+    "colour": "#ffc98a",
+    "intensity": 0.45,
+    "position": [
+     21.75,
+     22.97,
+     78.219546
+    ],
+    "range": 52,
+    "decay": 1.8
+   },
+   {
+    "kind": "point",
+    "colour": "#ffc98a",
+    "intensity": 0.45,
+    "position": [
+     81.35,
+     22.97,
+     18.619546
+    ],
+    "range": 52,
+    "decay": 1.8
+   },
+   {
+    "kind": "spot",
+    "colour": "#ffdcae",
+    "intensity": 1.25,
+    "position": [
+     21.75,
+     32,
+     26.619546
+    ],
+    "angle_rad": 0.5,
+    "penumbra": 0.55,
+    "range": 0,
+    "decay": 0,
+    "target": [
+     21.75,
+     0,
+     18.619546
+    ],
+    "shadow": true
+   }
+  ],
+  "units": "three.js r147 legacy units: an intensity here is about pi times a later three.js one; the game sets its own energies by eye against the mockup's shots"
+ },
+ "drawn": {
+  "cloud:13:0": {
+   "file": "drawn/cloud_13_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud-shadow": {
+   "file": "drawn/cloud-shadow.png",
+   "foot": 1,
+   "aspect": 1
+  },
+  "cloud:19:0": {
+   "file": "drawn/cloud_19_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:13:1": {
+   "file": "drawn/cloud_13_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:13:2": {
+   "file": "drawn/cloud_13_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:7:1": {
+   "file": "drawn/storm_7_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "rock:3": {
+   "file": "drawn/rock_3.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:6": {
+   "file": "drawn/rock_6.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:7": {
+   "file": "drawn/rock_7.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:9": {
+   "file": "drawn/rock_9.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:5": {
+   "file": "drawn/rock_5.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:4": {
+   "file": "drawn/rock_4.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:11": {
+   "file": "drawn/rock_11.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:2": {
+   "file": "drawn/rock_2.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "cloud:7:2": {
+   "file": "drawn/cloud_7_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:7:0": {
+   "file": "drawn/cloud_7_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:4:0": {
+   "file": "drawn/cloud_4_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:4:1": {
+   "file": "drawn/cloud_4_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "sun:0": {
+   "file": "drawn/sun_0.png",
+   "foot": 0.96,
+   "aspect": 1
+  },
+  "rock:8": {
+   "file": "drawn/rock_8.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:10": {
+   "file": "drawn/rock_10.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:1": {
+   "file": "drawn/rock_1.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "rock:0": {
+   "file": "drawn/rock_0.png",
+   "foot": 0.816033,
+   "aspect": 1
+  },
+  "storm:17:1": {
+   "file": "drawn/storm_17_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:17:2": {
+   "file": "drawn/storm_17_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:21:0": {
+   "file": "drawn/cloud_21_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:16:2": {
+   "file": "drawn/storm_16_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:14:2": {
+   "file": "drawn/cloud_14_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:14:0": {
+   "file": "drawn/cloud_14_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:8:0": {
+   "file": "drawn/cloud_8_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:8:1": {
+   "file": "drawn/cloud_8_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:8:2": {
+   "file": "drawn/cloud_8_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:15:0": {
+   "file": "drawn/storm_15_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:10:1": {
+   "file": "drawn/cloud_10_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:8:1": {
+   "file": "drawn/storm_8_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:9:1": {
+   "file": "drawn/cloud_9_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:9:2": {
+   "file": "drawn/cloud_9_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:19:2": {
+   "file": "drawn/cloud_19_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:3:0": {
+   "file": "drawn/storm_3_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:3:1": {
+   "file": "drawn/storm_3_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:19:1": {
+   "file": "drawn/cloud_19_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:3:1": {
+   "file": "drawn/cloud_3_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:6:0": {
+   "file": "drawn/cloud_6_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:15:2": {
+   "file": "drawn/storm_15_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:2:1": {
+   "file": "drawn/cloud_2_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:5:1": {
+   "file": "drawn/cloud_5_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:5:2": {
+   "file": "drawn/cloud_5_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:5:1": {
+   "file": "drawn/storm_5_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:5:2": {
+   "file": "drawn/storm_5_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:3:2": {
+   "file": "drawn/cloud_3_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:3:0": {
+   "file": "drawn/cloud_3_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:5:0": {
+   "file": "drawn/storm_5_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:2:1": {
+   "file": "drawn/storm_2_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:2:2": {
+   "file": "drawn/storm_2_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:4:2": {
+   "file": "drawn/cloud_4_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:20:0": {
+   "file": "drawn/cloud_20_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:20:1": {
+   "file": "drawn/cloud_20_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:18:2": {
+   "file": "drawn/storm_18_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "sun:1": {
+   "file": "drawn/sun_1.png",
+   "foot": 0.96,
+   "aspect": 1
+  },
+  "cloud:21:1": {
+   "file": "drawn/cloud_21_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:16:0": {
+   "file": "drawn/storm_16_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:16:2": {
+   "file": "drawn/cloud_16_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:16:0": {
+   "file": "drawn/cloud_16_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:6:1": {
+   "file": "drawn/storm_6_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:6:2": {
+   "file": "drawn/storm_6_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:11:0": {
+   "file": "drawn/cloud_11_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:12:2": {
+   "file": "drawn/cloud_12_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:12:0": {
+   "file": "drawn/cloud_12_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:19:1": {
+   "file": "drawn/storm_19_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:19:2": {
+   "file": "drawn/storm_19_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:19:0": {
+   "file": "drawn/storm_19_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:11:1": {
+   "file": "drawn/cloud_11_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:9:2": {
+   "file": "drawn/storm_9_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:9:0": {
+   "file": "drawn/storm_9_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:9:1": {
+   "file": "drawn/storm_9_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:17:2": {
+   "file": "drawn/cloud_17_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:17:0": {
+   "file": "drawn/cloud_17_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:0:0": {
+   "file": "drawn/cloud_0_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:0:0": {
+   "file": "drawn/storm_0_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:0:1": {
+   "file": "drawn/cloud_0_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:0:1": {
+   "file": "drawn/storm_0_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:0:2": {
+   "file": "drawn/cloud_0_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:0:2": {
+   "file": "drawn/storm_0_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:1:0": {
+   "file": "drawn/cloud_1_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:1:0": {
+   "file": "drawn/storm_1_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:1:1": {
+   "file": "drawn/cloud_1_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:1:1": {
+   "file": "drawn/storm_1_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:1:2": {
+   "file": "drawn/cloud_1_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:1:2": {
+   "file": "drawn/storm_1_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:2:0": {
+   "file": "drawn/cloud_2_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:2:0": {
+   "file": "drawn/storm_2_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:2:2": {
+   "file": "drawn/cloud_2_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:3:2": {
+   "file": "drawn/storm_3_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:4:0": {
+   "file": "drawn/storm_4_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:4:1": {
+   "file": "drawn/storm_4_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:4:2": {
+   "file": "drawn/storm_4_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:5:0": {
+   "file": "drawn/cloud_5_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:6:0": {
+   "file": "drawn/storm_6_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:6:1": {
+   "file": "drawn/cloud_6_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:6:2": {
+   "file": "drawn/cloud_6_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:7:0": {
+   "file": "drawn/storm_7_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:7:1": {
+   "file": "drawn/cloud_7_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:7:2": {
+   "file": "drawn/storm_7_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:8:0": {
+   "file": "drawn/storm_8_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:8:2": {
+   "file": "drawn/storm_8_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:9:0": {
+   "file": "drawn/cloud_9_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:10:0": {
+   "file": "drawn/cloud_10_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:10:0": {
+   "file": "drawn/storm_10_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:10:1": {
+   "file": "drawn/storm_10_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:10:2": {
+   "file": "drawn/cloud_10_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:10:2": {
+   "file": "drawn/storm_10_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:11:0": {
+   "file": "drawn/storm_11_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:11:1": {
+   "file": "drawn/storm_11_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:11:2": {
+   "file": "drawn/cloud_11_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:11:2": {
+   "file": "drawn/storm_11_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:12:0": {
+   "file": "drawn/storm_12_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:12:1": {
+   "file": "drawn/cloud_12_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:12:1": {
+   "file": "drawn/storm_12_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:12:2": {
+   "file": "drawn/storm_12_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:13:0": {
+   "file": "drawn/storm_13_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:13:1": {
+   "file": "drawn/storm_13_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:13:2": {
+   "file": "drawn/storm_13_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:14:0": {
+   "file": "drawn/storm_14_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:14:1": {
+   "file": "drawn/cloud_14_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:14:1": {
+   "file": "drawn/storm_14_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:14:2": {
+   "file": "drawn/storm_14_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:15:0": {
+   "file": "drawn/cloud_15_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:15:1": {
+   "file": "drawn/cloud_15_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:15:1": {
+   "file": "drawn/storm_15_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:15:2": {
+   "file": "drawn/cloud_15_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:16:1": {
+   "file": "drawn/cloud_16_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:16:1": {
+   "file": "drawn/storm_16_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:17:0": {
+   "file": "drawn/storm_17_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:17:1": {
+   "file": "drawn/cloud_17_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "cloud:18:0": {
+   "file": "drawn/cloud_18_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:18:0": {
+   "file": "drawn/storm_18_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:18:1": {
+   "file": "drawn/cloud_18_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:18:1": {
+   "file": "drawn/storm_18_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:18:2": {
+   "file": "drawn/cloud_18_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:20:0": {
+   "file": "drawn/storm_20_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:20:1": {
+   "file": "drawn/storm_20_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:20:2": {
+   "file": "drawn/cloud_20_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:20:2": {
+   "file": "drawn/storm_20_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:21:0": {
+   "file": "drawn/storm_21_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "storm:21:1": {
+   "file": "drawn/storm_21_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:21:2": {
+   "file": "drawn/cloud_21_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:21:2": {
+   "file": "drawn/storm_21_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:22:0": {
+   "file": "drawn/cloud_22_0.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:22:0": {
+   "file": "drawn/storm_22_0.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:22:1": {
+   "file": "drawn/cloud_22_1.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:22:1": {
+   "file": "drawn/storm_22_1.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "cloud:22:2": {
+   "file": "drawn/cloud_22_2.png",
+   "foot": 0.835083,
+   "aspect": 1.28
+  },
+  "storm:22:2": {
+   "file": "drawn/storm_22_2.png",
+   "foot": 0.97,
+   "aspect": 1.04918
+  },
+  "sun:2": {
+   "file": "drawn/sun_2.png",
+   "foot": 0.96,
+   "aspect": 1
+  }
+ },
+ "palette": 23,
+ "planets": {
+  "kinds": {
+   "Halcyon": "terran",
+   "Meridian": "ice",
+   "Aster": "gas",
+   "Vahr": "desert",
+   "Kesh Prime": "lava",
+   "Calder": "terran",
+   "Ouro": "desert",
+   "Tessaly": "gas",
+   "Sabine": "moon",
+   "Selene": "ice"
+  },
+  "palettes": {
+   "terran": {
+    "ground": [
+     "#9fc86a",
+     "#5f9a4a",
+     "#3d6e3c",
+     "#24452c"
+    ],
+    "sea": [
+     "#7fb8e0",
+     "#4a86c0",
+     "#2f5f96",
+     "#1b3a66"
+    ],
+    "cloud": "#f4efe2",
+    "caps": true,
+    "clouds": 0.45,
+    "atmo": "#9fd0ff",
+    "land": 0.52
+   },
+   "desert": {
+    "ground": [
+     "#f0c98a",
+     "#d79a5a",
+     "#b06a3c",
+     "#6e3c24"
+    ],
+    "dune": true,
+    "caps": false,
+    "clouds": 0.12,
+    "atmo": "#ffcf9a"
+   },
+   "ice": {
+    "ground": [
+     "#f4f8fb",
+     "#c8dcec",
+     "#93b4d0",
+     "#5a7ea4"
+    ],
+    "caps": true,
+    "clouds": 0.25,
+    "atmo": "#d8f0ff",
+    "crack": true
+   },
+   "lava": {
+    "ground": [
+     "#6a5048",
+     "#4a3632",
+     "#2f2220",
+     "#1a1212"
+    ],
+    "glow": "#ff8a2a",
+    "caps": false,
+    "clouds": 0,
+    "atmo": "#ff9a5a"
+   },
+   "gas": {
+    "bands": [
+     "#f8e8c6",
+     "#ecc893",
+     "#d8a26c",
+     "#c08656",
+     "#f4dcae",
+     "#e2b884"
+    ],
+    "caps": false,
+    "clouds": 0,
+    "atmo": "#f6dcb4"
+   },
+   "moon": {
+    "ground": [
+     "#d4cfc6",
+     "#a9a399",
+     "#7f7a72",
+     "#55514c"
+    ],
+    "craters": true,
+    "caps": false,
+    "clouds": 0,
+    "atmo": null
+   }
+  },
+  "lattice": "made in code: 256 x 256 Mulberry32 values from seed 0x5eed1e57, green the value 37 across and 17 down (planet-shader.js latticeTex)",
+  "pixels": 220,
+  "steps": 5,
+  "shader": "src/Game/Flow/planet.gdshader, a port of docs/mockups/lib/planet-shader.js"
+ },
+ "sprite_tint": "#e8e0d2",
+ "materials": {
+  "table_wood_0": {
+   "graph": "table_wood",
+   "repeat": [
+    1,
+    1
+   ],
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0.35,
+   "env": 0.05
+  },
+  "table_wood_1": {
+   "graph": "table_wood",
+   "repeat": [
+    1,
+    1
+   ],
+   "tint": [
+    0.55,
+    0.5,
+    0.46
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0.2,
+   "env": 0.05
+  },
+  "carpet_red_0": {
+   "graph": "carpet_red",
+   "repeat": [
+    12.4,
+    12.4
+   ],
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0,
+   "env": 0.1
+  },
+  "wall_green_rustic_0": {
+   "graph": "wall_green_rustic",
+   "repeat": [
+    6.2,
+    2.8
+   ],
+   "tint": [
+    1,
+    1,
+    1
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0,
+   "env": 0.1
+  },
+  "table_wood_2": {
+   "graph": "table_wood",
+   "repeat": [
+    6.2,
+    0.95
+   ],
+   "tint": [
+    0.5,
+    0.41,
+    0.34
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0.15,
+   "env": 0.1
+  },
+  "table_wood_3": {
+   "graph": "table_wood",
+   "repeat": [
+    6.2,
+    0.07
+   ],
+   "tint": [
+    0.66,
+    0.5412,
+    0.4488
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0.15,
+   "env": 0.1
+  },
+  "table_wood_4": {
+   "graph": "table_wood",
+   "repeat": [
+    6.2,
+    0.16
+   ],
+   "tint": [
+    0.62,
+    0.5084,
+    0.4216
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0.15,
+   "env": 0.1
+  },
+  "table_wood_5": {
+   "graph": "table_wood",
+   "repeat": [
+    6.2,
+    0.14
+   ],
+   "tint": [
+    0.45,
+    0.369,
+    0.306
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0.15,
+   "env": 0.1
+  },
+  "table_wood_6": {
+   "graph": "table_wood",
+   "repeat": [
+    0.2,
+    1.69
+   ],
+   "tint": [
+    0.58,
+    0.4756,
+    0.3944
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0.15,
+   "env": 0.1
+  },
+  "table_wood_7": {
+   "graph": "table_wood",
+   "repeat": [
+    0.2,
+    2.8
+   ],
+   "tint": [
+    0.5,
+    0.41,
+    0.34
+   ],
+   "roughness": 1,
+   "metalness": 1,
+   "normal_scale": 1,
+   "clearcoat": 0.15,
+   "env": 0.1
+  }
+ }
+}

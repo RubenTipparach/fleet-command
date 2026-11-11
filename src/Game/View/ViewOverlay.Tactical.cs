@@ -33,10 +33,7 @@ public sealed partial class ViewOverlay
         f.Draw(this, title.ToUpperInvariant(), r.Position.X + 16, r.Position.Y + 26, 16, C.Sky, HorizontalAlignment.Left, r.Size.X - 60, 600, 1);
         var xr = new Rect2(r.End.X - 34, r.Position.Y + 8, 26, 26);
         HitState xs = _ui.Reg($"v.{id}.x", xr, _ => close(), null, new Tip("Close"));
-        Color xf = xs.Hot ? C.Alert : C.Signal, xi = _x.Kit.Style.InkOn(xf);
-        _x.Kit.Knob(this, xr.GetCenter(), 13, xf);
-        DrawLine(xr.Position + new Vector2(8, 8), xr.Position + new Vector2(18, 18), xi, 2.6f, true);
-        DrawLine(xr.Position + new Vector2(18, 8), xr.Position + new Vector2(8, 18), xi, 2.6f, true);
+        KeyFace.Close(_x.Kit, this, xr, xs.Hot);
         return r;
     }
 
@@ -47,11 +44,11 @@ public sealed partial class ViewOverlay
         Ship? t = b.TargetOf(s) is { } lt && lt.Side != s.Side ? lt : null;
         string aim = hi.Aim ?? s.Aim;
         List<Mount> list = hi.Mount is int mi ? s.Mounts.Where(m => m.Index == mi).ToList() : s.Mounts.Where(m => !m.Weapon.IsPointDefence).ToList();
-        Rect2 r = Sheet(f, "hi", 150 + list.Count * 30, $"Hit details · aimed at {Strike.Name(aim, t)} · {(t != null ? t.Name : "no target")}", () => _x.State.HitInfo = null);
+        Rect2 r = Sheet(f, "hi", 150 + list.Count * 30, $"Hit details · aimed at {Strike.Name(aim, t)} · {(t != null ? Aiming.ContactName(B, t) : "no target")}", () => _x.State.HitInfo = null);
         float lx = r.Position.X + 16, lw = r.Size.X - 32, y = r.Position.Y + 54;
         Exposure? ex = t != null ? b.ExposureFrom(t, s) : null;
         if (t != null && ex != null)
-            f.DrawRich(this, new[] { ($"{t.Name}'s {Rules.Facings[Rules.FacingFrom(t, s.X, s.Z)]} facing is toward you. On the chopping block: ", C.Lilac),
+            f.DrawRich(this, new[] { ($"{Aiming.ContactName(B, t)}'s {Rules.Facings[Rules.FacingFrom(t, s.X, s.Z)]} facing is toward you. On the chopping block: ", C.Lilac),
                 ($"{string.Join(", ", ex.Sys.Select(k => Strike.Name(k, t)))}; {ex.Mounts.Count} weapon mount{(ex.Mounts.Count == 1 ? "" : "s")}", C.Text) }, lx, y, 17, lw);
         else f.Draw(this, "LOCK A TARGET TO SEE WHERE YOUR HITS CAN LAND", lx, y, 15, C.Lilac, HorizontalAlignment.Left, lw, 600, 1);
         y += 26;

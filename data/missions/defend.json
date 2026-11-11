@@ -17,7 +17,8 @@
      "count": 3,
      "role": "neutral",
      "label": "Convoy",
-     "tier": 1
+     "tier": 1,
+     "hull": "freighter"
     },
     {
      "id": "raiders",

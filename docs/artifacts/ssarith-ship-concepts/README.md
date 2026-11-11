@@ -136,3 +136,22 @@
   `1793936019-47ca`. All six rebaked: every flood 2.4 m off the plating, 22 degrees into it, a 120 degree cone (one data
   setting, `defaults.flood`); the cruiser and carrier at 3072 px (6.4 cm a pixel). Page 14.5 MB. The same ships now fly in
   the game (change `ssarith-ships-engine`).
+- 2026-11-06, cloud session (owner: "1/2 number of hull lights, 2x size of hull lights, only need 1 column of ligtts on top
+  and bottom of huull"): version 25, version id `1793949122-a07c`. All six rebaked with half the floods: one row down the
+  centreline on top and one on the belly (`auto_floods.top_x_frac` 0, a lamp on the centreline is not mirrored), every
+  44 m instead of every 22 m, each standing 4.8 m off the plating at 6400 W so its pool is about twice as wide; the placed
+  top and belly floods dropped, the flank ones kept. Page 14.5 MB. Exported to the game again.
+- 2026-11-06, cloud session (owner: "I dont think we need the light source dots for hul lights, just nav lights are good
+  enough"): version 26, version id `1793951356-d4bb`. The glowing dots at the floods (hull, belly and logo) are gone; a
+  flood shows only by the light it throws on the plating. Strobes, beacons and position lights keep theirs. The game
+  already drew no lamp at a flood (ShipSkin), so it needed no change.
+- 2026-11-06, cloud session (Kelvane ships v6): version 26 republished as artifact version 27, version id `1793981354-efcc`,
+  its windows drawn by the shared `docs/mockups/lib/baked-ship.js` (panes) instead of its own copy; its rooms and bays
+  render identical to version 26.
+- 2026-11-06, cloud session (owner: "can we have the rooms in the windows be more yellow/orange tinted like they are well
+  lit for all ships?"): version 26 with the shared warm room palette (`lib/ship-rooms.js`, `lib/baked-ship.js`), published as
+  artifact version 28, version id `1794009085-7277`. The game's `pane.gdshader` and `ship_rooms.gdshaderinc` carry the same
+  palette.
+- 2026-11-07: version 26 unchanged to look at (its ship data and static shots checked identical), its damageable baked
+  ships moved into the shared `docs/mockups/lib/baked-fleet.js` for the Kelvane page and the exporter (change
+  `kelvane-ships-engine`). Published as artifact version 29, version id `1794033910-d3a7`.

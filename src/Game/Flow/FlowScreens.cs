@@ -165,26 +165,50 @@ public sealed partial class FactionView : Control
     }
 }
 
-/// <summary>The faction screen (mockup 1's, docs/mockups/game-flow.html): the playable factions' badges floating over a walnut
-/// table (FactionStage, under this panel), each named on the table's edge; the one under the pointer half lit, the picked
-/// one lit full, with New campaign and Continue in a sheet below.</summary>
+/// <summary>The faction screen (mockup 1's, docs/mockups/game-flow.html): every faction's badge floating over a walnut table
+/// in a grid (FactionStage, under this panel; owner, 2026-11-08: "arange emblems in to a grid for selecting new campaign"),
+/// each named under its badge; the one under the pointer half lit, the picked one lit full, with New campaign and Continue
+/// in a sheet below. A faction is picked only when it is playable with its console skin in the game; the rest show "Not in
+/// the game yet". On a phone the badges are too small to tap, so a grid of keys (each badge's picture and short name) picks,
+/// as the page's .fgrid (CLAUDE.md section 7: touch targets 44 px or more).</summary>
 public sealed partial class FactionScreen : FlowPanel
 {
     public FactionStage? Stage;
-    /// <summary>Each playable faction's emblem (also the transport station's portrait of who holds a ship).</summary>
+    /// <summary>Each faction's emblem picture: the finished badges' renders, and the placeholder emblems (mockup 36,
+    /// tools/factions/placeholder_emblems.py). Also the transport station's portrait of who holds a ship.</summary>
     internal static readonly Dictionary<string, string> Emblem = new()
     {
         ["concord"] = "res://assets/emblems/concord/b-e27-angle.png", ["krai"] = "res://assets/emblems/krai/kc-angle.png", ["ssarith"] = "res://assets/emblems/ssarith/sd-angle.png",
+        ["kelvane"] = "res://assets/emblems/kelvane/ka-angle.png",
+        ["axiom"] = "res://assets/emblems/axiom/placeholder.svg", ["exponent"] = "res://assets/emblems/exponent/placeholder.svg",
+        ["redtithe"] = "res://assets/emblems/redtithe/placeholder.svg", ["vos"] = "res://assets/emblems/vos/placeholder.svg",
+        ["kethran"] = "res://assets/emblems/kethran/placeholder.svg", ["tarsine"] = "res://assets/emblems/tarsine/placeholder.svg",
+        ["aelith"] = "res://assets/emblems/aelith/placeholder.svg", ["ombrai"] = "res://assets/emblems/ombrai/placeholder.svg",
+        ["vhorr"] = "res://assets/emblems/vhorr/placeholder.svg",
     };
+    private static readonly Dictionary<string, Texture2D?> EmblemTex = new();
+    /// <summary>The window in real pixels: the flow is drawn on a 1500 x 1080 canvas stretched to the window, so a phone is
+    /// told by its pixels, not the canvas's. A headless run has no real window (Godot reports 64 x 64 for it and for the
+    /// root viewport), so it takes the canvas's own size: the desktop layout, which the scripted captain plays.</summary>
+    private Vector2 Physical => DisplayServer.GetName() == "headless" ? Size : DisplayServer.WindowGetSize();
+    /// <summary>Canvas units per real pixel.</summary>
+    private float PerPx => Size.X / Math.Max(1, Physical.X);
+    /// <summary>A phone's screen: the badges are too small to tap, so the grid of keys picks (the page's narrow query,
+    /// max-width 920 px or max-height 520 px).</summary>
+    private bool Narrow => Physical.X <= 920 || Physical.Y <= 520;
+
+    private bool CanPlay(CampFaction fac) => fac.Playable && X.Data.Factions.TryGetValue(fac.Id, out Faction? bf) && bf.Skin != null;
 
     protected override void DrawPanel()
     {
         Ui.Reg("fac.block", new Rect2(Vector2.Zero, Size));
         Text("CHOOSE YOUR FACTION", 36, 64, 34, C.Sky, HorizontalAlignment.Left, Size.X - 300, 700, 3);
-        var playable = F.Data.Factions.Values.Where(f => f.Playable).ToList();
         int hover = -1;
         if (Stage != null)
         {
+            // unfinished factions only when Options turns them on (owner, 2026-11-09)
+            bool all = GameSettings.UnfinishedFactions;
+            Stage.Keep = id => all || F.Data.Factions.TryGetValue(id, out CampFaction? cf) && CanPlay(cf);
             Vector2 mp = GetLocalMousePosition();
             Stage.Pointer = new Vector2(mp.X / Math.Max(1, Size.X) * 2 - 1, 1 - mp.Y / Math.Max(1, Size.Y) * 2);
             Stage.Picked = F.Picked;
@@ -192,24 +216,28 @@ public sealed partial class FactionScreen : FlowPanel
             for (int i = 0; i < Stage.Factions.Count; i++)
             {
                 string id = Stage.Factions[i];
-                CampFaction? fac = playable.FirstOrDefault(f => f.Id == id);
-                if (fac == null || Stage.ScreenRect(i, Size) is not { } r) continue;
-                bool skin = X.Data.Factions.TryGetValue(fac.Id, out Faction? bf) && bf.Skin != null;
-                HitState st = Ui.Reg($"fac.{fac.Id}", r, skin ? _ => F.Picked = fac.Id : null, null, skin ? null : new Tip(fac.Name, new (string, string, Color?)[] { ("In the game", "not yet: its console skin is to build", null) }));
-                if (st.Hot) hover = i;
+                if (!F.Data.Factions.TryGetValue(id, out CampFaction? fac) || Stage.ScreenRect(i, Size) is not { } r) continue;
+                bool play = CanPlay(fac);
+                if (!Narrow)
+                {
+                    HitState st = Ui.Reg($"fac.{fac.Id}", r, play ? _ => F.Picked = fac.Id : null, null, play ? null : new Tip(fac.Name, new (string, string, Color?)[] { ("In the game", "not yet: its console skin is to build", null) }));
+                    if (st.Hot) hover = i;
+                }
                 bool picked = F.Picked == fac.Id;
-                // the name on the table's edge, under its badge
-                float ly = r.End.Y + r.Size.Y * 0.62f;
-                Text(fac.Name.ToUpperInvariant(), r.GetCenter().X, ly, 24, picked ? new Color(fac.Color).Lightened(0.35f) : C.Text, HorizontalAlignment.Center, r.Size.X * 1.6f, 700, 2);
-                if (!skin) Lbl("Not in the game yet", r.GetCenter().X, ly + 24, r.Size.X * 1.6f, null, HorizontalAlignment.Center);
+                if (Narrow) continue;
+                // the name just under its badge
+                float ly = r.End.Y + 4;
+                Text(fac.Name.ToUpperInvariant(), r.GetCenter().X, ly + 18, 20, picked ? new Color(fac.Color).Lightened(0.35f) : play ? C.Text : C.Lilac, HorizontalAlignment.Center, r.Size.X * 2.2f, 700, 2);
+                if (!play) Lbl("Not in the game yet", r.GetCenter().X, ly + 38, r.Size.X * 2.2f, null, HorizontalAlignment.Center, 13);
             }
+            if (Narrow) KeyGrid(Stage.Factions.Where((_, i) => Stage.Shown(i)).ToList());
             Stage.Hover = hover;
         }
         // the picked faction's keys, in a sheet below the table
-        if (playable.FirstOrDefault(f => f.Id == F.Picked) is { } pf)
+        if (F.Data.Factions.Values.FirstOrDefault(f => f.Id == F.Picked) is { } pf && CanPlay(pf))
         {
             float w = Math.Min(560, Size.X - 40), h = 190;
-            Rect2 b = Sheet(new Rect2((Size.X - w) / 2, Size.Y - h - 24, w, h), pf.Name);
+            Rect2 b = Sheet(Narrow && Size.X > Size.Y ? new Rect2(Size.X - w - 20, Size.Y - h - 20, w, h) : new Rect2((Size.X - w) / 2, Size.Y - h - 24, w, h), pf.Name);
             Text(F.HasSave(pf.Id) ? "A campaign is saved for this faction." : "No campaign saved for this faction yet.", b.Position.X, b.Position.Y + 22, 17, C.Lilac, HorizontalAlignment.Left, b.Size.X, 600);
             float bw = (b.Size.X - 12) / 2, by = b.End.Y - 52;
             Button($"fac.{pf.Id}.cont", new Rect2(b.Position.X, by, bw, 48), "Continue", () => _ = F.ContinueCampaign(pf.Id), dis: !F.HasSave(pf.Id));
@@ -217,6 +245,42 @@ public sealed partial class FactionScreen : FlowPanel
         }
         Button("fac.back", new Rect2(Size.X - 230, 30, 200, 48), "Back", () => _ = F.Show(FlowScreen.Menu));
         if (F.Msg.Length > 0) Text(F.Msg, Size.X / 2, 110, 19, C.Caution, HorizontalAlignment.Center, Size.X - 500);
+    }
+
+    // The phone's grid of keys, five across: each faction's emblem and short name, the picked one in the pressed key, one not
+    // yet in the game dimmed and not pickable. Along the bottom left in landscape, under the title in portrait.
+    private void KeyGrid(IReadOnlyList<string> ids)
+    {
+        // sized in real pixels (the page's .fgrid): keys 52 px tall or more, the grid 400 px wide in landscape, the width in portrait
+        const int Cols = 5;
+        float k = PerPx, gap = 4 * k;
+        bool tall = Size.Y > Size.X;
+        float gw = tall ? Size.X - 16 * k : Math.Min(400 * k, Size.X * 0.46f), kw = (gw - (Cols - 1) * gap) / Cols, kh = Math.Max(52 * k, kw * 0.9f);
+        int rows = (ids.Count + Cols - 1) / Cols;
+        float x0 = 8 * k, y0 = tall ? 108 * k : Size.Y - 8 * k - rows * kh - (rows - 1) * gap;
+        for (int i = 0; i < ids.Count; i++)
+        {
+            if (!F.Data.Factions.TryGetValue(ids[i], out CampFaction? fac)) continue;
+            bool play = CanPlay(fac), picked = F.Picked == fac.Id;
+            var r = new Rect2(x0 + i % Cols * (kw + gap), y0 + i / Cols * (kh + gap), kw, kh);
+            HitState st = Ui.Reg($"fac.{fac.Id}", r, play ? _ => F.Picked = fac.Id : null, null, play ? null : new Tip(fac.Name, new (string, string, Color?)[] { ("In the game", "not yet: its console skin is to build", null) }));
+            Kit.Piece(this, "button." + (picked || st.Down ? "pressed" : st.Hot && play ? "hover" : "idle"), r, play ? 1 : 0.45f);
+            float isz = kh - 18 * k;
+            if (Tex(fac.Id) is { } tex)
+            {
+                float q = Math.Min(isz / tex.GetWidth(), isz / tex.GetHeight());
+                var sz = new Vector2(tex.GetWidth(), tex.GetHeight()) * q;
+                DrawTextureRect(tex, new Rect2(new Vector2(r.GetCenter().X - sz.X / 2, r.Position.Y + 3 * k), sz), false, play ? Colors.White : new Color(1, 1, 1, 0.5f));
+            }
+            Text(fac.Short, r.GetCenter().X, r.End.Y - 4 * k, (int)Math.Round(10 * k), play ? C.Text : C.Lilac, HorizontalAlignment.Center, kw - 4, 600);
+        }
+    }
+
+    /// <summary>A faction's emblem picture, loaded once (the map's standing icons use it too).</summary>
+    internal static Texture2D? Tex(string id)
+    {
+        if (!EmblemTex.TryGetValue(id, out Texture2D? t)) EmblemTex[id] = t = Emblem.TryGetValue(id, out string? path) ? GD.Load<Texture2D>(path) : null;
+        return t;
     }
 }
 
@@ -307,29 +371,23 @@ public sealed partial class SkirmishScreen : FlowPanel
     private static string Slug(string s) => new string(s.ToLowerInvariant().Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
 }
 
-/// <summary>The mission strip over the battle: the mission's name and its objectives, each ticked once it is met (read live
-/// by MissionRun.MetNow, the same rule the debrief grades by). Its frame stands over the battle with nothing filled behind
-/// the objectives (owner, 2026-11-06: "make background transparent on goal"); Withdraw is in the battle's menu.</summary>
+/// <summary>The mission strip over the battle: the mission's name and its goals, each ticked once it is met (the console's
+/// Goals, read live by MissionRun.MetNow, the same rule the debrief grades by). Its frame stands over the battle with nothing
+/// filled behind the goals (owner, 2026-11-06: "make background transparent on goal"); Withdraw is in the battle's menu. Its X
+/// shuts it and Comms shows it again (owner, 2026-11-06: "add close button to goals, and put them in comms panel").</summary>
 public sealed partial class MissionStrip : FlowPanel
 {
     protected override void DrawPanel()
     {
         MissionPlan? p = F.Plan;
-        if (p == null || Camp == null) return;
+        if (p == null || X.State.Goals is not { } goals) return;
         Rect2 b = Frame(new Rect2(Vector2.Zero, Size), p.Scenario.Name, false);
-        var met = MissionRun.MetNow(Camp, p, X.Battle);
+        var xr = new Rect2(b.End.X - 26, b.Position.Y + 2, 26, 26);
+        KeyFace.Close(Kit, this, xr, Ui.Reg("goals.x", xr, _ => X.State.GoalsShown = false, null, new Tip("Close")).Hot);
         float y = b.Position.Y + 20;
-        foreach (MissionObjective o in p.Battle.Objectives)
+        foreach (GoalLine g in goals())
         {
-            bool done = met.GetValueOrDefault(o.Id);
-            Color ink = done ? C.Accord : o.Primary ? C.Text : C.Lilac;
-            var c = new Vector2(b.Position.X + 6, y - 6);
-            if (done) { DrawLine(c + new Vector2(-4, 0), c + new Vector2(-1, 3), C.Accord, 2.5f, true); DrawLine(c + new Vector2(-1, 3), c + new Vector2(5, -4), C.Accord, 2.5f, true); }
-            else DrawCircle(c, 4, o.Primary ? C.Sky : C.Lilac);
-            // a dark edge under the text, so it reads over a bright nebula with nothing behind it
-            string t = o.Text.Eval(new OfferScope(Camp, p.Mission)) + (o.Primary ? "" : " (bonus)");
-            Text(t, b.Position.X + 19, y + 1, 17, new Color(0, 0, 0, 0.8f), HorizontalAlignment.Left, b.Size.X - 18, 600);
-            Text(t, b.Position.X + 18, y, 17, ink, HorizontalAlignment.Left, b.Size.X - 18, 600);
+            Goal(g, b.Position.X, y, b.Size.X - 36, true);
             y += 24;
         }
     }
@@ -340,8 +398,9 @@ public sealed partial class DebriefScreen : FlowPanel
 {
     protected override void DrawPanel()
     {
-        // dimmed, not hidden: the battle (or the map) stays behind the debrief
-        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.5f));
+        // on black: the battle fades to black as it ends, so the debrief stays on the black it faded to (owner, 2026-11-06:
+        // "I think this background should be black. Because you faded to black")
+        DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black);
         Ui.Reg("db.block", new Rect2(Vector2.Zero, Size));
         Debrief? d = F.Last;
         if (d == null) return;

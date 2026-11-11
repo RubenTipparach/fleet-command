@@ -30,7 +30,14 @@ public static class Prewarm
     private static readonly string[] Textures =
     {
         "res://assets/scenes/faction/table.glb", "res://assets/scenes/faction/concord.glb", "res://assets/scenes/faction/krai.glb", "res://assets/scenes/faction/ssarith.glb",
+        "res://assets/scenes/faction/kelvane.glb", "res://assets/scenes/faction/axiom.glb", "res://assets/scenes/faction/exponent.glb",
+        "res://assets/scenes/faction/redtithe.glb", "res://assets/scenes/faction/vos.glb", "res://assets/scenes/faction/kethran.glb",
+        "res://assets/scenes/faction/tarsine.glb", "res://assets/scenes/faction/aelith.glb", "res://assets/scenes/faction/ombrai.glb",
+        "res://assets/scenes/faction/vhorr.glb",
     };
+
+    /// <summary>How many files the loader's threads hold at once (Run, step 1).</summary>
+    private const int MaxInFlight = 4;
 
     /// <summary>Loads and warms everything; <paramref name="report"/> gets the progress (0 to 1) and the step's name.</summary>
     public static async Task Run(Node host, GameData data, Action<float, string> report)
@@ -41,21 +48,28 @@ public static class Prewarm
         // 1. the ships and pictures, on the loader's threads (0 to 0.6)
         List<string> ships = ShipPaths(data);
         var all = ships.Concat(Textures.Where(p => ResourceLoader.Exists(p))).ToList();
-        foreach (string p in all) ResourceLoader.LoadThreadedRequest(p);
+        // A few at a time, never all at once: with every file requested together (77 on 2026-11-09) the loader's threads all
+        // waited on textures queued behind them, and the boot hung at 0 % for good (the owner's play.bat, 2026-11-09).
         var progress = new Godot.Collections.Array();
-        while (true)
+        int next = 0;
+        var flying = new List<string>();
+        var finished = new HashSet<string>();
+        while (finished.Count < all.Count)
         {
-            float sum = 0;
-            int done = 0;
-            foreach (string p in all)
+            while (flying.Count < MaxInFlight && next < all.Count)
+            {
+                ResourceLoader.LoadThreadedRequest(all[next]);
+                flying.Add(all[next++]);
+            }
+            float part = 0;
+            foreach (string p in flying.ToList())
             {
                 ResourceLoader.ThreadLoadStatus st = ResourceLoader.LoadThreadedGetStatus(p, progress);
                 bool fin = st is ResourceLoader.ThreadLoadStatus.Loaded or ResourceLoader.ThreadLoadStatus.Failed or ResourceLoader.ThreadLoadStatus.InvalidResource;
-                sum += fin ? 1 : progress.Count > 0 ? (float)progress[0] : 0;
-                if (fin) done++;
+                if (fin) { flying.Remove(p); finished.Add(p); }
+                else part += progress.Count > 0 ? (float)progress[0] : 0;
             }
-            report(0.6f * sum / Math.Max(1, all.Count), $"Loading ships and insignia ({done} of {all.Count})");
-            if (done == all.Count) break;
+            report(0.6f * (finished.Count + part) / Math.Max(1, all.Count), $"Loading ships and insignia ({finished.Count} of {all.Count})");
             await Frame();
         }
         var scenes = ships.Select(p => ResourceLoader.LoadThreadedGet(p) as PackedScene).Where(s => s != null).Cast<PackedScene>().ToList();

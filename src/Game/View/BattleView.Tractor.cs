@@ -1,8 +1,8 @@
 // BattleView.Tractor: the tractor-and-craft package in 3D, after the battle console mockup's view (simple geometry, as the
 // mockup draws these): a tractor beam is a pale line from holder to held, brighter as the grip tightens; fighters and
 // disguised shuttles are small lights (a caught shuttle goes up in a puff; a detonation's fireball comes with its hit);
-// a mine is a glow, dim amber while arming and bright once armed; the scene's asteroids are lumpy grey-brown rocks at
-// their radius. View only: the simulation never reads it. Sizes are scene units (MPerU: 1 u is 100 m).
+// a mine is a glow, dim amber while arming and bright once armed; the scene's asteroids are procedural rocks (asteroid.gdshader) at
+// their radius. View only: the simulation never reads it. Sizes are scene units (MPerU: 1 u is 1 km).
 using System;
 using System.Collections.Generic;
 using FleetCommand.Data;
@@ -89,7 +89,7 @@ public sealed partial class BattleView
 
     private static void Tint(MeshInstance3D m, Color c) => ((StandardMaterial3D)m.MaterialOverride).AlbedoColor = c;
 
-    // A new battle: the pools are emptied and the scene's rocks made, each a squashed ball with a few lumps on it,
+    // A new battle: the pools are emptied and the scene's rocks made, each a procedural asteroid (Asteroids),
     // its shape fixed by its place in the list so a restart draws the same rocks.
     private void TractorRebuild(Battle b)
     {
@@ -98,20 +98,15 @@ public sealed partial class BattleView
         _trBeams.Clear(); _trDots.Clear(); _trCraftSeen.Clear();
         _trRoot = new Node3D { Name = "TractorFx" };
         AddChild(_trRoot);
-        var rock = new StandardMaterial3D { AlbedoColor = new Color("#7a6f63"), Roughness = 0.95f };
         for (int i = 0; i < b.Rocks.Count; i++)
         {
             RockDef r = b.Rocks[i];
             float rad = (float)(r.RadiusM / MPerU);
             var holder = new Node3D { Position = new Vector3((float)(r.XM / MPerU), 0, (float)(r.ZM / MPerU)), RotationDegrees = new Vector3(i * 23 % 40, i * 67 % 360, i * 31 % 30) };
-            var rng = new RandomNumberGenerator { Seed = (ulong)(1000 + i) };
-            holder.AddChild(new MeshInstance3D { Mesh = new SphereMesh { Radius = 1, Height = 2, RadialSegments = 12, Rings = 6 }, MaterialOverride = rock, Scale = new Vector3(rad, rad * 0.75f, rad * 0.9f) });
-            for (int k = 0; k < 5; k++)
-            {
-                float a = rng.RandfRange(0, Mathf.Tau), e = rng.RandfRange(-0.6f, 0.6f), s = rad * rng.RandfRange(0.35f, 0.6f);
-                var at = new Vector3(Mathf.Cos(a) * Mathf.Cos(e), Mathf.Sin(e) * 0.75f, Mathf.Sin(a) * Mathf.Cos(e)) * rad * 0.7f;
-                holder.AddChild(new MeshInstance3D { Mesh = new SphereMesh { Radius = 1, Height = 2, RadialSegments = 8, Rings = 4 }, MaterialOverride = rock, Position = at, Scale = Vector3.One * s });
-            }
+            // a procedural asteroid (Asteroids, asteroid.gdshader), its shape from its place in the list
+            MeshInstance3D rock = Asteroids.Make(1000 + i);
+            rock.Scale = new Vector3(rad, rad * 0.8f, rad * 0.9f);
+            holder.AddChild(rock);
             _trRoot.AddChild(holder);
         }
     }

@@ -58,6 +58,10 @@ public static class Fx
         var p = new CpuParticles3D
         {
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+            // not emitting until it stands where it was asked to: a new emitter already emits, and a burst that went off as
+            // it was added put every particle at the battle's origin, not at the hit (owner, 2026-11-06: "missing explosions
+            // when weapon impacts")
+            Emitting = false,
             Amount = Math.Max(1, count), Lifetime = lifeS, OneShot = burnS <= 0, Explosiveness = burnS <= 0 ? 1f : 0f, Randomness = 0.5f,
             Mesh = new QuadMesh { Size = Vector2.One * sizeU, Material = ramp == FireRamp || ramp == FlameRamp ? FlameMat : Mat(additive) }, LocalCoords = false,
             Direction = dir ?? Vector3.Up, Spread = spread, Gravity = Vector3.Zero,
@@ -81,24 +85,26 @@ public static class Fx
     /// <summary>Small debris (owner, 2026-11-04: "add in some smaller debris like sparks"): n white-hot fragments drawn as
     /// streaks along their flight, lenU long, flying out at up to speedU (scene units a second) and cooling to red over
     /// lifeS, and half as many embers that drift and flicker out.</summary>
-    public static void Streaks(Node parent, Vector3 at, int n, float lenU, float speedU, float lifeS, Vector3? dir = null, float spread = 180f)
+    public static void Streaks(Node parent, Vector3 at, int n, float lenU, float speedU, float lifeS, Vector3? dir = null, float spread = 180f,
+        Gradient? ramp = null, Gradient? embers = null)
     {
         // each spark laid along its own flight (streak.gdshader), so they radiate from the blast
         var mat = _streakMat ??= new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/View/streak.gdshader") };
         var p = new CpuParticles3D
         {
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+            Emitting = false,   // not until it stands at the blast (as Burst)
             Amount = n, Lifetime = lifeS, OneShot = true, Explosiveness = 0.92f, Randomness = 0.6f, LocalCoords = false,
             Mesh = new QuadMesh { Size = new Vector2(lenU * 0.12f, lenU), Material = mat }, ParticleFlagAlignY = true,
             Direction = dir ?? Vector3.Up, Spread = spread, Gravity = Vector3.Zero, InitialVelocityMin = speedU * 0.25f, InitialVelocityMax = speedU,
             DampingMin = speedU * 0.08f, DampingMax = speedU * 0.2f, ScaleAmountMin = 0.4f, ScaleAmountMax = 1.2f, ScaleAmountCurve = Grow(1f, 0.15f),
-            ColorRamp = SparkRamp,
+            ColorRamp = ramp ?? SparkRamp,
         };
         parent.AddChild(p);
         p.GlobalPosition = at;
         p.Emitting = true;
         FreeAfter(p, lifeS * 1.6f + 0.2f);
-        Burst(parent, at, Math.Max(4, n / 2), lifeS * 2.2f, lenU * 0.18f, speedU * 0.3f, EmberRamp, true, 1f, 0.4f, 0.3f, dir, spread);
+        Burst(parent, at, Math.Max(4, n / 2), lifeS * 2.2f, lenU * 0.18f, speedU * 0.3f, embers ?? EmberRamp, true, 1f, 0.4f, 0.3f, dir, spread);
     }
 
     private static ShaderMaterial? _streakMat;
@@ -116,8 +122,27 @@ public static class Fx
         (0.55f, new Color(0.6f, 0.15f, 0.03f, 0.3f)), (1f, new Color(0.15f, 0.05f, 0.02f, 0f)));
     private static readonly Gradient SparkRamp = Ramp((0f, new Color(1f, 1f, 0.85f, 1f)), (0.5f, new Color(1f, 0.75f, 0.3f, 0.9f)), (1f, new Color(1f, 0.4f, 0.1f, 0f)));
     private static readonly Gradient SmokeRamp = Ramp((0f, new Color(0.2f, 0.18f, 0.17f, 0.0f)), (0.15f, new Color(0.16f, 0.15f, 0.14f, 0.55f)), (1f, new Color(0.1f, 0.1f, 0.1f, 0f)));
-    private static readonly Gradient ShieldRamp = Ramp((0f, new Color(0.75f, 0.9f, 1f, 1f)), (0.4f, new Color(0.3f, 0.6f, 1f, 0.7f)), (1f, new Color(0.1f, 0.3f, 1f, 0f)));
+    // a shield's spark: white-hot, then the electric blue of the shield, then gone; its embers blue
+    private static readonly Gradient ShieldSparkRamp = Ramp((0f, new Color(1f, 1f, 1f, 1f)), (0.25f, new Color(0.6f, 0.85f, 1f, 1f)), (1f, new Color(0.15f, 0.4f, 1f, 0f)));
+    private static readonly Gradient ShieldEmberRamp = Ramp((0f, new Color(0.8f, 0.95f, 1f, 1f)), (0.4f, new Color(0.3f, 0.6f, 1f, 0.8f)), (1f, new Color(0.1f, 0.25f, 1f, 0f)));
     private static readonly Gradient FlameRamp = Ramp((0f, new Color(1f, 0.85f, 0.5f, 0.9f)), (0.35f, new Color(1f, 0.42f, 0.08f, 0.7f)), (1f, new Color(0.3f, 0.06f, 0.02f, 0f)));
+
+    /// <summary>The least radius of a hit's effect, as a share of its distance from the camera (owner, 2026-11-06: "missing
+    /// explosions when weapon impacts"): sized to the hull alone, a hit 20 km off is two or three pixels across, so a hit
+    /// never draws smaller than this: at 20 km, about a third of a cruiser's length.</summary>
+    public const float ImpactMinShare = 0.015f;
+
+    /// <summary>The same for a shot the shields stop, larger (owner, 2026-11-06: "the shield impacts should be pretty
+    /// visible"): at 20 km, its sparks reach about a third of a cruiser's length.</summary>
+    public const float ShieldMinShare = 0.03f;
+
+    /// <summary>r (scene units), or the least radius that reads from the view's camera at that point (share of the
+    /// camera's distance, <see cref="ImpactMinShare"/> unless given), whichever is larger.</summary>
+    public static float Readable(Node parent, Vector3 at, float r, float share = ImpactMinShare)
+    {
+        Camera3D? cam = parent.GetViewport()?.GetCamera3D();
+        return cam == null ? r : Math.Max(r, share * cam.GlobalPosition.DistanceTo(at));
+    }
 
     /// <summary>A fireball of radius r (scene units), with sparks and a little smoke; a hit on the hull.</summary>
     public static void Fireball(Node parent, Vector3 at, float r, Vector3 outward)
@@ -128,11 +153,20 @@ public static class Fx
         Burst(parent, at, 6, 2.4f, r * 1.4f, r * 0.7f, SmokeRamp, false, 0.4f, 1.6f, 0.6f, outward, 80f);
     }
 
-    /// <summary>A shot stopped by the shield: a blue flare where it struck.</summary>
+    /// <summary>A shot stopped by the shield: a spark where it struck, not a flame (owner, 2026-11-06: "the shield impacts should
+    /// be pretty visible", "shield explosion wouldn be like a flame, it should be like a shield spark, hull impact would be a
+    /// flame explosion"): a sharp blue-white pinpoint flash, streaks of blue-white spark thrown back off the shield with blue
+    /// embers, and a short blue light on the hull behind it. r is the spark's reach, scene units.</summary>
     public static void ShieldFlare(Node parent, Vector3 at, float r, Vector3 outward)
     {
-        Burst(parent, at, 12, 0.45f, r * 1.4f, r * 0.8f, ShieldRamp, true, 0.5f, 1.2f, 3f, outward, 90f);
-        Burst(parent, at, 10, 0.4f, r * 0.15f, r * 5f, ShieldRamp, true, 1f, 0.2f, 2f, outward, 70f);
+        Glow(parent, at, r * 0.45f, 0.04f, 0.3f, new Color(1.8f, 2.1f, 2.6f, 1f), new Color(0.15f, 0.45f, 1.4f, 0f));
+        Streaks(parent, at, 28, r * 0.9f, r * 4f, 0.5f, outward, 80f, ShieldSparkRamp, ShieldEmberRamp);
+        var l = new OmniLight3D { OmniRange = r * 5, LightEnergy = 4f, LightColor = new Color(0.45f, 0.7f, 1f), ShadowEnabled = false, OmniAttenuation = 1.5f };
+        parent.AddChild(l);
+        l.GlobalPosition = at;
+        Tween tw = l.CreateTween();
+        tw.TweenProperty(l, "light_energy", 0f, 0.35f).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Expo);
+        tw.TweenCallback(Callable.From(l.QueueFree));
     }
 
     /// <summary>A big blast (a piece blown off): a ball of fire, sparks, smoke, a shock ring and light.</summary>
@@ -146,6 +180,11 @@ public static class Fx
         Shockwave(parent, at, r * 4f, 1.2f);
         Flash(parent, at, lightRangeU, 5f, lightS);
     }
+
+    /// <summary>A ship's end sized to its length in scene units: twice the first size (owner, 2026-11-04: "2x nova side"),
+    /// growing slower than the ship so a dreadnought's does not white out the whole view. Every ship's end, an approved
+    /// ship's core breach and a stand-in's, is this one.</summary>
+    public static void ShipEnd(Node parent, Vector3 at, float lengthU) => Nova(parent, at, 1.8f * Mathf.Pow(lengthU, 0.7f));
 
     /// <summary>A ship's end, its core breaching (owner, 2026-11-04: "aww theres no big super nova", "center is white
     /// with pink edges, and a blue ring glowing outward", "I really want it to have this exact look and colors, and the
@@ -260,22 +299,23 @@ public static class Fx
         tw.Chain().TweenCallback(Callable.From(ball.QueueFree));
     }
 
-    // The core's flash: a white disc facing the camera that blooms to r and fades.
-    private static void Core(Node parent, Vector3 at, float r, float inS, float outS)
+    // A glow: a soft disc facing the camera that blooms to radius r over inS and fades from colour from to colour to over
+    // outS (seconds; colours above 1 are over-bright).
+    private static void Glow(Node parent, Vector3 at, float r, float inS, float outS, Color from, Color to)
     {
         var mat = new StandardMaterial3D
         {
-            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled,
+            ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled, BillboardKeepScale = true,
             Transparency = BaseMaterial3D.TransparencyEnum.Alpha, BlendMode = BaseMaterial3D.BlendModeEnum.Add, AlbedoTexture = Soft,
-            AlbedoColor = new Color(2.2f, 2.0f, 1.7f, 1f), DisableReceiveShadows = true, DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled,
+            AlbedoColor = from, DisableReceiveShadows = true, DepthDrawMode = BaseMaterial3D.DepthDrawModeEnum.Disabled,
         };
         var q = new MeshInstance3D { Mesh = new QuadMesh { Size = Vector2.One * 2 }, MaterialOverride = mat, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
         parent.AddChild(q);
         q.GlobalPosition = at;
-        q.Scale = Vector3.One * 0.05f;
+        q.Scale = Vector3.One * r * 0.2f;
         Tween tw = q.CreateTween();
         tw.TweenProperty(q, "scale", Vector3.One * r, inS).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Expo);
-        tw.TweenProperty(mat, "albedo_color", new Color(1.2f, 0.5f, 0.15f, 0f), outS).SetEase(Tween.EaseType.Out);
+        tw.TweenProperty(mat, "albedo_color", to, outS).SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
         tw.TweenCallback(Callable.From(q.QueueFree));
     }
 

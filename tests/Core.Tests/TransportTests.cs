@@ -38,18 +38,18 @@ public class TransportTests
     }
 
     [Fact]
-    public void The_transporter_reaches_an_enemy_only_inside_1_5_km_and_through_a_facing_that_is_down()
+    public void The_transporter_reaches_an_enemy_only_inside_15_km_and_through_a_facing_that_is_down()
     {
         Battle b = Scene("concord_boarding");
         Ship me = b.Player, t = b.ShipById("vekk")!;
-        Assert.Equal(1.5, b.Comms.Transport.RangeKm);
+        Assert.Equal(15, b.Comms.Transport.RangeKm);
         Assert.True(b.BeamReach(me, t));
         t.ShieldsUp = true;
         Array.Fill(t.Shields, 20);
         Assert.False(b.BeamReach(me, t));
         t.Shields[Rules.FacingFrom(t, me.X, me.Z)] = 0;
         Assert.True(b.BeamReach(me, t));
-        t.X += 2000;
+        t.X += 20000;
         Assert.False(b.BeamReach(me, t));
     }
 
@@ -131,7 +131,7 @@ public class TransportTests
     {
         // the scene without its goal and with an enemy far off, so it plays on past the capture
         Scenario sc = TestData.Data.ScenarioById("krai_boarding");
-        ShipStart far = sc.Ships[1] with { Id = "far", Name = "Far", ZM = -60000, HoldFire = true, Setup = null };
+        ShipStart far = sc.Ships[1] with { Id = "far", Name = "Far", ZM = -600000, HoldFire = true, Setup = null };
         Battle b = new(TestData.Data, sc with { Goal = null, Ships = sc.Ships.Append(far).ToList() });
         Ship t = b.ShipById("meridian")!;
         b.Lock("meridian");
@@ -247,12 +247,12 @@ public class TransportTests
         Battle b = Scene("concord_distress");
         Ship lark = b.ShipById("lark")!;
         b.Lock("lark");
-        b.SetSpeed(300);
+        b.SetSpeed(3000);
         b.HelmOrder("intercept");
         for (int i = 0; i < 6000 && b.Over == null; i++)
         {
             b.Step();
-            if (Rules.DistKm(b.Player, lark) < 1.4) b.Transfer("parts", 1);
+            if (Rules.DistKm(b.Player, lark) < 14) b.Transfer("parts", 1);
         }
         Assert.Equal("won", b.Over);
         Assert.Equal(10, lark.Got["parts"]);
@@ -266,11 +266,11 @@ public class TransportTests
     private static void Relief(string side)
     {
         Battle b = Scene(side + "_relief");
-        string station = side == "concord" ? "harbor" : "ironmaw";
+        string station = side switch { "concord" => "harbor", "krai" => "ironmaw", "ssarith" => "pell", _ => "lyceum" };
         b.Lock(station);
         b.Transfer("rations", -1); b.Transfer("rations", -1); b.Transfer("medicine", -1);
         b.SelectPlanet("tessaly");
-        b.SetSpeed(300);
+        b.SetSpeed(3000);
         b.HelmOrder("intercept");
         Planet pl = b.Planets[0];
         for (int i = 0; i < 9000 && b.Over == null; i++)
@@ -285,11 +285,13 @@ public class TransportTests
 
     [Fact] public void Relief_is_won_from_the_Concord_side() => Relief("concord");
     [Fact] public void Relief_is_won_from_the_Krai_side() => Relief("krai");
+    [Fact] public void Relief_is_won_from_the_Kelvane_side() => Relief("kelvane");
+    [Fact] public void Relief_is_won_from_the_Hunt_side() => Relief("ssarith");
 
     private static void Vip(string side)
     {
         Battle b = Scene(side + "_vip");
-        string troops = side == "concord" ? "corrin" : "ruhn", outpost = side == "concord" ? "varn" : "calder";
+        string troops = side switch { "concord" => "corrin", "krai" => "ruhn", "ssarith" => "hunt_lance", _ => "candour" }, outpost = side == "krai" ? "calder" : "varn";
         Ship t = b.ShipById(troops)!;
         Run(b, 5);
         Assert.Equal(0, t.V, 3);   // it waits for the envoy
@@ -305,11 +307,13 @@ public class TransportTests
 
     [Fact] public void VIP_is_won_from_the_Concord_side() => Vip("concord");
     [Fact] public void VIP_is_won_from_the_Krai_side() => Vip("krai");
+    [Fact] public void VIP_is_won_from_the_Kelvane_side() => Vip("kelvane");
+    [Fact] public void VIP_is_won_from_the_Hunt_side() => Vip("ssarith");
 
     private static void Assault(string side)
     {
         Battle b = Scene(side + "_assault");
-        string troops = side == "concord" ? "corrin" : "ruhn";
+        string troops = side switch { "concord" => "corrin", "krai" => "ruhn", "ssarith" => "hunt_lance", _ => "candour" };
         Ship t = b.ShipById(troops)!;
         b.Lock(troops);
         for (int i = 0; i < 4000 && t.Marines < t.NeedMarines; i++) { if (b.PadReady(b.Player)) b.EnergizeAll("capture"); b.Step(); }
@@ -321,6 +325,8 @@ public class TransportTests
 
     [Fact] public void Assault_is_won_from_the_Concord_side() => Assault("concord");
     [Fact] public void Assault_is_won_from_the_Krai_side() => Assault("krai");
+    [Fact] public void Assault_is_won_from_the_Kelvane_side() => Assault("kelvane");
+    [Fact] public void Assault_is_won_from_the_Hunt_side() => Assault("ssarith");
 
     private static void Boarding(string side)
     {
@@ -342,12 +348,14 @@ public class TransportTests
 
     [Fact] public void Boarding_is_won_from_the_Concord_side() => Boarding("concord");
     [Fact] public void Boarding_is_won_from_the_Krai_side() => Boarding("krai");
+    [Fact] public void Boarding_is_won_from_the_Kelvane_side() => Boarding("kelvane");
+    [Fact] public void Boarding_is_won_from_the_Hunt_side() => Boarding("ssarith");
 
     [Fact]
     public void Every_comms_scene_runs_a_minute_from_both_sides_and_replays_from_its_seed()
     {
         foreach (string id in Scenes)
-            foreach (string side in new[] { "concord", "krai" })
+            foreach (string side in new[] { "concord", "krai", "kelvane", "ssarith" })
             {
                 Battle a = Scene($"{side}_{id}"), c = Scene($"{side}_{id}");
                 Run(a, 60); Run(c, 60);

@@ -66,6 +66,54 @@ shot hunt-cruiser 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_cr
 shot hunt-carrier 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_carrier --target-view --zoom=0.5
 shot hunt-trident 1920x1080 --steps=600 --scenario=concord_hunt --target=hunt_trident --target-view --zoom=0.5
 shot hunt-range 1920x1080 --steps=300 --scenario=concord_range --target=t_hff2 --target-view --zoom=0.8
+shot hunt-carrier-bays 1920x1080 --steps=300 --scenario=concord_range --target=t_hcv --target-view --zoom=0.1
+shot hunt-trident-windows 1920x1080 --steps=300 --scenario=concord_range --target=t_hff4 --target-view --zoom=0.1
 shot hunt-battle-late 1920x1080 --steps=3600 --scenario=concord_hunt --target=hunt_cruiser --target-view --zoom=0.6
 shot krai-hunt 1920x1080 --steps=600 --scenario=krai_hunt --target=hunt_harpoon --target-view --zoom=0.5
 shot hunt-wrecks 1920x1080 --steps=2400 --scenario=concord_hunt_wrecks --target=hw_lance --target-view --zoom=0.7
+# the Kelvane Institute (mockup 23, change kelvane-ships-engine): each class close, the carrier's pads, the Institute as a side
+shot institute-battlecruiser 1920x1080 --steps=600 --scenario=concord_institute --target=kv_rigour --target-view --zoom=0.5
+shot institute-carrier 1920x1080 --steps=600 --scenario=concord_institute --target=kv_curiosity --target-view --zoom=0.5
+shot institute-range 1920x1080 --steps=300 --scenario=concord_range --target=t_irv --target-view --zoom=0.5
+shot institute-carrier-pads 1920x1080 --steps=300 --scenario=concord_range --target=t_icv --target-view --zoom=0.15
+shot institute-frigate 1920x1080 --steps=300 --scenario=concord_range --target=t_iff --target-view --zoom=0.3
+shot institute-wrecks 1920x1080 --steps=2400 --scenario=concord_institute_wrecks --target=kw_parallax --target-view --zoom=0.7
+# the placeholder lines (mockup 36, change placeholder-fleets): a row of the damage range each
+shot placeholder-kethran 1920x1080 --steps=300 --scenario=concord_range --target=ph_kethran_dn --target-view --zoom=0.5
+shot placeholder-vhorr 1920x1080 --steps=300 --scenario=concord_range --target=ph_vhorr_cv --target-view --zoom=0.5
+shot placeholder-aelith 1920x1080 --steps=300 --scenario=concord_range --target=ph_aelith_cap --target-view --zoom=0.5
+shot kelvane-patience 1920x1080 --steps=600 --scenario=kelvane_battle
+shot kelvane-patience-ship 1920x1080 --steps=600 --scenario=kelvane_battle --expand=ship
+# the Kelvane Institute's console end to end (2026-11-07, owner: "end to end test all kelvane ui systems"): every station
+# expanded, every ship page, the radar and the phone shapes, each in the Institute's own scenes
+for st in helm power tactical pd science comms repair transport fleet; do
+  shot "kelvane-ui-$st" 1920x1080 --steps=600 --scenario=kelvane_battle --station=$st --expand=station
+done
+shot kelvane-ui-vip 1920x1080 --steps=300 --scenario=kelvane_vip --station=transport --expand=station
+shot kelvane-ui-shields 1920x1080 --steps=600 --scenario=kelvane_battle --page=shields --expand=ship
+shot kelvane-ui-sensors 1920x1080 --steps=600 --scenario=kelvane_cloak --page=sensors --expand=ship
+shot kelvane-ui-tractor 1920x1080 --steps=300 --scenario=kelvane_tractor --page=tractor --expand=ship
+shot kelvane-ui-craft 1920x1080 --steps=300 --scenario=kelvane_fighters --page=craft --expand=ship
+shot kelvane-ui-radar 1920x1080 --steps=600 --scenario=kelvane_battle --expand=radar
+shot kelvane-ui-escape 1920x1080 --steps=300 --scenario=kelvane_escape --station=repair
+shot kelvane-phone-landscape 844x390 --steps=600 --scenario=kelvane_battle
+shot kelvane-phone-portrait 390x844 --steps=600 --scenario=kelvane_battle
+shot kelvane-phone-weapons 844x390 --steps=600 --scenario=kelvane_battle --expand=weapons
+shot kelvane-phone-portrait-station 390x844 --steps=600 --scenario=kelvane_battle --station=power --expand=station
+# field operations (openspec/changes/mission-systems): planets ported from Falchion and godot-sandbox, the planet view down
+# to the surface, found sites and an away team, Scan planet and the Transport station's Sites, unknown contacts beyond the
+# sensors, and each placeholder stand-in (into docs/screenshots/game/mission-systems/ when run with that folder)
+MS="--scenario=concord_relief --steps=60"
+shot ms-planet-battle 1920x1080 $MS --select-planet
+# a ship beside a station at their battle sizes, the shields drawn round each (owner, 2026-11-10: "Show me a ship to station comparison")
+shot ms-station-compare 1920x1080 $MS --target=harbor --zoom=2.2
+for k in terran ocean desert ice lava barren gas ice_giant toxic; do shot "ms-planet-$k" 1920x1080 $MS --planet-kind=$k --planet-view=1.4 --yaw=1.9 --pitch=0.3; done
+shot ms-planet-surface 1920x1080 $MS --planet-view=0.012 --pitch=0.35
+shot ms-planet-sites 1920x1080 $MS --sites --survey --secure --near-planet --beam --planet-view=0.5 --yaw=0 --pitch=0.42
+shot ms-planet-sites-close 1920x1080 $MS --sites --survey --secure --near-planet --beam --planet-view=0.12 --yaw=-0.05 --pitch=0.3
+shot ms-science-planet 1920x1080 $MS --sites --near-planet --select-planet --station=science
+shot ms-transport-sites 1920x1080 $MS --sites --survey --secure --near-planet --beam --select-planet --station=transport --tab=cargo --cargo-view=sites
+shot ms-unknown-contact 1920x1080 --steps=10
+for c in sb:krai yd:krai ab:krai op:krai pb:krai mon:fauna pod:krai; do
+  shot "ms-standin-${c%%:*}" 1920x1080 --steps=300 --swap=kharz:$c --target=kharz --target-view --zoom=0.5
+done

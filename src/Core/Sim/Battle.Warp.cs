@@ -90,6 +90,30 @@ public sealed partial class Battle
             // slowed by damaged sensors, stopped only when they are knocked out
             if (w.Plotting) w.Plot = Math.Min(1, w.Plot + dt / W.PlotS * Math.Clamp(s.Sys["sensors"], 0, 1));
         }
+        // a withdrawal under way: re-plot after a failed jump, and jump the moment the drive is ready and the risk is
+        // acceptable; called off when the drive can no longer charge (Mac playtest 2026-11-08: a failed jump wrecked both
+        // nacelles and the withdrawal waited for a charge that never came, the Withdraw key locked, until the ship died)
+        if (Withdrawing && Over == null && Player.Alive && Player.Warp.Out <= 0)
+        {
+            WarpState w = Player.Warp;
+            if (w.Banks < W.JumpE && !w.Nacelles.Any(h => h > 0))
+            {
+                CancelWithdraw("Withdrawal called off: the warp drive is wrecked and cannot charge.");
+                return;
+            }
+            if (!w.Plotting) PlotCourse();
+            if (WarpReady(Player))
+            {
+                double risk = WarpRiskOf(Player).Total;
+                if (risk <= W.WithdrawMaxRisk) { _withdrawHeld = false; Jump(Player); }
+                else if (!_withdrawHeld)
+                {
+                    _withdrawHeld = true;
+                    Say("Helm", $"Holding the jump: risk {Pct(risk)}, over {Pct(W.WithdrawMaxRisk)}. Jump from the Warp page, or Withdraw again to call it off.");
+                    Notify("Jump held", $"Risk {Pct(risk)}: jump by hand, or call the withdrawal off", "caution");
+                }
+            }
+        }
     }
 
     // The jump: refused with the reason the Warp page shows; otherwise one roll against the risk. A failure is a mishap
@@ -122,6 +146,18 @@ public sealed partial class Battle
         Say("Engineering", $"Warp field collapsed (risk was {Pct(r.Total)}, {what}): nacelles damaged, banks drained, course lost.");
         if (me) Notify("Jump failed", $"Warp field collapsed at {Pct(r.Total)} risk, {what}. Nacelles damaged, banks drained, course lost.", "alert");
         if (r.Total > M.BreachRisk && sev > M.BreachSev) { Say("Engineering", "Warp core breach."); Meltdown(s); }
+    }
+
+    private bool _withdrawHeld;
+
+    /// <summary>Calls a withdrawal off (the Withdraw key pressed again, or a drive that can no longer charge): the drive
+    /// stays armed and charging, but the ship no longer jumps by itself, and the weapons may be powered again.</summary>
+    public void CancelWithdraw(string? why = null)
+    {
+        if (!Withdrawing || Over != null) return;
+        Withdrawing = false;
+        _withdrawHeld = false;
+        Say("Helm", why ?? "Withdrawal called off.");
     }
 
     // ---- The warp drive's orders (the player's ship) ---------------------------------------------------------------

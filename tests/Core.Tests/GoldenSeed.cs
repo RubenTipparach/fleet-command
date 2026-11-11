@@ -13,9 +13,12 @@
 // systems that are IN the mockup"): the coolant pumps draw from the output, hits knock coils out of alignment (the output
 // falls with them), and repair energy works through crews on the repair queue. Merged with the chopping block (both
 // packages, 2026-11-06), with a burn's ticks not rolling on the reactor (they are not hits), the Vorrak ends at 150.07.
+// Re-pinned 2026-11-08: an AI captain whose fire has not landed for ai_close_after_s (20 s) closes to half its fighting range, half again each further 20 s
+// (Mac playtest: a Vos corsair kited a Krai corvette at 49 km for a whole battle), so the escort closes sooner and the
+// Vorrak ends at 142.84.
 namespace FleetCommand.Tests;
 
 public static class GoldenSeed
 {
-    public const string Hulls = "560.00,240.00,380.00,150.07,260.00,320.00";
+    public const string Hulls = "560.00,240.00,380.00,142.84,260.00,320.00";
 }

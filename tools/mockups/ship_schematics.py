@@ -34,14 +34,17 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SHIPS = ROOT / "assets" / "ships"
 OUT = SHIPS / "schematics"
 SHEET = ROOT / "docs" / "screenshots" / "schematics" / "sheet.png"
-FACTIONS = ("concord", "krai")
+# the approved lines, and the placeholder lines of mockup 36 (data/ships/placeholders.json)
+FACTIONS = ("concord", "krai", "ssarith", "kelvane", "axiom", "exponent", "redtithe", "vos", "kethran", "tarsine", "aelith", "ombrai", "vhorr", "freighters")
 
 SIZE_PX = 1024          # the square canvas of each layer
 MARGIN = 0.06           # fraction of the canvas left clear on each side of the longest extent
 SS = 4                  # supersampling factor for both layers
 WIRE_PX = 1.6           # wire line width in final pixels
 OUTLINE_PX = 2.2        # outline width in final pixels
-HULL_ALPHA = (0.15, 0.55)  # hull alpha from fully shadowed to fully lit
+HULL_ALPHA = (0.1, 0.38)   # hull alpha from fully shadowed to fully lit: see-through, so the hidden edges show
+HIDDEN_ALPHA = 0.4         # the edges the hull hides, seen through it (owner, 2026-11-07: "the schematic should be semi
+                           # transparent", "so I can see more than just the top of ships")
 LIGHT = np.array([-0.35, 1.0, -0.45])  # top light, a little from the bow and port side (glb frame)
 COPLANAR_DEG = 8.0      # two triangles pair into a quad only if their normals are within this angle
 UP_FACING = 0.2         # an edge is drawn only if a face beside it has normal.y at least this (facing up)
@@ -49,6 +52,22 @@ FEATURE_DEG = 2.0       # two faces bending less than this across an edge lie in
 COPLANAR_GAP_PX = 36.0  # parallel tessellation lines in one plane are thinned to at least this far apart
 MIN_EDGE_PX = 3.0       # edges shorter than this on screen are left out (dense tessellation reads as noise)
 SKIP_MATERIALS = ("registry",)  # registry decals are flat cards over the hull, not hull shape
+# A ship whose detail lives in its bake, not its mesh (the Kelvane Institute's: a smooth grown hull, its plating,
+# machinery, domes and vents modelled over it in Blender and baked into its own maps, tools/blender/painted_bake.py):
+# the wire takes that detail from the bake's tangent normal map and AO (ORM's red), looked up through the hull's own UVs
+# where each pixel's top surface is (owner, 2026-11-08: "Top down shop sillohuet needs improvement. Let's add some details
+# so the top down view of these kelvane ships don't look so bad"). Only its real creases are drawn as mesh edges: the
+# loft's rings and facets are tessellation, not shape.
+DETAIL_FROM_BAKE = ("kelvane",)
+DETAIL_SS = 2           # the bake's detail is looked up at this many samples a final pixel, each way
+DETAIL_ALPHA = 0.85     # the wire's alpha at the strongest detail (the outline and creases stay at 1)
+DETAIL_BEVEL = (0.02, 4.0)  # a texel's detail from its normal's tilt against its neighbourhood's (the same box):
+                            # (blurred n.z - n.z - floor) * k, so a bevel's edge reads and a gentle drift does not
+DETAIL_AO = (0.06, 6.0, 6)  # and from its occlusion against its neighbourhood's: (blurred - ao - floor) * k, the blur
+                            # a box this many detail pixels each way, so gaps and trenches read and a soft overhang's
+                            # shading does not
+DETAIL_UP = (0.15, 0.5) # faded out on surfaces seen edge-on from above (|n.y| from the first to the second)
+BAKED_FEATURE_DEG = 30.0  # a baked ship's mesh edges drawn: only where its faces bend more than this
 
 # ---------------------------------------------------------------------------------------------------------------
 # glb reading
@@ -127,10 +146,11 @@ def world_nodes(gltf: dict) -> list[tuple[int, np.ndarray]]:
     return out
 
 
-def load_ship(path: pathlib.Path) -> tuple[list[tuple[str, np.ndarray, np.ndarray]], dict[str, np.ndarray]]:
-    """The ship's triangle meshes in world space, as (name, positions, triangles), and its empties' positions."""
+def load_ship(path: pathlib.Path) -> tuple[list[tuple[str, np.ndarray, np.ndarray]], dict[str, np.ndarray], list]:
+    """The ship's triangle meshes in world space, as (name, positions, triangles), its empties' positions, and each
+    mesh's UVs (or None), in the meshes' order."""
     gltf, binary = read_glb(path)
-    meshes, empties = [], {}
+    meshes, empties, uvs = [], {}, []
     for i, m in world_nodes(gltf):
         node = gltf["nodes"][i]
         name = node.get("name", f"node_{i}")
@@ -155,7 +175,9 @@ def load_ship(path: pathlib.Path) -> tuple[list[tuple[str, np.ndarray, np.ndarra
             if np.linalg.det(m[:3, :3]) < 0:
                 idx = idx[:, ::-1]
             meshes.append((f"{name}/{p}", pos, idx))
-    return meshes, empties
+            uv = prim["attributes"].get("TEXCOORD_0")
+            uvs.append(accessor(gltf, binary, uv) if uv is not None else None)
+    return meshes, empties, uvs
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -172,6 +194,9 @@ def axes_from_data(meshes, empties) -> dict:
     long_axis = int(np.argmax(ext))
     engines = [v for k, v in empties.items() if k.startswith("engine_")]
     fore = [v for k, v in empties.items() if k in ("deflector", "bridge") or k.startswith("mount_")]
+    # the baked lines (the Ssarith and Kelvane, exported from docs/mockups/lib/baked-fleet.js) name no mounts or bridge:
+    # their engines are measured against the hull's own middle
+    fore = fore or [(allp.max(0) + allp.min(0)) / 2]
     if long_axis != 2 or not engines or not fore:
         raise SystemExit("ship_schematics: cannot find the nose from the data (expected the long axis on Z)")
     # The bow is the end away from the engines: engines' mean Z is greater than the fore fittings' -> bow is -Z.
@@ -352,15 +377,17 @@ def white_layer(alpha: np.ndarray) -> Image.Image:
     return Image.fromarray(rgba)
 
 
-def pick_edges(wp: np.ndarray, edge_faces: dict, span: float) -> list[tuple[np.ndarray, np.ndarray]]:
+def pick_edges(wp: np.ndarray, edge_faces: dict, span: float, feature_deg: float = FEATURE_DEG,
+               keep_flat: bool = True) -> list[tuple[np.ndarray, np.ndarray]]:
     """The edges of one mesh worth drawing, seen from above.
 
     A crease (the faces beside it bend) or an open border is always drawn. An edge between two faces in one plane is
     only a tessellation line: such lines are thinned so parallel ones in the same plane are at least COPLANAR_GAP_PX
-    apart on screen, which keeps the quad grid without letting a finely cut plate fill in solid. Edges with no
+    apart on screen, which keeps the quad grid without letting a finely cut plate fill in solid (keep_flat False drops
+    them all: a baked ship's grid is its bake's, not its mesh's). Edges with no
     up-facing face beside them, and edges shorter than MIN_EDGE_PX on screen, are left out.
     """
-    cos_feat = math.cos(math.radians(FEATURE_DEG))
+    cos_feat = math.cos(math.radians(feature_deg))
     keep, flat = [], {}
     for (u, v) in sorted(edge_faces):
         fns = edge_faces[(u, v)]
@@ -377,7 +404,8 @@ def pick_edges(wp: np.ndarray, edge_faces: dict, span: float) -> list[tuple[np.n
             bucket = int(round(math.degrees(ang) / 10)) % 18
             perp = np.array([-math.sin(ang), math.cos(ang)])
             mid = (wp[u] + wp[v])[[0, 2]] / 2 * span
-            flat.setdefault((plane, bucket), []).append((round(float(mid @ perp), 3), u, v))
+            if keep_flat:
+                flat.setdefault((plane, bucket), []).append((round(float(mid @ perp), 3), u, v))
             continue
         keep.append((u, v))
     for key in sorted(flat):
@@ -389,8 +417,9 @@ def pick_edges(wp: np.ndarray, edge_faces: dict, span: float) -> list[tuple[np.n
     return [(wp[u], wp[v]) for u, v in sorted(keep)]
 
 
-def render_ship(meshes, view: View) -> tuple[Image.Image, Image.Image, dict]:
-    """Both layers of one ship, and its quad and triangle counts."""
+def render_ship(meshes, view: View, detail: np.ndarray | None = None) -> tuple[Image.Image, Image.Image, dict]:
+    """Both layers of one ship, and its quad and triangle counts. detail: the bake's detail at the final size (0 to 1),
+    drawn into the wire, or None for a ship whose mesh carries its detail."""
     span = 1 / view.m_per_px
     world_tris, face_up, edges_world = [], [], []
     n_quads = n_tris = n_src = 0
@@ -424,7 +453,8 @@ def render_ship(meshes, view: View) -> tuple[Image.Image, Image.Image, dict]:
             for k in range(len(f)):
                 u, v = f[k], f[(k + 1) % len(f)]
                 edge_faces.setdefault((min(u, v), max(u, v)), []).append(fn)
-        edges_world.extend(pick_edges(wp, edge_faces, span))
+        baked = detail is not None
+        edges_world.extend(pick_edges(wp, edge_faces, span, BAKED_FEATURE_DEG if baked else FEATURE_DEG, keep_flat=not baked))
     T = np.concatenate(world_tris)
     N = np.concatenate(face_up)
     shade = np.clip((N * L).sum(1), 0, 1) * 0.75 + np.clip(N[:, 1], 0, 1) * 0.25
@@ -439,6 +469,7 @@ def render_ship(meshes, view: View) -> tuple[Image.Image, Image.Image, dict]:
     n = SIZE_PX * SS
     tol = 2.5 * view.m_per_px
     line = np.zeros((n, n), dtype=bool)
+    hidden = np.zeros((n, n), dtype=bool)
     if edges_world:
         E0 = np.array([e[0] for e in edges_world])
         E1 = np.array([e[1] for e in edges_world])
@@ -453,16 +484,91 @@ def render_ship(meshes, view: View) -> tuple[Image.Image, Image.Image, dict]:
         iy = np.clip(np.floor(pts[:, 1]).astype(np.int64), 0, n - 1)
         vis = hts >= zbuf[iy, ix] - tol
         line[iy[vis], ix[vis]] = True
+        hidden[iy[~vis], ix[~vis]] = True
     wire = dilate(line, WIRE_PX * SS / 2)
+    behind = dilate(hidden, WIRE_PX * SS / 2) & ~wire
     edge_of_cover = covered & ~(np.roll(covered, 1, 0) & np.roll(covered, -1, 0) &
                                 np.roll(covered, 1, 1) & np.roll(covered, -1, 1))
     wire |= dilate(edge_of_cover, OUTLINE_PX * SS / 2)
-    wire_alpha = downsample(wire.astype(np.float64))
+    wire_alpha = downsample(np.where(wire, 1.0, np.where(behind, HIDDEN_ALPHA, 0.0)))
+    if detail is not None:
+        wire_alpha = np.maximum(wire_alpha, detail * DETAIL_ALPHA)
     if covered[:SS * 2].any() or covered[-SS * 2:].any() or covered[:, :SS * 2].any() or covered[:, -SS * 2:].any():
         raise SystemExit("ship_schematics: the hull touches the canvas edge")
     counts = {"source_triangles": int(n_src), "quads": n_quads, "triangles": n_tris, "edges_drawn": len(edges_world)}
     return white_layer(hull_alpha), white_layer(wire_alpha), counts
 
+
+
+def box_mean(a: np.ndarray, r: int) -> np.ndarray:
+    """The mean of a over a (2r + 1) square box at every pixel, by an integral image (edges clamped)."""
+    p = np.pad(a, r + 1, mode="edge")
+    c = p.cumsum(0).cumsum(1)
+    k = 2 * r + 1
+    s = c[k:, k:] - c[:-k, k:] - c[k:, :-k] + c[:-k, :-k]
+    return s[: a.shape[0], : a.shape[1]] / (k * k)
+
+
+def bake_detail(meshes, uvs, view: View, maps: dict) -> np.ndarray:
+    """A baked ship's modelled detail seen from above, 0 to 1 at the final size: for each pixel, the top surface's UV
+    (rasterised from the hull, as raster_heights does its height) looks up the bake's maps; a texel tilted off flat in
+    the tangent normal map more than those around it (a plate's bevel, a dome's rim, a vent's slats), an occluded one (a gap, a trench, machinery in a
+    well, darker than the plating around it) is detail; emission is not (a fighter's glazing would flood the picture). Faded where the surface is seen edge-on, so a flank's detail does not
+    crowd into a line."""
+    n = SIZE_PX * DETAIL_SS
+    zbuf = np.full((n, n), -np.inf)
+    ubuf = np.zeros((n, n, 2))
+    upbuf = np.zeros((n, n))
+    for (_name, pos, idx), uv in zip(meshes, uvs):
+        if uv is None:
+            continue
+        a, b, c = pos[idx[:, 0]], pos[idx[:, 1]], pos[idx[:, 2]]
+        nrm = np.cross(b - a, c - a)
+        up = np.abs(nrm[:, 1]) / (np.linalg.norm(nrm, axis=1) + 1e-12)
+        P = view.px(pos, DETAIL_SS)
+        for t, (i0, i1, i2) in enumerate(idx.tolist()):
+            (x0, y0), (x1, y1), (x2, y2) = P[i0], P[i1], P[i2]
+            den = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2)
+            if abs(den) < 1e-9:
+                continue
+            xa, xb = max(int(math.floor(min(x0, x1, x2))), 0), min(int(math.ceil(max(x0, x1, x2))), n - 1)
+            ya, yb = max(int(math.floor(min(y0, y1, y2))), 0), min(int(math.ceil(max(y0, y1, y2))), n - 1)
+            if xa > xb or ya > yb:
+                continue
+            gx, gy = np.meshgrid(np.arange(xa, xb + 1) + 0.5, np.arange(ya, yb + 1) + 0.5)
+            l0 = ((y1 - y2) * (gx - x2) + (x2 - x1) * (gy - y2)) / den
+            l1 = ((y2 - y0) * (gx - x2) + (x0 - x2) * (gy - y2)) / den
+            l2 = 1 - l0 - l1
+            inside = (l0 >= -1e-9) & (l1 >= -1e-9) & (l2 >= -1e-9)
+            if not inside.any():
+                continue
+            h = l0 * pos[i0, 1] + l1 * pos[i1, 1] + l2 * pos[i2, 1]
+            zs = zbuf[ya:yb + 1, xa:xb + 1]
+            win = inside & (h > zs)
+            zs[win] = h[win]
+            ubuf[ya:yb + 1, xa:xb + 1][win] = (l0[..., None] * uv[i0] + l1[..., None] * uv[i1] + l2[..., None] * uv[i2])[win]
+            upbuf[ya:yb + 1, xa:xb + 1][win] = up[t]
+    covered = np.isfinite(zbuf)
+
+    def sample(key: str) -> np.ndarray:
+        """The map's RGB (0 to 1) at each pixel's UV, nearest texel; the glb's v already runs down the image."""
+        im = np.asarray(Image.open(SHIPS / maps[key]).convert("RGB"), dtype=np.float64) / 255
+        H, W = im.shape[:2]
+        x = np.clip((ubuf[..., 0] * W).astype(np.int64), 0, W - 1)
+        y = np.clip((ubuf[..., 1] * H).astype(np.int64), 0, H - 1)
+        return im[y, x]
+
+    nz = sample("normal")[..., 2] * 2 - 1
+    ao = sample("orm")[..., 0]   # occlusion: ORM's red, the baked AO
+    floor_, k_ao, r = DETAIL_AO
+    weight = np.maximum(box_mean(covered.astype(np.float64), r), 1e-6)
+    around = lambda a: box_mean(a * covered, r) / weight   # noqa: E731  the neighbourhood's mean, on the hull only
+    bevel = np.clip((around(nz) - nz - DETAIL_BEVEL[0]) * DETAIL_BEVEL[1], 0, 1)
+    crevice = np.clip((around(ao) - ao - floor_) * k_ao, 0, 1)
+    face = np.clip((upbuf - DETAIL_UP[0]) / (DETAIL_UP[1] - DETAIL_UP[0]), 0, 1)
+    d = np.maximum(bevel, crevice) * face * covered
+    k = DETAIL_SS
+    return d.reshape(SIZE_PX, k, SIZE_PX, k).mean(axis=(1, 3))
 
 # ---------------------------------------------------------------------------------------------------------------
 # contact sheet
@@ -527,12 +633,14 @@ def main() -> int:
         glb = SHIPS / faction / f"{sid}.glb"
         if not glb.exists():
             continue
-        meshes, empties = load_ship(glb)
+        meshes, empties, uvs = load_ship(glb)
         conv = axes_from_data(meshes, empties)
         convention = convention or conv
         allp = np.concatenate([p for _, p, _ in meshes])
         view = View(allp.min(0), allp.max(0))
-        hull, wire, counts = render_ship(meshes, view)
+        maps = next((s.get("shader_params", {}).get("maps") for s in ships_manifest["ships"] if (s["faction"], s["id"]) == (faction, sid)), None)
+        detail = bake_detail(meshes, uvs, view, maps) if faction in DETAIL_FROM_BAKE and maps else None
+        hull, wire, counts = render_ship(meshes, view, detail)
         out_dir = OUT / faction
         out_dir.mkdir(parents=True, exist_ok=True)
         hull.save(out_dir / f"{sid}.hull.png", optimize=True)
@@ -557,7 +665,7 @@ def main() -> int:
     manifest = {
         "_doc": "Written by tools/mockups/ship_schematics.py from the ship glbs; do not edit, re-run it. Each ship has "
                 "two layers, pure white RGB with the drawing in alpha: hull (filled, top-lit, low alpha) and wire "
-                "(quad edges seen from above plus the outline, full alpha). Tint the hull with a dark skin colour, "
+                "(quad edges seen from above plus the outline, full alpha; the edges the hull hides at 0.4). Tint the hull with a dark skin colour, "
                 "the wire with a bright one, and lay the wire over the hull. A glb point (x, y, z) in metres falls at "
                 "pixel (origin_px[0] + x / m_per_px, origin_px[1] + z / m_per_px); y (height) is not drawn. A "
                 "schematic is stale when its source glb's sha256 differs.",

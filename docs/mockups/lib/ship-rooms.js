@@ -10,7 +10,7 @@
 // q: the point on the pane in metres (x along the pane, y up, 0 at its centre, the floor 1.5 m below), D: the view ray in the
 // pane's frame (z into the room, normalised), room: any vec3 naming the room (hashed for its layout, carpet and light),
 // kindIn: 0 quarters, 1 mess, 2 office, or -1 to pick from the hash, LIn: the room's light colour, or x < 0 to pick from the
-// hash (warm, cold or dark). Returns the light leaving the pane.
+// hash (yellow, orange or dark). Returns the light leaving the pane.
 //   vec3 hangarBehind(vec3 q, vec3 D, vec3 room, vec2 mouth, vec3 L)
 // the hangar behind a launch bay's mouth (mouth: its width and height in metres, q at its centre): a deck 28 m deep with a
 // centre stripe, three small craft parked in a row, rows of lights in the ceiling, ribbed walls, a lit back wall, in the
@@ -59,11 +59,14 @@ vec3 roomBehind(vec3 q, vec3 D, vec3 room, int kindIn, vec3 LIn){
     tb = bHit(q, D, vec3(o - 0.65, -1.0, DZ - 1.66), vec3(o - 0.15, -0.3, DZ - 1.6), nb, t); if (tb < t) { t = tb; n = nb; obj = 9; }
   }
   vec3 h = q + D*t, col; float emit = 0.0;
+  // the fine patterns (grooves, slats, weave, fibre) fade out as a pixel grows past them, so a room seen from afar is calm,
+  // not speckled (owner, 2026-11-08: "z fighting in windows here": it was these patterns aliasing)
+  float fp = length(fwidth(h)), fine = clamp(1.0 - (fp - 0.02)*25.0, 0.0, 1.0);
   vec3 carpet = r2 < 0.25 ? vec3(0.13, 0.17, 0.36) : r2 < 0.5 ? vec3(0.34, 0.09, 0.10) : r2 < 0.75 ? vec3(0.07, 0.27, 0.27) : vec3(0.26, 0.24, 0.12);
   vec3 accent = r < 0.5 ? vec3(0.25, 0.75, 1.0) : vec3(1.0, 0.62, 0.28);
   if (obj == 0) {
     if (n.y > 0.5) { // carpet: woven, a border, fibre noise
-      float weave = 0.85 + 0.15*step(0.5, fract(h.x*6.0))*step(0.5, fract(h.z*6.0)) + 0.06*ph1(floor(h.xz*40.0));
+      float weave = 0.85 + fine*(0.15*step(0.5, fract(h.x*6.0))*step(0.5, fract(h.z*6.0)) + 0.06*ph1(floor(h.xz*40.0))) + (1.0 - fine)*0.08;
       float border = step(min(min(h.x - xa, xb - h.x), min(h.z, DZ - h.z)), 0.3);
       col = mix(carpet*weave, carpet*0.55, border);
     } else if (n.y < -0.5) { // ceiling with light panels
@@ -73,8 +76,8 @@ vec3 roomBehind(vec3 q, vec3 D, vec3 room, int kindIn, vec3 LIn){
       float u = abs(n.z) > 0.5 ? h.x : h.z, bay = floor(u/0.8), fu = fract(u/0.8), y = h.y + 1.5;
       float groove = max(step(fu, 0.04), step(0.96, fu)) + step(abs(y - 0.9), 0.03) + step(abs(y - 2.55), 0.03);
       col = y < 0.9 ? vec3(0.10, 0.11, 0.13) : vec3(0.34, 0.38, 0.44)*(0.85 + 0.15*ph1(vec2(bay, n.x + n.z*3.0)));
-      if (ph1(vec2(bay, 4.0 + n.x)) > 0.78 && y > 1.2 && y < 2.2 && fu > 0.15 && fu < 0.85) col = mix(col, vec3(0.1), step(0.5, fract(y*8.0))*0.6);   // vent
-      col *= 1.0 - 0.6*clamp(groove, 0.0, 1.0);
+      if (ph1(vec2(bay, 4.0 + n.x)) > 0.78 && y > 1.2 && y < 2.2 && fu > 0.15 && fu < 0.85) col = mix(col, vec3(0.1), mix(0.3, step(0.5, fract(y*8.0)), fine)*0.6);   // vent
+      col *= 1.0 - 0.6*clamp(groove, 0.0, 1.0)*fine;
       float strip = step(abs(y - 2.35), 0.04); emit = strip*2.2;
       
     }
@@ -84,14 +87,16 @@ vec3 roomBehind(vec3 q, vec3 D, vec3 room, int kindIn, vec3 LIn){
   else if (obj == 4) col = vec3(0.22, 0.17, 0.13);
   else if (obj == 5) { col = vec3(0.02); emit = 1.0; }
   else if (obj == 6) col = vec3(0.55, 0.32, 0.18);
-  else if (obj == 7) col = vec3(0.10, 0.36, 0.10)*(0.6 + 0.6*ph1(floor(h.xy*14.0 + h.zx*9.0)));
+  else if (obj == 7) col = vec3(0.10, 0.36, 0.10)*(0.9 + fine*0.6*(ph1(floor(h.xy*14.0 + h.zx*9.0)) - 0.5));
   else if (obj == 8) col = vec3(0.45, 0.43, 0.40);
   else if (obj == 10) { vec2 pp = vec2(h.x - o, h.y); float frame = step(0.42, max(abs(pp.x + 0.4)/0.55*0.5, abs(pp.y)/0.35*0.5)); col = frame > 0.5 ? vec3(0.12) : mix(vec3(0.16, 0.22, 0.42), vec3(0.85, 0.55, 0.3), smoothstep(-0.2, 0.25, pp.y + 0.2*sin(pp.x*5.0 + r*9.0))); } // a picture: a planet's horizon
   else col = accent*0.45 + 0.08;
-  vec3 L = LIn.x >= 0.0 ? LIn : r < 0.12 ? vec3(0.02, 0.022, 0.03) : r < 0.3 ? vec3(0.42, 0.55, 0.8) : vec3(0.9, 0.72, 0.5);
+  // a room picked from the hash: one in eight dark, the rest well lit in warm lamplight, yellow or orange (owner,
+  // 2026-11-06: "can we have the rooms in the windows be more yellow/orange tinted like they are well lit for all ships?")
+  vec3 L = LIn.x >= 0.0 ? LIn : r < 0.12 ? vec3(0.02, 0.022, 0.03) : r < 0.4 ? vec3(1.0, 0.66, 0.32) : vec3(1.0, 0.82, 0.52);
   float shade = 0.45 + 0.55*max(n.y, 0.0) + 0.2*max(-n.z, 0.0);
   float lamp = 0.55 + 0.45*clamp((h.y + 1.5)/3.0, 0.0, 1.0);
-  vec3 lit = col*L*shade*lamp*1.6;
+  vec3 lit = col*L*shade*lamp*1.9;   // well lit
   if (obj == 5 || (obj == 0 && emit > 0.9 && emit < 1.5)) lit += (L.x + L.y + L.z < 0.1 ? vec3(0.0) : accent)*0.7;  // screens
   else if (emit > 0.0) lit += (L.x + L.y + L.z < 0.1 ? vec3(0.0) : (emit > 2.0 ? accent : L))*emit*0.55;
   return lit*exp(-t*0.05);

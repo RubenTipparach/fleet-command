@@ -15,7 +15,7 @@ public class CraftTests
     private static Battle Scene(string id) => new(TestData.Data, TestData.Data.ScenarioById(id));
     private static void Run(Battle b, double s) { for (int i = 0; i < Math.Round(s / b.Tuning.StepS) && b.Over == null; i++) b.Step(); }
 
-    public static readonly TheoryData<string> Sides = new() { "concord", "krai" };
+    public static readonly TheoryData<string> Sides = new() { "concord", "krai", "kelvane", "ssarith" };
 
     [Theory, MemberData(nameof(Sides))]
     public void Fighters_launch_together_and_strip_the_targets_point_defence_on_Defences(string side)
@@ -116,7 +116,7 @@ public class CraftTests
         b.TractorHold();
         Run(b, 11);
         Assert.NotNull(b.Player.Beam);
-        b.SetSpeed(250);
+        b.SetSpeed(2500);
         Run(b, 60);
         Assert.Equal("won", b.Over);
     }
@@ -129,7 +129,7 @@ public class CraftTests
         Ship[] foes = b.EnemiesOf(me).ToArray();
         foreach (Ship f in foes)
         {
-            b.PlaceMine(f.X * 0.12, -1000);
+            b.PlaceMine(f.X * 0.12, -10000);
             Run(b, b.Data.Systems.Mines.CooldownS + 0.1);
         }
         Assert.Equal(2, b.Mines.Count);
@@ -161,7 +161,7 @@ public class CraftTests
     public static TheoryData<string> PackageScenes()
     {
         var d = new TheoryData<string>();
-        foreach (string id in new[] { "tractor", "mines", "shuttle", "fighters" }) { d.Add("concord_" + id); d.Add("krai_" + id); }
+        foreach (string id in new[] { "tractor", "mines", "shuttle", "fighters" }) { d.Add("concord_" + id); d.Add("krai_" + id); d.Add("kelvane_" + id); d.Add("ssarith_" + id); }
         return d;
     }
 

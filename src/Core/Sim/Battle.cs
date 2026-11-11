@@ -17,6 +17,9 @@ public sealed class Shot
 {
     public required string Kind { get; init; }
     public double X, Z, SX, SZ, TX, TZ;
+    /// <summary>Where it was at the start of the last step (NaN until it has flown one), so the view can draw it between
+    /// steps (Battle.DrawnAt).</summary>
+    public double PX = double.NaN, PZ = double.NaN;
     public string? To, From;
     public int Mount = -1;
     public Shot? At;
@@ -100,6 +103,7 @@ public sealed partial class Battle
         TractorSetup();
         CommsSetup();   // the crews first: the marines aboard, which the security teams are formed from
         CloakSetup();
+        FieldSetup();
         Say(scenario.SayWho, scenario.SayText);
     }
 
@@ -118,12 +122,17 @@ public sealed partial class Battle
         for (int i = 0; i < 6; i++) s.Shields[i] = c.ShieldsHp[i] * d.ShieldsFrac;
         foreach (string k in Rules.Systems) s.Power[k] = d.PowerE?.GetValueOrDefault(k, c.PowerE.GetValueOrDefault(k)) ?? c.PowerE.GetValueOrDefault(k);
         foreach (string k in Rules.Subsystems) s.Sys[k] = d.SysHp?.GetValueOrDefault(k, 1) ?? 1;
+        // a ship that starts with no shields keeps none: a target drone or a wreck range hulk has them down and unpowered,
+        // so they never build back up (owner, 2026-11-06: "drones have too much shields in shake down cruise")
+        if (d.ShieldsFrac <= 0) { s.ShieldsUp = false; s.Power["shields"] = 0; }
         var mounts = d.ExtraMounts == null ? c.Mounts : c.Mounts.Concat(d.ExtraMounts).ToList();
         for (int i = 0; i < mounts.Count; i++)
         {
             MountDef md = mounts[i];
             WeaponDef w = Data.Weapons[md.Weapon];
-            s.Mounts.Add(new Mount { Index = i, Def = md, Weapon = w, Charge = 0.6 + (i % 3) * 0.15, Selected = !w.IsPointDefence });
+            bool armed = d.ArmOnly == null || d.ArmOnly.Contains(md.Weapon);   // a weapons test scene arms its one weapon
+            s.Mounts.Add(new Mount { Index = i, Def = md, Weapon = w, Charge = armed ? 0.6 + (i % 3) * 0.15 : 0, Selected = !w.IsPointDefence,
+                State = armed ? Arming.Normal : Arming.Offline });
         }
         return s;
     }
@@ -135,18 +144,55 @@ public sealed partial class Battle
 
     public IEnumerable<Ship> EnemiesOf(Ship s) => _ships.Where(o => o.Alive && !o.Struck && o.Side != s.Side);
 
-    /// <summary>The player's fleet disengages (a mission's Withdraw): the battle ends where it stands.</summary>
-    public void Withdraw()
+    /// <summary>Whether the captain has ordered a withdrawal: the warp drive arms, plots a course out and jumps as soon as
+    /// it is ready (Battle.Warp), and the battle ends as an escape.</summary>
+    public bool Withdrawing { get; private set; }
+
+    /// <summary>The Withdraw key: a withdrawal ordered, or, pressed again while one is under way, called off.</summary>
+    public bool ToggleWithdraw()
+    {
+        if (Withdrawing) { CancelWithdraw(); return true; }
+        return Withdraw();
+    }
+
+    /// <summary>The menu's Withdraw (owner, 2026-11-07: "select withdraw from menu, then warp out"): refused on a story or
+    /// special mission; otherwise the warp drive is armed and plots a course, and the ship jumps out the moment it can.
+    /// Returns false when refused.</summary>
+    public bool Withdraw()
+    {
+        if (Over != null || Withdrawing || !Player.Alive) return false;
+        if (!Scenario.CanWithdraw)
+        {
+            Say("Helm", "We cannot withdraw: this mission must be seen through.");
+            Notify("Withdraw refused", "This mission must be seen through", "caution");
+            return false;
+        }
+        Withdrawing = true;
+        WarpState w = Player.Warp;
+        if (!w.Armed) { w.Armed = true; w.Want = Data.Systems.Warp.CoilE; }
+        if (!w.Plotting) PlotCourse();
+        // engineering routes the weapons' energy to the coils, as much as the drive wants beyond what is free (the
+        // tractor's way of finding power)
+        int free = Math.Max(0, (int)Math.Floor(Rules.Output(Player) - Rules.Used(Player)));
+        int take = Math.Clamp(w.Want - Player.Power["warp"] - free, 0, Player.Power["weapons"]);
+        Player.Power["weapons"] -= take;
+        Say("Helm", take > 0 ? "Withdrawing: weapons power to the warp coils, plotting a course out." : "Withdrawing: charging the warp drive and plotting a course out.");
+        return true;
+    }
+
+    /// <summary>Ends the battle as a completed withdrawal without flying the jump: for the mission preview and tests that
+    /// grade a withdrawal, never for the player (who warps out by Withdraw).</summary>
+    public void EndWithdrawn()
     {
         if (Over != null) return;
         Over = "withdrawn";
-        Say("Helm", "Disengaging. All ships, withdraw.");
     }
 
     /// <summary>The mission's objectives are met (a battle that ends on its objectives): it is won where it stands.</summary>
     public void Win() { if (Over == null) { Over = "won"; Say("Tactical", "Objectives complete."); } }
 
     private readonly HashSet<string> _reached = new();
+    private double _lastHurtT;
     /// <summary>The marker beacons reached so far, by id.</summary>
     public IReadOnlyCollection<string> Reached => _reached;
 
@@ -191,6 +237,10 @@ public sealed partial class Battle
     partial void SecurityStep(double dt);
     partial void TargetingStep(double dt);
     partial void FleetStep(double dt);
+    /// <summary>Field operations (Battle.Field): late arrivals, sleepers, planets and away teams set up from the scenario.</summary>
+    partial void FieldSetup();
+    partial void FieldPreMove(double dt);
+    partial void FieldStep(double dt);
     /// <summary>Called once a battle is built, for each system to set its own state up from the scenario.</summary>
     partial void SystemsSetup();
     /// <summary>The scene ends systems have registered: each is checked after every step, before the default end (the
@@ -205,12 +255,20 @@ public sealed partial class Battle
     partial void ObjectivesStep(ref bool ended);
 
     /// <summary>One fixed step of the whole battle.</summary>
+    /// <summary>Where a shot is drawn a share <paramref name="a"/> (0 to 1) of the way through the step now playing: between
+    /// where it stood before the last step and where it stands now, so a fast shot glides at any frame rate rather than
+    /// jumping a step at a time (owner, 2026-11-06: "why does weapon appear jittery?"). View only; the rules read X and Z.</summary>
+    public static (double X, double Z) DrawnAt(Shot sh, double a) =>
+        double.IsNaN(sh.PX) ? (sh.X, sh.Z) : (sh.PX + (sh.X - sh.PX) * a, sh.PZ + (sh.Z - sh.PZ) * a);
+
     public void Step()
     {
         if (Over != null) return;
         double dt = Tuning.StepS;
         T += dt;
         Steps++;
+        // where everything stood before this step, for the view to draw between steps
+        foreach (Shot sh in _shots) { sh.PX = sh.X; sh.PZ = sh.Z; }
         foreach (Ship s in _ships) if (s.Alive) SystemsStep(s, dt);
         foreach (Ship s in _ships)
         {
@@ -220,23 +278,31 @@ public sealed partial class Battle
         }
         Ship p = Player;
         if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
-        foreach (Ship s in _ships) if (s.Alive) Move(s, dt);
+        AutoFireStep();
+        FieldPreMove(dt);
+        foreach (Ship s in _ships) if (s.Alive && !s.Absent && !s.Fixed) Move(s, dt);
         ChargeStep(dt);
         // the mockup's other systems, each in its own file (Battle.<System>.cs; a hook with no body costs nothing)
         CommsStep(dt); TransportStep(dt); TractorStep(dt); MinesStep(dt); CraftStep(dt); ReactorStep(dt); WarpStep(dt);
         RepairCrewsStep(dt); CloakStep(dt); SensorsStep(dt); SecurityStep(dt); TargetingStep(dt); FleetStep(dt);
         RangeStep(dt);
+        FieldStep(dt);
+        if (Over != null) return;
         MarkersStep();
         PointDefenceStep();
         CountermeasuresStep(dt);
         ShotsStep(dt);
+        // a prize strikes beaten to her capture line, or with her core gone critical: her crew gives her up rather than burn
+        // with her (freighter-missions design, "Taken"), and the boarding party shuts the core down (ReactorStep)
         foreach (Ship s in _ships)
-            if (s.Prize && s.Alive && !s.Struck && s.Hull <= s.Class.HullHp * Tuning.CaptureHullFrac)
+            if (s.Prize && s.Alive && !s.Struck && (s.Hull <= s.Class.HullHp * Tuning.CaptureHullFrac || s.Reactor.Melt > 0))
             {
                 s.Struck = true;
                 s.VOrder = 0;
                 s.Engaged = false;
                 Say("Security", $"The {s.Name} has struck. Boarding party away: she is ours.");
+                // she is ours: every lock on her is dropped, so no one fires into the boarding party
+                foreach (Ship o in _ships) if (o.Target == s.Id) o.Target = null;
             }
         // a scene's own end, registered by the system whose objective it is (a ship disabled, not destroyed): checked first
         foreach (Func<bool> end in _ends) if (end()) return;
@@ -246,6 +312,13 @@ public sealed partial class Battle
         if (goalEnds) return;
         // a damage range never ends: its last ship can be broken up and the range repaired
         if (Scenario.DamageRange || Over != null) return;
+        // a battle that cannot be withdrawn from, where no ship has been hurt for stalemate_s, ends as a stalemate (a draw)
+        if (!Scenario.CanWithdraw && T - _lastHurtT > Tuning.StalemateS && _ships.Any(s => s.Side == 1 && s.Alive && !s.Struck))
+        {
+            Over = "stalemate";
+            Say("Tactical", "Stalemate: neither side can bring the other to battle. Breaking off.");
+            return;
+        }
         if (Scenario.EndsOnObjectives) { if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost"; return; }
         if (!_ships.Any(s => s.Side == 1 && s.Alive && !s.Struck)) { Over = "won"; Say("Tactical", "All hostile ships destroyed."); }
         else if (!_ships.Any(s => s.Side == 0 && s.Alive)) Over = "lost";
@@ -310,7 +383,7 @@ public sealed partial class Battle
         if (s.Estop || s.EstopT > 0) s.VOrder = 0;
         double vmax = Rules.MaxSpeed(s), goal = Math.Clamp(s.VOrder, -Tuning.ReverseMaxMS, vmax), a = c.AccelMS2 * dt * (s.Estop ? Tuning.EstopDecelX : 1) * s.SurgeAccelX;
         s.V += Math.Clamp(goal - s.V, -a, a);
-        if (s.Estop && Math.Abs(s.V) < 1) { s.V = 0; s.Estop = false; s.EstopT = Tuning.EstopHoldS; }
+        if (s.Estop && Math.Abs(s.V) < 10) { s.V = 0; s.Estop = false; s.EstopT = Tuning.EstopHoldS; }
         var f = Geometry.Forward(s.H);
         s.X += f.X * s.V * dt;
         s.Z += f.Z * s.V * dt;
@@ -322,36 +395,41 @@ public sealed partial class Battle
         double vmax = Rules.MaxSpeed(s), toT = Geometry.HeadingTo(s.X, s.Z, t.X, t.Z), d = Rules.DistKm(s, t);
         switch (order)
         {
-            case "approach": s.HOrder = toT; s.VOrder = d > rangeKm ? vmax : Math.Max(60, Math.Abs(t.V)); break;
+            case "approach": s.HOrder = toT; s.VOrder = d > rangeKm ? vmax : Math.Max(600, Math.Abs(t.V)); break;
             case "circle": s.HOrder = Geometry.Wrap(toT + Math.PI / 2 - Math.Clamp((d - rangeKm) / rangeKm, -1, 1) * Math.PI / 4); s.VOrder = vmax * 0.8; break;
             case "evade": s.HOrder = Geometry.Wrap(toT + Math.PI); s.VOrder = vmax; break;
             case "follow":
             {
                 var f = Geometry.Forward(t.H);
                 var r = Geometry.Right(t.H);
-                double ax = t.X - f.X * 800 + r.X * 600, az = t.Z - f.Z * 800 + r.Z * 600, gap = Geometry.Dist(s.X, s.Z, ax, az);
-                s.HOrder = gap > 200 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
+                double ax = t.X - f.X * 8000 + r.X * 6000, az = t.Z - f.Z * 8000 + r.Z * 6000, gap = Geometry.Dist(s.X, s.Z, ax, az);
+                s.HOrder = gap > 2000 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
                 s.VOrder = Math.Clamp(Math.Abs(t.V) + gap * 0.2, 0, vmax);
                 break;
             }
             case "intercept":
             {
-                double tti = Geometry.Dist(s.X, s.Z, t.X, t.Z) / Math.Max(100, Math.Abs(s.V));
+                double tti = Geometry.Dist(s.X, s.Z, t.X, t.Z) / Math.Max(1000, Math.Abs(s.V));
                 var f = Geometry.Forward(t.H);
-                s.HOrder = Geometry.HeadingTo(s.X, s.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
+                double lead = Geometry.HeadingTo(s.X, s.Z, t.X + f.X * t.V * tti, t.Z + f.Z * t.V * tti);
+                // the lead never puts the target more than intercept_max_lead_deg off the nose, so the forward arcs keep it
+                // (Mac playtest 2026-11-08: leading a circling corsair 50 km out left it outside a Krai corvette's 70 degree
+                // arcs, and neither ship fired)
+                double off = Geometry.Wrap(lead - toT), max = Tuning.InterceptMaxLeadDeg * Geometry.Deg;
+                s.HOrder = Geometry.Wrap(toT + Math.Clamp(off, -max, max));
                 break;
             }
             case "trail":
             {
                 var f = Geometry.Forward(t.H);
-                double ax = t.X - f.X * 600, az = t.Z - f.Z * 600, gap = Geometry.Dist(s.X, s.Z, ax, az);
-                s.HOrder = gap > 200 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
-                s.VOrder = Math.Clamp(Math.Abs(t.V) + (gap > 200 ? gap * 0.2 : 0), 0, vmax);
+                double ax = t.X - f.X * 6000, az = t.Z - f.Z * 6000, gap = Geometry.Dist(s.X, s.Z, ax, az);
+                s.HOrder = gap > 2000 ? Geometry.HeadingTo(s.X, s.Z, ax, az) : t.H;
+                s.VOrder = Math.Clamp(Math.Abs(t.V) + (gap > 2000 ? gap * 0.2 : 0), 0, vmax);
                 break;
             }
             case "hold_range":
                 s.HOrder = d > s.HoldKm * 1.1 ? toT : d < s.HoldKm * 0.9 ? Geometry.Wrap(toT + Math.PI) : Geometry.Wrap(toT + Math.PI / 2);
-                s.VOrder = d > s.HoldKm * 1.1 || d < s.HoldKm * 0.9 ? vmax : Math.Max(60, Math.Abs(t.V));
+                s.VOrder = d > s.HoldKm * 1.1 || d < s.HoldKm * 0.9 ? vmax : Math.Max(600, Math.Abs(t.V));
                 break;
             case "hit_run":
                 if (s.RunPhase == "in" && d <= s.RunMinKm) s.RunPhase = "out";
@@ -371,6 +449,8 @@ public sealed partial class Battle
 
     private void Think(Ship s)
     {
+        if (s.Absent || s.Dormant) return;
+        if (s.Runs) { s.VOrder = Rules.MaxSpeed(s); return; }
         bool handled = false;
         ThinkHook(s, ref handled);
         if (handled) return;
@@ -381,6 +461,9 @@ public sealed partial class Battle
         Ship t = AiTarget(s, foes, near);   // its target rule (Battle.Fleet.cs)
         s.Target = t.Id;
         double range = Rules.AiRangeKm(s.Range);
+        // a captain whose fire has not landed for a while closes in, half its range for every ai_close_after_s without a
+        // hit (to an eighth): no ship kites at a range where its shots are all decoyed, missed or out of reach
+        range *= Math.Pow(0.5, Math.Min(3, Math.Floor((T - s.LastLandedT) / Tuning.AiCloseAfterS)));
         if (Retreating(s)) Steer(s, "evade", near, range);
         else if (s.Stance == Stance.Hold) Steer(s, "hold", t, range);
         // a lane run (test scenes): straight on at full speed, turning back for another pass once lane_turn_km out
@@ -397,7 +480,7 @@ public sealed partial class Battle
     /// <summary>World position of a mount, metres.</summary>
     public static (double X, double Z) MountWorld(Ship s, Mount m)
     {
-        double half = s.Class.LengthM / 2;
+        double half = s.Class.FrameM / 2;
         var f = Geometry.Forward(s.H);
         var r = Geometry.Right(s.H);
         return (s.X + f.X * m.Def.Y * half + r.X * m.Def.X * half * 0.6, s.Z + f.Z * m.Def.Y * half + r.Z * m.Def.X * half * 0.6);
@@ -409,6 +492,7 @@ public sealed partial class Battle
     {
         if (!Rules.Ready(m) || !Rules.InArc(s, m, t) || !Rules.InRange(s, m, t)) return false;
         if (s.Cloaking || !CanLock(s, t)) return false;   // no fire while cloaking, none at what cannot be locked (Battle.Cloak.cs)
+        _firstFire ??= s.Side;
         string a = aim ?? s.Aim;
         WeaponMode w = Rules.Mode(m);
         bool hit = _hit.Next() < Rules.HitChance(s, m, t, a);
@@ -440,6 +524,8 @@ public sealed partial class Battle
     private void Damage(Ship t, double sx, double sz, Ship? src, double dmg, string kind, double pierce = 0, Shot? by = null)
     {
         if (!t.Alive) return;
+        _lastHurtT = T;
+        if (src != null) src.LastLandedT = T;
         int f = Rules.FacingFrom(t, sx, sz);
         // a surging Krai bow holds bow_shield_x as much; pierce of the hit goes straight through (Rules.Pierced)
         double bowX = f == 0 && t.SurgeS > 0 ? Data.Specials.Charge.BowShieldX : 1;

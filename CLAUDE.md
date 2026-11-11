@@ -387,6 +387,14 @@ else's artwork):
   keys and icons stay vector. The Vhorr get organic modelling and shaders ("slimey leather, tendrils, claws,
   carapaces, fibers ... the alien hive mind aesthetic"); the Kelvane are modelled after "old school electircal
   dashboards, dials, switches".
+- **The Concord UI is the master UI** (owner, 2026-11-08: "we will treat the concord UI as master ui and any changes to
+  concord should trickle to all other UI panels unless explicitly stated that it should be different"). A change to the
+  Concord's UI (a key, a panel, a readout, a layout or what a control does) goes into every other faction's UI in the same
+  branch: every skin in the game, and every faction's mockup pages (the battle consoles are written from the Concord page
+  by `tools/mockups/skin_page.py`; any other faction page is edited to match). A faction's UI differs from the Concord's
+  only where the owner has said it should, and that difference is written in its change's design. What trickles down is
+  what is on the screen and what it does; how it is drawn (pieces, shapes, palette, icons) stays each skin's own design
+  language, under the three rules above.
 - **No black behind a metallic skin's panels** (owner, 2026-11-04: "We need a background for the lleft panel area. Black
   background is forbidden for metallic panel based factions"). Every skin whose panels are modelled metal (the Kethran,
   Krai, Ssarith, Ombrai, Kelvane, and the Aelith's shells) has a rendered ground behind its column, and behind an expanded
@@ -467,8 +475,11 @@ The `playtest` and `obs-record` skills are the method (Crab Breeze 9, Mining Mik
   the contact sheet** before calling a take done.
 - **Upload every take to Google Drive at full resolution** (owner, 2026-11-04: "upload google drive at full
   resolution, mp4 encoded"): an H.264 MP4 at the take's own resolution, never scaled down, into
-  `G:/My Drive/dungeon-crawler-2026/` (the folder the owner's other games use), named
-  `fleet-command-<YYYY-MM-DD>-<what>.mp4`, confirm it with the Google Drive connector, and give the owner the link.
+  `G:/My Drive/dungeon-crawler-2026/fleet-command/<faction>/` (the folder the owner's other games use, sorted by game and
+  then by the side the take plays: `concord/`, `krai/`, a new faction's own folder, or `all-factions/` for a take of no one
+  side; owner, 2026-11-08: "sort the fleet command videos into folders and in the fleet command folder sort them by
+  faction"), named `fleet-command-<YYYY-MM-DD>-<what>.mp4`, confirm it with the Google Drive connector, and give the owner
+  the link.
 - **One game per device**, and **a desktop run is checked every five minutes** while it plays
   (Mining Mike).
 - **Share the machine with the other sessions** (owner, 2026-11-04: "theres two claude sessions running on this machine,
@@ -587,10 +598,19 @@ Before claiming anything is done, run what applies:
 | Game stills | `scripts/game-stills.sh` (named stills of the running game under Xvfb, into `docs/screenshots/game/`) |
 | Data | the data validator, once it exists |
 | Mockups | `tools/mockups/dom_fit.mjs` on each changed page, `tools/mockups/console_fit.mjs` on the console skins (children inside parents, measured), then screenshot each changed page and look at the shots (`threejs-mockups`) |
+| Faction readiness | `python3 tools/factions/readiness.py`, then commit `docs/design/faction-readiness.html` (`run-tests.sh` fails while it is stale; below) |
 | Artifacts | `python3 tools/mockups/artifact_check.py` (every tracker entry's page is committed HTML and its link is recorded, section 4) |
 | Mockup sync | game stills beside the mockup's shots (`tools/compare/side_by_side.py`), looked at, and `docs/design/mockup-sync.md` updated (section 4) |
 | In the game | a playtest (section 9), or headless stills in a cloud session |
 
+- **Faction readiness is kept current by whoever touches the game** (owner, 2026-11-07: "It would be nice to have an
+  artifact check off what's been done for a faction", "make sure agents update in Claude md if they touch godot code").
+  `docs/design/faction-readiness.html` checks off, for every faction, its console, emblem, ships, schematics, textures,
+  weapons, scenes, bot runs, campaign, officers and music. `tools/factions/readiness.py` measures most of it from the
+  game's own files; the owner's approvals and culture decisions are in `docs/design/faction-readiness.json`. Any session
+  or agent that changes Godot code, game data or assets (`src/`, `data/`, `assets/`) for a faction re-runs the script,
+  updates the JSON when an approval or a culture decision changed, commits the page with the change, and republishes it
+  with the session's other artifacts. A new kind of faction work gets a new row in the script, not a note somewhere else.
 - **Know what is proven.** Keep implemented, validated and proposed work distinct in docs, PRs and
   replies. A design is not a feature, and a green test is not a visual sign-off.
 - **Every major step ends in something the owner can check**: a mockup link, a playtest video on
@@ -623,6 +643,7 @@ Before claiming anything is done, run what applies:
 | `krita-brushwork` | Hand-drawn pieces (the Vos skin's ink, washes, claw tags) painted by script with Krita's brush engines, headless (sections 7, 10). |
 | `painted-bake` | Hull textures that read drawn on: a high-poly tile's occlusion, normals, edges and plate ids rendered in Blender and painted over (flat plates, painted light, inked crevices, lit edges, glow), after the reference games' look, never their art (section 10). |
 | `ship-detailing` | Detailing a ship from blockout to game-ready textures: the hull grown as one structure, its own unwrap, a modelled detail layer (layered armour, machinery, domes, vents, lamps, windows, emblem, liveries, light fixtures), mirrored and never repeated, baked onto its UVs and painted into a painted map and a PBR set with emission and a hull-light map, with image samples (section 10). |
+| `planet-shaders` | Planets and asteroids, godot-sandbox's way: a stack of seamless shells (ground, craters, clouds, rings, air) on the sphere's direction, relief differenced into normals, gas giants with rings, procedural rocks, detail by distance, the planet gallery's stills (section 10). |
 
 Provenance for every skill is in `.claude/skills/PROVENANCE.md`.
 
@@ -641,6 +662,10 @@ Nothing is an exception until it is listed here with its reason.
 - **The campaign mockup has no tracker link** (owner, 2026-11-05, of its "All Fleet Command mockups (the tracker)" link: "remove
   this from the campaign mockup"). `docs/mockups/game-flow.html` (mockup 1) is drawn as the game's own screens, so it carries no
   link back to the tracker; every other published page still does (section 4).
+- **The freighters' container takes its surface from a CC0 texture set**, not a Material Maker graph (owner, 2026-11-07:
+  "you need like better cargo textures, lookem up online for cc0 options, back ao and get diffuse and normals and specular for
+  each container"). `tools/textures/fetch_cc0.py` fetches it (refusing anything not CC0), `tools/blender/build_container.py`
+  bakes the modelled container from it, and every original is named with its SHA-256 in `assets/containers/SOURCES.md`.
 - **Copied skills keep their source's text** below their "In Fleet Command" note, so a later copy
   from the source can be diffed. Where the source and the note disagree, the note and this file
   win. The two external skills (`game-ui-frontend` from OpenAI, `ui-ux-pro-max` from

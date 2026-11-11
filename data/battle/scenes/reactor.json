@@ -1,5 +1,5 @@
 {
- "_doc": "The battle console mockup's test scenes for the reactor, warp, damage control and officers (its Warp and Escape scenes; openspec/changes/warp and damage-control), in the format of data/battle/scenarios.json, appended to its list in menu order, each from both sides with the approved ships (the mockup's Kethran are the Krai line, or the Concord's from the Krai side). Per ship, start sets its state past its class's (src/Core/Data/ScenarioStart.cs): power boxes (warp included), sys health, mounts_hp in mount order, the reactor's coils, loops_hp, temp_pct and coolant, the warp banks_e and nacelles_hp. wells are the gravity wells a jump reckons with (metres; strength at the centre, falling to 0 at reach_m).",
+ "_doc": "The battle console mockup's test scenes for the reactor, warp, damage control and officers (its Warp and Escape scenes; openspec/changes/warp and damage-control), in the format of data/battle/scenarios.json, appended to its list in menu order, each from both sides with the approved ships (the mockup's Kethran are the Krai line, or the Concord's from the Krai side). Per ship, start sets its state past its class's (src/Core/Data/ScenarioStart.cs): power boxes (warp included), sys health, mounts_hp in mount order, the reactor's coils, loops_hp, temp_pct and coolant, the warp banks_e and nacelles_hp. wells are the gravity wells a jump reckons with (metres; strength at the centre, falling to 0 at reach_m). The Kelvane Institute plays each too (kelvane_<scene>, 2026-11-07, owner: \"test all kelvan general mission scenarios\"): the Concord's scene with the Institute's own ships in the Concord's places (the cruiser Patience, the destroyer Candour carrying troops, the frigate Parallax in distress, Lyceum Depot), each under a sky of its own. So does the Ssarith Hunt (ssarith_<scene>, 2026-11-07, owner: \"Ensure spaceships for ssarith are also implemented\"), its ships in the same places (the Hunt Cruiser, the Trident or Hooded Lance frigate for the destroyer and the troop carrier, the Forked Prow in distress, Pell Reach the depot), named for their classes with \"Hunt captain\" until its culture is set (survey H1, C4).",
  "scenarios": [
   {
    "id": "concord_warp",
@@ -16,9 +16,9 @@
     {
      "name": "Neutron star",
      "x_m": 0,
-     "z_m": -3000,
-     "r_m": 300,
-     "reach_m": 8000,
+     "z_m": -30000,
+     "r_m": 3000,
+     "reach_m": 80000,
      "strength": 0.9
     }
    ],
@@ -58,10 +58,10 @@
      "class": "krai_cv",
      "faction": "krai",
      "side": 1,
-     "x_m": 4000,
-     "z_m": 12000,
+     "x_m": 40000,
+     "z_m": 120000,
      "heading_deg": 300,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "skarn",
@@ -70,10 +70,10 @@
      "class": "krai_cv",
      "faction": "krai",
      "side": 1,
-     "x_m": -5000,
-     "z_m": 13000,
+     "x_m": -50000,
+     "z_m": 130000,
      "heading_deg": 60,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     }
    ]
   },
@@ -92,9 +92,9 @@
     {
      "name": "Neutron star",
      "x_m": 0,
-     "z_m": -3000,
-     "r_m": 300,
-     "reach_m": 8000,
+     "z_m": -30000,
+     "r_m": 3000,
+     "reach_m": 80000,
      "strength": 0.9
     }
    ],
@@ -134,10 +134,10 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": 4000,
-     "z_m": 12000,
+     "x_m": 40000,
+     "z_m": 120000,
      "heading_deg": 300,
-     "speed_m_s": 160
+     "speed_m_s": 1600
     },
     {
      "id": "lark",
@@ -146,10 +146,162 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": -5000,
-     "z_m": 13000,
+     "x_m": -50000,
+     "z_m": 130000,
      "heading_deg": 60,
-     "speed_m_s": 160
+     "speed_m_s": 1600
+    }
+   ]
+  },
+  {
+   "id": "kelvane_warp",
+   "sky": "institute_azure_fold",
+   "name": "Warp",
+   "side": "kelvane",
+   "seed": 20261309,
+   "objective": "Jump to warp before the corvettes catch you",
+   "say": [
+    "Helm",
+    "Krai corvettes closing from astern, and the neutron star ahead bends space. Charge the banks, plot a course and jump."
+   ],
+   "wells": [
+    {
+     "name": "Neutron star",
+     "x_m": 0,
+     "z_m": -30000,
+     "r_m": 3000,
+     "reach_m": 80000,
+     "strength": 0.9
+    }
+   ],
+   "ships": [
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "start": {
+      "power": {
+       "warp": 0,
+       "weapons": 4
+      },
+      "reactor": {
+       "coolant": 0.8
+      },
+      "warp": {
+       "banks_e": 12,
+       "nacelles_hp": [
+        0.7,
+        1
+       ]
+      }
+     }
+    },
+    {
+     "id": "ashkar",
+     "name": "Ashkar",
+     "captain": "Fang Oru",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 40000,
+     "z_m": 120000,
+     "heading_deg": 300,
+     "speed_m_s": 1600
+    },
+    {
+     "id": "skarn",
+     "name": "Skarn",
+     "captain": "Fang Vey",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -50000,
+     "z_m": 130000,
+     "heading_deg": 60,
+     "speed_m_s": 1600
+    }
+   ]
+  },
+  {
+   "id": "ssarith_warp",
+   "sky": "hunt_violet_rapids",
+   "name": "Warp",
+   "side": "ssarith",
+   "seed": 20261409,
+   "objective": "Jump to warp before the corvettes catch you",
+   "say": [
+    "Helm",
+    "Krai corvettes closing from astern, and the neutron star ahead bends space. Charge the banks, plot a course and jump."
+   ],
+   "wells": [
+    {
+     "name": "Neutron star",
+     "x_m": 0,
+     "z_m": -30000,
+     "r_m": 3000,
+     "reach_m": 80000,
+     "strength": 0.9
+    }
+   ],
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 0,
+     "start": {
+      "power": {
+       "warp": 0,
+       "weapons": 4
+      },
+      "reactor": {
+       "coolant": 0.8
+      },
+      "warp": {
+       "banks_e": 12,
+       "nacelles_hp": [
+        0.7,
+        1
+       ]
+      }
+     }
+    },
+    {
+     "id": "ashkar",
+     "name": "Ashkar",
+     "captain": "Fang Oru",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 40000,
+     "z_m": 120000,
+     "heading_deg": 300,
+     "speed_m_s": 1600
+    },
+    {
+     "id": "skarn",
+     "name": "Skarn",
+     "captain": "Fang Vey",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -50000,
+     "z_m": 130000,
+     "heading_deg": 60,
+     "speed_m_s": 1600
     }
    ]
   },
@@ -175,7 +327,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 90,
+     "speed_m_s": 900,
      "hull_frac": 0.35,
      "shields_frac": 0.2,
      "start": {
@@ -233,10 +385,10 @@
      "class": "krai_ff",
      "faction": "krai",
      "side": 1,
-     "x_m": -2000,
-     "z_m": 38000,
+     "x_m": -20000,
+     "z_m": 380000,
      "heading_deg": 0,
-     "speed_m_s": 200
+     "speed_m_s": 2000
     },
     {
      "id": "ruhn",
@@ -245,10 +397,10 @@
      "class": "krai_cv",
      "faction": "krai",
      "side": 1,
-     "x_m": 2500,
-     "z_m": 41000,
+     "x_m": 25000,
+     "z_m": 410000,
      "heading_deg": 0,
-     "speed_m_s": 200
+     "speed_m_s": 2000
     }
    ]
   },
@@ -274,7 +426,7 @@
      "x_m": 0,
      "z_m": 0,
      "heading_deg": 0,
-     "speed_m_s": 90,
+     "speed_m_s": 900,
      "hull_frac": 0.35,
      "shields_frac": 0.2,
      "start": {
@@ -330,10 +482,10 @@
      "class": "dd",
      "faction": "concord",
      "side": 1,
-     "x_m": -2000,
-     "z_m": 38000,
+     "x_m": -20000,
+     "z_m": 380000,
      "heading_deg": 0,
-     "speed_m_s": 200
+     "speed_m_s": 2000
     },
     {
      "id": "tallis",
@@ -342,10 +494,205 @@
      "class": "ff",
      "faction": "concord",
      "side": 1,
-     "x_m": 2500,
-     "z_m": 41000,
+     "x_m": 25000,
+     "z_m": 410000,
      "heading_deg": 0,
-     "speed_m_s": 200
+     "speed_m_s": 2000
+    }
+   ]
+  },
+  {
+   "id": "kelvane_escape",
+   "sky": "institute_ochre_furnace",
+   "name": "Escape",
+   "side": "kelvane",
+   "seed": 20261310,
+   "objective": "Repair the reactor and the warp drive, then jump before the Krai catch you",
+   "say": [
+    "Engineering",
+    "We broke away, but the reactor core, both warp nacelles and the sensors are hit. Order the repairs in Repair, then charge warp and jump."
+   ],
+   "ships": [
+    {
+     "id": "patience",
+     "name": "Patience",
+     "captain": "Dr. Orrel",
+     "class": "kelvane_rv",
+     "faction": "kelvane",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 900,
+     "hull_frac": 0.35,
+     "shields_frac": 0.2,
+     "start": {
+      "power": {
+       "weapons": 2,
+       "repair": 4
+      },
+      "sys": {
+       "sensors": 0.3,
+       "engines": 0.45,
+       "weapons": 0.35,
+       "shields": 0.5,
+       "transport": 0.6,
+       "reactor": 0.4
+      },
+      "mounts_hp": [
+       1,
+       0.3,
+       1,
+       1,
+       0,
+       1,
+       0.3,
+       1,
+       1,
+       0.3
+      ],
+      "reactor": {
+       "coils": [
+        0.3,
+        -0.22,
+        0.08
+       ],
+       "loops_hp": [
+        0.25,
+        1
+       ],
+       "temp_pct": 72,
+       "coolant": 0.7
+      },
+      "warp": {
+       "banks_e": 22,
+       "nacelles_hp": [
+        0.15,
+        0.35
+       ]
+      }
+     }
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Blade Sora",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -20000,
+     "z_m": 380000,
+     "heading_deg": 0,
+     "speed_m_s": 2000
+    },
+    {
+     "id": "ruhn",
+     "name": "Ruhn",
+     "captain": "Fang Idra",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 25000,
+     "z_m": 410000,
+     "heading_deg": 0,
+     "speed_m_s": 2000
+    }
+   ]
+  },
+  {
+   "id": "ssarith_escape",
+   "sky": "hunt_scarlet_kiln",
+   "name": "Escape",
+   "side": "ssarith",
+   "seed": 20261410,
+   "objective": "Repair the reactor and the warp drive, then jump before the Krai catch you",
+   "say": [
+    "Engineering",
+    "We broke away, but the reactor core, both warp nacelles and the sensors are hit. Order the repairs in Repair, then charge warp and jump."
+   ],
+   "ships": [
+    {
+     "id": "hunt_cruiser",
+     "name": "Hunt Cruiser",
+     "captain": "Hunt captain",
+     "class": "hunt_ca",
+     "faction": "ssarith",
+     "side": 0,
+     "x_m": 0,
+     "z_m": 0,
+     "heading_deg": 0,
+     "speed_m_s": 900,
+     "hull_frac": 0.35,
+     "shields_frac": 0.2,
+     "start": {
+      "power": {
+       "weapons": 2,
+       "repair": 4
+      },
+      "sys": {
+       "sensors": 0.3,
+       "engines": 0.45,
+       "weapons": 0.35,
+       "shields": 0.5,
+       "transport": 0.6,
+       "reactor": 0.4
+      },
+      "mounts_hp": [
+       1,
+       0.3,
+       1,
+       1,
+       0,
+       1,
+       1,
+       1,
+       0.3
+      ],
+      "reactor": {
+       "coils": [
+        0.3,
+        -0.22,
+        0.08
+       ],
+       "loops_hp": [
+        0.25,
+        1
+       ],
+       "temp_pct": 72,
+       "coolant": 0.7
+      },
+      "warp": {
+       "banks_e": 22,
+       "nacelles_hp": [
+        0.15,
+        0.35
+       ]
+      }
+     }
+    },
+    {
+     "id": "vekk",
+     "name": "Vekk",
+     "captain": "Blade Sora",
+     "class": "krai_ff",
+     "faction": "krai",
+     "side": 1,
+     "x_m": -20000,
+     "z_m": 380000,
+     "heading_deg": 0,
+     "speed_m_s": 2000
+    },
+    {
+     "id": "ruhn",
+     "name": "Ruhn",
+     "captain": "Fang Idra",
+     "class": "krai_cv",
+     "faction": "krai",
+     "side": 1,
+     "x_m": 25000,
+     "z_m": 410000,
+     "heading_deg": 0,
+     "speed_m_s": 2000
     }
    ]
   }

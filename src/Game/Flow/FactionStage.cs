@@ -26,6 +26,9 @@ public sealed partial class FactionStage : Node3D
         public SpotLight3D Lamp = null!;
         public ShaderMaterial Beam = null!, Dust = null!;
         public float On, Yaw, Pitch;
+        public Vector3 Home;   // its place on the full table
+        public Node3D? Inlay;  // its brass ring in the table (table.glb's inlay_<faction>), and that ring's place
+        public Vector3 InlayHome;
     }
 
     private readonly List<Slot> _slots = new();
@@ -46,6 +49,11 @@ public sealed partial class FactionStage : Node3D
     /// <summary>A still: time stands at 6 s and every level and turn is where it is heading (the page's factionShot).</summary>
     public bool Frozen;
     public IReadOnlyList<string> Factions => _slots.ConvertAll(s => s.Fac);
+    /// <summary>Which badges stand on the table (Options, unfinished factions: off shows the factions in the game, owner
+    /// 2026-11-09). The rest are hidden, and the shown ones moved so their rows sit round the table's middle.</summary>
+    public Func<string, bool> Keep = _ => true;
+    /// <summary>Whether a badge is on the table now.</summary>
+    public bool Shown(int i) => i >= 0 && i < _slots.Count && _slots[i].Root.Visible;
 
     public void Build()
     {
@@ -96,7 +104,7 @@ public sealed partial class FactionStage : Node3D
         AddChild(tbl);
         var wood = Wood(Colors.White, 0.35f, 0.28f);
         var under = Wood(new Color(0.55f, 0.5f, 0.46f), 0.2f, 0.4f);
-        Dress(tbl, name => name switch { "table_wood" => wood, "table_under" => under, _ => null });
+        GraphMaterial.Dress(tbl, name => name switch { "table_wood" => wood, "table_under" => under, _ => null });
 
         // each badge's materials: its Material Maker graph's maps, or the holographic field
         var badgeMats = new Dictionary<string, Material?>();
@@ -110,7 +118,9 @@ public sealed partial class FactionStage : Node3D
         foreach (JsonElement s in m.GetProperty("slots").EnumerateArray())
         {
             string fac = s.GetProperty("faction").GetString()!;
-            var slot = new Slot { Fac = fac, Root = new Node3D { Name = fac, Position = new Vector3(s.GetProperty("x").GetSingle(), 0, 0) } };
+            var slot = new Slot { Fac = fac, Root = new Node3D { Name = fac, Position = new Vector3(s.GetProperty("x").GetSingle(), 0, s.TryGetProperty("z", out JsonElement z) ? z.GetSingle() : 0) } };
+            slot.Home = slot.Root.Position;
+            if (tbl.FindChild("inlay_" + fac, true, false) is Node3D inl) { slot.Inlay = inl; slot.InlayHome = inl.Position; }
             AddChild(slot.Root);
             slot.Holder = new Node3D { Name = "Holder", Position = new Vector3(0, _float, 0) };
             slot.Root.AddChild(slot.Holder);
@@ -118,7 +128,7 @@ public sealed partial class FactionStage : Node3D
             slot.Holder.AddChild(tilt);
             Node3D badge = GD.Load<PackedScene>(Dir + fac + ".glb").Instantiate<Node3D>();
             tilt.AddChild(badge);
-            Dress(badge, name =>
+            GraphMaterial.Dress(badge, name =>
             {
                 if (name == "holo_field") { var h = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/Flow/holo_field.gdshader") }; _holo.Add(h); return h; }
                 return badgeMats.GetValueOrDefault(name);
@@ -173,38 +183,19 @@ public sealed partial class FactionStage : Node3D
     {
         Color C(string k) { JsonElement a = e.GetProperty(k); return new Color(a[0].GetSingle(), a[1].GetSingle(), a[2].GetSingle()); }
         float F(string k) => e.GetProperty(k).GetSingle();
-        var mat = new OrmMaterial3D { AlbedoColor = C("tint"), TextureFilter = BaseMaterial3D.TextureFilterEnum.LinearWithMipmapsAnisotropic };
+        // the page's colours are linear (its three.js reads them so); Godot's are sRGB
+        var mat = new OrmMaterial3D { AlbedoColor = C("tint").LinearToSrgb(), TextureFilter = BaseMaterial3D.TextureFilterEnum.LinearWithMipmapsAnisotropic };
         if (e.GetProperty("graph").ValueKind == JsonValueKind.String)
         {
-            string g = $"res://assets/textures/materials/{e.GetProperty("graph").GetString()}/";
-            mat.AlbedoTexture = GD.Load<Texture2D>(g + "albedo.png");
-            mat.NormalEnabled = true;
-            mat.NormalTexture = GD.Load<Texture2D>(g + "normal.png");
-            mat.NormalScale = F("normal_scale");
-            mat.OrmTexture = GD.Load<Texture2D>(g + "orm.png");
-            mat.Roughness = 1;
-            mat.Metallic = 1;
             float uv = F("uv_scale");
-            mat.Uv1Scale = new Vector3(uv, uv, 1);
+            mat = GraphMaterial.Make(e.GetProperty("graph").GetString()!, C("tint").LinearToSrgb(), new Vector2(uv, uv), F("normal_scale"));
         }
         else { mat.Roughness = F("roughness"); mat.Metallic = F("metalness"); }
         if (F("clearcoat") > 0) { mat.ClearcoatEnabled = true; mat.Clearcoat = F("clearcoat"); mat.ClearcoatRoughness = F("clearcoat_roughness"); }
         if (F("sheen") > 0) { mat.RimEnabled = true; mat.Rim = 0.5f * F("sheen"); mat.RimTint = 0.6f; }
         Color em = C("emissive");
-        if (em.R + em.G + em.B > 0) { mat.EmissionEnabled = true; mat.Emission = em; mat.EmissionEnergyMultiplier = F("emissive_strength"); }
+        if (em.R + em.G + em.B > 0) { mat.EmissionEnabled = true; mat.Emission = em.LinearToSrgb(); mat.EmissionEnergyMultiplier = F("emissive_strength"); }
         return mat;
-    }
-
-    // Puts each surface's material in place by the name the glb gives it; a name the pick has no answer for keeps its own.
-    private static void Dress(Node n, Func<string, Material?> pick)
-    {
-        if (n is MeshInstance3D mi && mi.Mesh != null)
-        {
-            mi.CastShadow = GeometryInstance3D.ShadowCastingSetting.On;
-            for (int i = 0; i < mi.Mesh.GetSurfaceCount(); i++)
-                if (mi.Mesh.SurfaceGetMaterial(i) is { } m && pick(m.ResourceName) is { } r) mi.SetSurfaceOverrideMaterial(i, r);
-        }
-        foreach (Node c in n.GetChildren()) Dress(c, pick);
     }
 
     // The motes in a beam (the page's dust: each at a depth down the cone and a radius inside it), their seeds in UV.x.
@@ -229,8 +220,8 @@ public sealed partial class FactionStage : Node3D
         return mesh;
     }
 
-    /// <summary>On a screen narrower than 16:9 (a phone in portrait) the camera backs off along its line to the table's
-    /// middle until the three badges fit across it (the page's fitFacCam).</summary>
+    /// <summary>The camera backs off along its line to the table's middle until the badges fit across it (fitW either side
+    /// of the middle; the page's fitFacCam).</summary>
     private void FitCamera(float aspect)
     {
         Vector3 dir = _camAt - _camTarget;
@@ -252,11 +243,31 @@ public sealed partial class FactionStage : Node3D
     /// <summary>Where a faction's badge sits on a screen of this size: a square round its centre, or null behind the camera.</summary>
     public Rect2? ScreenRect(int i, Vector2 size)
     {
-        if (i < 0 || i >= _slots.Count) return null;
+        if (!Shown(i)) return null;
         Vector3 c = _slots[i].Holder.GlobalPosition;
         if (Project(c, size) is not { } p || Project(c + _cam.GlobalBasis.X * 0.62f, size) is not { } e) return null;
         float r = p.DistanceTo(e);
         return new Rect2(p - new Vector2(r, r), new Vector2(2 * r, 2 * r));
+    }
+
+    // the badges Keep allows on the table, their rows moved so the middle of them is the table's middle
+    private void Restage()
+    {
+        float zMid = 0;
+        int n = 0;
+        foreach (Slot s in _slots) if (Keep(s.Fac)) { zMid += s.Home.Z; n++; }
+        zMid = n > 0 ? zMid / n : 0;
+        foreach (Slot s in _slots)
+        {
+            s.Root.Visible = Keep(s.Fac);
+            s.Root.Position = s.Home - new Vector3(0, 0, zMid);
+            if (s.Inlay is { } inl)
+            {
+                inl.Visible = s.Root.Visible;
+                // the ring moves with its badge, in the table's own space (the inlay is the table's child)
+                inl.Position = s.InlayHome - inl.GetParent<Node3D>().GlobalBasis.Inverse() * new Vector3(0, 0, zMid);
+            }
+        }
     }
 
     public override void _Process(double delta)
@@ -267,6 +278,7 @@ public sealed partial class FactionStage : Node3D
         Vector2 vp = ScreenSize.X >= 1 && ScreenSize.Y >= 1 ? ScreenSize : GetViewport().GetVisibleRect().Size;
         if (vp.X < 1 || vp.Y < 1) vp = new Vector2(1920, 1080);
         FitCamera(vp.X / vp.Y);
+        Restage();
         int chosen = Picked == null ? -1 : _slots.FindIndex(s => s.Fac == Picked);
         for (int i = 0; i < _slots.Count; i++)
         {
@@ -277,6 +289,7 @@ public sealed partial class FactionStage : Node3D
             // the page's intensity is in three.js 0.147's legacy light units, about pi times a physical (and Godot) unit's
             // light, so the pool on the wood is as warm and bright as the page's (owner, 2026-11-06: "that light cone is wrong")
             s.Lamp.LightEnergy = (0.25f + 6.5f * s.On) * Mathf.Pi;
+            s.Lamp.ShadowEnabled = s.On > 0.05f;   // only a lit lamp casts shadows: thirteen shadowed lamps are too many for a phone (the page's stepFaction)
             s.Beam.SetShaderParameter("level", s.On);
             s.Dust.SetShaderParameter("level", s.On);
             s.Dust.SetShaderParameter("t", _t);

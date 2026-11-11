@@ -36,6 +36,7 @@ public sealed partial class ViewOverlay
         // the planets: a ring and the name, a click selects it; selected, green corners, its range and what it still needs
         foreach (Planet p in b.Planets)
         {
+            if (_view.PlanetView) break;   // in the planet view the planet fills the view: its sites are named instead
             if (Local(p.X, p.Z) is not { } lp || !view.Grow(-30).HasPoint(lp)) continue;
             bool sel = b.PlanetDest == p.Id;
             float rr = Math.Max(30, Local(p.X + p.RadiusM, p.Z) is { } e ? e.DistanceTo(lp) : 30);
@@ -48,7 +49,7 @@ public sealed partial class ViewOverlay
         // a friendly ship still asking for something says so under its name
         foreach (Ship s in b.Ships)
         {
-            if (!s.Alive || s == me || s.Side != me.Side || Local(s.X, s.Z) is not { } lp || !view.Grow(-4).HasPoint(lp)) continue;
+            if (!s.Alive || s.Absent || s == me || s.Side != me.Side || Local(s.X, s.Z) is not { } lp || !view.Grow(-4).HasPoint(lp)) continue;
             bool locked = me.Target == s.Id;
             float ny = locked ? 58 + 36 : 34 + 18;
             if (Battle.PilotNeeded(s)) { f.Draw(this, "PILOT NEEDED", lp.X, lp.Y + ny, 16, C.Caution, HorizontalAlignment.Center, 0, 700); ny += 18; }
@@ -66,6 +67,35 @@ public sealed partial class ViewOverlay
             ReachRing(f, inR ? C.Accord : C.Sky, inR ? "TRANSPORT RANGE · IN REACH" : "TRANSPORT RANGE");
         }
         // the event log itself is drawn by ViewOverlay.Tactical (one log, opened from Comms)
+        DrawField(f);
+    }
+
+    // Field operations over the view (openspec/changes/mission-systems): the Planet view key while a planet is selected (or
+    // the view is on one), the found sites named in the planet view with their state and any away team, and the dead
+    // engines notice while an outage holds every drive.
+    private void DrawField(Fonts f)
+    {
+        Battle b = B;
+        if (_view.PlanetView)
+            foreach (var (pl, st, at) in _view.SiteMarks())
+            {
+                Vector2 lp = at - Position;
+                if (!new Rect2(Vector2.Zero, Size).Grow(-20).HasPoint(lp)) continue;
+                AwayTeam? team = b.AwayTeams.FirstOrDefault(a => a.Planet == pl.Id && a.Site == st.Id);
+                Color col = st.Secured ? C.Accord : st.Failed ? C.Caution : st.Hostile ? C.Alert : C.Sky;
+                string state = st.Secured ? "held" : st.Failed ? $"driven back · {st.Garrison} on guard" : st.Hostile ? $"armed · {st.Garrison} on guard" : st.Kind;
+                f.Draw(this, st.Name.ToUpperInvariant(), lp.X, lp.Y - 26, 17, col, HorizontalAlignment.Center, 0, 700, 1);
+                f.Draw(this, state.ToUpperInvariant(), lp.X, lp.Y - 8, 14, C.Lilac, HorizontalAlignment.Center, 0, 600, 1);
+                if (team != null)
+                    f.Draw(this, team.Done ? "AWAY TEAM · WAITING TO BEAM UP" : $"AWAY TEAM · {team.Marines} · {Math.Ceiling(team.T)} S", lp.X, lp.Y + 34, 15, C.Sky, HorizontalAlignment.Center, 0, 700, 1);
+            }
+        if (b.EnginesOut) f.Draw(this, "ENGINES DEAD", Size.X / 2, 104, 26, C.Alert, HorizontalAlignment.Center, 0, 700, 2);
+        if (_view.PlanetView || b.PlanetDest != null)
+        {
+            var r = new Rect2(Size.X - 16 - 170, Size.Y - 16 - 44, 170, 44);
+            Key("v.planet.view", r, _view.PlanetView ? "Back to ship" : "Planet view", _x.Act.PlanetView, _view.PlanetView,
+                _view.PlanetView ? "Back to your ship (G)" : "Fly the camera down to the selected planet (G)");
+        }
     }
 
     // a friendly mark (a planet's): its ring in green, or green corners once selected, its name, range and needs

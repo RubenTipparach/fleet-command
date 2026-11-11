@@ -21,10 +21,10 @@ account and every link here is updated.
 
 | # | Mockup | Stage | OpenSpec change | Page | Link |
 |---|---|---|---|---|---|
-| 1 | Primary game flow (and, since v8, the faction screen and campaign missions) | **Approved for implementation** (2026-11-05, owner in conversation: "implement game flow into the game, but I want you to implmenent missions as well"; changes `game-flow-engine`, `mission-scripting`, `ship-schematics`). Drafted (2026-11-06, v19: the faction screen fits phones in portrait; v18: the faction screen on a walnut table, free fitting from stores, crew lists by station, the course kept and later turns dotted, Display in Options; v17: ships slide between sectors; v16: the port redesigned; v15: Accept sets course) | `game-flow`, `faction-select`, `campaign-missions` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
-| 2 | In-game UI | Approved for implementation (2026-11-03; live v79: every skin in one console, following the ship you command; v80 committed, to publish: beams and disruptor bolts keep their ends on their ships, and lances, bolts and torpedoes drawn by the weapons range's effects) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
+| 1 | Primary game flow (and, since v8, the faction screen and campaign missions) | v31 drafts (2026-11-09): **commander rank** (change `commander-rank`, the top bar's Rank and the `map_rank` shot; awaiting approval, survey CR1-CR7), the standing as Friends and Enemies emblems with the Standings key, and the Unfinished factions option (both small changes to approved UI, in the game too). **Approved for implementation** (2026-11-05, owner in conversation: "implement game flow into the game, but I want you to implmenent missions as well"; changes `game-flow-engine`, `mission-scripting`, `ship-schematics`). Drafted (2026-11-08, v30: the lamp dimmer and the room darker, more dramatic; the paper chart approved for implementation (owner, 2026-11-08: "implement space chart in game, it looks great!") and in the game; v29: twice the cross-hatching, no printed nebulae or belts, planets on hexagon stands; v28: the planets half size and whole, smaller clouds with hatched shadows, and merged with the desktop's v20 (committed, not published): the Kelvane Institute on the faction screen and in the campaign, four badges on the table, the Hunt's campaign ships named as the game's; v27: planets drawn live by our planet shader (after a CC0 Godot shader), heavier cross-hatching; v26: hand-drawn clouds, storms, planets, suns and rocks, ink names, a compass rose; v25: on a phone the sector panel hides and the top bar is two rows; v24: the chart works on phones (WebGL 1 nebula, a smaller sheet, a blur fallback); v23: opens the map at once on a page that asks for it (the Space Chart, mockup 34); v22: the chart a printed star map with a nebula, green walls with walnut trim, darker, the fog of war on the chart with a soft border; v21: the campaign map as a printed paper chart on a walnut table in a carpeted, papered room; v20: the Hunt's schematics; v19: the faction screen fits phones in portrait; v18: the faction screen on a walnut table, free fitting from stores, crew lists by station, the course kept and later turns dotted, Display in Options; v17: ships slide between sectors; v16: the port redesigned; v15: Accept sets course) | `game-flow`, `faction-select`, `campaign-missions`, `paper-map` | `docs/mockups/game-flow.html` | https://claude.ai/artifact/UBbAouwAU3JvcbGf6MhzLt |
+| 2 | In-game UI | v85 draft (2026-11-09): **damage and reactor warnings** (change `damage-warnings`: smoke, fire, sparks and shedding scraps by hull, the flashing Low hull integrity and Reactor unstable bands; shots `low_hull`, `reactor_unstable`, `damage_warnings`; every faction page; awaiting approval, survey DW1-DW6). Approved for implementation (2026-11-03; live v79: every skin in one console, following the ship you command; v80 committed, to publish: beams and disruptor bolts keep their ends on their ships, and lances, bolts and torpedoes drawn by the weapons range's effects) | `battle-console`, `battle-console-engine` | `docs/mockups/battle-console.html` | https://claude.ai/artifact/9yertq3bYQRmFiDE7N9eBs |
 | 3 | Look dev | Listed | `look-dev` (to write) | `docs/mockups/look-dev.html` | |
-| 4 | Console skins | Drafted (2026-11-06, v28) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
+| 4 | Console skins (the UI kit, every faction's skin) | Drafted (2026-11-08, v33 published: the Tarsine kit re-rendered as worked iron; v30: the Exponent redrawn as its own collective taken over by a reef, the Red Tithe on oak; v29: three new skins on the owner's ask, "Id like a faction that is purely mathematical. A faction based on fractal patterns and designs", "Then that faction will merge with the organics creating a new hybrid of fractal organic faction", "Id also like another pirate faction. One more brutal": the Axiom, the Exponent (named by the owner, 2026-11-07: "The Exponent"; then its own collective, not a hybrid: "Inspired by Borg. It's ship ui is a metalic utilitarian look. With veins a and tentacles and barnacles growing. Like am abandoned rusted ship at sea. Take over by reefs and coral") and the Red Tithe ("More brown wood on the red tithe"), the other names and the cultures provisional, survey N1-N6; v28, 2026-11-06) | `console-skins` | `docs/mockups/console-skins.html` | https://claude.ai/artifact/UTpgsPvZJrLfkEUmJN7CVb |
 | 5 | Concord ships and damage | **Retired** (2026-11-03: superseded by mockup 6, owner: "Concord line (hull concepts) - new standard, get rid of the old concord ships"; off the tracker's mockup list, owner: "Concord ships and damage remove this from the main mockups mpage") | `concord-ship-look`, `ship-damage-visuals` | `docs/mockups/concord-ships.html` | https://claude.ai/artifact/J4baTFsXR3CR51zFvTnRj4 |
 | 6 | Concord line (hull concepts): **the standard for Concord ships** (owner, 2026-11-03); its ships are in mockups 1 and 2 through `docs/mockups/lib/concord-line.js` | **Approved for implementation** (2026-11-04, owner in conversation: "I've approved ships to be built", "we need to integrate proper ships in the game"; change `ship-models-engine`). Drafted (2026-11-03, page version v13: the Tern family; the Albatross's pylons from its main hull, mockup 5's lighting and damage; v1 rejected) | `concord-hull-concepts` | `docs/mockups/concord-hull-concepts.html` | https://claude.ai/artifact/LzraYsJq2PQLG4ioVFpfBP |
 | 7 | Krai Warhost ships | **Approved for implementation** (2026-11-04, owner in conversation, as mockup 6; change `ship-models-engine`). Drafted (2026-11-04, v21: the Krai line corvette to dreadnought, rooms first on the Ship Design Bible, at the Concord standard, with battle damage, the hull breaking apart like the Concord line, a bayonet per class, a painted livery and detailed nacelles) | `krai-ship-concepts` | `docs/mockups/krai-ship-concepts.html` | https://claude.ai/artifact/ScBxQeDJePA2LvAFbwLpwD |
@@ -32,7 +32,7 @@ account and every link here is updated.
 | 9 | Faction emblems: every faction's crest and insignia | Drafted (2026-11-03, page written; to publish from the desktop session) | `faction-emblems` | `docs/mockups/faction-emblems.html` | |
 | 10 | Concord badge in 3D: the emblem shape B-E27 (the smooth keyhole) as a badge | Drafted (2026-11-05, v8) | `faction-emblems` | `docs/mockups/concord-emblem-3d.html` | https://claude.ai/artifact/CJSVJxXYLn7cdKF6TDtvDN |
 | 11 | Concord emblem on the hull: B-E27 (the smooth keyhole) painted on the Petrel frigate | **Retired** (2026-11-04: the emblem lives on the real model, mockup 6; owner: "Concord emblem on the hull - get rid of this"; off the tracker's mockup list, kept under Misc) | `faction-emblems` | `docs/mockups/concord-emblem-hull.html` | https://claude.ai/artifact/FLP6mnCeUCwn9c2rG2pxK9 |
-| 12 | Ssarith Hunt ships | **Approved for implementation** (2026-11-06, owner in conversation: "looks good, implement in game"; approved for build by the same words). Drafted (2026-11-06, v24: wide floods, the cruiser and carrier at 3072 px, in the game; v23: the cruiser's shell below, the carrier's in the middle with bays above and below, windows without glow; v22: one ship at a time, frigates, a new cruiser and the carrier; v21: breakup fixed, every cell has its skin; v20: hulls break apart; v19: bay lamps on the lintels; v18: all five rebaked with every pane fitted; v17: rooms and hangars level, every pane fitted to its face; v16: clean-framed windows and bays, each its own quad; v15: the four picks and a new carrier, each with modelled hull detail, a PBR set and baked hull lights; rooms behind the windows and hangars behind the bays, forward floods, a greener emission, battle damage on the shared ship-fx.js) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
+| 12 | Ssarith Hunt ships | **Approved for implementation** (2026-11-06, owner in conversation: "looks good, implement in game"; approved for build by the same words). Drafted (2026-11-06, v26: no dots at the floods, only the nav lights show as lamps; v25: half as many floods, twice the pool, one column top and bottom; v24: wide floods, the cruiser and carrier at 3072 px, in the game; v23: the cruiser's shell below, the carrier's in the middle with bays above and below, windows without glow; v22: one ship at a time, frigates, a new cruiser and the carrier; v21: breakup fixed, every cell has its skin; v20: hulls break apart; v19: bay lamps on the lintels; v18: all five rebaked with every pane fitted; v17: rooms and hangars level, every pane fitted to its face; v16: clean-framed windows and bays, each its own quad; v15: the four picks and a new carrier, each with modelled hull detail, a PBR set and baked hull lights; rooms behind the windows and hangars behind the bays, forward floods, a greener emission, battle damage on the shared ship-fx.js) | `ssarith-ship-concepts` | `docs/mockups/ssarith-ship-concepts.html` | https://claude.ai/artifact/UbsDVv6EvKbt3wkCDb6Ris |
 | 14 | Krai badge in 3D: the emblem KC+ (the fang torc) as a badge | Drafted (2026-11-05, v2) | `faction-emblems` | `docs/mockups/krai-emblem-3d.html` | https://claude.ai/artifact/PTvvbWnntKFDsiWEyuXD48 |
 | 15 | Battle console: Ssarith Hunt (and the console that follows the ship you command) | **Approved for implementation** (2026-11-06, owner in conversation: "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v9; v10 committed, to publish) | `ssarith-battle-console`, `fleet-skins` | `docs/mockups/battle-console-ssarith.html` (written by `tools/mockups/skin_page.py`) | [M15 v6](https://claude.ai/artifact/SJeqT1YEfXeH6edbEwzbEM) |
 | 16 | Special weapons: two for each finished faction (Concord, Krai), with high-end effects and shaders, and the standard weapons | **Approved for implementation** (2026-11-05, owner in conversation: "Implement weapons in game"; changes `weapon-fx`, `missiles`, `special-weapons`). Drafted (2026-11-05, v4; published from the cloud session's account, to republish from the desktop session onto the tracker) | `special-weapons`, `weapon-fx` | `docs/mockups/special-weapons.html` | https://claude.ai/artifact/JSddbdvMccwMzzcjLi2eYT |
@@ -42,7 +42,22 @@ account and every link here is updated.
 | 20 | Battle console: Kelvane Institute | **Approved for implementation** (2026-11-06, owner in conversation: "I meant institute. Build institute into the game", "Yes, approve both for the game"; change `fleet-skins`). Drafted (2026-11-06, v3; v4 committed, to publish) | `kelvane-battle-console` | `docs/mockups/battle-console-kelvane.html` (written by `tools/mockups/skin_page.py`) || https://claude.ai/artifact/FNK2Q5RKWRVN7t4yET16ty |
 | 21 | Kelvane badge in 3D: the emblem KID (the hydrogen eigen plot) on an oval coin, with its 2D logo (the hull logo) | Drafted (2026-11-06, v2) | `faction-emblems`, `kelvane-battle-console` | `docs/mockups/kelvane-emblem-3d.html` | https://claude.ai/artifact/JWkaEkgW1aTvxU8s5p9sN3 |
 | 22 | Space fly-through: ray-marched nebula clouds and stars | **Paused** (2026-11-06, owner: "just stars is fine for now"); v2 published, its clouds broken in the owner's browser, the fix committed but not republished | `space-flythrough` | `docs/mockups/space-flythrough.html` | https://claude.ai/artifact/9JWXLSiYcoMFwyasYX6fLg |
+| 23 | Kelvane Institute ships: the line, five research-vessel classes from the owner's picks (and the blockout board it came from) | **Approved for implementation** (2026-11-07, owner in conversation: "perfect, implment these ships in game"; approved for build by the same words; in the game by change `kelvane-ships-engine`). Drafted (2026-11-07, v10: 215 the Gallery fighter, detailed, the carrier's craft; v9: six variants of the Gallery bus; v8: every plate corner diagonal, shuttles overhead in the carrier, eight shuttle designs; v7: engineered machinery in rows, the carrier's pads and craft, diagonal corners, warm rooms; v6: machinery inside the openings, instrument arrays on the apertures and the nose, windows; v5: every class baked with its own detail and textures; v4: the line, frigate to carrier; v3: the loop family; v1: the board) | `kelvane-ship-concepts` | `docs/mockups/kelvane-ship-concepts.html` | https://claude.ai/artifact/LfkkemDKPhan6Y7ZSBfgmx |
+| 24 | Freighters: a freighter for every approved faction (picks 1, 4, 5 and 8) | **Approved for implementation** (2026-11-07, owner in conversation: "implement in game, also implment on campaign map, and implement freighter raid/escort missions"); v16 is in the game (battle classes, the campaign map, escort and raid encounters; `freighter-missions`, `field-repair`). Approved for build (2026-11-07, owner in conversation: "Adjust institute ship len to fit cargo better .After that change. Now I approve. Detail them"). Drafted (2026-11-07, v14: the four picks detailed at 2048 px; the container baked from CC0 textures) | `freighters` | `docs/mockups/freighter-concepts.html` | https://claude.ai/artifact/Gkv9jzwEZd258noT7WGtv4 |
+| 25 | Battle console: Axiom | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Axiom skin from mockup 4 | `axiom-battle-console` | `docs/mockups/battle-console-axiom.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/G6CFvuJLxSGsFu5y9i9fzo |
+| 26 | Battle console: Exponent | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Exponent skin from mockup 4 | `exponent-battle-console` | `docs/mockups/battle-console-exponent.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/XWGn3TZTPcTDFbtNTf8mV2 |
+| 27 | Battle console: Red Tithe | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Red Tithe skin from mockup 4 | `redtithe-battle-console` | `docs/mockups/battle-console-redtithe.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/WiQEWpfRaEN2HQvUXLxqga |
+| 28 | Battle console: Vos Syndicate | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Vos Syndicate skin from mockup 4 | `vos-battle-console` | `docs/mockups/battle-console-vos.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/RAdVg9hJhGJwgukAybj5wt |
+| 29 | Battle console: Kethran Hegemony | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Kethran Hegemony skin from mockup 4 | `kethran-battle-console` | `docs/mockups/battle-console-kethran.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/DmDc8xBHJYcRfAkdHgYy6w |
+| 30 | Battle console: Tarsine Remnant | Drafted (2026-11-08, v2: panel faces rendered as worked iron at their drawn size, the column and backing rendered, on the owner's "tarsine background is terrible, it should be like a metal texture"). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Tarsine Remnant skin from mockup 4 | `tarsine-battle-console` | `docs/mockups/battle-console-tarsine.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/RwHfXVD7XtsM1EjSi8tHXX |
+| 31 | Battle console: Aelith Conclave | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Aelith Conclave skin from mockup 4 | `aelith-battle-console` | `docs/mockups/battle-console-aelith.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/4tCTboCgm9dkeE52WcE711 |
+| 32 | Battle console: Ombrai | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Ombrai skin from mockup 4 | `ombrai-battle-console` | `docs/mockups/battle-console-ombrai.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/7SiSxjuoQU7uhQicQSndaP |
+| 33 | Battle console: Vhorr Brood | Drafted (2026-11-08, v1). Listed (2026-11-07) (owner, 2026-11-07: "Let's make a big push and get all these unbuilt uis built in a mockup"): the battle console in the Vhorr Brood skin from mockup 4 | `vhorr-battle-console` | `docs/mockups/battle-console-vhorr.html` (written by `tools/mockups/skin_page.py`) | https://claude.ai/artifact/MaZY7tPtShdswH2RmZqKYv |
+| 34 | Space chart: the campaign's paper star chart as its own page, opening straight onto the map (owner, 2026-11-07: "Our space chart mockup is not available to me as an artifact, please make it") | **Approved for implementation** (2026-11-08, owner in conversation: "implement space chart in game, it looks great!"; in the game, `game-flow-engine` 2.10). Drafted (2026-11-08, v8: the lamp dimmer and the room darker, more dramatic, and the drawn clouds from the bank the game uses; the chart in the game; v7: twice the cross-hatching, no printed nebulae or belts, planets on hexagon stands; v6: renumbered 34, planets half size and whole, smaller clouds with hatched shadows; v5: shader planets, heavier cross-hatching; v4: hand-drawn clouds, storms, planets, suns and rocks, a compass rose; v3: the sector panel hides on a phone, a two-row top bar; v2: works on phones; v1: written from mockup 1 by `tools/mockups/chart_page.py`, so it runs mockup 1's code) | `paper-map` | `docs/mockups/space-chart.html` | https://claude.ai/artifact/A4E9dHbWA5qdvi1Z77sAjX |
+| 35 | Hull texture designs: the Concord and Krai frigates, five culture-led texture designs each (owner, 2026-11-06: "Pitch a few different texture designs. Start with frigate of each and propose4-5 different texturing approaches for each. Goal is to follow culture and ideology"; "Concord could also use a bit of detail on their ships too to avoid them looking to much like primitives") | Drafted (2026-11-08, v22: the Condor's windows to three decks; v21: windows on every Concord class, Krai nacelle studs gone; v20: renumbered 35; v19: neutral hangar light; v18: softer warm-white window light; v17: warm yellow windows; v16: the Concord's original light arrangement back; v15: the whole of both lines, the Krai dreadnought added; v14: the Condor, Pelican and Krai cruiser added; v13: the Swift, Albatross and Krai corvette added; v12: designed bow pieces, K1 plan windows, the rest of both lines baking; v11: K1 ends plated, detail tiles by hull area, roughness in the painted look; v10: C1 bow and stern plated, soft light, the detail layer; v9: C1 half the panels, light grey seams, varied plates, plan windows; v8: C1 in rows too, windows and fans fixed, lighter seams; v7: K1 in staggered rows of plates; v6: K1 on it too; v5: C1 on the Kelvane Institute's hull method, the owner's "lets try a new dirtection"; v4: ten designs baked as the Hunt's); **not for the game until the owner enthusiastically approves** | `hull-texture-designs` | `docs/mockups/hull-texture-designs.html` | https://claude.ai/artifact/GyVMZ9s6hxwbDhmeBC9Fqu |
 
+| 36 | Placeholder fleets | **Approved for implementation** (2026-11-08, owner in conversation: "cool start implementation"; the 36 hulls exported to the game, their classes and campaign hulls in the data, the emblems on the faction screen). Drafted (2026-11-08, v1) (owner, 2026-11-08: "generate place holders for all of their ships, class design is your discretion, and a place holder logo for the factions too"): four placeholder classes and a placeholder emblem for each of the nine factions with no ships | `placeholder-fleets` | `docs/mockups/placeholder-fleets.html` | https://claude.ai/artifact/2oi3YHbpmssfDjwZ2WpzPT |
+| 37 | Fractal vessels | Drafted (2026-11-10, v2: phone friendly and marched at half resolution; v1) (owner, 2026-11-10: "a faction is designed to be a fractal type of life form. and interdimensional being", "can we build raymarched fractal ships?", "do the mockup yo", "dont worry about phone"): three raymarched vessels with no mesh, one per school of the Axiom's draft culture, beside the Petrel at true scale; desktop only | `fractal-vessels` | `docs/mockups/fractal-vessels.html` | https://claude.ai/artifact/2mUTtEaxfqSAnX94REdZHj |
 New mockups are added at the bottom with the owner's words, never renumbered.
 
 ---
@@ -1022,3 +1037,157 @@ that stays where it is left. A candidate backdrop for the main menu.
 
 - Change: `openspec/changes/space-flythrough`. Shots: `docs/screenshots/mockups/space-flythrough/`.
 - Stage: Drafted (2026-11-05, v1).
+
+## 23. Kelvane Institute ships
+
+Owner, 2026-11-06: "begin designs on the institute ships".
+
+**Approved for implementation** (owner, 2026-11-07, of version 10: "perfect, implment these ships in game"; approved for
+build by the same words). In the game by change `kelvane-ships-engine`: the five classes and the Gallery fighter exported
+from the page, the carrier's fighters parked on its pads, the Institute fought from the Concord's and the Krai's side and
+played as a side of its own. To record in the tracker (the desktop session republishes it).
+
+- **Breadth first.** As the Ssarith Hunt's ships went well once they went broad (mockup 12, version 9), the Institute
+  starts with a board to pick from: twelve frigate-sized blockouts, 104-122 m, beside the Concord Petrel's 88 m.
+- **Traditions, drafted.** The Institute's culture is one line ("truth is measured, never assumed"), so five traditions
+  inside it are drafted for the owner to pick, change or reject (Ship Design Bible C4), none from the Kelvane's bodies:
+  - the Calibrators, the Open Notebook and the Long Baseline (the three drafted for the emblem);
+  - the Field Stations and the Collider Halls (new: long voyages and a weapon).
+- **The blockouts.** Case, Stepped deck, Runners; Twin hulls, Slotted; Waisted baseline, Spread arms, Long spar; Gallery
+  bow, Terraces; Loop, Through-beam.
+- **How they are grown.** Each is one closed grown structure (chapter 14) on the shared `docs/mockups/lib/hull-grow.js`,
+  lifted from the Hunt page, whose ships are unchanged. The Institute has its own section layout: a rounded case after the
+  console's rolled plates.
+- **The look.** Champagne, dark glass and amber from the console, or plain clay.
+- **Change:** `openspec/changes/kelvane-ship-concepts`.
+- **Shots:** `docs/screenshots/mockups/kelvane-ship-concepts/`.
+- **The loop family** (version 3). Owner, 2026-11-06: "l1 loop looks cool, can you make me some more variations of ships
+  with loops? horizontal, vertical, both?". Seven more, 13 to 19, beside the Loop:
+  - horizontal: Long loop, Twin loops, Wide ring;
+  - vertical: Tall loop, Keel loop;
+  - both: Crossed loops, Quartered loop.
+
+  Each is the hull parting round an opening and closing again, its inner walls lit as the beamline. A Loop family switch
+  shows them alone (design D7).
+- **The line** (version 4). The owner, 2026-11-06: "12,11,18.19,17 all really good shapes, start detailing these, use more
+  complex ones for larger captial ships like destroyer, cruiser, batlecruiser and carrier, we might want to theme them after
+  advanced science and research vessels, this faction will specialize in scientific missions". The picks, simplest to most
+  complex, are the classes, each a research vessel, its accelerator its main instrument and its lance:
+  - the Parallax-class survey frigate (5 Slotted, 126 m; the owner: "12 is no go use 5");
+  - the Candour-class beamline destroyer (11 Loop, 136 m);
+  - the Patience-class research cruiser (17 Keel loop, 166 m);
+  - the Rigour-class collider battlecruiser (18 Crossed loops, 196 m);
+  - the Curiosity-class probe carrier (19 Quartered loop, 214 m).
+
+  Each is grown again at its size: two identical instrument decks round a glazed slot, stepped instrument and laboratory
+  decks with glass along their risers, a collision hall, a hangar deck, a launch well. The four larger ships are the Collider
+  Halls', the frigate the Open Notebook's. The names are placeholders (survey I6).
+- **The first detail pass** (version 5). Each class is unwrapped and baked onto its own UVs from a modelled detail layer (the
+  ship-detailing skill):
+  - clean and sterile (the owner: "Mind the clean and sterile and almost scientific aesthetics. They would have decorated
+    their ships with smooth round pieces rather than industrial greebles"): calibrated grid seams in enamelled champagne,
+    pillowed edges, no greebles, trenches or slatted vents;
+  - smoked-glass sensor domes and smooth round pods sunk into the plating;
+  - amber jewel lamps, red livery bands, the KID logo;
+  - a measuring scale engraved down each flank;
+  - floods, position lights, beacons and strobes.
+
+  The bake tools take the faction as data (`--faction kelvane`; the Hunt's values unchanged). Look: Painted, PBR,
+  Champagne, Clay. Light: Studio, Night. Windows, rooms, bays, damage and breakup come next, as they did for the Hunt.
+- **v6** (owner, 2026-11-06: "we need greebles on the inside", "missing texture on the nose", "also where are windows to
+  give scale"): machinery on every face that looks across an opening, the outer hull still clean; a lit aperture's middle and
+  the frigate's glass nose an instrument's array of cells; rows of windows along every flank with rooms behind them, drawn by
+  the pane code now shared with the Hunt (`docs/mockups/lib/baked-ship.js`). Design D10.
+- **v7** (owner, 2026-11-06: "greebles look too random", "large vents, fuel pods, coils and pipes", "carrier should have
+  landing pads and fighters", "diagonals on corners", "these lines are quire dark", windows "in awkward spotrs", the flood
+  "light dots", rooms "more yellow/orange tinted like they are well lit for all ships"): rows of engineered machinery,
+  the carrier's pads with a craft on each, diagonal plate corners, lighter seams, windows that look out, no flood dots,
+  warm rooms on every ship (mockups and game); then, after the owner's reference images ("some examples of greebles
+  for you to study", "some hull armor examples", "details idea"; their shape, never their art): low-relief panelled
+  machinery with no fuel pods ("I hate those pods"), plate grooves and small marks, inspection hatches. Design D11.
+- **v8** (owner, 2026-11-07: "Love the carrier. I see some square corners on hull plating here. Please make mockup designs
+  of shuttles. Carrier should have shuttles upside down as well. We are in space afterall"): every plate corner where cuts
+  meet on the diagonal; the carrier's ceiling pads with shuttles hanging upside down; the Small craft family, eight
+  shuttles grown from the board's hulls, the Runner skiff the carrier's (survey I7). Design D12.
+- **v9** (owner, 2026-11-07: "Make variants of 206."): six variants of the Gallery bus (211 high gallery, 212 long hop, 213
+  glass nose, 214 wide body, 215 keel skids, 216 deep chin), grown from one gallery hull function shared with blockout 9
+  (survey I8). Design D13.
+- **v10** (owner, 2026-11-07: "detail gallery bus 215 try adding mounts for phasers or something, these are supposed to be
+  fighters"): 215 is the Gallery fighter, its chin parted into two phaser prongs ending in emitters, detailed and baked at
+  its own scale, parked by the carrier on its floors and ceilings. Design D14.
+- **Stage:** Drafted (2026-11-07, v10).
+- **Questions:** survey I1-I4 (traditions, picks, palette, the first class).
+
+## 24. Freighters
+
+The owner, 2026-11-07: "we need to design freighter for every faction in the game currently". Freighters already have
+work: the campaign map runs each faction's freighters along its routes, Convoy defense and Convoy ambush keep or destroy
+two of three, and a Distress call can come from one. Today the map draws a placeholder and the battle flies the Kethran
+frigate stand-in. The reference game's convoys: SFC3 manual, printed pages 37 and 42.
+
+- **v1**: a blockout board of eighteen, three a faction (Concord 1-3, Kethran 4-6, Vos 7-9, Krai 10-12, Hunt 13-15,
+  Institute 16-18), each a spine (loads racked outside), a hold (the cargo shut inside) or a cradle (the hull parts round
+  its cargo), 140-210 m. Each names a tradition inside its faction; no faction has a merchant tradition written down, so
+  most are drafted, and the Kethran and Vos concepts use none of their console rows that read the species' bodies. Each
+  hull is one closed grown structure on `docs/mockups/lib/hull-grow.js`; only the cargo is placed. In faction colours or
+  clay, beside the Concord Petrel and a person.
+- **v2, v3**: the notes name survey section V; the libraries re-inlined.
+- **v4** (owner, 2026-11-07: "Freighter should only focus on approved factions", "Narrow down freighter options to ones
+  where cargo is visible. And make sure all cargo is the same size", "The containers I mean", "The cargo hull shape it
+  self can be the way it was in the draft"): eight concepts, two for each of the Concord (1-2), Krai (3-4), Hunt (5-6) and
+  Institute (7-8), every one carrying the same 6 by 6 by 12 m container in sight; the holds and the Kethran and Vos
+  concepts are gone; the hulls are as drafted, the Twin ledger's containers stacked between its hulls.
+- **v5** (owner, on a phone: "Nothing renders"): no flatShading, the canvas follows its stage's size, a notice if the 3D
+  view loses its graphics context.
+- **v6** (owner, 2026-11-07: "1,4,5,8, but with 8 having really skinny arms and link.tbe arms together with a thin bridge
+  at the end to keep the loop design ethos", "All freighters should be 2x bigger. Along with the containers too..this way
+  cargo ships are much bigger than any combat ships..as they should be", "The institute freighter should be rounder at the
+  tip", "You got the institute draft wrong", "Show m artifact with just the four"): the page opens on the four picks
+  (101-104), every freighter and container twice the drafted size (300-360 m, 12 by 12 by 24 m containers), the Twin
+  ledger made a loop on really skinny arms curving in to a thin bridge with a domed nose; the board of eight beside them.
+  "Then go ahead and detail them", then "Don't do details yet": detailing waits.
+- **v7** (owner: "Fix the institute", with an outline of the shape wanted, "I made an outline of what I want"): the Twin
+  ledger's stern case at full width, its outer strips running straight on as the skinny arms to the rounded bow.
+- **v8** (owner: "Fix the institute again.  No nipple at the end", "Flatter bow"): the Twin ledger's arms turn in on a
+  squared quarter to a flat bow, closed flush, no nose standing proud.
+- **v9** (owner: "The institute ship will be shorter than is cargo. That is the cargo is taller in height"): the Twin
+  ledger's hull 16 m tall as shown, under container stacks 25 m tall.
+- **v10** (owner: "Adjust institute ship len to fit cargo better"): the Twin ledger's straight run is its eight rows of
+  containers with 1.5 m clear at each end; 274 m as shown.
+- **v11**: the four picks detailed (the ship-detailing pipeline): each unwrapped and baked at 1024 px with layered armour
+  in its faction's look, liveries, emblem, floods, lamps and windows with rooms; Painted, PBR, Studio and Night; the
+  containers given a drawn face.
+- **v12**: the four baked again at 2048 px and 32 samples.
+- **v14** (owner: "you need like better cargo textures, lookem up online for cc0 options, back ao and get diffuse and
+  normals and specular for each container"): the container modelled and baked from Poly Haven's CC0 "Container Side":
+  diffuse, normals, AO, roughness and specular.
+- **v15** (owner: "also containers dont seem to be lit correctly", "they are glowing"): the containers lit as the hulls are,
+  their paint kept to the hulls' level by day and dark at night.
+- **Stage:** **Approved for build** (2026-11-07, owner in conversation: "After that change. Now I approve. Detail them").
+  Drafted v10. Survey V2 and V5 decided.
+- **Questions:** survey V1, V3, V4 (traditions, one class or two, arms).
+
+## 37. Fractal vessels
+
+Owner, 2026-11-10: "im just curious, a faction is designed to be a fractal type of life form. and interdimensional being.
+what would that look like in our game? can we build raymarched fractal ships?" Then: "do the mockup yo", "dont worry
+about phone", "I dont really need this stuff to work on a phone", "three js mockup lets go".
+
+- **The page**: three vessels drawn by raymarching a distance field (each a 12-triangle box whose shader marches to the
+  surface and writes its depth):
+  - a 4D quaternion Julia set sliced into our space (the escape-time school), 132 m;
+  - a chain of five folded Menger blocks (the tilers), 112 m;
+  - a branching tree (the branchers), 128 m.
+- The Concord's Petrel (86 m) sits beside them for scale.
+- **Controls**: the 4th-dimension slice (or the fold turn, or the branch angle), drift, damage, glow, halo, iterations, march
+  steps, render scale, and a frame-time readout.
+- **Damage**: fold levels lost and holes cut from the field, with glowing rims.
+- **v1** (2026-11-10): first draft. Shot at desktop only.
+- **v2** (2026-11-10; owner: "Make this thing phone friendly please! Also half resolution ray match if you don't mind"):
+  - the vessels are marched at half the screen's resolution (a quarter of the pixels), the Petrel still hiding what is
+    behind it, with a switch for full size;
+  - on a phone the controls are a sheet you can fold away (upright) or a narrow column (sideways), every control a 44 px
+    target, the view buttons a strip that scrolls;
+  - shots at desktop, phone and portrait sizes.
+- **Stage:** Drafted.
+- **Questions:** survey FV1-FV5 (whose vessels, what a vessel is, which forms, phones, hits).

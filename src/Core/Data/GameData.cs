@@ -61,11 +61,19 @@ public sealed record MissileData(IReadOnlyList<MissileGrade> Grades, FlareDef Fl
 
 /// <summary>A ship class. Shape is the systems display's top-down silhouette; Model, when set, is the approved ship's glb
 /// (res:// path under assets/ships/), drawn in the battle at LengthM (the battle's framing, as the battle console mockup
-/// draws its ships); without it the battle draws the stand-in for Shape (factions whose ships are not designed yet).</summary>
+/// draws its ships); without it the battle draws the stand-in for Shape (factions whose ships are not designed yet).
+/// ShieldLayers is how many bands its shield display shows at full strength: a frigate one, larger ships more (owner,
+/// 2026-11-06: "frigates have only 1 layer of shields as opposed to larger ships").</summary>
 public sealed record ShipClass(
     string Id, string Name, string Code, string Shape, string? Model, double LengthM, double HullHp, double SpeedMaxMS, double AccelMS2,
     double TurnDegS, int ReactorE, double CapacitorE, double BatteryE, double[] ShieldsHp,
-    IReadOnlyDictionary<string, int> PowerE, IReadOnlyList<MountDef> Mounts);
+    IReadOnlyDictionary<string, int> PowerE, IReadOnlyList<MountDef> Mounts, int ShieldLayers = 3)
+{
+    private readonly double? _frameM;
+    /// <summary>The ship's length as the battle frames it, metres: LengthM times Tuning.ShipFrameX (LengthM when unset).
+    /// Its model is drawn this long, and every geometry of the hull in the battle (mounts, ramming, rocks) is at it.</summary>
+    public double FrameM { get => _frameM ?? LengthM; init => _frameM = value; }
+}
 
 /// <summary>A faction. Skin is the console skin its captains play in (a UI kit id); null for a faction the player
 /// cannot command yet.</summary>
@@ -90,6 +98,19 @@ public sealed record ShipStart(string Id, string Name, string Captain, string Cl
     public IReadOnlyDictionary<string, double>? SysHp { get; init; }
     /// <summary>Mounts the scene adds after its class's (weapon ids checked against data/battle/weapons.json), or null.</summary>
     public IReadOnlyList<MountDef>? ExtraMounts { get; init; }
+    /// <summary>Seconds into the battle it arrives (warps in at its place), or 0 from the start (Battle.Field).</summary>
+    public double ArriveS { get; init; }
+    /// <summary>Seconds it lies dormant (a sleeping giant: no orders, no fire, shields down) unless hit first, or 0 awake.</summary>
+    public double WakeS { get; init; }
+    /// <summary>A stationary installation (a station, yard, battery): it never moves.</summary>
+    public bool Fixed { get; init; }
+    /// <summary>A runner (an enemy scout making for home): it holds its course at full speed and never turns to fight.</summary>
+    public bool Runs { get; init; }
+    /// <summary>Under a truce: it holds its fire and its place until the player's side fires first, then fights.</summary>
+    public bool Truce { get; init; }
+    /// <summary>The weapon ids it starts with armed (a weapons test scene's one weapon); its other mounts start Offline.
+    /// Null: every mount armed.</summary>
+    public IReadOnlyList<string>? ArmOnly { get; init; }
 }
 
 /// <summary>A ship's craft and mines in a scenario, each null for its class's loadout; the fighters' first mission.</summary>
@@ -109,22 +130,37 @@ public sealed record Scenario(string Id, string Name, string Side, ulong Seed, s
     /// <summary>False for a test scene whose own ship carries no weapons (the mockup's armed: false: the scene's tool is
     /// what destroys the target).</summary>
     public bool Armed { get; init; } = true;
+    /// <summary>Whether the captain may withdraw (warp out) from this battle: false for a story or special mission.</summary>
+    public bool CanWithdraw { get; init; } = true;
     /// <summary>The tools decisive in a test scene ("mine", "rock", "shuttle", "barrage"): one destroys its target.</summary>
     public IReadOnlyList<string> Lethal { get; init; } = System.Array.Empty<string>();
     /// <summary>The asteroids of the scene.</summary>
     public IReadOnlyList<RockDef> Rocks { get; init; } = System.Array.Empty<RockDef>();
+    /// <summary>The speed the scene plays at, a share of real time (a weapons test scene's quarter speed); 1 for real time.</summary>
+    public double TimeScale { get; init; } = 1;
     /// <summary>A test scene's planets (data/battle/scenes/comms.json), or null.</summary>
     public IReadOnlyList<PlanetDef>? Planets { get; init; }
     /// <summary>A test scene's goal, met to win whatever enemies are left (Scenes.Comms), or null.</summary>
     public ScenarioGoal? Goal { get; init; }
     /// <summary>A battle with marker beacons ends when its mission's objectives are met (GameFlow checks them), not when
     /// the last enemy goes: a shakedown's target drones can be shot before its beacon is reached.</summary>
-    public bool EndsOnObjectives => Markers is { Count: > 0 };
+    public bool EndsOnObjectives => Markers is { Count: > 0 } || ObjectiveEnd;
+    /// <summary>A mission battle whose objectives are not all about destroying ships (a scan, a survey, an away team, a
+    /// delivery): it ends when its primary objectives are met, as one with markers does.</summary>
+    public bool ObjectiveEnd { get; init; }
+    /// <summary>Seconds the battle lasts at most (a holding action, a scout's run home), or 0 for no limit: at the limit it ends
+    /// with Battle.TimeUp set.</summary>
+    public double TimeLimitS { get; init; }
+    /// <summary>A world condition that cuts every ship's engines for ForS seconds in every EveryS (Dead engines), or null.</summary>
+    public EngineOutage? DeadEngines { get; init; }
     /// <summary>The sun's strength in deep space, where most battles are (owner, 2026-11-04: "tune down sun brightness by 50%
     /// most of the game is set in deep space where lighting is more moody, if there is a warmer planet, then we can crank up
     /// solar strength"): half the 1.3 the view first used.</summary>
     public const double DeepSpaceSun = 0.65;
 }
+
+/// <summary>Every ship's engines cut for ForS seconds in every EveryS, first at EveryS (Battle.Field).</summary>
+public sealed record EngineOutage(double EveryS, double ForS);
 
 /// <summary>A marker beacon in a mission battle: where it is (metres), how near counts as reached, and the marker that must
 /// be reached before it shows (null: from the start).</summary>
@@ -150,7 +186,20 @@ public sealed record Tuning(
     double MountHitChance, double MountDamage,
     double HetRateDegS, double HetCostE, double HetChanceDrop, double HetRecoverPerS, double HetErraticPenalty,
     double HetBreakdownS, double HetBreakdownEngines, double EstopDecelX, double EstopHoldS, double ErraticHit, double ErraticTurn,
-    double OrbitKm, double HoldMinKm, double HoldMaxKm, double CaptureHullFrac);
+    double OrbitKm, double HoldMinKm, double HoldMaxKm, double CaptureHullFrac)
+{
+    /// <summary>How many times its length a ship is framed in the battle: drawn that size and fought at it (mount positions,
+    /// ramming contact, the hull a rock strikes), as the reference games draw their ships large against the space between
+    /// them (owner, 2026-11-06: "multiply all distance by 10", "1km -> 10km": every distance grew tenfold, the ships did not).</summary>
+    public double ShipFrameX { get; init; } = 1;
+    /// <summary>Seconds an AI captain's fire goes without landing before it closes to half its fighting range (half again for each
+    /// further such span, an eighth at most).</summary>
+    public double AiCloseAfterS { get; init; } = 20;
+    /// <summary>Seconds with no ship hurt after which a battle that cannot be withdrawn from ends as a stalemate.</summary>
+    public double StalemateS { get; init; } = 180;
+    /// <summary>The most, degrees, an intercept leads its target off the nose.</summary>
+    public double InterceptMaxLeadDeg { get; init; } = 30;
+}
 
 /// <summary>The console's layout in reference pixels (data/console/layout.json).</summary>
 public sealed record LayoutDef(

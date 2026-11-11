@@ -1,0 +1,803 @@
+{
+  "_doc": "The Concord's hull texture designs (change hull-texture-designs, mockup 35), on the Kelvane Institute's method (change kelvane-ship-concepts): the Petrel frigate's detail layer (tools/blender/hull_detail.py) and paint (tools/blender/painted_bake.py --faction concord --ship petrel_c1), baked onto the Petrel's own hull from the game's glb (tools/mockups/glb_hull_obj.py writes tools/materials/raw/painted/ships/petrel.obj). Not in the game until the owner enthusiastically approves.",
+  "faction": "concord",
+  "out": "assets/ships/concord/baked",
+  "manifest_doc": "The Concord's hull texture designs (mockup 35), baked: not used by the game.",
+  "paint": {
+    "armour": [
+      "#ebe9e3",
+      "#dcdfe2",
+      "#cfd4da",
+      "#e4ded3",
+      "#d3dae1",
+      "#c6ccd3",
+      "#efeee9",
+      "#d8d4cc"
+    ],
+    "accent": "#a9b9c8",
+    "sub": [
+      "#cdd1d6",
+      "#d3d6da",
+      "#c7ccd1",
+      "#d8dbde"
+    ],
+    "under": "#b9bfc6",
+    "greeble": [
+      "#6f777f",
+      "#a9b0b7"
+    ],
+    "dome": "#132033",
+    "dome_glow": 0.0,
+    "slat": "#7a828a",
+    "vent": "#1a1f25",
+    "glass": "#132033",
+    "livery": "#1f8f8a",
+    "ink": "#5a626c",
+    "light_edge": "#ffffff",
+    "strip": "whole",
+    "strip_m": 0.7,
+    "pbr": {
+      "armour": [
+        0.42,
+        0.55
+      ],
+      "sub": [
+        0.5,
+        0.6
+      ],
+      "under": [
+        0.7,
+        0.6
+      ],
+      "greeble": [
+        0.55,
+        0.7
+      ],
+      "dome": [
+        0.08,
+        0.0
+      ],
+      "glass": [
+        0.06,
+        0.0
+      ],
+      "slat": [
+        0.5,
+        0.7
+      ],
+      "vent": [
+        0.9,
+        0.3
+      ],
+      "strip": [
+        0.4,
+        0.0
+      ],
+      "lamp": [
+        0.3,
+        0.0
+      ],
+      "machine": [
+        0.45,
+        0.6
+      ]
+    },
+    "livery_pbr": [
+      0.45,
+      0.1
+    ],
+    "strip_k": 0.5,
+    "strip_inner": 0.12,
+    "strip_rim_px": 7,
+    "strip_cell_m": 1.6,
+    "strip_cell_gap": 0.14,
+    "strip_cell_on": 0.7,
+    "strip_cell_k": 0.55,
+    "greeble_ao_floor": 0.6,
+    "glass_cells_k": 0.45,
+    "glass_cell_m": 0.8,
+    "glass_cells_rgb": [
+      0.75,
+      0.9,
+      1.0
+    ],
+    "ink_k": 0.08,
+    "machine": [
+      "#b8bec4",
+      "#d5d9dc"
+    ],
+    "machine_kinds": [
+      "greeble",
+      "machine",
+      "slat",
+      "sub",
+      "under",
+      "vent"
+    ],
+    "machine_light": 0.7,
+    "plate_marks": {
+      "groove_inset_m": 0.3,
+      "groove_w_m": 0.08,
+      "groove_k": 0.62,
+      "red": "#b3262a",
+      "ink": "#3c444d",
+      "dots": [
+        "#b3262a",
+        "#1f8f8a",
+        "#3c444d"
+      ],
+      "triangle_share": 0.45,
+      "frame_share": 0.4,
+      "dots_share": 0.3,
+      "groove": false
+    },
+    "strip_rim_k": 0.0,
+    "ao_floor": 0.75,
+    "area_mask": true
+  },
+  "defaults": {
+    "cuts": "rows",
+    "facing_min": 0.38,
+    "seam_y_m": 0.0,
+    "strip_rgb": [
+      0.75,
+      0.9,
+      1.0
+    ],
+    "armour_t_m": 0.14,
+    "sub_t_m": 0.06,
+    "lift_m": 0.03,
+    "gap_m": [
+      0.1,
+      0.14
+    ],
+    "trench_m": [
+      0.32,
+      0.32
+    ],
+    "trench_share": 0.0,
+    "top_station_m": [
+      10.0,
+      18.0
+    ],
+    "spine_half_m": [
+      1.6,
+      3.4
+    ],
+    "flank_station_m": [
+      10.0,
+      18.0
+    ],
+    "flank_rake": [
+      -0.04,
+      0.04
+    ],
+    "greebles_per_m2": 0.0,
+    "overlay_min_m2": 1000000.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+      "window": 0.1,
+      "bay": 0.3
+    },
+    "auto_floods": {
+      "step_m": 30,
+      "from_stern_m": 6,
+      "top_x_frac": 0
+    },
+    "flood": {
+      "standoff_m": 3.6,
+      "cone_deg": 110,
+      "tilt_deg": 20,
+      "power_w": 2000
+    },
+    "inner_machinery": false,
+    "corner_m": 0.6,
+    "cage_m": 2.0,
+    "hatch_share": 0.4,
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false,
+    "rows_y_m": [
+      -3.5,
+      3.5
+    ],
+    "strips_x_m": [
+      4.0,
+      9.0
+    ],
+    "_plating": "Half the Krai's density (owner, 2026-11-07: \"go back to 50% number of panles on concord ships. Denser panels make sense for krai ships\"); thin plates and narrow gaps so the seams read light grey, not black (\"I dont like the black lines being black, they need to be a lighter grey color\"); plates in distinct tones (\"the panels need some various color\")",
+    "plate_ends": true,
+    "sun_angle_deg": 120,
+    "_lighting": "The original arrangement (owner, 2026-11-07: \"too many lights, the arrange ment of lights we had originally worked just fine, go back to the way lights were arramged originally\"): a flood every 30 m"
+  },
+  "ships": {
+    "petrel_c1": {
+      "mesh": "petrel",
+      "seed": 101,
+      "_tradition": "C1 Survey white, on the Kelvane Institute's method (owner, 2026-11-07: \"exampline how the ionstitute does its hull, and replicate taht\", \"lets try a new dirtection\"): the explorers, a ship that goes first and must be seen and known; a clean off-white hull (owner: \"a clean off white ship, ideal for concord style\")",
+      "domes": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -12.5
+          ],
+          "r_m": 2.4,
+          "h_m": 0.7,
+          "straps": [
+            [
+              0,
+              0.35
+            ]
+          ]
+        },
+        {
+          "face": "top",
+          "at": [
+            3.6,
+            -8.6
+          ],
+          "r_m": 1.1,
+          "h_m": 0.5
+        }
+      ],
+      "fans": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            -21.5
+          ],
+          "r_m": 2.6,
+          "fins": 16,
+          "lamps": 10,
+          "tilt_deg": 24,
+          "lamp": "white"
+        },
+        {
+          "face": "top",
+          "at": [
+            7.5,
+            -30.0
+          ],
+          "r_m": 1.5,
+          "fins": 12,
+          "lamps": 6,
+          "tilt_deg": 24,
+          "lamp": "white"
+        }
+      ],
+      "louvres": [
+        {
+          "face": "port",
+          "at": [
+            -31.0,
+            -1.6
+          ],
+          "shape": "slot",
+          "len_m": 5.5,
+          "span_m": 0.8,
+          "rake_m": 0.0,
+          "pitch_m": 0.3,
+          "slant_deg": 30
+        },
+        {
+          "face": "port",
+          "at": [
+            -23.5,
+            -1.6
+          ],
+          "shape": "slot",
+          "len_m": 4.0,
+          "span_m": 0.8,
+          "rake_m": 0.0,
+          "pitch_m": 0.3,
+          "slant_deg": 30
+        },
+        {
+          "face": "port",
+          "at": [
+            -6.0,
+            0.9
+          ],
+          "shape": "slot",
+          "len_m": 3.0,
+          "span_m": 0.6,
+          "rake_m": 0.0,
+          "pitch_m": 0.26,
+          "slant_deg": 28
+        }
+      ],
+      "bays": [
+        {
+          "face": "port",
+          "at": [
+            -2.5,
+            -1.4
+          ],
+          "w_m": 6.0,
+          "h_m": 2.2
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            40
+          ],
+          "size_m": 0.4,
+          "colour": "white"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            29.85,
+            31.05
+          ]
+        },
+        {
+          "band_z_m": [
+            -11.15,
+            -9.95
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          12
+        ],
+        "size_m": 6.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 40
+        }
+      },
+      "windows": [
+        {
+          "plan": "data/ships/concord/petrel_plan.json",
+          "dz_m": 0.55,
+          "wall_m": 3.2,
+          "dark_share": 0.2,
+          "rooms": {
+            "officers_p": "quarters",
+            "officers_s": "quarters",
+            "quarters": "quarters",
+            "mess": "mess",
+            "medbay": "workshop"
+          }
+        }
+      ],
+      "_fans": "Clear of the game model's radiators (x 4.7 m either side, z -34 to -26 m, standing over the deck: owner, 2026-11-07, \"what are these rectangles?\")",
+      "_windows": "From the room plan, as the original (owner, 2026-11-07: \"the number of windows on the concord shouldnt have changed from the original\"): one row wherever people live or work against the hull",
+      "fixtures": [
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            0.9
+          ],
+          "kind": "deflector",
+          "w_m": 4.4,
+          "h_m": 2.4
+        },
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            -2.6
+          ],
+          "kind": "launcher",
+          "w_m": 2.0,
+          "h_m": 1.4,
+          "r_m": 0.45
+        },
+        {
+          "face": "bow",
+          "at": [
+            21.0,
+            1.2
+          ],
+          "kind": "intake",
+          "r_m": 1.6
+        }
+      ],
+      "_fixtures": "Designed pieces in place of the game model's flat glowing parts (owner, 2026-11-07: \"we CANNOT implmenet the game with basic rectangles, please add grey greeble details here\", \"add some cool design here as well\"): the deflector's housing, the torpedo tube's launcher and each nacelle's nose"
+    },
+    "swift_c1": {
+      "mesh": "swift",
+      "seed": 111,
+      "_tradition": "C1 Survey white on the Swift: the Petrel's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "fixtures": [
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            0.4
+          ],
+          "kind": "deflector",
+          "w_m": 2.8,
+          "h_m": 1.54
+        },
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            -1.72
+          ],
+          "kind": "launcher",
+          "w_m": 2.0,
+          "h_m": 1.4,
+          "r_m": 0.45
+        },
+        {
+          "face": "bow",
+          "at": [
+            12.5,
+            -3.0
+          ],
+          "kind": "intake",
+          "r_m": 1.08
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            21.3
+          ],
+          "size_m": 0.4,
+          "colour": "white"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            16.7,
+            17.9
+          ]
+        },
+        {
+          "band_z_m": [
+            -6.3,
+            -5.1
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          7.3
+        ],
+        "size_m": 5.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 20.3
+        }
+      },
+      "windows": [
+        {
+          "live_m": [
+            -2,
+            20
+          ],
+          "decks_m": [
+            0
+          ],
+          "stripes_m": [
+            8.5,
+            -12
+          ],
+          "pitch_m": 2.2,
+          "x_max_m": 8.3,
+          "dark_share": 0.2,
+          "_doc": "The Concord line's own window rule and numbers for this class (docs/mockups/concord-hull-concepts.html: decks, live, stripes; countWindows), until its room plan exists"
+        }
+      ]
+    },
+    "albatross_c1": {
+      "mesh": "albatross",
+      "seed": 121,
+      "_tradition": "C1 Survey white on the Albatross: the Petrel's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "fixtures": [
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            1.0
+          ],
+          "kind": "deflector",
+          "w_m": 5.2,
+          "h_m": 2.86
+        },
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            -1.8
+          ],
+          "kind": "launcher",
+          "w_m": 2.0,
+          "h_m": 1.4,
+          "r_m": 0.45
+        },
+        {
+          "face": "bow",
+          "at": [
+            25.0,
+            0.6
+          ],
+          "kind": "intake",
+          "r_m": 1.95
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            49.8
+          ],
+          "size_m": 0.4,
+          "colour": "white"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            40.56,
+            41.76
+          ]
+        },
+        {
+          "band_z_m": [
+            -9.12,
+            -7.92
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          19.6
+        ],
+        "size_m": 7.6
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 54.6
+        }
+      },
+      "windows": [
+        {
+          "live_m": [
+            -20,
+            38
+          ],
+          "decks_m": [
+            7.0,
+            3.5,
+            0,
+            -3.5
+          ],
+          "stripes_m": [
+            28,
+            4,
+            -18
+          ],
+          "pitch_m": 2.2,
+          "x_max_m": 16.3,
+          "dark_share": 0.2,
+          "_doc": "The Concord line's own window rule and numbers for this class (docs/mockups/concord-hull-concepts.html: decks, live, stripes; countWindows), until its room plan exists"
+        }
+      ]
+    },
+    "condor_c1": {
+      "mesh": "condor",
+      "seed": 131,
+      "_tradition": "C1 Survey white on the Condor: the Petrel's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "fixtures": [
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            1.4
+          ],
+          "kind": "deflector",
+          "w_m": 3.2,
+          "h_m": 1.76
+        },
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            -1.6
+          ],
+          "kind": "launcher",
+          "w_m": 2.0,
+          "h_m": 1.4,
+          "r_m": 0.45
+        },
+        {
+          "face": "bow",
+          "at": [
+            30.0,
+            2.0
+          ],
+          "kind": "intake",
+          "r_m": 2.24
+        },
+        {
+          "face": "bow",
+          "at": [
+            24.0,
+            -17.0
+          ],
+          "kind": "intake",
+          "r_m": 1.88
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            77.4
+          ],
+          "size_m": 0.4,
+          "colour": "white"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            61.93,
+            63.13
+          ]
+        },
+        {
+          "band_z_m": [
+            -23.63,
+            -22.43
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          25.3
+        ],
+        "size_m": 9.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 90.0
+        }
+      },
+      "windows": [
+        {
+          "live_m": [
+            -40,
+            50
+          ],
+          "decks_m": [
+            3.5,
+            0.0,
+            -3.5
+          ],
+          "stripes_m": [
+            60,
+            -32,
+            -66
+          ],
+          "pitch_m": 2.2,
+          "x_max_m": 17.3,
+          "dark_share": 0.2,
+          "_doc": "The Concord line's own window rule and numbers for this class (docs/mockups/concord-hull-concepts.html: decks, live, stripes; countWindows), until its room plan exists",
+          "_decks": "Three decks of windows, the top and bottom rows taken off (owner, 2026-11-08: \"way too many windows on the condor\", \"temove top and bottom rows\")"
+        }
+      ]
+    },
+    "pelican_c1": {
+      "mesh": "pelican",
+      "seed": 141,
+      "_tradition": "C1 Survey white on the Pelican: the Petrel's recipe across the line (owner, 2026-11-07: \"start developing for the rest of the fleet. Both krai and concord\")",
+      "fixtures": [
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            1.4
+          ],
+          "kind": "deflector",
+          "w_m": 2.8,
+          "h_m": 1.54
+        },
+        {
+          "face": "bow",
+          "at": [
+            0.0,
+            -1.0
+          ],
+          "kind": "launcher",
+          "w_m": 2.0,
+          "h_m": 1.4,
+          "r_m": 0.45
+        },
+        {
+          "face": "bow",
+          "at": [
+            27.0,
+            1.0
+          ],
+          "kind": "intake",
+          "r_m": 1.8
+        }
+      ],
+      "lamps": [
+        {
+          "face": "top",
+          "at": [
+            0,
+            57.1
+          ],
+          "size_m": 0.4,
+          "colour": "white"
+        }
+      ],
+      "liveries": [
+        {
+          "band_z_m": [
+            45.54,
+            46.74
+          ]
+        },
+        {
+          "band_z_m": [
+            -17.48,
+            -16.28
+          ]
+        }
+      ],
+      "logo": {
+        "at": [
+          0,
+          18.7
+        ],
+        "size_m": 9.0
+      },
+      "lighting": {
+        "auto_floods": {
+          "to_z_m": 64.8
+        }
+      },
+      "windows": [
+        {
+          "live_m": [
+            24,
+            56
+          ],
+          "decks_m": [
+            3.5,
+            0,
+            -3.5
+          ],
+          "stripes_m": [
+            -50
+          ],
+          "pitch_m": 2.2,
+          "x_max_m": 13.3,
+          "dark_share": 0.2,
+          "_doc": "The Concord line's own window rule and numbers for this class (docs/mockups/concord-hull-concepts.html: decks, live, stripes; countWindows), until its room plan exists"
+        }
+      ]
+    }
+  },
+  "maps_dir": "docs/mockups/hull-texture-designs-maps/concord"
+}

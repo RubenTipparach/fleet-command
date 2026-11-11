@@ -16,7 +16,7 @@ namespace FleetCommand.Game.View;
 
 public sealed partial class ViewOverlay : Control, Ui.IControlSource
 {
-    private const double RingM = 450, RingGrabM = 160;
+    private const double RingM = 4500, RingGrabM = 1600;
     private ConsoleContext _x = null!;
     private BattleView _view = null!;
     private Vector2 _press;
@@ -46,6 +46,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
 
     /// <summary>A screen point in this control's coordinates, from the view's console coordinates.</summary>
     private Vector2? Local(double xm, double zm) => _view.ScreenOf(xm, zm) is { } p ? p - Position : null;
+    // a ship where it is drawn: lifted over a larger one it overlaps (BattleView.Stack)
+    private Vector2? Local(Ship s) => _view.ScreenOf(s.X, s.Z, _view.LiftOf(s.Id)) is { } p ? p - Position : null;
 
     private Ship? ShipAt(Vector2 local)
     {
@@ -54,7 +56,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         foreach (Ship s in B.Ships)
         {
             if (!s.Alive || s == B.Player || !B.Detected(B.Player, s)) continue;   // a cloaked ship unseen cannot be picked
-            if (Local(s.X, s.Z) is not { } p) continue;
+            if (Local(s) is not { } p) continue;
             float d = p.DistanceTo(local);
             if (d < bestD) { bestD = d; best = s; }
         }
@@ -109,6 +111,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     public override void _Notification(int what)
     {
         if (what == NotificationMouseExit) { _mouse = new Vector2(-1e5f, -1e5f); _ui.Leave(); }
+        else if (what == NotificationVisibilityChanged && !IsVisibleInTree()) { _ui.Leave(); _x.Tips.Offer(this, null, Position); }
     }
 
     private void SteerTo(Vector2 local)
@@ -181,7 +184,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         foreach (Ship s in b.Ships)
         {
             if (!s.Alive || s == me || !b.Detected(me, s)) continue;   // a cloaked ship unseen is not marked (Battle.Detected)
-            Vector2? lp = Local(s.X, s.Z);
+            Vector2? lp = Local(s);
             bool locked = s == t;
             if (lp is not { } p || !view.Grow(-4).HasPoint(p))
             {
@@ -193,7 +196,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 var ep = Size / 2 + new Vector2(Mathf.Cos(an) * (Size.X / 2 - 40), Mathf.Sin(an) * (Size.Y / 2 - 40));
                 Color edge = s.Side != me.Side ? C.Alert : C.Accord;
                 DrawArc(ep, 14, 0, Mathf.Tau, 24, edge, 3, true);
-                f.Draw(this, s.Name.ToUpperInvariant(), ep.X, ep.Y + 32, 16, edge, HorizontalAlignment.Center);
+                f.Draw(this, Aiming.ContactName(b, s).ToUpperInvariant(), ep.X, ep.Y + 32, 16, edge, HorizontalAlignment.Center);
                 continue;
             }
             bool foe = s.Side != me.Side, hot = p.DistanceTo(_mouse) < (locked ? 50 : 22);
@@ -208,7 +211,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                     var corner = p + new Vector2(sx * w / 2, sy * h / 2);
                     DrawPolyline(new[] { corner - new Vector2(sx * c0, 0), corner, corner - new Vector2(0, sy * c0) }, bc, 3.5f + (hot ? 1 : 0), true);
                 }
-                string lab = big ? s.Name : $"{s.Name} · {s.Class.Code} · {Rules.DistKm(me, s):0.0} km · {Math.Round(s.V)}";
+                string lab = big ? Aiming.ContactName(b, s) : $"{Aiming.ContactName(b, s)} · {Aiming.ContactCode(b, s)} · {Rules.DistKm(me, s):0.0} km · {Math.Round(s.V)}";
                 f.Draw(this, lab.ToUpperInvariant(), p.X, p.Y + 58, 20, C.Text, HorizontalAlignment.Center);
                 HullBar(p.X, p.Y + 70, s);
             }
@@ -216,7 +219,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             {
                 float r = 16 * (hot ? 1.18f : 1);
                 DrawArc(p, r, 0, Mathf.Tau, 32, hot ? col.Lightened(0.35f) : new Color(col, 0.7f), 1.5f + (hot ? 1 : 0), true);
-                f.Draw(this, s.Name.ToUpperInvariant(), p.X, p.Y + 34, 16, col, HorizontalAlignment.Center);
+                f.Draw(this, Aiming.ContactName(b, s).ToUpperInvariant(), p.X, p.Y + 34, 16, col, HorizontalAlignment.Center);
             }
         }
         // a mission's marker beacons: each shown one a diamond with its name and range, a click steering for it (as a click on
@@ -258,11 +261,13 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         DrawComms(f); DrawTractor(f); DrawReactor(f); DrawCloak(f); DrawTactical(f);
 
         // your own hull under your ship
-        if (me.Alive && Local(me.X, me.Z) is { } mp) HullBar(mp.X, mp.Y + 74, me);
+        if (me.Alive && Local(me) is { } mp) HullBar(mp.X, mp.Y + 74, me);
 
         if (big) { f.Draw(this, "LIVE · TAP TO RETURN", Size.X / 2, 28, 18, C.Sky, HorizontalAlignment.Center, 0, 600, 1); return; }
 
-        Key("v.target", new Rect2(14, 12, 90, 30), "Target", () => _x.State.ShowTarget = !_x.State.ShowTarget, _x.State.ShowTarget, "Show or hide the Target box");
+        // the Target key shows only while the Target box is shut, in the box's corner, top right (owner, 2026-11-07: "target
+        // button should only reveal if target panel was closed", "Target button shold also be in the right corner")
+        if (!_x.State.ShowTarget) Key("v.target", new Rect2(Size.X - 90 - 16, 14, 90, 30), "Target", () => _x.State.ShowTarget = true, false, "Show the Target box");
         // a campaign mission's battle has its own objectives (the mission strip) and no scene selector
         if (!_x.State.InMission) ScenePicker();
         if (b.Scenario.DamageRange && !_x.State.SceneOpen) RangePanel();
@@ -275,7 +280,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         if (t != null)
         {
             Mount[] arc = me.Mounts.Where(m => !m.Weapon.IsPointDefence && m.State != Arming.Offline && Rules.InArc(me, m, t) && Rules.InRange(me, m, t)).ToArray();
-            f.DrawRich(this, new[] { (t.Name, C.Sky), ($" {t.Class.Name} · range ", C.Lilac), ($"{Rules.DistKm(me, t):0.0} km", C.Sky), (" · speed ", C.Lilac), (Math.Round(t.V).ToString(), C.Sky) }, 18, ry - 28, 22, mw);
+            f.DrawRich(this, new[] { (Aiming.ContactName(b, t), C.Sky), ($" {Aiming.ContactClass(b, t)} · range ", C.Lilac), ($"{Rules.DistKm(me, t):0.0} km", C.Sky), (" · speed ", C.Lilac), (Math.Round(t.V).ToString(), C.Sky) }, 18, ry - 28, 22, mw);
             f.DrawRich(this, new[] { ("in arc ", C.Lilac), (arc.Length.ToString(), C.Sky), (" · charged ", C.Lilac), (arc.Count(Rules.Ready).ToString(), C.Sky) }, 18, ry, 22, mw);
         }
         else f.DrawRich(this, new[] { ("No target", C.Sky), (" · click a ship to select it", C.Lilac) }, 18, ry, 22, mw);
@@ -293,9 +298,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             float w = Math.Min(320, Size.X * 0.3f), h = w * 0.86f, bx = Size.X - w - 16, by = 14;
             DrawRect(new Rect2(bx + 2, by + 2, w - 4, h - 4), _x.Kit.Style.R.Plate);
             _x.Kit.Piece(this, "frame.inset", new Rect2(bx, by, w, h));
-            f.Draw(this, $"TARGET · {t.Name.ToUpperInvariant()}", bx + 18, by + 34, 18, C.Sky, HorizontalAlignment.Left, w - 90, 600, 1);
+            f.Draw(this, $"TARGET · {Aiming.ContactName(b, t).ToUpperInvariant()}", bx + 18, by + 34, 18, C.Sky, HorizontalAlignment.Left, w - 90, 600, 1);
             var xr = new Rect2(bx + w - 34, by + 14, 24, 24);
-            HitState xs = _ui.Reg("v.untarget", xr, _ => B.Unlock(), null, new Tip("Release target"));
+            HitState xs = _ui.Reg("v.target.x", xr, _ => _x.State.ShowTarget = false, null, new Tip("Close the Target box"));
             Color xf = xs.Hot ? C.Alert : C.Signal, xi = _x.Kit.Style.InkOn(xf);
             _x.Kit.Knob(this, xr.GetCenter(), 12, xf);
             DrawLine(xr.Position + new Vector2(7, 7), xr.Position + new Vector2(17, 17), xi, 2.6f, true);
@@ -355,7 +360,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         Ship? t = B.TargetOf(B.Player);
         // the locked ship's bracket is a control too: a click in it fires at the plating there (a click anywhere on a ship's
         // plating does, through LeftClick; this makes the locked one a control the scripted captain can find and click)
-        if (t != null && Local(t.X, t.Z) is { } tp)
+        if (t != null && Local(t) is { } tp)
             _ui.Reg("v.range.hull", new Rect2(tp - new Vector2(46, 36), new Vector2(92, 72)), at => RangeClick(at), null, new Tip("Click the plating to fire"));
         void Head(string text) { _x.Fonts.Draw(this, text, x + 4, y + 16, 14, C.Lilac, HorizontalAlignment.Left, RangeW - 8, 600, 1); y += RangeHeadH; }
         void Grid(int i, string id, string label, Action click, bool on, string tip)
@@ -388,7 +393,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         Grid(1, "v.range.next", "Next ship", B.NextTarget, false, "Lock the next ship on the range");
     }
 
-    private const float SceneX = 110, SceneW = 230, SceneRowH = 38, SceneHeadH = 26;
+    private const float SceneX = 110, SceneW = 230, SceneRowH = 38, SceneHeadH = 26, SceneRows = 16;
 
     // The scene selector (the battle console mockup's, owner 2026-11-02: "I would like a scene selector"): a pill naming the
     // scenario in play, with an arrow; a click opens the list. The objective sits under it while the list is shut.
@@ -426,7 +431,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         var types = _x.Data.Scenarios.GroupBy(s => s.Name).Select(g => (Name: g.Key, Sides: g.ToList())).ToList();
         _sceneType ??= B.Scenario.Name;
         float lx = SceneX, ly = 48, rowH = SceneRowH, sideW = 200;
-        float h = Math.Min(types.Count * rowH, Size.Y - ly - 120);
+        // whole rows, at most SceneRows of them, the rest scrolled: the rows shown never hang on the view's height, which
+        // differs a little from skin to skin
+        float h = Math.Min(types.Count, Math.Clamp(MathF.Floor((Size.Y - ly - 120) / rowH), 1, SceneRows)) * rowH;
         _sceneList = new Rect2(lx, ly, SceneW, h);
         float max = Math.Max(0, types.Count * rowH - h);
         _sceneScroll = Math.Clamp(_sceneScroll, 0, max);

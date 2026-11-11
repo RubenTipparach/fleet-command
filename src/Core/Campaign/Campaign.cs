@@ -37,14 +37,15 @@ public sealed class Campaign
     // ---- Building and saving ---------------------------------------------------------------------------------------------
 
     /// <summary>A new campaign for a side: the map from the data (territory grown from seeds, jittered by the seed), one ship
-    /// of the side's smallest tier with marines aboard, standing, freighters, officers and the first missions.</summary>
-    public static Campaign New(CampaignData data, string side, uint? seed = null)
+    /// of the side's smallest tier with marines aboard, standing, freighters, officers and the first missions. Without
+    /// unfinished, the factions with no territory on the map (CampaignData.Finished) are left out of it.</summary>
+    public static Campaign New(CampaignData data, string side, uint? seed = null, bool unfinished = true)
     {
         if (!data.Factions.TryGetValue(side, out CampFaction? fac) || !fac.Playable) throw new ArgumentException($"'{side}' is not a playable faction");
         CampRules ru = data.Rules;
         MapDef md = data.Map;
         uint sd = seed ?? (uint)ru.Seed;
-        var s = new CampaignState { Side = side, Seed = sd, Rng = sd, Cols = ru.Cols, Rows = ru.Rows };
+        var s = new CampaignState { Side = side, Seed = sd, Rng = sd, Cols = ru.Cols, Rows = ru.Rows, Unfinished = unfinished };
         var c0 = new Campaign(data, s);
         Mulberry32 R = c0.R;
         for (int c = 0; c < ru.Cols; c++)
@@ -57,10 +58,11 @@ public sealed class Campaign
                     double d = HexGrid.Dist(c, r, sc, sr) + R.Next() * md.SeedJitter;
                     if (d < bd) { bd = d; best = f; }
                 }
-                double t = R.Next();
-                s.Sectors.Add(new Sector { C = c, R = r, Owner = best, Terrain = t < md.NebulaBelow ? "nebula" : t < md.AsteroidsBelow ? "asteroids" : "open" });
+                // one draw a sector, kept from the first map's scattered terrain so the borders stay as approved
+                R.Next();
+                s.Sectors.Add(new Sector { C = c, R = r, Owner = best });
             }
-        foreach (var (c, r) in md.Stars) s.Hex(c, r).Terrain = "star";
+        c0.MakeSpace();
         foreach (Place p in md.Places)
         {
             Sector h = s.Hex(p.C, p.R);
@@ -83,12 +85,13 @@ public sealed class Campaign
         s.Credits = ru.StartCredits;
         s.Mp = ru.MovePoints;
         s.Dir = Math.PI / 2;
-        foreach (string f in data.Factions.Keys.Where(f => f != "neutral"))
+        foreach (string f in data.Factions.Keys.Where(f => f != "neutral" && (unfinished || data.Finished(f))))
             s.Standing[f] = f == side ? ru.StandingOwn : f == fac.Rival ? ru.StandingRival : 0;
         CampShip first = c0.NewShip(data.HullsOf(side).First().Id, fac.Prefix + fac.Names[0]);
         first.Supplies["marines"] = Math.Min(ru.StartMarines, c0.SupplyMax(first, "marines"));
         s.Fleet.Add(first);
         c0.MakeFreighters();
+        c0.Reveal();
         c0.RollOfficers();
         if (data.Missions.ContainsKey("shakedown")) c0.OfferMission("shakedown");
         for (int i = 0; i < ru.MissionsStart; i++) c0.OfferMission();
@@ -108,11 +111,107 @@ public sealed class Campaign
         if (s.Version != 1) throw new FormatException($"save version {s.Version} is not 1");
         if (s.Sectors.Count != s.Cols * s.Rows || s.Cols < 1) throw new FormatException("the save's map is the wrong size");
         if (!data.Factions.ContainsKey(s.Side)) throw new FormatException($"the save's side '{s.Side}' is no faction");
-        return new Campaign(data, s);
+        var c = new Campaign(data, s);
+        // a save from before the fog of war knows nothing yet: what is seen now is revealed
+        c.Reveal();
+        return c;
     }
 
     /// <summary>Writes the random generator's state back into the state (before saving).</summary>
     private void Sync() => S.Rng = R.State;
+
+    // ---- Space: star systems and the deep between them ------------------------------------------------------------------
+
+    /// <summary>Lays out space (owner, 2026-11-07: "space is kinda random right now. we should have stars, with planets
+    /// asteriods and nebula clustered around them", "rogue planets, dust clouds, and asteroids with no stars are a thing
+    /// too"): each system's star, its asteroid belt (a share of the ring belt_r sectors out) and its nebula grown beside it;
+    /// then dust clouds and asteroid fields in the deep, clear of every star. Ports are placed over it afterwards.</summary>
+    private void MakeSpace()
+    {
+        MapDef md = Data.Map;
+        var places = md.Places.Select(p => (p.C, p.R)).ToHashSet();
+        var stars = md.Stars.ToHashSet();
+        bool Free((int C, int R) k) => !places.Contains(k) && !stars.Contains(k) && Hex(k.C, k.R).Terrain == "open";
+        foreach (var (c, r) in stars) Hex(c, r).Terrain = "star";
+        foreach (StarSystem y in md.Systems)
+        {
+            if (y.BeltR > 0)
+                foreach (Sector h in S.Sectors.Where(h => HexGrid.Dist(h.C, h.R, y.C, y.R) == y.BeltR))
+                    if (R.Next() < y.BeltShare && Free((h.C, h.R))) h.Terrain = "asteroids";
+            if (y.Nebula > 0)
+            {
+                var start = S.Sectors.Where(h => HexGrid.Dist(h.C, h.R, y.C, y.R) is 2 or 3 && Free((h.C, h.R))).ToList();
+                if (start.Count > 0) Grow(start[R.Below(start.Count)], y.Nebula, "nebula", Free);
+            }
+        }
+        DeepSpace dp = md.Deep;
+        bool Deep((int C, int R) k) => Free(k) && stars.All(t => HexGrid.Dist(k.C, k.R, t.C, t.R) >= dp.ClearOfStars);
+        for (int i = 0; i < dp.DustClouds + dp.Fields; i++)
+        {
+            bool dust = i < dp.DustClouds;
+            var start = S.Sectors.Where(h => Deep((h.C, h.R))).ToList();
+            if (start.Count == 0) break;
+            int n = dust ? dp.DustMin + R.Below(dp.DustMax - dp.DustMin + 1) : dp.FieldMin + R.Below(dp.FieldMax - dp.FieldMin + 1);
+            Grow(start[R.Below(start.Count)], n, dust ? "nebula" : "asteroids", Deep);
+        }
+    }
+
+    // Grows a patch of terrain from a sector to n sectors, each new one a random free neighbour of the patch so far
+    // (neighbours in the grid's fixed order, so the same seed grows the same patch).
+    private void Grow(Sector from, int n, string terrain, Func<(int C, int R), bool> free)
+    {
+        var patch = new List<Sector> { from };
+        from.Terrain = terrain;
+        while (patch.Count < n)
+        {
+            var edge = patch.SelectMany(h => HexGrid.Neighbours(h.C, h.R, S.Cols, S.Rows)).Distinct().Where(free).ToList();
+            if (edge.Count == 0) break;
+            var (c, r) = edge[R.Below(edge.Count)];
+            Sector h = Hex(c, r);
+            h.Terrain = terrain;
+            patch.Add(h);
+        }
+    }
+
+    /// <summary>Whether a planet is a rogue: no star within three sectors.</summary>
+    public bool IsRogue(Sector h) => h.Planet != null && Data.Map.Stars.All(t => HexGrid.Dist(h.C, h.R, t.C, t.R) > 3);
+
+    // ---- The fog of war ----------------------------------------------------------------------------------------------------
+
+    /// <summary>The sectors seen now (the fog's visible state; owner, 2026-11-07: "fog of war has three states: unexplored,
+    /// revealed, and visible"): your empire's own sectors, those within your fleet's sight, and those within friendly
+    /// ships' sight (your faction's fleets and freighters, and your allies').</summary>
+    public HashSet<(int C, int R)> Visible()
+    {
+        Sight sg = Data.Map.Sight;
+        var eyes = new List<(int C, int R, int Range)> { (S.AtC, S.AtR, sg.Fleet) };
+        foreach (FactionFleet g in S.Groups.Where(g => Friendly(g.Fac))) eyes.Add((g.C, g.R, sg.Friendly));
+        foreach (Freighter f in S.Freighters.Where(f => Friendly(f.Fac) && f.Route.Count > 0))
+        {
+            int[] at = f.Route[Math.Clamp(f.I, 0, f.Route.Count - 1)];
+            eyes.Add((at[0], at[1], sg.Friendly));
+        }
+        var seen = new HashSet<(int, int)>();
+        foreach (Sector h in S.Sectors)
+            if (h.Owner == S.Side || eyes.Any(e => HexGrid.Dist(h.C, h.R, e.C, e.R) <= e.Range)) seen.Add((h.C, h.R));
+        return seen;
+    }
+
+    /// <summary>A faction whose ships share what they see with you: your own, or an ally (standing at AllyStanding or more).</summary>
+    public bool Friendly(string fac) => fac == S.Side || SideOf(fac) == "ally";
+
+    /// <summary>Whether a sector is seen now.</summary>
+    public bool IsVisible(int c, int r) => Visible().Contains((c, r));
+
+    /// <summary>Marks every sector seen now as revealed, with the empire that holds it ("Any revealed area updates the tile
+    /// color (empire controled)"). Called when a campaign starts or loads, after each sector the fleet flies, and after the
+    /// factions' turn.</summary>
+    public void Reveal()
+    {
+        foreach (var (c, r) in Visible()) See(Hex(c, r));
+    }
+
+    private static void See(Sector h) { h.Known = true; h.KnownOwner = h.Owner; }
 
     // ---- Map -------------------------------------------------------------------------------------------------------------
 
@@ -128,12 +227,36 @@ public sealed class Campaign
     public int Standing(string fac) => S.Standing.TryGetValue(fac, out int v) ? v : 0;
 
     public bool Own(Sector h) => h.Owner == S.Side;
-    public bool Hostile(Sector h) => h.Owner != S.Side && h.Owner != "neutral" && (Standing(h.Owner) < 0 || h.Owner == Rival || h.Owner == "vos");
+    public bool Hostile(Sector h) => HostileTo(h.Owner);
+    /// <summary>A faction you are at odds with: below 0 in standing, your rival, or the pirates.</summary>
+    public bool HostileTo(string fac) => fac != S.Side && fac != "neutral" && (Standing(fac) < 0 || fac == Rival || fac == "vos");
+    /// <summary>A faction you are on good terms with: above 0 in standing and not hostile.</summary>
+    public bool FriendlyTo(string fac) => fac != S.Side && fac != "neutral" && Standing(fac) > 0 && !HostileTo(fac);
     /// <summary>Your own port: shipyard, outfitter and recruiting.</summary>
     public bool IsPort(Sector h) => h.IsPort && h.Owner == S.Side;
     /// <summary>Another faction's port that deals with you (selling only) while your standing with it is 0 or above.</summary>
     public bool IsMarket(Sector h) => h.IsPort && h.Owner != S.Side && h.Owner != "neutral" && Standing(h.Owner) >= 0;
     /// <summary>"own", "ally" (standing at or above the ally line) or null: whose freighters and routes the map shows.</summary>
+    /// <summary>What a faction's ports open to you (owner, 2026-11-08: "Friendly factions: allows increasing privilege to use
+    /// friendly stations and outposts. Start with parts, supplies, weapons, then ships, and finally officers"): everything at
+    /// your own; at another's, each grant whose standing you have reached, nothing while it is hostile to you.</summary>
+    public IReadOnlyList<string> GrantsOf(string fac)
+    {
+        if (fac == S.Side) return CampaignData.Grants;
+        if (fac == "neutral" || fac == Rival || Standing(fac) < 0) return Array.Empty<string>();
+        return Ru.Privileges.Where(p => Standing(fac) >= p.Standing).Select(p => p.Grant).ToList();
+    }
+
+    /// <summary>The standing a faction's ports need for a grant.</summary>
+    public int StandingFor(string grant) => Ru.Privileges.First(p => p.Grant == grant).Standing;
+
+    /// <summary>Whether the port where the fleet stands gives a grant: your own port gives all, a friendly faction's port
+    /// what your standing with it has reached.</summary>
+    public bool Allows(string grant) => At.IsPort && GrantsOf(At.Owner).Contains(grant);
+
+    /// <summary>Whose ships the shipyard where the fleet stands builds for you: the port's own faction's.</summary>
+    public string YardSide => At.IsPort && At.Owner != "neutral" ? At.Owner : S.Side;
+
     public string? SideOf(string fac) => fac == S.Side ? "own" : Standing(fac) >= Ru.AllyStanding ? "ally" : null;
     public FactionFleet? GroupAt(int c, int r) => S.Groups.FirstOrDefault(g => g.C == c && g.R == r);
     public IEnumerable<Sector> Passable => S.Sectors.Where(h => !TerrainOf(h).Impassable);
@@ -206,6 +329,8 @@ public sealed class Campaign
             S.AtC = k.C;
             S.AtR = k.R;
             steps.Add(k);
+            // the fleet sees as it goes: everything within its sight of each sector it passes is revealed
+            Reveal();
         }
         bool arrived = S.AtC == target.C && S.AtR == target.R;
         S.OrderC = arrived ? null : target.C;
@@ -222,9 +347,13 @@ public sealed class Campaign
     public List<FleetMove> EndTurn()
     {
         S.Turn++;
+        Alarm();
         List<FleetMove> moves = FactionsMove();
+        Reveal();
         S.Mp = Ru.MovePoints;
-        S.Missions = S.Missions.Where(m => m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0).ToList();
+        // an encounter goes with the freighter it was met with, taken or not
+        foreach (Offer m in S.Missions.Where(m => ScriptOf(m).Encounter || ScriptOf(m).Event)) S.Active.Remove(m.Id);
+        S.Missions = S.Missions.Where(m => !ScriptOf(m).Encounter && !ScriptOf(m).Event && (m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0)).ToList();
         int n = 1 + R.Below(2);
         for (int i = 0; i < n && S.Missions.Count < Ru.MissionsMax; i++) OfferMission();
         RollOfficers();
@@ -248,8 +377,9 @@ public sealed class Campaign
         MapDef md = Data.Map;
         var all = Passable.ToList();
         var moves = new List<FleetMove>();
-        foreach (FactionFleet g in S.Groups)
+        foreach (FactionFleet g in S.Groups.ToList())
         {
+            if (g.Pursuit) { if (Hunt(g) is { } hm) moves.Add(hm); continue; }
             bool atGoal = g.GoalC == g.C && g.GoalR == g.R;
             if ((S.Turn + g.Every) % g.Every != 0 || (g.GoalC != null && atGoal && R.Next() < 0.5)) continue;
             if (g.GoalC == null || atGoal)
@@ -273,6 +403,7 @@ public sealed class Campaign
         }
         foreach (Freighter f in S.Freighters)
         {
+            if (f.Out > 0) { f.Out--; continue; }   // off her route while she is replaced
             if (f.I + f.Step < 0 || f.I + f.Step >= f.Route.Count) f.Step = -f.Step;
             int[] a = f.Route[f.I];
             f.I += f.Step;
@@ -281,6 +412,93 @@ public sealed class Campaign
         }
         return moves;
     }
+
+    // ---- Pursuit: a hostile faction hunts a fleet in its territory ---------------------------------------------------------
+
+    /// <summary>The mission file a fleet caught by hunters fights (data/missions/pursuit.json).</summary>
+    public const string PursuitScript = "pursuit";
+
+    /// <summary>A faction's alarm at your fleet now.</summary>
+    public int HeatOf(string fac) => S.Heat.GetValueOrDefault(fac);
+
+    /// <summary>The alarm level a faction has reached: how many of rules.pursuit.levels its alarm is at or past.</summary>
+    public int AlarmLevel(string fac) => Ru.Pursuit.Levels.Count(l => HeatOf(fac) >= l);
+
+    /// <summary>How many hunters a faction sends at an alarm level (0 at none).</summary>
+    public int HuntersAt(int level) => level <= 0 ? 0 : Math.Min(Ru.Pursuit.SizeMax, Ru.Pursuit.SizeBase + Ru.Pursuit.SizePerLevel * (level - 1));
+
+    /// <summary>The hunters a faction has out after your fleet, or null.</summary>
+    public FactionFleet? HuntersOf(string fac) => S.Groups.FirstOrDefault(g => g.Pursuit && !g.Recalled && g.Fac == fac);
+
+    /// <summary>The alarm at End turn (owner, 2026-11-08: "depending on hostility, enemy factions will persue you with larger
+    /// and larger fleets if you cross into hostile territory"): ending a turn in a hostile faction's sector raises its alarm,
+    /// more the lower your standing with it; everywhere else every alarm cools. Each level reached sends hunters, or adds
+    /// ships to those already out; an alarm that dies down recalls them.</summary>
+    private void Alarm()
+    {
+        PursuitRules pr = Ru.Pursuit;
+        Sector at = At;
+        string? hot = Hostile(at) && Data.Factions.ContainsKey(at.Owner) ? at.Owner : null;
+        foreach (string f in Data.Factions.Keys.Where(f => f != "neutral" && f != S.Side).OrderBy(f => f, StringComparer.Ordinal))
+        {
+            int heat = HeatOf(f);
+            heat = f == hot ? heat + pr.HeatPerTurn + Math.Max(0, -Standing(f)) / pr.HostilityStep : Math.Max(0, heat - pr.CoolPerTurn);
+            if (heat > 0) S.Heat[f] = heat; else S.Heat.Remove(f);
+            int size = HuntersAt(AlarmLevel(f));
+            FactionFleet? g = HuntersOf(f);
+            if (size == 0) { if (g != null) { g.Recalled = true; g.GoalC = g.HomeC; g.GoalR = g.HomeR; } continue; }
+            if (g == null)
+            {
+                // sent from the faction's port nearest the fleet (its home sector if it has none)
+                Sector from = S.Sectors.Where(h => h.IsPort && h.Owner == f).OrderBy(h => HexGrid.Dist(h.C, h.R, S.AtC, S.AtR)).ThenBy(h => h.C).ThenBy(h => h.R).FirstOrDefault()
+                    ?? at;
+                S.Groups.Add(new FactionFleet
+                {
+                    Name = $"{Data.Factions[f].Short} hunters", Fac = f, C = from.C, R = from.R, HomeC = from.C, HomeR = from.R, Size = size, Pursuit = true, Every = 1,
+                });
+            }
+            else if (g.Size < size) g.Size = size;
+        }
+    }
+
+    // hunters close on the fleet a few sectors a turn; recalled hunters go home and disband there
+    private FleetMove? Hunt(FactionFleet g)
+    {
+        (int C, int R) goal = g.Recalled ? (g.HomeC, g.HomeR) : (S.AtC, S.AtR);
+        if (g.Recalled && (g.C, g.R) == goal) { S.Groups.Remove(g); return null; }
+        if ((g.C, g.R) == goal) return null;
+        var res = CheapestPath(g.C, g.R, goal.C, goal.R);
+        if (res == null) return null;
+        var steps = res.Value.Path.Take(Ru.Pursuit.Speed).ToList();
+        if (steps.Count == 0) return null;
+        var from = (g.C, g.R);
+        var before = steps.Count > 1 ? steps[^2] : from;
+        g.Dir = HexGrid.Heading(before.Item1, before.Item2, steps[^1].C, steps[^1].R);
+        (g.C, g.R) = (steps[^1].C, steps[^1].R);
+        foreach (Offer m in S.Missions.Where(m => m.Group == g.Name)) { m.C = g.C; m.R = g.R; }
+        return new FleetMove(g.Name, new[] { from }.Concat(steps).ToList());
+    }
+
+    /// <summary>Hunters in the fleet's sector catch it: their fight is offered there (one per hunting group, the one already
+    /// offered this turn kept), handed the group's name, faction and size. Returns the newly offered fights.</summary>
+    public List<Offer> Caught()
+    {
+        var made = new List<Offer>();
+        if (!Data.Missions.ContainsKey(PursuitScript)) return made;
+        foreach (FactionFleet g in S.Groups.Where(g => g.Pursuit && !g.Recalled && g.C == S.AtC && g.R == S.AtR).ToList())
+        {
+            if (S.Missions.Any(m => m.Script == PursuitScript && m.Value("hunters") as string == g.Name)) continue;
+            Offer o = MakeOffer(Data.Missions[PursuitScript], At, new Dictionary<string, object>
+                { ["hunters"] = g.Name, ["hunter_fac"] = g.Fac, ["hunter_size"] = (double)g.Size });
+            o.Group = g.Name;
+            made.Add(o);
+        }
+        if (made.Count > 0) Sync();
+        return made;
+    }
+
+    /// <summary>The hunters a pursuit fight was offered against, or null.</summary>
+    public FactionFleet? HuntersOf(Offer m) => S.Groups.FirstOrDefault(g => g.Pursuit && g.Name == m.Value("hunters") as string);
 
     private void MakeFreighters()
     {
@@ -351,29 +569,131 @@ public sealed class Campaign
     /// random contract. <paramref name="at"/> pins the sector and hands the mission data. Returns null when none fits.</summary>
     public Offer? OfferMission(string? id = null, (int C, int R)? at = null, IReadOnlyDictionary<string, object>? data = null)
     {
-        var ids = Data.Contracts.Select(m => m.Id).ToList();
+        var contracts = Data.Contracts.ToList();
+        double total = contracts.Sum(m => m.Weight);
+        // a contract picked by its weight (one draw, as before)
+        string Pick()
+        {
+            double x = R.Next() * total;
+            foreach (MissionScript m in contracts) { if (x < m.Weight) return m.Id; x -= m.Weight; }
+            return contracts[^1].Id;
+        }
         for (int tries = 0; tries < 20; tries++)
         {
-            string sid = id ?? ids[(int)Math.Floor(R.Next() * ids.Count)];
+            string sid = id ?? Pick();
             MissionScript def = Data.Missions[sid];
             var pool = (at is { } p ? new List<Sector> { Hex(p.C, p.R) } : Where(def))
                 .Where(h => !S.Missions.Any(m => m.C == h.C && m.R == h.R)).ToList();
             if (pool.Count == 0) { if (id != null) return null; continue; }
-            Sector h = pool[(int)Math.Floor(R.Next() * pool.Count)];
-            var m = new Offer
-            {
-                Id = ++S.Mid, Script = sid, C = h.C, R = h.R, Turns = def.Story ? null : def.Turns,
-                Strength = Ru.Strengths[(int)Math.Floor(R.Next() * Ru.Strengths.Count)],
-                Reward = def.Reward + (def.Story ? 0 : Math.Floor(R.Next() * Ru.RewardSteps) * Ru.RewardStep),
-            };
-            if (data != null) foreach (var (k, v) in data) m.Set(k, v);
-            if (def.FollowGroup) m.Group = GroupAt(h.C, h.R)?.Name;
-            var sc = new OfferScope(this, m);
-            foreach (SetupStep st in def.Setup)
-                m.Set(st.Set, st.Pick != null ? st.Pick[(int)Math.Floor(R.Next() * st.Pick.Count)] : st.Value!.Eval(sc));
-            S.Missions.Add(m);
-            return m;
+            return MakeOffer(def, pool[(int)Math.Floor(R.Next() * pool.Count)], data);
         }
+        return null;
+    }
+
+    // A mission offered in a sector, with the data it is handed: its terms rolled, its sector seen, its setup run.
+    private Offer MakeOffer(MissionScript def, Sector h, IReadOnlyDictionary<string, object>? data)
+    {
+        var m = new Offer
+        {
+            Id = ++S.Mid, Script = def.Id, C = h.C, R = h.R, Turns = def.Story ? null : def.Turns,
+            Strength = Ru.Strengths[(int)Math.Floor(R.Next() * Ru.Strengths.Count)],
+            Reward = def.Reward + (def.Story ? 0 : Math.Floor(R.Next() * Ru.RewardSteps) * Ru.RewardStep),
+        };
+        if (data != null) foreach (var (k, v) in data) m.Set(k, v);
+        // a mission's intel shows its sector on the map
+        See(h);
+        if (def.FollowGroup) m.Group = GroupAt(h.C, h.R)?.Name;
+        var sc = new OfferScope(this, m);
+        foreach (SetupStep st in def.Setup)
+            m.Set(st.Set, st.Pick != null ? st.Pick[(int)Math.Floor(R.Next() * st.Pick.Count)] : st.Value!.Eval(sc));
+        S.Missions.Add(m);
+        return m;
+    }
+
+    // ---- Freighters met in a sector -------------------------------------------------------------------------------------
+
+    /// <summary>The mission files of the two encounters (data/missions/escort.json and raid.json).</summary>
+    public const string EscortScript = "escort", RaidScript = "raid";
+
+    /// <summary>The freighters in a sector now; one off her route is in none.</summary>
+    public List<Freighter> FreightersAt(int c, int r) => S.Freighters.Where(f => f.Out == 0 && f.Here() == (c, r)).ToList();
+
+    /// <summary>What meeting a freighter offers: an escort for your own faction's or an ally's, a raid on anyone else's.</summary>
+    public string EncounterOf(Freighter f) => Friendly(f.Fac) ? EscortScript : RaidScript;
+
+    /// <summary>The encounter with a freighter in the fleet's sector (owner, 2026-11-07: "no mision flag needed. Just whenever
+    /// you are on the same tile as freighter, you get a mission option"): the one already offered this turn, or a new one,
+    /// handed her name (ship) and faction (freighter_fac). Null when she is not in the fleet's sector.</summary>
+    public Offer? Meet(Freighter f)
+    {
+        if (f.Out > 0 || f.Here() != (S.AtC, S.AtR)) return null;
+        Offer? had = S.Missions.FirstOrDefault(m => ScriptOf(m).Encounter && m.Value("ship") as string == f.Name && m.Value("freighter_fac") as string == f.Fac);
+        if (had != null) return had;
+        Offer met = MakeOffer(Data.Missions[EncounterOf(f)], At, new Dictionary<string, object> { ["ship"] = f.Name, ["freighter_fac"] = f.Fac });
+        Sync();
+        return met;
+    }
+
+    /// <summary>The freighter an encounter was met with, or null.</summary>
+    public Freighter? FreighterOf(Offer m) =>
+        S.Freighters.FirstOrDefault(f => f.Name == m.Value("ship") as string && f.Fac == m.Value("freighter_fac") as string);
+
+    /// <summary>What the cargo of every freighter taken pays when cashed out, credits.</summary>
+    public int HaulValue => S.Fleet.Sum(s => s.Haul);
+
+    /// <summary>Cashes out the cargo of the freighters taken (owner, 2026-11-07: "capturing enemy freighter: bring it to a
+    /// station to cash out"), at your own port or one that deals with you, never to the faction she was taken from: her
+    /// cargo pays its haul, and she is handed over with it. Returns why not, or null.</summary>
+    public string? CashOut()
+    {
+        var hauls = S.Fleet.Where(s => s.Haul > 0).ToList();
+        if (hauls.Count == 0) return "No cargo aboard.";
+        Sector at = At;
+        string buyer = IsPort(at) ? S.Side : IsMarket(at) ? at.Owner : "";
+        if (buyer == "") return "Cargo is cashed out at a port that deals with you.";
+        var sold = hauls.Where(s => s.Maker != buyer).ToList();
+        if (sold.Count == 0) return $"The {Data.Factions[buyer].Short} will not buy back their own cargo.";
+        foreach (CampShip s in sold)
+        {
+            S.Credits += s.Haul;
+            S.Fleet.Remove(s);
+            S.Log.Add($"Turn {S.Turn}: the {s.Name}'s cargo sold at {at.PortName} for {s.Haul} cr.");
+        }
+        // the freighters sold were all the fleet had (its warships lost taking them): a new one, as after a fleet lost
+        if (Recommission() is { } fresh) S.Log.Add($"Turn {S.Turn}: the {fresh.Name} commissioned at {Home.PortName} to replace the fleet.");
+        return null;
+    }
+
+    /// <summary>A fleet with no ships left is given a new one of its side's smallest hull, at home; null when it has ships.
+    /// After a battle that lost them all, and after cashing out freighters that were all it had.</summary>
+    public CampShip? Recommission()
+    {
+        if (S.Fleet.Count > 0) return null;
+        CampShip fresh = NewShip(Data.HullsOf(S.Side).First().Id, Side.Prefix + Side.Names[S.Battles % Side.Names.Count]);
+        S.Fleet.Add(fresh);
+        S.AtC = S.HomeC;
+        S.AtR = S.HomeR;
+        return fresh;
+    }
+
+    // ---- Repair: ships do not mend on their own ---------------------------------------------------------------------------
+
+    /// <summary>The supply that is the repair kit (data/campaign/campaign.json supplies, "Repair kits").</summary>
+    public const string KitSupply = "parts";
+
+    /// <summary>The repair kits aboard the whole fleet.</summary>
+    public int Kits => S.Fleet.Sum(s => s.Supplies.GetValueOrDefault(KitSupply));
+
+    /// <summary>Patches a ship's hull in the field with one repair kit from the fleet's stores (its own first), anywhere,
+    /// between battles (owner, 2026-11-07: "ships dont auto heal, you have to repair them at stations", "or use you repair
+    /// kits"): rules.kit_repair_pct of the hull, never past whole. Returns why not, or null.</summary>
+    public string? FieldRepair(CampShip s)
+    {
+        if (s.HullPct >= 100) return $"The {s.Name} needs no repair.";
+        CampShip? from = s.Supplies.GetValueOrDefault(KitSupply) > 0 ? s : S.Fleet.FirstOrDefault(x => x.Supplies.GetValueOrDefault(KitSupply) > 0);
+        if (from == null) return "No repair kits aboard: buy them at a port (Supplies).";
+        from.Supplies[KitSupply]--;
+        s.HullPct = Math.Min(100, s.HullPct + Ru.KitRepairPct);
         return null;
     }
 
@@ -425,6 +745,14 @@ public sealed class Campaign
     /// <summary>A ship's worth in points: hull, fittings and supplies.</summary>
     public int Points(CampShip s) => Data.TierOf(Data.Hulls[s.Hull]).Cost + FitCost(s) + SupplyCost(s);
 
+    /// <summary>The grant a supply needs at a friendly port: repair kits are parts, the rest supplies.</summary>
+    public static string GrantOfSupply(string supplyId) => supplyId == KitSupply ? "parts" : "supplies";
+
+    // why a friendly port will not give a grant yet, or the plain reason away from any port
+    private string Refused(string grant, string elsewhere) =>
+        At.IsPort && !IsPort(At) && At.Owner != "neutral" && Data.Factions.ContainsKey(At.Owner)
+            ? $"{Data.Factions[At.Owner].Name} ports give {grant} at standing {StandingFor(grant)}; yours is {Standing(At.Owner)}." : elsewhere;
+
     public int SupplyMax(CampShip s, string id)
     {
         Supply u = Data.Supplies.First(x => x.Id == id);
@@ -461,10 +789,10 @@ public sealed class Campaign
     /// <summary>Buys a hull at your own port. Returns why not, or null.</summary>
     public string? Buy(string hullId)
     {
-        if (!IsPort(At)) return "The shipyard is at your own ports.";
+        if (!Allows("ships")) return At.IsPort && !IsPort(At) ? $"Their shipyard sells to friends of standing {StandingFor("ships")} or more." : "The shipyard is at your own ports.";
         if (S.Fleet.Count >= Ru.FleetMax) return $"A fleet has at most {Ru.FleetMax} ships.";
         Hull h = Data.Hulls[hullId];
-        if (h.Side != S.Side || !h.ForSale) return $"{h.Name} is not built here.";
+        if (h.Side != YardSide || !h.ForSale) return $"{h.Name} is not built here.";
         string? err = Pay(HullPrice(hullId));
         if (err != null) return err;
         S.Fleet.Add(NewShip(hullId, Side.Prefix + Side.Names[S.Fleet.Count % Side.Names.Count]));
@@ -481,6 +809,7 @@ public sealed class Campaign
         string buyer = IsPort(at) ? S.Side : IsMarket(at) ? at.Owner : "";
         if (buyer == "") return "Ships are sold at a port that deals with you.";
         if (S.Fleet.Count <= 1) return "You cannot sell your last ship.";
+        if (s.Haul > 0) return $"The {s.Name} is a prize with her cargo: cash it out.";
         S.Credits += SaleQuote(s, buyer);
         S.Fleet.Remove(s);
         ChangeStanding(buyer, buyer == "vos" ? Ru.PirateSaleStanding : Ru.SaleStanding);
@@ -510,7 +839,7 @@ public sealed class Campaign
     /// <summary>Buys a system into the stores at your own port. Returns why not, or null.</summary>
     public string? BuySystem(string sysId)
     {
-        if (!IsPort(At)) return "The store is at your own ports.";
+        if (!Allows("weapons")) return Refused("weapons", "The store is at your own ports.");
         if (!Data.Systems.ContainsKey(sysId)) return $"No system '{sysId}'.";
         string? err = Pay(SystemPrice(sysId));
         if (err != null) return err;
@@ -521,7 +850,7 @@ public sealed class Campaign
     /// <summary>Sells one of a system from the stores at your own port. Returns why not, or null.</summary>
     public string? SellSystem(string sysId)
     {
-        if (!IsPort(At)) return "The store is at your own ports.";
+        if (!Allows("weapons")) return Refused("weapons", "The store is at your own ports.");
         if (InStores(sysId) <= 0) return $"No {Data.Systems[sysId].Name} in the stores.";
         Stow(sysId, -1);
         S.Credits += SystemSale(sysId);
@@ -562,7 +891,7 @@ public sealed class Campaign
         var empty = EmptyHardpoints(s);
         if (empty.Count == 0) return null;
         int quote = StockQuote(s);
-        if (quote > 0 && !IsPort(At)) return "The store is at your own ports.";
+        if (quote > 0 && !Allows("weapons")) return Refused("weapons", "The store is at your own ports.");
         string? err = Pay(quote);
         if (err != null) return err;
         foreach (var (g, i) in empty)
@@ -587,6 +916,7 @@ public sealed class Campaign
     public string? Resupply(CampShip s, string id, int delta)
     {
         Supply u = Data.Supplies.First(x => x.Id == id);
+        if (!Allows(GrantOfSupply(id))) return Refused(GrantOfSupply(id), "Supplies are bought at a port that deals with you.");
         int max = SupplyMax(s, id), now = s.Supplies[id];
         int next = Math.Clamp(now + delta, 0, max);
         if (next == now) return delta > 0 ? $"{u.Name}: this ship carries at most {max}." : null;
@@ -597,14 +927,18 @@ public sealed class Campaign
     }
 
     /// <summary>What filling every supply of every ship in the fleet to what it carries costs.</summary>
-    public int RestockQuote() => S.Fleet.Sum(s => Data.Supplies.Sum(u => SupplyQuote(s, u.Id, SupplyMax(s, u.Id))));
+    public int RestockQuote() => S.Fleet.Sum(s => Stocked().Sum(u => SupplyQuote(s, u.Id, SupplyMax(s, u.Id))));
+
+    // the supplies the port where the fleet stands sells you (all at your own port)
+    private IEnumerable<Supply> Stocked() => Data.Supplies.Where(u => Allows(GrantOfSupply(u.Id)));
 
     /// <summary>Fills every supply of every ship to what it carries, paying for all at once.</summary>
     public string? Restock()
     {
+        if (!Allows("parts")) return Refused("parts", "Supplies are bought at a port that deals with you.");
         string? err = Pay(RestockQuote());
         if (err != null) return err;
-        foreach (CampShip s in S.Fleet) foreach (Supply u in Data.Supplies) s.Supplies[u.Id] = SupplyMax(s, u.Id);
+        foreach (CampShip s in S.Fleet) foreach (Supply u in Stocked()) s.Supplies[u.Id] = SupplyMax(s, u.Id);
         return null;
     }
 
@@ -616,7 +950,7 @@ public sealed class Campaign
     /// <summary>Repairs one ship (or, with null, the whole fleet) at your own port.</summary>
     public string? Repair(CampShip? one = null)
     {
-        if (!IsPort(At)) return "Repairs are made at your own ports.";
+        if (!Allows("parts")) return Refused("parts", "Repairs are made at a port that deals with you.");
         string? err = Pay(one != null ? RepairCost(one) : RepairCost());
         if (err != null) return err;
         foreach (CampShip s in one != null ? new[] { one } : S.Fleet.ToArray()) s.HullPct = 100;
@@ -631,7 +965,7 @@ public sealed class Campaign
     /// always has its list.</summary>
     public string? Hire(Officer o)
     {
-        if (!IsPort(At)) return "Officers are recruited at your own ports.";
+        if (!Allows("officers")) return Refused("officers", "Officers are recruited at your own ports.");
         int at = S.OfficerPool.IndexOf(o);
         if (at < 0) return $"{o.Name} is not on offer.";
         string? err = Pay(o.Cost);

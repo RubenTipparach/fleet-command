@@ -1,6 +1,8 @@
 // StationPanel.Comms: the Comms station (the battle console mockup's stComms): Hail target, the fleet orders, the Event log
 // key that opens the whole log over the view (owner, 2026-11-02: "I need an event log button in comms somewhere"), and the
-// latest lines listed under it, more of them expanded. Refusals are in Caution (Battle.IsWarning). Drawn only with the
+// latest lines listed under it, more of them expanded. In a campaign mission its goals come first, ticked as they are met,
+// with the key that shows them over the view again once their X has shut them (owner, 2026-11-06: "add close button to goals,
+// and put them in comms panel"). Refusals are in Caution (Battle.IsWarning). Drawn only with the
 // kit, so every faction's skin draws it.
 using System;
 using System.Linq;
@@ -16,9 +18,22 @@ public sealed partial class StationPanel
         drawn = true;
         Ship s = Me;
         float x = b.Position.X, y = b.Position.Y, w = b.Size.X;
+        if (X.State.Goals is { } goals)
+        {
+            Lbl("Goals", x, y + 13);
+            Button("com.goals", new Rect2(x + w - 150, y, 150, 26), "Over view", () => X.State.GoalsShown = !X.State.GoalsShown, X.State.GoalsShown,
+                tip: new Tip(X.State.GoalsShown ? "Hide the goals over the view" : "Show the goals over the view"));
+            y += 48;
+            foreach (GoalLine g in goals())
+            {
+                Goal(g, x, y, w, false);
+                y += 24;
+            }
+            y += 6;
+        }
         Ship? t = B.TargetOf(s);
         Button("com.hail", new Rect2(x, y, w, 48), "Hail target", B.Hail, dis: t == null, center: false,
-            tip: new Tip(t == null ? "Lock a ship to hail it" : $"Open a channel to {t.Name}"));
+            tip: new Tip(t == null ? "Lock a ship to hail it" : $"Open a channel to {Aiming.ContactName(B, t)}"));
         y += 56;
         Lbl("Fleet orders", x, y + 13);
         y += 20;
