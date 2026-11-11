@@ -38,6 +38,11 @@ Bible (`docs/design/ship-bible.html`): chapters 7 (windows), 9 (hull lighting), 
    ends nowhere, a seam that breaks off mid-plate, a notch that serves nothing is a mistake (owner: "there's so much mess
    and mistakes").
 7. **Not from the body** (C1-C5) and **one structure** (F1-F5).
+8. **No face without detail** (owner, 2026-11-11, of a Vos bow cap: "I exepect greebles and antena here", "there should be
+   noface that is completely devoid of detail"; Ship Design Bible T9). Bow and stern faces, caps, collar ends and deck edges
+   take no plating (`shell_groups` leaves them bare), so give them machinery (`greebles_per_m2`, which lands only where the
+   plating leaves the hull bare), antennas (`fixtures` kind `antenna`), lamps or features. Orbit the bake all round before
+   calling it done.
 
 ## The method: culture, then principles, then the recipe
 

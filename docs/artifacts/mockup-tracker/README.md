@@ -163,3 +163,4 @@
 - Versions 168 and 169 published 2026-11-10, cloud session, version ids `1794327655-2ac3` and `1794327672-8456`: M37 at v7 (the Cutter and Twin boom detailed); the survey at v41.
 - Version 170 published 2026-11-10, cloud session, version id `1794334506-418f`: M37 at v8 (rooms, the Saucer runner detailed); the survey at v42.
 - Version 174 published 2026-11-11, cloud session, version id `1794382796-b81d`: merged onto another session's version (M17 sounds at its new link, v3); M37 at v9; the survey at v44.
+- Version 177 published 2026-11-11, cloud session, version id `1794390066-cec8`: merged onto another session's version (M17 v4, M37F Fractal vessels, the survey at v46); M37 at v10; the Ship Design Bible at v3.

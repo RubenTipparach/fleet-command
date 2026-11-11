@@ -31,3 +31,4 @@
   `1794023426-75c0`. Chapter 17, The Kelvane Institute (the line, its traditions, rules KI1-KI9, four captures from mockup 23
   v8: `kelvane_lineup`, `kelvane_inside`, `kelvane_carrier`, `kelvane_craft`, published as supporting files); the checklist
   is now chapter 18 with a KI line.
+- 2026-11-11, cloud session (Vos ships thread; owner: "the ship guide should clearly state that there should be noface that is completely devoid of detail"): version 3 at the main account's link (the tracker's), version id `1794390029-4d38`, which had stood at version 2; brought up to date with chapters 13 to 18 and the four Institute captures as supporting files, and T9 (no face without detail), T10 (ordered machinery panels), T11 (masts with mass) and T12 (colour fields and pale edges, not built yet) added from the owner's reference ships, in our own words. The cloud account's copy (4nhxxo...) is no longer reachable from this account.

@@ -70,6 +70,14 @@
 - [ ] 1i.4 The Deck runner baked with the softer, square seams and shown
 - [ ] 1i.5 Survey Y15 (whose colours a ship wears)
 
+## 1j. No face without detail
+
+- [x] 1j.1 The rule in the Ship Design Bible (T9), the ship-detailing skill and CLAUDE.md; the references' lessons as T10 to T12
+- [x] 1j.2 Machinery on bare faces; ordered machinery panels (`machinery`) on the bow face and inset along the hull
+- [x] 1j.3 Masts as geometry from the bake's manifest (`antenna`, `baked-ship.js` masts)
+- [ ] 1j.4 Colour fields and pale edge lines in the painter (T12)
+- [ ] 1j.5 The game builds the masts from the manifest when the Vos ships are implemented
+
 ## 2. After the picks
 
 - [x] 2.1 Each ship's rooms (done as 1h.1: fitted into the parts, since a conversion's hull comes first)

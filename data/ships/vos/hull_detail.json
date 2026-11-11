@@ -109,8 +109,8 @@
   ],
   "ink_k": 0.12,
   "machine": [
-   "#4a3a30",
-   "#a8741c"
+   "#5c5852",
+   "#8e877c"
   ],
   "machine_kinds": [
    "greeble",
@@ -124,7 +124,8 @@
   "ao_floor": 0.55,
   "accent_share": 0.0,
   "_accent_share": "No whole plate is brass: brass is kept for the two bands (the Breakers' principle 3).",
-  "_under": "The layer under the plates, in the seams: a rust a little darker than the plate, never near black, so a seam reads as a fine line, not a drawn one (owner, 2026-11-11)."
+  "_under": "The layer under the plates, in the seams: a rust a little darker than the plate, never near black, so a seam reads as a fine line, not a drawn one (owner, 2026-11-11).",
+  "_machine": "Machinery in the inset panels and the greebles a worn grey against the rust, so the ordered machinery reads apart from the plate (the owner's references, 2026-11-11)."
  },
  "defaults": {
   "_doc": "A Vos ship of about cruiser size (150 to 190 m). Breakers' plate: stations 5 to 14 m apart, so no two plates match, and each plate stands proud by its own amount (up to 0.12 m on 0.25 m plate). The welds are narrow seams (8 to 14 cm), every cut square to the ship so seams meet cuts and never cross them, and no trenches (owner, 2026-11-11, of the first Saucer runner: \"lihnes are too harsh, and hull plating lines are crossing over each other\"). A fighter's own defaults override these at its scale.",
@@ -165,7 +166,7 @@
    0.0,
    0.0
   ],
-  "greebles_per_m2": 0.0,
+  "greebles_per_m2": 0.3,
   "overlay_min_m2": 1000000.0,
   "overlay_inset": 0.88,
   "overlay_lift_m": 0.2,
@@ -191,7 +192,8 @@
   "hatch_share": 0.3,
   "hatch_min_m2": 18.0,
   "strip_lines_lit": false,
-  "lamp_k": 1.0
+  "lamp_k": 1.0,
+  "_greebles": "Machinery only where the plating leaves the hull bare (the bow and stern faces, the collar's ends, the deck's edges): no face is left plain (owner, 2026-11-11: \"I exepect greebles and antena here\", Ship Design Bible T9)."
  },
  "ships": {
   "vos_cutter": {
@@ -549,6 +551,24 @@
      "size_m": 0.6,
      "colour": "red",
      "housing": true
+    },
+    {
+     "face": "bow",
+     "at": [
+      4.6,
+      -6.0
+     ],
+     "size_m": 0.35,
+     "colour": "amber"
+    },
+    {
+     "face": "bow",
+     "at": [
+      0,
+      -8.6
+     ],
+     "size_m": 0.4,
+     "colour": "red"
     }
    ],
    "liveries": [
@@ -593,7 +613,110 @@
    "defaults": {
     "light_ref": 3.5,
     "_light_ref": "Its floods and deck lamps reach 2.3 at the 99th percentile on the bake; scaled to 3.5 so a flood's pool on the Petrel's pale body does not burn out at night."
-   }
+   },
+   "fixtures": [
+    {
+     "face": "top",
+     "at": [
+      2.6,
+      71.0
+     ],
+     "kind": "antenna",
+     "h_m": 4.9,
+     "w_m": 1.7,
+     "r_m": 0.21
+    },
+    {
+     "face": "top",
+     "at": [
+      0,
+      54.0
+     ],
+     "kind": "antenna",
+     "h_m": 8.4,
+     "w_m": 3.1,
+     "r_m": 0.3,
+     "dish_m": 1.4
+    },
+    {
+     "face": "bow",
+     "at": [
+      3.4,
+      -2.5
+     ],
+     "kind": "antenna",
+     "h_m": 3.1,
+     "w_m": 0.0,
+     "r_m": 0.18
+    },
+    {
+     "face": "top",
+     "at": [
+      18.0,
+      -60.0
+     ],
+     "kind": "antenna",
+     "h_m": 4.2,
+     "w_m": 1.4,
+     "r_m": 0.21
+    },
+    {
+     "face": "bow",
+     "at": [
+      0,
+      -4.2
+     ],
+     "kind": "machinery",
+     "w_m": 6.4,
+     "h_m": 11.0,
+     "cell_m": 1.1
+    },
+    {
+     "face": "top",
+     "at": [
+      4.6,
+      30.0
+     ],
+     "kind": "machinery",
+     "w_m": 10.0,
+     "h_m": 4.0,
+     "cell_m": 1.0
+    },
+    {
+     "face": "top",
+     "at": [
+      4.6,
+      46.0
+     ],
+     "kind": "machinery",
+     "w_m": 6.0,
+     "h_m": 4.0,
+     "cell_m": 1.0
+    },
+    {
+     "face": "port",
+     "at": [
+      -52.0,
+      7.5
+     ],
+     "kind": "machinery",
+     "w_m": 12.0,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    },
+    {
+     "face": "port",
+     "at": [
+      -30.0,
+      7.5
+     ],
+     "kind": "machinery",
+     "w_m": 8.0,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    }
+   ],
+   "_fixtures": "Antennas on the bow cap, a mast with a dish over flight control, probes off the bow face, a pair at the flight deck's after corners; an ordered machinery panel filling the bow face, and inset machinery panels in pairs along the bow end's top and the drive block's flanks (owner, 2026-11-11, with references: greebles at the bow, and inset greeble panels on the plating)."
   }
  }
 }

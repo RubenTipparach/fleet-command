@@ -489,6 +489,27 @@ The Drum, the Cross and the Broadside were freighters, containers and welded par
 - **Provisional:** whose colours a ship wears (survey Y15), and whether the console's palette meanings (rust as salvage)
   still read right for a militia of traders.
 
+### D19. No face without detail (owner, 2026-11-11)
+
+The owner, of the Deck runner's plain bow cap: "I exepect greebles and antena here, the ship guide should clearly state
+that there should be noface that is completely devoid of detail", then with reference ships: "examples of greebles at bow
+of the ship", "also heres an example of visually pleaseing hull designs", "you can see the homeworld greeble pattern on hull
+plating is very visually pleasing also". The references are other games' art and are not committed; what they do is
+written into the Ship Design Bible in our own words (T9 to T12).
+
+- **The rule** (Ship Design Bible T9, the `ship-detailing` skill's rule 8, CLAUDE.md section 10): every face carries detail,
+  bow and stern faces, caps, collar ends and deck edges included.
+- **Machinery where the plating stops**: the Vos faction's `greebles_per_m2` is 0.3, which lands only where the plating
+  leaves the hull bare (the end faces), never on the plates.
+- **Ordered machinery panels** (T10; a new `fixtures` kind `machinery` in `hull_detail.py`): a framed recess cut into the
+  plating, laid out on a grid of cells (blocks, slot banks, pipe pairs, vents, a lamp now and then) in a worn grey. One
+  fills the Deck runner's bow face; inset panels run in pairs along the bow end's top and the drive block's upper flanks.
+- **Masts as geometry** (T11; `fixtures` kind `antenna`): a mast stands metres off the hull, so baking it smeared it onto
+  the plate. The bake now builds only its footing and writes each mast's frame to the manifest (`masts`); the page builds
+  it chunky and segmented (block footing, three stepped sections, an equipment head, a lit spike, a cross arm with aerials,
+  a dish over flight control) in the shared `baked-ship.js`. The game will build them the same way from the manifest.
+- **Not built yet**: T12, colour in large fields with the edges picked out in a pale line, is the painter's next step.
+
 ## Open questions
 
 | # | Question | Provisional answer |

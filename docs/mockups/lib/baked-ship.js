@@ -7,7 +7,7 @@
 // which still carries its own copy of the rest, with damage and breakup woven in; moving it wholly onto this file is task
 // 3.4 of kelvane-ship-concepts (CLAUDE.md 6.1). Edit it here, then re-run tools/mockups/inline_data.py on each page that inlines it.
 //
-// FCBakedShip(THREE, { onTexture, normals }) returns { tex, geometry, maps, looks, fixtures, blink, panes }. onTexture(promise):
+// FCBakedShip(THREE, { onTexture, normals }) returns { tex, geometry, maps, looks, fixtures, blink, panes, masts }. onTexture(promise):
 // called for every texture's load, so the page can wait for them before it calls itself ready. normals(points, deg): smooth
 // normals within deg (hull-grow.js creasedNormals), for a ship baked shaded smooth (its manifest's smooth_deg).
 window.FCBakedShip = function FCBakedShip(THREE, opts) {
@@ -136,5 +136,34 @@ function panes(list, U, live, GL, { uniforms = {}, head = 'varying vec3 vObj; va
     fragmentShader: head + paneGLSL(GL) + `
       void main(){ ${main} }` });
   const m = new THREE.Mesh(g, mat); m.userData.panes = true; return m; }
-return { tex, geometry, maps, looks, fixtures, blink, panes };
+/**
+ * The antennas as geometry (sh.masts, written by tools/blender/hull_detail.py fx_antenna): a mast stands metres off the
+ * hull, so it cannot be baked into the maps; only its footing is. Each is built in its own frame (u along the ship, v
+ * across, w out of the hull, m: the frame as a row-major 4x4 in ship space, mirrored for a starboard one), chunky and
+ * segmented after the owner's references (2026-11-11): a block footing, the mast in three stepped segments to h_m, an
+ * equipment head, a spike with a red lamp, a cross arm w_m across halfway with an aerial off each end, a dish of dish_m when
+ * given. mat: the metal; lamp: the tip's material. Returns one group, to add to the ship's root.
+ */
+function masts(sh, mat, lamp) {
+  const g = new THREE.Group();
+  const box = (f, sx, sy, sz, x, y, z, m = mat) => { const b = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); b.position.set(x, y, z + sz / 2); f.add(b); return b; };
+  for (const A of sh.masts || []) {
+    const f = new THREE.Group(), r = A.r_m, L = A.h_m, W = A.w_m;
+    let z = A.base_m;
+    box(f, r * 5, r * 5, r * 3, 0, 0, z); z += r * 3;                               // a block footing on the baked plate
+    for (let k = 0; k < 3; k++) { const s = 1 - k * 0.22, h = L * 0.26;               // the mast in three segments, each narrower
+      box(f, r * 2.2 * s, r * 2.2 * s, h, 0, 0, z); box(f, r * 3 * s, r * 3 * s, r * 0.8, 0, 0, z + h - r * 0.8); z += h; }
+    const head = box(f, r * 4.5, r * 3.5, r * 5, 0, 0, z); z += r * 5;               // a head block on top, an equipment box
+    box(f, r * 1.2, r * 1.2, L * 0.18, 0, 0, z);                                     // the tip spike and its red lamp
+    box(f, r * 1.8, r * 1.8, r * 1.8, 0, 0, z + L * 0.18, lamp);
+    if (W) { box(f, r * 1.4, W, r * 1.4, 0, 0, A.base_m + L * 0.5);                  // a cross arm halfway up, aerials hanging off it
+      for (const sv of [-1, 1]) box(f, r * 0.8, r * 0.8, L * 0.28, 0, sv * W / 2, A.base_m + L * 0.5 - L * 0.28); }
+    if (A.dish_m) { const d = A.dish_m, dish = new THREE.Mesh(new THREE.CylinderGeometry(d / 2, d * 0.12, d * 0.2, 20, 1, true), mat);
+      dish.rotation.z = Math.PI / 2; dish.position.set(0, r * 2.2 + d * 0.1, A.base_m + L * 0.35); f.add(dish); }
+    head.userData.head = true;
+    f.matrixAutoUpdate = false; f.matrix.set(...A.m); g.add(f);
+  }
+  return g;
+}
+return { tex, geometry, maps, looks, fixtures, blink, panes, masts };
 };

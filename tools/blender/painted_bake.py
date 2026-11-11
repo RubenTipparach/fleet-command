@@ -446,7 +446,7 @@ def bake_ship(slug, px, samples, panes_only=False, quick=False):
     bm.free()
     return {"tris": len(pos) // 9, "tex_px": px, "smooth_deg": smooth, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
             "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
-            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "pads": pads, "mesh": {"pos": pos, "uv": uv},
+            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "pads": pads, "masts": [dict(m) for m in HD.MASTS], "mesh": {"pos": pos, "uv": uv},
             **({} if quick else {"sdf": hull_sdf.hull_sdf(pos)})}   # the inside its breakup cuts by (lib/ship-break.js)
 
 

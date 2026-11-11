@@ -550,6 +550,9 @@ saying what changes here. Where a note and the copied text below it disagree, th
   about the centreline, baked with a low sun's cast shadows and deep AO onto the ship's own UVs, painted into a painted
   map and a PBR set (base colour, ORM, tangent normals, emission) with the hull lights baked into a light map
   (`ship-detailing`; Ship Design Bible chapter 15, T5-T8).
+- **No face of a ship without detail** (owner, 2026-11-11, of a Vos ship's bare bow cap: "I exepect greebles and antena here, the
+  ship guide should clearly state that there should be noface that is completely devoid of detail"). Bow and stern faces, caps,
+  collars' ends and deck edges carry machinery, antennas, sensors or lamps as surely as the plated faces do (Ship Design Bible T9).
 - **No z-fighting, ever** (Undercity, Star Crew).
 - **Stars and every scatter come from a real generator, never a cheap hash** (owner, 2026-11-05, of the menu's stars drawn
   with `i * 7919 % 1000`: "never to use poor RNG stuff for stars, this seems like a common low effort mistake", "you can see a
