@@ -97,14 +97,19 @@ hidden and then with the hull lights off) would say which.
 
 ## Videos and a cube-marched nebula
 
-`videos/` holds two takes recorded on the Pi with `wf-recorder` (H.264, 1280x748 window, 30 fps), with the game's own
-FPS burned in. **Recording costs frame rate on the Pi**, because the encoder shares the CPU, so the numbers on screen
-are lower than the unrecorded runs:
+Three takes recorded on the Pi with `wf-recorder` (H.264, 1280x748 window, variable frame rate), with the game's own FPS
+burned in. They are on Google Drive at full size, not in the repository (CLAUDE.md section 9). **Recording costs frame
+rate on the Pi**, because the encoder shares the CPU, so the numbers on screen are lower than the unrecorded runs. The
+recorder keeps only the frames the game drew, so each file's own frame rate is the game's rate while recording:
 
-- `fleet-command-2026-11-12-pi5-battle-100pct.mp4`: the battle at `--lowspec --lowspec-scale=1.0`, won in 126 s.
-  It ran at a median of 16 fps while recording (20 without).
-- `fleet-command-2026-11-12-pi5-marched-nebula.mp4`: the bare scene with a cube-marched nebula and an orbiting camera.
-  It ran at a median of 35 fps while recording (85 without).
+| Take | Drive | FPS while recording (file's own rate) | FPS not recording |
+|---|---|---|---|
+| The battle at `--lowspec --lowspec-scale=1.0`, won in 126 s | [concord/fleet-command-2026-11-12-pi5-battle-100pct.mp4](https://drive.google.com/file/d/1Szf7dkWecRVOP2vIp58RXBVaIvfXnobz/view?usp=drivesdk) | median 16 (file 15.7) | median 20 |
+| The bare scene with a cube-marched nebula, camera orbiting | [all-factions/fleet-command-2026-11-12-pi5-marched-nebula.mp4](https://drive.google.com/file/d/1n9ncmil_V2CXwZi1jlKwj67KgxIGVWVc/view?usp=drivesdk) | median 35 (file 19.6) | median 85 |
+| The bare scene, 400 low-poly ships, no fog, camera orbiting | [all-factions/fleet-command-2026-11-12-pi5-simple-scene.mp4](https://drive.google.com/file/d/1c-PSHhNowvzOa7BiGBM4WNi2l4y7PvVw/view?usp=drivesdk) | median 34 (file 22.1) | 79-130 |
+
+For the two bare-scene takes the file's rate is below the game's, so the recorder also dropped frames: it could not keep up
+at those rates.
 
 **The nebula as geometry** (`simple-scene/nebula.gd`): a 41^3 grid of simplex noise inside a flattened ellipsoid
 falloff, polygonised once at load with naive surface nets (the table-free cousin of marching cubes) into three nested
