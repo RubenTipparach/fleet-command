@@ -175,3 +175,4 @@
 - 2026-11-11, desktop session: version 175, version id `1794382882-61c4`: the Sounds page (M17) at version 4 (38 cues); merged onto the live version 174 first (M37 Vos ships at v9 and the survey at v44, both published from another session).
 - 2026-11-11, desktop session: version 176, version id `1794383516-a813`: the survey at version 46; the fractal vessels as M37F (from main).
 - Version 183 published 2026-11-11, cloud session, version id `1794418711-00b9`: M37 at v16, approved for the game (the Ram cut); faction readiness at v2.
+- Version 184 published 2026-11-12, cloud session, version id `1794446665-b46d`: M39 Crew leveling added; the survey at v48.

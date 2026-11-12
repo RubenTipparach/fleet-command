@@ -175,6 +175,26 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'CL', name: 'Crew leveling (change crew-leveling, mockup 39)',
+    lead: 'Mockup 39 (Crew Leveling, docs/mockups/crew-leveling.html; its link is on the tracker) is your crew screen with officers who level up (you: "ensigns provide no bonus but gain xp overtime, and can be traded for prestige so you can get more experienced crew, or just level up your crew member", "skill tree, each level gets a skill point, the player can auto level officers or pick paths on the tree to go down and specialize"). Fight battles and end turns on the page to watch it work. A blank answer takes the recommendation.',
+    qs: [
+      { id: 'CL1', q: 'What do officers cost to hire?', options: ['Prestige, by rank (ensigns free); credits stay for ships and parts', 'Credits, as now', 'Both: credits for the wage, prestige for the rank'], rec: 0,
+        why: 'Your note trades officers for prestige to get more experienced crew, so prestige is the crew\'s currency; it also gives prestige a use beyond standing.' },
+      { id: 'CL2', q: 'Where does experience come from?', options: ['Each battle (more for a better result) and a little each turn aboard', 'Battles only', 'Battles, turns, and each time the officer\'s skill is used in battle'], rec: 0,
+        why: 'The turn trickle is your "xp overtime"; battles by grade make winning the main way up. Counting every use is fiddly to balance and to show.' },
+      { id: 'CL3', q: 'Trading for prestige: what goes?', options: ['The officer leaves, worth their rank plus their banked experience', 'The officer stays and only their banked experience is cashed in', 'Either, the player\'s choice'], rec: 0,
+        why: 'An ensign who leaves for prestige is the swap you described: send them on, hire someone better. Cashing experience alone would make every officer a prestige mine.' },
+      { id: 'CL4', q: 'An officer hired above ensign: are their skill points already placed?', options: ['No: they arrive with points to place, or to auto level', 'Yes: placed along their station\'s auto path', 'Yes: placed in a school of their own, shown on their card'], rec: 0,
+        why: 'Unspent points let you shape a bought officer like a promoted one; auto level is one press away.' },
+      { id: 'CL5', q: 'Retraining an officer (every point back)', options: ['10 prestige, at any time in port', 'Free in port', 'Not allowed: choices are for good'], rec: 0,
+        why: 'A small price keeps choices meaningful without punishing an experiment.' },
+      { id: 'CL6', q: 'The ranks', options: ['Five: Ensign, Lieutenant, Lt. Commander, Commander, Captain (four skill points at the top)', 'Four, as the battle roster has now (three points at the top)', 'More, with a point every rank (say how many in the notes)'], rec: 0,
+        why: 'Four points against nine skills makes an officer finish one branch and start one more: a specialist, which is what the tree is for.' },
+      { id: 'CL7', q: 'The campaign has six stations and the battle nine. How do they meet?', options: ['The six campaign officers cover the battle\'s nine (Engineering is power and repair, Tactical is tactical and point defence, Comms is comms and fleet, Security is transport)', 'Nine campaign stations, one per battle slot', 'Six battle slots, merged the same way'], rec: 0,
+        why: 'Six trees are enough to learn; the battle keeps its finer slots and reads each from the campaign officer who covers it.' },
+      { id: 'CL8', q: 'Should officers be wounded or killed in battle, as in the reference game?', options: ['Not yet', 'Wounded only: out for a few turns', 'Wounded and killed'], rec: 0,
+        why: 'Losing a Captain you levelled for twenty battles is a big swing; worth adding once leveling plays well on its own.' },
+    ] },
   { tag: 'Y', name: 'Vos Syndicate ships (mockup 37)',
     lead: 'Mockup 37 (Vos Syndicate Ships, docs/mockups/vos-ship-concepts.html; its link is on the tracker) is now version 9: freighter hulls only, no warship parts (you: "I dont like that they have military ship parts, the vos would be sort of a militia organzide from various traders"), six specialists with their rooms, the Deck runner (once the Saucer runner) and two fighters detailed. A blank answer accepts the recommendation.',
     qs: [
