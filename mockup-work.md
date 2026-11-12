@@ -57,7 +57,7 @@ account and every link here is updated.
 | 35 | Hull texture designs: the Concord and Krai frigates, five culture-led texture designs each (owner, 2026-11-06: "Pitch a few different texture designs. Start with frigate of each and propose4-5 different texturing approaches for each. Goal is to follow culture and ideology"; "Concord could also use a bit of detail on their ships too to avoid them looking to much like primitives") | Drafted (2026-11-08, v22: the Condor's windows to three decks; v21: windows on every Concord class, Krai nacelle studs gone; v20: renumbered 35; v19: neutral hangar light; v18: softer warm-white window light; v17: warm yellow windows; v16: the Concord's original light arrangement back; v15: the whole of both lines, the Krai dreadnought added; v14: the Condor, Pelican and Krai cruiser added; v13: the Swift, Albatross and Krai corvette added; v12: designed bow pieces, K1 plan windows, the rest of both lines baking; v11: K1 ends plated, detail tiles by hull area, roughness in the painted look; v10: C1 bow and stern plated, soft light, the detail layer; v9: C1 half the panels, light grey seams, varied plates, plan windows; v8: C1 in rows too, windows and fans fixed, lighter seams; v7: K1 in staggered rows of plates; v6: K1 on it too; v5: C1 on the Kelvane Institute's hull method, the owner's "lets try a new dirtection"; v4: ten designs baked as the Hunt's); **not for the game until the owner enthusiastically approves** | `hull-texture-designs` | `docs/mockups/hull-texture-designs.html` | https://claude.ai/artifact/GyVMZ9s6hxwbDhmeBC9Fqu |
 
 | 36 | Placeholder fleets | **Approved for implementation** (2026-11-08, owner in conversation: "cool start implementation"; the 36 hulls exported to the game, their classes and campaign hulls in the data, the emblems on the faction screen). Drafted (2026-11-08, v1) (owner, 2026-11-08: "generate place holders for all of their ships, class design is your discretion, and a place holder logo for the factions too"): four placeholder classes and a placeholder emblem for each of the nine factions with no ships | `placeholder-fleets` | `docs/mockups/placeholder-fleets.html` | https://claude.ai/artifact/2oi3YHbpmssfDjwZ2WpzPT |
-| 37 | Fractal vessels | Drafted (2026-11-10, v2: phone friendly and marched at half resolution; v1) (owner, 2026-11-10: "a faction is designed to be a fractal type of life form. and interdimensional being", "can we build raymarched fractal ships?", "do the mockup yo", "dont worry about phone"): three raymarched vessels with no mesh, one per school of the Axiom's draft culture, beside the Petrel at true scale; desktop only | `fractal-vessels` | `docs/mockups/fractal-vessels.html` | https://claude.ai/artifact/2mUTtEaxfqSAnX94REdZHj |
+| 37 | Fractal vessels | Drafted (2026-11-12, v7: five forms (the fold lattice, delta lattice and branching cut), the pine's rings twist; v6: the KIFS breathes; three battles (Ambush, Skirmish, The line) with a film camera, and the Ambush rendered to video; v5: Benesi KIFS after the KIFS x T Benesi It2 render, replacing the ribbed truss, and every form in its own colours with fuller shading; v4: the ribbed truss after the KIFS x T Benesi render, the pine on Benesi's own rule, stronger damage, a firing range for phasers and torpedoes; v3: the lattice's artifacts fixed, the delta lattice, octahedral lattice, Benesi pine and Mandelbulb; v2: phone friendly and marched at half resolution; v1) (owner, 2026-11-10: "a faction is designed to be a fractal type of life form. and interdimensional being", "can we build raymarched fractal ships?", "do the mockup yo", "dont worry about phone"): three raymarched vessels with no mesh, one per school of the Axiom's draft culture, beside the Petrel at true scale; desktop only | `fractal-vessels` | `docs/mockups/fractal-vessels.html` | https://claude.ai/artifact/2mUTtEaxfqSAnX94REdZHj |
 | 38 | Engagement zone: the warning banner for leaving the zone and for self-destruct, the zone on the radar dial and the tactical map, its border in the 3D view (owner, 2026-11-10: "zone of engagement, a big square, leaving means you are leaving engagement zone and retreating. give players 30 seconds to turn around before abandoning a mission", "abandoning a mision without functional warp drive means you are self destructing", "have the warning for self destruct show up on screen lol") | Listed (2026-11-10) | `engagement-zone` | `docs/mockups/battle-console.html` (to be drafted) | none yet |
 New mockups are added at the bottom with the owner's words, never renumbered.
 
@@ -1183,5 +1183,44 @@ about phone", "I dont really need this stuff to work on a phone", "three js mock
   - on a phone the controls are a sheet you can fold away (upright) or a narrow column (sideways), every control a 44 px
     target, the view buttons a strip that scrolls;
   - shots at desktop, phone and portrait sizes.
+- **v3** (2026-11-11; owner: "I like the square one and the julia slice, but theres someartifacts with the square one,
+  I'd like more interesting ship shapes, triangles? more distinct looking shapes, the fold latice looks most like a
+  spaceship to me", "Mandelbulb?", Benesi fractals "most structurally sound", icefractal.com):
+  - the lattice's speckle, grain and stepped edges gone;
+  - four new forms: the delta lattice (an arrowhead of lattice blocks), the octahedral lattice (triangles of
+    triangles), the Benesi pine (a needle bow on a heavy bulb) and the Mandelbulb;
+  - an Icebox port came out a solid cube and is left out for now.
+- **v4** (2026-11-11; owner: "benisi pine doesnt look like thereference", then of the KIFS x T Benesi render: "this is what
+  I wwas referring to"; "I love the damage amount, 100% should appear more damaged, make a testing scene for me to shoot it
+  with phasers and torpedos!"; and an Abox render to try):
+  - the ribbed truss: that render's structure, an octahedral frame of ribbed beams with rounded caps and triangles nested
+    in each face, Benesi's turn on its third fold;
+  - the pine on Benesi's own power 2 rule;
+  - full damage charred in streaked patches with ember edges, its holes mirrored and larger;
+  - a firing range: pick Phaser or Torpedo, then click or tap a vessel;
+  - the damage slider works again;
+  - the Abox was tried and left out (its cut came out a block).
+- **v5** (2026-11-11; owner, of the KIFS x T Benesi It2 render: "this one is very complex, how do we recreate this in our
+  game?", then "go make it, also add some more colors and shading to the ships"):
+  - Benesi KIFS replaces the ribbed truss: Mandelbulber's octahedral kaleidoscopic IFS with Benesi's turn before its third
+    fold, matched to the render's silhouette at its own camera (crown, shoulders, cavity, keel), green with blue caps; the render's ladder walls and round openings are not matched yet;
+  - every form in its own colours, all blues, purples and greens (owner: "I liek the blue, purple green solors";
+    provisional), the lattices' fold panels and the octahedral lattice's tips in an accent;
+  - fuller light: a warm key and cool fill, cavities in the deep colour, light through thin edges, a hue-shifting rim.
+- **v6** (2026-11-12; owner: "Benesi kifs not animated, can you setup some battle situations mockups with the vessels? and
+  render me a video of what a battle might look like?"):
+  - the KIFS's slider turns Benesi's turn less or more, so the drift breathes its crown;
+  - three battles under Battle: Ambush (Benesi KIFS and two escorts unfold ahead of a Concord patrol), Skirmish (two
+    against two, circling) and The line (two lines passing broadside); phasers and torpedoes against lances and seeds,
+    every shot landing on the vessels' true surface;
+  - a film camera cutting between the game's chase view and a watch on the Axiom's heaviest vessel (a drag hands it
+    back);
+  - the Ambush rendered frame by frame to an MP4 (`docs/screenshots/mockups/fractal-vessels/battles/`) by
+    `tools/mockups/render_video.mjs`.
+- **v7** (2026-11-12; owner: "fold lattice and delta latice sucks Id get rid of those, branching is also not the right style
+  eitgher"; "benesi pine doesnt really animate, it just moves back and forth, I rally like how it looks though"):
+  - five forms left: the Julia slice, the octahedral lattice, Benesi KIFS, the Benesi pine and the Mandelbulb;
+  - the battles fly the Mandelbulb where they flew the cut forms, and the Skirmish and The line videos are rendered again;
+  - the pine's slider twists its banded rings round the axis, so the drift spirals them instead of sliding the shape.
 - **Stage:** Drafted.
 - **Questions:** survey FV1-FV5 (whose vessels, what a vessel is, which forms, phones, hits).
