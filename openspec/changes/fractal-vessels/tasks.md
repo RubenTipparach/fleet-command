@@ -20,6 +20,8 @@
 
 - [x] 1.10 v5 (owner, 2026-11-11, of the KIFS x T Benesi It2 render: "go make it, also add some more colors and shading to the ships"): Benesi KIFS replacing the ribbed truss, every form's own palette, accent masks and a fuller light (design D3c), shots at all sizes, republished
 
+- [x] 1.11 v6 (owner, 2026-11-12: "Benesi kifs not animated, can you setup some battle situations mockups with the vessels? and render me a video"): the KIFS's turn on the slider and drift, three battles with a film camera, `tools/mockups/render_video.mjs`, the Ambush rendered to video (design D3d)
+
 ## 2. In the game (once approved for implementation)
 
 - [ ] 2.1 Documented exceptions in CLAUDE.md section 14: no mesh, no UVs and no baked maps for a raymarched vessel

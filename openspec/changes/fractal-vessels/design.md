@@ -204,6 +204,59 @@ Not matched: the render's ladder walls and round openings.
   sharp spot (only where the surface is open: in a pit it only sparkles) on a broad sheen, tinted by the plating. The
   grazing rim walks between the rim and accent colours with the angle.
 
+## D3d. Version 6: the KIFS breathes, and battles
+
+The owner, 2026-11-12: "Benesi kifs not animated, can you setup some battle situations mockups with the vessels? and
+render me a video of what a battle might look like?"
+
+**The KIFS breathes.** Benesi's turn is a rotation of 56.6 degrees about the axis (0.245, -0.590, 0.769), worked out from
+its matrix (checked to 1e-8). Written as an axis and an angle, the slider scales the angle (0.6 to 1.4 of Benesi's own), so
+the drift turns the inner levels back and forth and the crown breathes. The leaf's ball is fixed at 0.84.
+
+**Battles.** Three scenarios under Battle, on the same page so they use the same vessels, march and hits (CLAUDE.md 6.1):
+
+| Battle | Concord | Axiom | Length |
+|---|---|---|---|
+| Ambush | a Petrel, two Swifts on patrol | Benesi KIFS unfolds ahead, two octahedral lattices beside it; the KIFS folds away at 26 s | 30 s |
+| Skirmish | a Petrel, a Swift, circling | an octahedral lattice and a delta lattice, circling the other way | 26 s |
+| The line | a Petrel, two Swifts in line | the Julia slice, a fold lattice and the Benesi pine in line, passing broadside | 28 s |
+
+One set of rules for all of them:
+- **Paths.** Each ship flies a path that is a function of the battle's clock (a straight run with a weave, or a circle),
+  facing along it, or at its target for a vessel that holds station. Turns are eased at 1.2 rad/s.
+- **Firing.** A ship fires each weapon when it has reloaded and an enemy is in range: the nearest, ties by id. Reloads vary
+  by a seeded draw, plus or minus 15%.
+- **Where a shot lands.** On a vessel, the field's own surface along the shot's ray: the pick pass from a narrow camera at
+  the muzzle, so the torpedo's hole and the phaser's groove are the firing range's, and a vessel in the way takes the hit.
+  On a Concord ship, its shield (an ellipsoid that flashes and ripples where hit) or, under 35% hull, the hull (sparks).
+- **Weapons** (provisional, the mockup's own until the game's data has the Axiom's):
+
+| Weapon | Side | Range | Reload | Damage | Look |
+|---|---|---|---|---|---|
+| Phaser | Concord | 900 m | 1.7 s | 0.6 | an orange beam, 0.4 s |
+| Torpedo | Concord | 1300 m | 4.6 s | 1.6 | a red-orange ball at 420 m/s with a trail |
+| Lance | Axiom | 1100 m | 3.4 s | 1.0 | a 0.7 s charge, then a wide beam in the vessel's glow colour, 0.9 s |
+| Seeds | Axiom | 950 m | 2.8 s | 3 x 0.3 | three seeds of light in the accent colour, curving onto the target |
+
+- **Hull points** (provisional): the Petrel 20, the Swift 11; the KIFS 30, the Julia slice 16, the pine 14, the
+  Mandelbulb 14, the delta 13, the fold lattice 12, the octahedral lattice 11, the tree 10. A vessel's damage look follows
+  its hull points lost (up to 90%).
+- **Arriving and leaving.** A vessel unfolds into our space over 1.8 s, glowing. It folds back out, glowing and throwing
+  off motes of its own colours, when it is lost or withdraws. A Concord ship explodes: a flash, a fireball, sparks, and the
+  wreck drifts.
+- **Determinism.** The battle steps on a fixed 1/30 s with a seeded generator (Mulberry32), so a battle replays exactly.
+  The page plays it live, and the video renders the same steps.
+
+**The film camera** is a cinematic the owner asked for (CLAUDE.md section 8); it is on by default, and a drag hands the
+camera back. It cuts every 6 s between:
+- the game's chase view behind the lead Concord ship, looking a third of the way to its nearest enemy;
+- a watch on the Axiom's heaviest vessel from the Concord's side, so their fire comes at it.
+
+**The video.** `tools/mockups/render_video.mjs` loads the page, starts a battle through `window.BATTLE` with the controls
+hidden, steps it one frame's time at a time, captures each frame and pipes it to ffmpeg (H.264, CRF 18). The video
+therefore plays at true speed, however slowly the software renderer draws. A cloud session cannot record a live run
+(CLAUDE.md section 9), so this is a render, not a recording.
+
 ## D4. Damage
 
 - **Fold levels lost**: `iterations - floor(damage x iterations x 0.45)`, never fewer than 2. A hurt Julia slice swells
