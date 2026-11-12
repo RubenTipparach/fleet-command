@@ -47,7 +47,7 @@ public static class KeyFace
         Vector2 c = r.GetCenter();
         float h = Math.Min(r.Size.X, r.Size.Y) * 0.2f;
         kit.Knob(ci, c, Math.Min(r.Size.X, r.Size.Y) / 2, fill);
-        ci.DrawLine(c - new Vector2(h, h), c + new Vector2(h, h), ink, 2.6f, true);
-        ci.DrawLine(c + new Vector2(h, -h), c - new Vector2(h, -h), ink, 2.6f, true);
+        Draw2D.Line(ci, c - new Vector2(h, h), c + new Vector2(h, h), ink, 2.6f, true);
+        Draw2D.Line(ci, c + new Vector2(h, -h), c - new Vector2(h, -h), ink, 2.6f, true);
     }
 }

@@ -26,10 +26,10 @@ public sealed partial class ViewOverlay
             {
                 double a = i * Math.PI * 2 / 96;
                 if (Local(w.XM + Math.Sin(a) * r, w.ZM - Math.Cos(a) * r) is { } p) pts.Add(p);
-                else if (pts.Count >= 2) { DrawPolyline(pts.ToArray(), new Color(col, (float)(1 - k)), 3, true); pts.Clear(); }
+                else if (pts.Count >= 2) { Draw2D.Polyline(this, pts.ToArray(), new Color(col, (float)(1 - k)), 3, true); pts.Clear(); }
                 else pts.Clear();
             }
-            if (pts.Count >= 2) DrawPolyline(pts.ToArray(), new Color(col, (float)(1 - k)), 3, true);
+            if (pts.Count >= 2) Draw2D.Polyline(this, pts.ToArray(), new Color(col, (float)(1 - k)), 3, true);
         }
     }
 }

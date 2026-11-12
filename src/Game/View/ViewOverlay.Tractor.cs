@@ -34,7 +34,7 @@ public sealed partial class ViewOverlay
         foreach (Craft c in B.Craft)
         {
             if (c.Kind != "shuttle" || c.Side != me.Side || Local(c.X, c.Z) is not { } p) continue;
-            DrawArc(p, 9, 0, Mathf.Tau, 24, C.Caution, 2, true);
+            Draw2D.Arc(this, p, 9, 0, Mathf.Tau, 24, C.Caution, 2, true);
             f.Draw(this, "SHUTTLE · DISGUISED", p.X, p.Y - 16, 14, C.Caution, HorizontalAlignment.Center);
         }
         if (!_x.State.PlacingMine || !me.Alive) return;
@@ -71,7 +71,7 @@ public sealed partial class ViewOverlay
             double fr = (ph + k / 3.0) % 1;
             PlaneRing(xm, zm, r0 * fr, new Color(col, (float)(0.85 * (1 - fr)) * alpha), 2, false);
         }
-        if (Local(xm, zm) is { } c) DrawCircle(c, 4, new Color(col, alpha), true, -1, true);
+        if (Local(xm, zm) is { } c) Draw2D.Circle(this, c, 4, new Color(col, alpha), true, -1, true);
     }
 
     private void DashedRing(double xm, double zm, double rM, Color col) => PlaneRing(xm, zm, rM, col, 2, true);
@@ -89,10 +89,10 @@ public sealed partial class ViewOverlay
             if (dashed)
             {
                 if (p is { } pp && i % 2 == 0 && i < n && Local(xm + Math.Sin(a + Math.PI * 2 / n) * rM, zm - Math.Cos(a + Math.PI * 2 / n) * rM) is { } p2)
-                    DrawLine(pp, p2, col, width, true);
+                    Draw2D.Line(this, pp, p2, col, width, true);
             }
             else if (p is { } pp2) pts.Add(pp2);
         }
-        if (pts.Count >= 2) DrawPolyline(pts.ToArray(), col, width, true);
+        if (pts.Count >= 2) Draw2D.Polyline(this, pts.ToArray(), col, width, true);
     }
 }

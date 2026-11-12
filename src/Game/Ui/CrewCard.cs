@@ -32,7 +32,7 @@ public sealed partial class CrewCard : ConsolePanel
     {
         if (X.Coop is not { } co) return;
         Crew crew = co.Crew;
-        DrawRect(new Rect2(Vector2.Zero, Size), Lobby ? new Color(0.01f, 0.012f, 0.03f, 1) : new Color(0, 0, 0, 0.78f));
+        Draw2D.Rect(this, new Rect2(Vector2.Zero, Size), Lobby ? new Color(0.01f, 0.012f, 0.03f, 1) : new Color(0, 0, 0, 0.78f));
         Ui.Reg("crew.block", new Rect2(Vector2.Zero, Size));
         string bridge = crew.BridgeOf(co.Me);
         bool amCaptain = crew.CaptainOf(bridge) == co.Me, admiral = co.Me == Crew.AdmiralId;

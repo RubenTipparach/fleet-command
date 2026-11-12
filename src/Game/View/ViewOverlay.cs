@@ -141,6 +141,12 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
 
     public override void _Draw()
     {
+        DrawItem();
+        Draw2D.Flush(this);   // the untextured shapes collected, sent as one draw
+    }
+
+    private void DrawItem()
+    {
         _ui.Begin();
         DrawView();
         // sheets over the whole view, above the Target box (the hit details and the event log: ViewOverlay.Tactical.cs)
@@ -166,8 +172,8 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         {
             var at = new Rect2(x0, y, Sz, Sz);
             bool mine = co.Crew.Holds(bridge, r.Id, co.Me);
-            DrawCircle(at.GetCenter(), Sz / 2 + 2, new Color(0, 0, 0, 0.7f), true, -1, true);
-            DrawArc(at.GetCenter(), Sz / 2 + 2, 0, Mathf.Tau, 24, mine ? C.Sky : C.Lilac, 1.5f, true);
+            Draw2D.Circle(this, at.GetCenter(), Sz / 2 + 2, new Color(0, 0, 0, 0.7f), true, -1, true);
+            Draw2D.Arc(this, at.GetCenter(), Sz / 2 + 2, 0, Mathf.Tau, 24, mine ? C.Sky : C.Lilac, 1.5f, true);
             _x.Kit.Icon(this, r.Icon, at.Grow(-4), mine ? C.Sky : C.Lilac);
             _ui.Reg($"v.role.{s.Id}.{r.Id}", at, null, null, new Tip($"{r.Name}: {string.Join(", ", co.Crew.HoldersOf(bridge, r.Id).Select(co.Crew.NameOf).Prepend(co.Crew.NameOf(FleetCommand.Coop.Crew.AdmiralId)))}"));
             x0 += Sz + Gap;
@@ -200,7 +206,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         }
         var fo = Geometry.Forward(me.HOrder);
         if (Local(me.X + fo.X * (RingM - 60), me.Z + fo.Z * (RingM - 60)) is { } t0 && Local(me.X + fo.X * (RingM + 60), me.Z + fo.Z * (RingM + 60)) is { } t1)
-            DrawLine(t0, t1, C.Lilac, 3, true);
+            Draw2D.Line(this, t0, t1, C.Lilac, 3, true);
 
         // shots are drawn in the 3D view (ShotView), not over it
 
@@ -221,7 +227,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 float an = dir.Angle();
                 var ep = Size / 2 + new Vector2(Mathf.Cos(an) * (Size.X / 2 - 40), Mathf.Sin(an) * (Size.Y / 2 - 40));
                 Color edge = s.Side != me.Side ? C.Alert : C.Accord;
-                DrawArc(ep, 14, 0, Mathf.Tau, 24, edge, 3, true);
+                Draw2D.Arc(this, ep, 14, 0, Mathf.Tau, 24, edge, 3, true);
                 f.Draw(this, Aiming.ContactName(b, s).ToUpperInvariant(), ep.X, ep.Y + 32, 16, edge, HorizontalAlignment.Center);
                 continue;
             }
@@ -235,7 +241,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 foreach (var (sx, sy) in new[] { (-1, -1), (1, -1), (1, 1), (-1, 1) })
                 {
                     var corner = p + new Vector2(sx * w / 2, sy * h / 2);
-                    DrawPolyline(new[] { corner - new Vector2(sx * c0, 0), corner, corner - new Vector2(0, sy * c0) }, bc, 3.5f + (hot ? 1 : 0), true);
+                    Draw2D.Polyline(this, new[] { corner - new Vector2(sx * c0, 0), corner, corner - new Vector2(0, sy * c0) }, bc, 3.5f + (hot ? 1 : 0), true);
                 }
                 string lab = big ? Aiming.ContactName(b, s) : $"{Aiming.ContactName(b, s)} · {Aiming.ContactCode(b, s)} · {Rules.DistKm(me, s):0.0} km · {Math.Round(s.V)}";
                 f.Draw(this, lab.ToUpperInvariant(), p.X, p.Y + 58, 20, C.Text, HorizontalAlignment.Center);
@@ -244,7 +250,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             else
             {
                 float r = 16 * (hot ? 1.18f : 1);
-                DrawArc(p, r, 0, Mathf.Tau, 32, hot ? col.Lightened(0.35f) : new Color(col, 0.7f), 1.5f + (hot ? 1 : 0), true);
+                Draw2D.Arc(this, p, r, 0, Mathf.Tau, 32, hot ? col.Lightened(0.35f) : new Color(col, 0.7f), 1.5f + (hot ? 1 : 0), true);
                 f.Draw(this, Aiming.ContactName(b, s).ToUpperInvariant(), p.X, p.Y + 34, 16, col, HorizontalAlignment.Center);
             }
             // a ship one of your bridge's stations has locked shows its hull too, not only your own target (owner, 2026-11-11:
@@ -281,7 +287,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 HitState hs = _ui.Reg("v.marker." + mid, r, _ => SteerFor(mid),
                     null, new Tip(mk.Label, new (string, string, Color?)[] { ("Click", "set course for it", null) }));
                 Diamond(mp0, hs.Hot ? 13 : 11, col);
-                if (got) { DrawLine(mp0 + new Vector2(-5, 0), mp0 + new Vector2(-1, 4), C.Deep, 2.5f, true); DrawLine(mp0 + new Vector2(-1, 4), mp0 + new Vector2(6, -5), C.Deep, 2.5f, true); }
+                if (got) { Draw2D.Line(this, mp0 + new Vector2(-5, 0), mp0 + new Vector2(-1, 4), C.Deep, 2.5f, true); Draw2D.Line(this, mp0 + new Vector2(-1, 4), mp0 + new Vector2(6, -5), C.Deep, 2.5f, true); }
                 f.Draw(this, got ? mk.Label.ToUpperInvariant() : $"{mk.Label.ToUpperInvariant()} · {Geometry.Dist(me.X, me.Z, mk.XM, mk.ZM) / 1000:0.0} KM",
                     mp0.X, mp0.Y + 32, 16, col, HorizontalAlignment.Center);
             }
@@ -323,15 +329,15 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         if (_x.State.ShowTarget && t != null)
         {
             float w = Math.Min(320, Size.X * 0.3f), h = w * 0.86f, bx = Size.X - w - 16, by = 14;
-            DrawRect(new Rect2(bx + 2, by + 2, w - 4, h - 4), _x.Kit.Style.R.Plate);
+            Draw2D.Rect(this, new Rect2(bx + 2, by + 2, w - 4, h - 4), _x.Kit.Style.R.Plate);
             _x.Kit.Piece(this, "frame.inset", new Rect2(bx, by, w, h));
             f.Draw(this, $"TARGET · {Aiming.ContactName(b, t).ToUpperInvariant()}", bx + 18, by + 34, 18, C.Sky, HorizontalAlignment.Left, w - 90, 600, 1);
             var xr = new Rect2(bx + w - 34, by + 14, 24, 24);
             HitState xs = _ui.Reg("v.target.x", xr, _ => _x.State.ShowTarget = false, null, new Tip("Close the Target box"));
             Color xf = xs.Hot ? C.Alert : C.Signal, xi = _x.Kit.Style.InkOn(xf);
             _x.Kit.Knob(this, xr.GetCenter(), 12, xf);
-            DrawLine(xr.Position + new Vector2(7, 7), xr.Position + new Vector2(17, 17), xi, 2.6f, true);
-            DrawLine(xr.Position + new Vector2(17, 7), xr.Position + new Vector2(7, 17), xi, 2.6f, true);
+            Draw2D.Line(this, xr.Position + new Vector2(7, 7), xr.Position + new Vector2(17, 17), xi, 2.6f, true);
+            Draw2D.Line(this, xr.Position + new Vector2(17, 7), xr.Position + new Vector2(7, 17), xi, 2.6f, true);
             SystemsDisplay.Draw(this, _ui, _x, t, new Rect2(bx + 14, by + 44, w - 28, h - 58), false, "tgt");
             // the camera's two keys under the box (battle-console design 4n): Target view, and Camera lock back on your ship
             float kw = (w - 6) / 2, ky = by + h + 6;
@@ -437,7 +443,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         Vector2[] arrow = _x.State.SceneOpen
             ? new[] { new Vector2(ax - 6, ay + 3), new Vector2(ax + 6, ay + 3), new Vector2(ax, ay - 4) }
             : new[] { new Vector2(ax - 6, ay - 3), new Vector2(ax + 6, ay - 3), new Vector2(ax, ay + 4) };
-        DrawColoredPolygon(arrow, ink);
+        Draw2D.ColoredPolygon(this, arrow, ink);
     }
 
     // The open list, over everything in the view: the scenarios grouped by the side the player commands, each side under
@@ -522,9 +528,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     {
         float fr = (float)Math.Clamp(o.Hull / o.Class.HullHp, 0, 1), w = 92, h = 7;
         Color col = fr > 0.6f ? C.Accord : fr > 0.3f ? C.Caution : C.Alert;
-        DrawRect(new Rect2(px - w / 2 - 2, py - 2, w + 4, h + 4), new Color(0, 0, 0, 0.6f));
-        DrawRect(new Rect2(px - w / 2, py, w, h), C.Deep);
-        DrawRect(new Rect2(px - w / 2, py, w * fr, h), col);
+        Draw2D.Rect(this, new Rect2(px - w / 2 - 2, py - 2, w + 4, h + 4), new Color(0, 0, 0, 0.6f));
+        Draw2D.Rect(this, new Rect2(px - w / 2, py, w, h), C.Deep);
+        Draw2D.Rect(this, new Rect2(px - w / 2, py, w * fr, h), col);
         _x.Fonts.Draw(this, $"{Math.Round(fr * 100)}%", px + w / 2 + 6, py + h, 14, col, HorizontalAlignment.Left, 0, 700);
     }
 
@@ -552,7 +558,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     partial void DrawTacticalSheets(Fonts f);
 
     private void Diamond(Vector2 c, float r, Color col) =>
-        DrawColoredPolygon(new[] { c + new Vector2(0, -r), c + new Vector2(r, 0), c + new Vector2(0, r), c + new Vector2(-r, 0) }, col);
+        Draw2D.ColoredPolygon(this, new[] { c + new Vector2(0, -r), c + new Vector2(r, 0), c + new Vector2(0, r), c + new Vector2(-r, 0) }, col);
 
     // a ring on the battle plane round a point, radius in metres
     private void RingAt(double xm, double zm, double radiusM, Color col)
@@ -563,7 +569,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             double a = i * Math.PI * 2 / 48;
             if (Local(xm + Math.Sin(a) * radiusM, zm - Math.Cos(a) * radiusM) is { } p) pts.Add(p);
         }
-        if (pts.Count >= 2) DrawPolyline(pts.ToArray(), col, 1.5f, true);
+        if (pts.Count >= 2) Draw2D.Polyline(this, pts.ToArray(), col, 1.5f, true);
     }
 
     private void RingArc(Ship s, float a0, float a1, Color col, float width)
@@ -576,6 +582,6 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             var fw = Geometry.Forward(a);
             if (Local(s.X + fw.X * RingM, s.Z + fw.Z * RingM) is { } p) pts.Add(p);
         }
-        if (pts.Count >= 2) DrawPolyline(pts.ToArray(), col, width, true);
+        if (pts.Count >= 2) Draw2D.Polyline(this, pts.ToArray(), col, width, true);
     }
 }

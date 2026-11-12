@@ -34,9 +34,15 @@ public sealed partial class ColumnBacking : Control
 
     public override void _Draw()
     {
+        DrawItem();
+        Draw2D.Flush(this);   // the untextured shapes collected, sent as one draw
+    }
+
+    private void DrawItem()
+    {
         ConsoleCache.RenderFor(this);
         var r = new Rect2(Vector2.Zero, Size);
-        DrawRect(r, Colors.Black);
+        Draw2D.Rect(this, r, Colors.Black);
         if (_kit == null) return;
         SkinStyle s = _kit.Style;
         if (s.Column && !_expanded) { _kit.Hero(this, "console.column", r); return; }

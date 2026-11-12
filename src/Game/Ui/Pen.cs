@@ -26,17 +26,17 @@ public sealed class Pen
     private float W => Math.Max(1f, Width * _k);
 
     /// <summary>A circle's outline.</summary>
-    public void Circle(float cx, float cy, float r) => _c.DrawArc(P(cx, cy), r * _k, 0, Mathf.Tau, Segs(r), Col, W, true);
+    public void Circle(float cx, float cy, float r) => Draw2D.Arc(_c, P(cx, cy), r * _k, 0, Mathf.Tau, Segs(r), Col, W, true);
     /// <summary>A filled circle.</summary>
-    public void Dot(float cx, float cy, float r) => _c.DrawCircle(P(cx, cy), r * _k, Col, true, -1, true);
+    public void Dot(float cx, float cy, float r) => Draw2D.Circle(_c, P(cx, cy), r * _k, Col, true, -1, true);
     /// <summary>An arc's outline, angles in radians clockwise from +x.</summary>
-    public void Arc(float cx, float cy, float r, float a0, float a1) => _c.DrawArc(P(cx, cy), r * _k, a0, a1, Math.Max(4, (int)(Segs(r) * Math.Abs(a1 - a0) / Mathf.Tau) + 2), Col, W, true);
+    public void Arc(float cx, float cy, float r, float a0, float a1) => Draw2D.Arc(_c, P(cx, cy), r * _k, a0, a1, Math.Max(4, (int)(Segs(r) * Math.Abs(a1 - a0) / Mathf.Tau) + 2), Col, W, true);
 
     public void Line(params float[] xy)
     {
         var pts = new Vector2[xy.Length / 2];
         for (int i = 0; i < pts.Length; i++) pts[i] = P(xy[2 * i], xy[2 * i + 1]);
-        _c.DrawPolyline(pts, Col, W, true);
+        Draw2D.Polyline(_c, pts, Col, W, true);
     }
 
     public void Fill(IList<Vector2> local) => FillAbs(Map(local), Col);
@@ -45,10 +45,10 @@ public sealed class Pen
     {
         Vector2[] p = Map(local);
         if (closed) { Array.Resize(ref p, p.Length + 1); p[^1] = p[0]; }
-        _c.DrawPolyline(p, Col, W, true);
+        Draw2D.Polyline(_c, p, Col, W, true);
     }
 
-    public void Rect(float x, float y, float w, float h) => _c.DrawRect(new Rect2(P(x, y), new Vector2(w, h) * _k), Col);
+    public void Rect(float x, float y, float w, float h) => Draw2D.Rect(_c, new Rect2(P(x, y), new Vector2(w, h) * _k), Col);
 
     public void RoundRect(float x, float y, float w, float h, float r) => Shapes.RoundRect(_c, new Rect2(P(x, y), new Vector2(w, h) * _k), Col, r * _k);
 
@@ -63,7 +63,7 @@ public sealed class Pen
             float a = i * Mathf.Tau / 48, ex = rx * Mathf.Cos(a), ey = ry * Mathf.Sin(a);
             pts[i] = P(cx + ex * Mathf.Cos(rot) - ey * Mathf.Sin(rot), cy + ex * Mathf.Sin(rot) + ey * Mathf.Cos(rot));
         }
-        _c.DrawPolyline(pts, Col, W, true);
+        Draw2D.Polyline(_c, pts, Col, W, true);
     }
 
     private Vector2[] Map(IList<Vector2> local)
@@ -86,9 +86,9 @@ public sealed class Pen
         Vector2[] poly = clean.ToArray();
         int[] tris = Triangles(poly);
         if (tris.Length == 0) { GD.PushError($"Pen: a polygon of {poly.Length} points cannot be filled"); return; }
-        RenderingServer.CanvasItemAddTriangleArray(c.GetCanvasItem(), tris, poly, new[] { col });
+        Draw2D.ColoredPolygon(c, poly, col);   // into the item's one batch of untextured drawing
         clean.Add(poly[0]);
-        c.DrawPolyline(clean.ToArray(), col, 1, true);
+        Draw2D.Polyline(c, clean.ToArray(), col, 1, true);
     }
 
     private void FillAbs(Vector2[] pts, Color col) => FillAbs(_c, pts, col);
@@ -98,7 +98,7 @@ public sealed class Pen
     // Godot's triangulator refuses the polygon.
     private static readonly Dictionary<int, int[]> Tris = new();
 
-    private static int[] Triangles(Vector2[] poly)
+    public static int[] Triangles(Vector2[] poly)
     {
         var h = new HashCode();
         foreach (Vector2 p in poly) h.Add(p);
@@ -180,6 +180,7 @@ public static class Shapes
         var key = (tl, tr, br, bl, line4);
         if (!Cells.TryGetValue(key, out var cell)) Cells[key] = cell = Bake(tl, tr, br, bl, line4 / 4f);
         float pad = 1 + (line4 > 0 ? MathF.Ceiling(line4 / 8f) : 0);
+        Draw2D.Flush(c);   // drawn over the untextured shapes before it
         RenderingServer.CanvasItemAddNinePatch(c.GetCanvasItem(), r.Grow(pad), cell.Src, Pages[cell.Page].Tex.GetRid(),
             new Vector2(cell.L, cell.T), new Vector2(cell.R, cell.B), RenderingServer.NinePatchAxisMode.Stretch, RenderingServer.NinePatchAxisMode.Stretch, true, col);
     }

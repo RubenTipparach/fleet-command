@@ -15,7 +15,7 @@ namespace FleetCommand.Game.Ui;
 public sealed partial class MapCanvas : Control
 {
     public Action<Control>? Paint;
-    public override void _Draw() => Paint?.Invoke(this);
+    public override void _Draw() { Paint?.Invoke(this); Draw2D.Flush(this); }
 }
 
 public sealed partial class RadarPanel
@@ -85,7 +85,7 @@ public sealed partial class RadarPanel
         // range rings every 5 km, labelled
         for (int r = 50; r <= km * 1.5; r += 50)
         {
-            c.DrawArc(mid, r * 1000 * k, 0, Mathf.Tau, 96, C.Deep, 1.5f, true);
+            Draw2D.Arc(c, mid, r * 1000 * k, 0, Mathf.Tau, 96, C.Deep, 1.5f, true);
             X.Fonts.Draw(c, $"{r} KM", mid.X + r * 1000 * k + 4, mid.Y - 4, 14, C.Lilac, HorizontalAlignment.Left, 0, 600);
         }
         // the nebula plumes, each the circle the rules test (Rules.NebulaAt), an ion storm in the caution colour and named
@@ -94,8 +94,8 @@ public sealed partial class RadarPanel
             Vector2 np = MapAt(n.XM, n.ZM, size, km);
             float nr = (float)n.RM * k;
             Color nc = PlumeColor(n);
-            c.DrawCircle(np, nr, new Color(nc, 0.12f), true, -1, true);
-            c.DrawArc(np, nr, 0, Mathf.Tau, 64, new Color(nc, 0.6f), 1.5f, true);
+            Draw2D.Circle(c, np, nr, new Color(nc, 0.12f), true, -1, true);
+            Draw2D.Arc(c, np, nr, 0, Mathf.Tau, 64, new Color(nc, 0.6f), 1.5f, true);
             X.Fonts.Draw(c, n.Storm ? "ION STORM" : "NEBULA", np.X, np.Y - nr - 6, 14, nc, HorizontalAlignment.Center, 200, 600);
         }
         // the selected weapons' arcs out to their reach, faint
@@ -106,16 +106,16 @@ public sealed partial class RadarPanel
             var pts = new Vector2[26];
             pts[0] = mid;
             for (int i = 0; i <= 24; i++) { float a = a0 + (a1 - a0) * i / 24; pts[i + 1] = mid + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * rr; }
-            c.DrawColoredPolygon(pts, new Color(C.Sky, 0.05f));
+            Draw2D.ColoredPolygon(c, pts, new Color(C.Sky, 0.05f));
         }
         // the shots in flight
         foreach (Shot sh in B.Shots.Where(sh => sh.Kind != "beam"))
         {
             Vector2 sp = MapAt(sh.X, sh.Z, size, km);
-            c.DrawRect(new Rect2(sp - new Vector2(2, 2), new Vector2(4, 4)), Color.FromHtml(sh.Color));
+            Draw2D.Rect(c, new Rect2(sp - new Vector2(2, 2), new Vector2(4, 4)), Color.FromHtml(sh.Color));
         }
         // your sensors' reach, a faint ring: beyond it an enemy is an unknown contact (Battle.Identified)
-        c.DrawArc(mid, (float)(B.SensorKm(me) * 1000) * k, 0, Mathf.Tau, 96, new Color(C.Sky, 0.35f), 1.5f, true);
+        Draw2D.Arc(c, mid, (float)(B.SensorKm(me) * 1000) * k, 0, Mathf.Tau, 96, new Color(C.Sky, 0.35f), 1.5f, true);
         // every ship seen (a ship not yet arrived or cloaked unseen is not on the map): a ring with its heading, the target
         // bracketed, its name as the sensors know it
         foreach (Ship o in B.Ships.Where(o => o.Alive && (o == me || B.Detected(me, o))))
@@ -124,13 +124,13 @@ public sealed partial class RadarPanel
             Color col = o == me ? C.Sky : Aiming.ContactColor(C, me, o);
             var f = Geometry.Forward(o.H);
             var fv = new Vector2((float)f.X, (float)f.Z);
-            c.DrawArc(sp, 7, 0, Mathf.Tau, 20, col, 2, true);
-            c.DrawLine(sp + fv * 7, sp + fv * 20, col, 2, true);
+            Draw2D.Arc(c, sp, 7, 0, Mathf.Tau, 20, col, 2, true);
+            Draw2D.Line(c, sp + fv * 7, sp + fv * 20, col, 2, true);
             if (o.Id == me.Target)
                 foreach (var (sx, sy) in new[] { (-1, -1), (1, -1), (1, 1), (-1, 1) })
                 {
                     var corner = sp + new Vector2(sx * 34, sy * 34);
-                    c.DrawPolyline(new[] { corner - new Vector2(sx * 14, 0), corner, corner - new Vector2(0, sy * 14) }, o.Side != me.Side ? C.Alert : C.Accord, 3, true);
+                    Draw2D.Polyline(c, new[] { corner - new Vector2(sx * 14, 0), corner, corner - new Vector2(0, sy * 14) }, o.Side != me.Side ? C.Alert : C.Accord, 3, true);
                 }
             X.Fonts.Draw(c, Aiming.ContactName(B, o).ToUpperInvariant(), sp.X + 12, sp.Y + 18, 16, C.Text, HorizontalAlignment.Left, 0, 600);
         }

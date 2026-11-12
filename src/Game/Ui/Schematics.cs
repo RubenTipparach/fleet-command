@@ -64,8 +64,8 @@ public static class Schematics
         float k = 2 * halfLength / e.LengthPx;
         Vector2 size = e.CanvasPx * k, at = centre - size / 2;
         var r = new Rect2(at, size);
-        ci.DrawTextureRect(e.Hull, r, false, new Color(hull, hull.A * alpha));
-        ci.DrawTextureRect(e.Wire, r, false, new Color(wire, wire.A * alpha));
+        Draw2D.TextureRect(ci, e.Hull, r, false, new Color(hull, hull.A * alpha));
+        Draw2D.TextureRect(ci, e.Wire, r, false, new Color(wire, wire.A * alpha));
         return true;
     }
 

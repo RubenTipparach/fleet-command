@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using FleetCommand.Game.Ui;
 using Godot;
 
 namespace FleetCommand.Game.Ui.Kit;
@@ -72,7 +73,7 @@ public sealed class RenderedPieces
         Entry e = Get(id);
         if (r.Size.X <= 0 || r.Size.Y <= 0) return;
         var mod = new Color(1, 1, 1, alpha);
-        if (e.Kind != Kind.Nine) { c.DrawTextureRect(e.Tex, r, false, mod); return; }
+        if (e.Kind != Kind.Nine) { Draw2D.TextureRect(c, e.Tex, r, false, mod); return; }
         PieceSpec s = e.Spec;
         float w = r.Size.X, h = r.Size.Y;
         float k = ShrinksWithHeight(id) ? Math.Min(1, h / s.Size.Y) : 1;
@@ -86,7 +87,7 @@ public sealed class RenderedPieces
             {
                 float sw = sx[j + 1] - sx[j], sh = sy[i + 1] - sy[i], dw = dx[j + 1] - dx[j], dh = dy[i + 1] - dy[i];
                 if (sw <= 0 || sh <= 0 || dw <= 0 || dh <= 0) continue;
-                c.DrawTextureRectRegion(e.Tex, new Rect2(r.Position.X + dx[j], r.Position.Y + dy[i], dw, dh), new Rect2(sx[j], sy[i], sw, sh), mod);
+                Draw2D.TextureRectRegion(c, e.Tex, new Rect2(r.Position.X + dx[j], r.Position.Y + dy[i], dw, dh), new Rect2(sx[j], sy[i], sw, sh), mod);
             }
     }
 
@@ -97,7 +98,7 @@ public sealed class RenderedPieces
         float f = Math.Clamp(frac, 0, 1);
         if (f <= 0) return;
         Vector2 ts = e.Tex.GetSize();
-        c.DrawTextureRectRegion(e.Tex, new Rect2(r.Position.X, r.End.Y - r.Size.Y * f, r.Size.X, r.Size.Y * f), new Rect2(0, ts.Y * (1 - f), ts.X, ts.Y * f), new Color(1, 1, 1, alpha));
+        Draw2D.TextureRectRegion(c, e.Tex, new Rect2(r.Position.X, r.End.Y - r.Size.Y * f, r.Size.X, r.Size.Y * f), new Rect2(0, ts.Y * (1 - f), ts.X, ts.Y * f), new Color(1, 1, 1, alpha));
     }
 
     /// <summary>Draws part of a whole piece, <paramref name="src"/> in its reference pixels, into a rectangle; mirrored left
@@ -108,11 +109,11 @@ public sealed class RenderedPieces
         if (dest.Size.X <= 0 || dest.Size.Y <= 0) return;
         float k = e.Tex.GetSize().X / e.Spec.Size.X;
         var from = new Rect2(src.Position * k, src.Size * k);
-        if (!mirror) { c.DrawTextureRectRegion(e.Tex, dest, from); return; }
+        if (!mirror) { Draw2D.TextureRectRegion(c, e.Tex, dest, from); return; }
         // mirrored about the band's own middle: drawn under a transform that flips x there
-        c.DrawSetTransform(new Vector2(2 * dest.Position.X + dest.Size.X, 0), 0, new Vector2(-1, 1));
-        c.DrawTextureRectRegion(e.Tex, dest, from);
-        c.DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+        Draw2D.SetTransform(c, new Vector2(2 * dest.Position.X + dest.Size.X, 0), 0, new Vector2(-1, 1));
+        Draw2D.TextureRectRegion(c, e.Tex, dest, from);
+        Draw2D.SetTransform(c, Vector2.Zero, 0, Vector2.One);
     }
 
     /// <summary>Gives a piece a second name (the Kelvane's screened console pieces standing in under the kit's names, the

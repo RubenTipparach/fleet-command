@@ -39,7 +39,7 @@ public sealed partial class StationPanel
             Color col = st.Secured ? C.Accord : st.Failed ? C.Caution : st.Hostile ? C.Alert : C.Sky;
             string state = team != null ? (team.Done ? "team waiting to beam up" : $"team of {team.Marines} down · {Math.Ceiling(team.T)} s")
                 : st.Secured ? "held" : st.Failed ? $"driven back · {st.Garrison} on guard" : st.Hostile ? $"armed · {st.Garrison} on guard" : "unguarded";
-            DrawCircle(new Vector2(x + 7, y + 13), 5, col, true, -1, true);
+            Draw2D.Circle(this, new Vector2(x + 7, y + 13), 5, col, true, -1, true);
             Text(st.Name, x + 18, y + 19, 18, C.Text, HorizontalAlignment.Left, w - kw - 26);
             Lbl($"{st.Kind} · {state}", x + 18, y + 38, w - kw - 26, team != null ? C.Sky : null, HorizontalAlignment.Left, 13);
             var r = new Rect2(x + w - kw, y, kw, 44);

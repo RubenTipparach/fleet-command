@@ -38,9 +38,9 @@ public sealed partial class ViewOverlay
             if (Local(x, z) is not { } p) continue;
             Color col = CrewColors.Of(e.By, C.Sky);
             float t = (now - e.Received) / 1000f, pulse = (t % 1.2f) / 1.2f, fade = Math.Clamp((PingMs / 1000f - t) / 2f, 0, 1);
-            DrawArc(p, 30 + 26 * pulse, 0, Mathf.Tau, 40, new Color(col, (1 - pulse) * fade), 3, true);
-            DrawArc(p, 26, 0, Mathf.Tau, 40, new Color(col, 0.9f * fade), 2.5f, true);
-            DrawLine(p + new Vector2(0, -26), p + new Vector2(0, -60), new Color(col, fade), 2, true);
+            Draw2D.Arc(this, p, 30 + 26 * pulse, 0, Mathf.Tau, 40, new Color(col, (1 - pulse) * fade), 3, true);
+            Draw2D.Arc(this, p, 26, 0, Mathf.Tau, 40, new Color(col, 0.9f * fade), 2.5f, true);
+            Draw2D.Line(this, p + new Vector2(0, -26), p + new Vector2(0, -60), new Color(col, fade), 2, true);
             string lab = e.Kind == "directive" ? $"{co.Crew.NameOf(e.By)} · {e.Text}" : co.Crew.NameOf(e.By);
             f.Draw(this, lab.ToUpperInvariant(), p.X, p.Y - 66, 16, new Color(col, fade), HorizontalAlignment.Center, 0, 700, 1);
         }
@@ -48,8 +48,8 @@ public sealed partial class ViewOverlay
         if (co.DirectiveFor(co.Me) is { } d)
         {
             float w = Math.Min(620, Size.X - 40), x0 = (Size.X - w) / 2, y0 = 110;
-            DrawRect(new Rect2(x0, y0, w, 50), new Color(0, 0, 0, 0.7f));
-            DrawRect(new Rect2(x0, y0, w, 50), C.Caution, false, 2);
+            Draw2D.Rect(this, new Rect2(x0, y0, w, 50), new Color(0, 0, 0, 0.7f));
+            Draw2D.Rect(this, new Rect2(x0, y0, w, 50), C.Caution, false, 2);
             f.DrawRich(this, new[] { ($"{co.Crew.NameOf(d.By).ToUpperInvariant()}  ", CrewColors.Of(d.By, C.Sky)), (d.Text.ToUpperInvariant(), C.Caution) }, x0 + 14, y0 + 32, 19, w - 130);
             Key("v.aye", new Rect2(x0 + w - 104, y0 + 10, 92, 30), "Aye", co.Ack, false, "Answer the admiral");
         }

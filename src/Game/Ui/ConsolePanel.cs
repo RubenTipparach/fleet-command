@@ -48,6 +48,20 @@ public abstract partial class ConsolePanel : Control, IControlSource
         ClipContents = true;
         MouseFilter = MouseFilterEnum.Stop;
         Ui.Pressed = () => X.Sounds.Key(X.Kit.Style.KeySound);
+        // the panel's text in a canvas item of its own over its shapes, one batch of glyphs (Fonts.UseLayer)
+        _text = RenderingServer.CanvasItemCreate();
+        RenderingServer.CanvasItemSetParent(_text, GetCanvasItem());
+        Fonts.UseLayer(this, _text);
+    }
+
+    private Rid _text;
+
+    public override void _ExitTree()
+    {
+        if (!_text.IsValid) return;
+        Fonts.UseLayer(this, new Rid());
+        RenderingServer.FreeRid(_text);
+        _text = new Rid();
     }
 
     private bool _dirty = true;
@@ -87,6 +101,13 @@ public abstract partial class ConsolePanel : Control, IControlSource
     public Rect2 Screen => new(GlobalPosition, Size);
 
     public override void _Draw()
+    {
+        if (_text.IsValid) RenderingServer.CanvasItemClear(_text);
+        DrawItem();
+        Draw2D.Flush(this);   // the untextured shapes collected, sent as one draw
+    }
+
+    private void DrawItem()
     {
         Ui.Begin();
         if (Sk.Column && InColumn) Kit.Hero(this, "console.column", new Rect2(-Position, new Vector2((float)X.Data.Layout.ColumnW, (float)X.Data.Layout.ReferenceH)));
@@ -365,7 +386,7 @@ public abstract partial class ConsolePanel : Control, IControlSource
         float bw = expandable ? 21 : -10, x1 = content.End.X - (expandable ? 6 : 20), total = 8 + tw + 10 + bw + 8, x0 = x1 - total, y0 = at.Position.Y;
         TitleLeft = x0 - (Sk.TitlePlacard ? 18 : 0);
         if (Sk.TitlePlacard) Kit.Piece(this, "plate.title", new Rect2(x0 - 18, y0 - 1, total + 22, 24));
-        else DrawRect(new Rect2(x0, y0, total, 22), Sk.R.Plate);
+        else Draw2D.Rect(this, new Rect2(x0, y0, total, 22), Sk.R.Plate);
         Text(up, x0 + 8, y0 + 19 - Sk.TitleDy, 22, Sk.R.Title, HorizontalAlignment.Left, tw, 700, 1);
         if (expandable) ExpandKey($"{Region}.xp", new Vector2(x1 - 8 - bw / 2, y0 + 11), bw / 2, Big, () => X.Act.Expand(Region));
         return content;
@@ -386,8 +407,8 @@ public abstract partial class ConsolePanel : Control, IControlSource
         {
             Vector2 p0 = c + new Vector2(s * a, -s * a), p1 = c + new Vector2(s * bb, -s * bb), h = inward ? p0 : p1;
             float d = inward ? 1 : -1;
-            DrawLine(p0, p1, ink, w, true);
-            DrawPolyline(new[] { h + new Vector2(s * d * hd, 0), h, h + new Vector2(0, -s * d * hd) }, ink, w, true);
+            Draw2D.Line(this, p0, p1, ink, w, true);
+            Draw2D.Polyline(this, new[] { h + new Vector2(s * d * hd, 0), h, h + new Vector2(0, -s * d * hd) }, ink, w, true);
         }
     }
 

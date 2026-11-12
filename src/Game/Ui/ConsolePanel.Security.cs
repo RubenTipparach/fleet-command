@@ -100,7 +100,7 @@ public abstract partial class ConsolePanel
         if (v.Size.X < 40 || v.Size.Y < 40) return;
         DeckPlan plan = sec.Plan;
         ConsoleState st = X.State;
-        DrawRect(v.Grow(-2), Sk.R.Plate);
+        Draw2D.Rect(this, v.Grow(-2), Sk.R.Plate);
         Kit.Piece(this, "frame.inset", v.Grow(2));
         var inner = v.Grow(-4);
         // drag to turn the ship (under the rooms, so a click on a room sends the team)
@@ -143,11 +143,11 @@ public abstract partial class ConsolePanel
             Vector2[] top = { P(r.X0, r.Y, r.Z0, h), P(r.X1, r.Y, r.Z0, h), P(r.X1, r.Y, r.Z1, h), P(r.X0, r.Y, r.Z1, h) };
             bool goal = goals.Contains(r.Id);
             Color kind = goal && r.Id != hot ? C.Alert : RoomColour(r.Kind);
-            DrawColoredPolygon(floor, new Color(kind, r.Id == hot ? 0.7f : goal ? 0.5f : 0.28f));
+            Draw2D.ColoredPolygon(this, floor, new Color(kind, r.Id == hot ? 0.7f : goal ? 0.5f : 0.28f));
             Color edge = new(r.IsCorridor ? C.Lilac : C.Sky, r.IsCorridor ? 0.25f : 0.55f);
-            DrawPolyline(new[] { floor[0], floor[1], floor[2], floor[3], floor[0] }, edge, 1, true);
-            DrawPolyline(new[] { top[0], top[1], top[2], top[3], top[0] }, edge, 1, true);
-            for (int i = 0; i < 4; i++) DrawLine(floor[i], top[i], edge, 1, true);
+            Draw2D.Polyline(this, new[] { floor[0], floor[1], floor[2], floor[3], floor[0] }, edge, 1, true);
+            Draw2D.Polyline(this, new[] { top[0], top[1], top[2], top[3], top[0] }, edge, 1, true);
+            for (int i = 0; i < 4; i++) Draw2D.Line(this, floor[i], top[i], edge, 1, true);
             // its target for the picked team, kept inside the view
             var bb = new Rect2(floor[0], Vector2.Zero);
             foreach (Vector2 q in floor) bb = bb.Expand(q);
@@ -165,7 +165,7 @@ public abstract partial class ConsolePanel
         void PathOf(Unit u, Color col)
         {
             Vector2 a = P(u.X, u.Y, u.Z);
-            foreach (int n in u.Path) { DeckNode nd = plan.Nodes[n]; Vector2 c = P(nd.X, nd.Y, nd.Z); DrawDashedLine(a, c, col, 2, 6, true); a = c; }
+            foreach (int n in u.Path) { DeckNode nd = plan.Nodes[n]; Vector2 c = P(nd.X, nd.Y, nd.Z); Draw2D.DashedLine(this, a, c, col, 2, 6, true); a = c; }
         }
         foreach (Unit u in sec.Foes) PathOf(u, C.Alert);
         if (u0 != null) PathOf(u0, C.Sky);
@@ -182,11 +182,11 @@ public abstract partial class ConsolePanel
                 double a = (double)i / Math.Max(1, figs) * Math.Tau, rr = u.N > 1 ? 0.9 : 0, bob = u.Path.Count > 0 ? Math.Abs(Math.Sin(now * 8 + i)) * 0.25 : 0;
                 double fx = u.X + Math.Cos(a) * rr, fz = u.Z + Math.Sin(a) * rr;
                 Vector2 feet = P(fx, u.Y, fz, (float)bob), head = P(fx, u.Y, fz, (float)bob + 1.85f);
-                DrawLine(feet, head, body, Math.Max(2, k * 0.8f), true);
-                DrawCircle(head, Math.Max(2, k * 0.34f), body, true, -1, true);
+                Draw2D.Line(this, feet, head, body, Math.Max(2, k * 0.8f), true);
+                Draw2D.Circle(this, head, Math.Max(2, k * 0.34f), body, true, -1, true);
             }
             Vector2 c0 = P(u.X, u.Y, u.Z, 0.05f);
-            DrawArc(c0, Math.Max(5, k * 1.7f), 0, Mathf.Tau, 24, ring, 2, true);
+            Draw2D.Arc(this, c0, Math.Max(5, k * 1.7f), 0, Mathf.Tau, 24, ring, 2, true);
             Vector2 tp = P(u.X, u.Y, u.Z, 3);
             string tag = $"{u.Id} {u.N}";
             float tw = 14 + tag.Length * 8;
@@ -201,7 +201,7 @@ public abstract partial class ConsolePanel
             Color fill = own ? (st.SecSel == u.Id ? C.Caution : C.Signal) : C.Alert;
             Kit.Shape(this, tr, 9, fill);
             Text(tag, tp.X, tp.Y - 6, 13, Sk.InkOn(fill), HorizontalAlignment.Center, tw - 6);
-            if (u.Fight != null) DrawArc(P(u.X, u.Y, u.Z), 16 + 3 * MathF.Sin((float)now * 8.3f), 0, Mathf.Tau, 24, C.Alert, 2, true);
+            if (u.Fight != null) Draw2D.Arc(this, P(u.X, u.Y, u.Z), 16 + 3 * MathF.Sin((float)now * 8.3f), 0, Mathf.Tau, 24, C.Alert, 2, true);
         }
         if (big) Lbl("Drag to turn the ship · click a room to send the picked team", inner.Position.X + 10, inner.End.Y - 10, inner.Size.X - 20, C.Lilac, HorizontalAlignment.Left, 13);
     }
