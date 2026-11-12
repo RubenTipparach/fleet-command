@@ -77,9 +77,9 @@ vec3 swirl(vec3 d) {
 // near (0 to 1) adds the small puffs a camera coming down can see
 float cloud_density(vec3 nd, float near) {
 	vec3 ax = normalize(wind_axis);
-	vec3 q = swirl(pn_rot(nd, ax, TIME * wind_speed));
+	vec3 q = swirl(pn_rot(nd, ax, PN_TIME * wind_speed));
 	vec3 p1 = q * pattern_scale + seed;
-	vec3 p2 = pn_rot(q, ax, -TIME * wind_speed * 1.6) * pattern_scale * 3.4 + seed.zxy + 37.0;
+	vec3 p2 = pn_rot(q, ax, -PN_TIME * wind_speed * 1.6) * pattern_scale * 3.4 + seed.zxy + 37.0;
 	vec3 warp = vec3(fbm2(p1 * 0.5 + 7.7), fbm2(p1 * 0.5 - 3.1), fbm2(p1 * 0.5 + 2.4)) - 0.5;
 	float big = pn_fbm3(p1 + warp * 1.6);
 	// the fine layer, bent by the same field, eats into the systems' edges

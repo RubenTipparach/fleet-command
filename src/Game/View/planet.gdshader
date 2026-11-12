@@ -467,7 +467,7 @@ void fragment() {
 	// painted clouds (a kind with no cloud layer of its own): they drift slowly
 	float cloud = 0.0;
 	if (clouds > 0.0) {
-		cloud = smoothstep(0.05, 0.55, fbm(v_obj * (detail * 1.4) + seed.zxy + vec3(TIME * 0.015, 0.0, TIME * 0.008))) * clouds;
+		cloud = smoothstep(0.05, 0.55, fbm(v_obj * (detail * 1.4) + seed.zxy + vec3(PN_TIME * 0.015, 0.0, PN_TIME * 0.008))) * clouds;
 		col = mix(col, cloud_color, cloud);
 		spec *= 1.0 - cloud;
 		emissive *= 1.0 - cloud * 0.5;

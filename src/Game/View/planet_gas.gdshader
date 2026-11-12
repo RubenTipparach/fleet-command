@@ -76,7 +76,7 @@ void fragment() {
 	// each latitude turns at its own rate: the jets alternate with the bands
 	float lat = p.y;
 	float jet = sin(lat * bands * 3.14159) * flow_speed;
-	p = pn_rot(p, vec3(0.0, 1.0, 0.0), TIME * jet);
+	p = pn_rot(p, vec3(0.0, 1.0, 0.0), PN_TIME * jet);
 	// two passes of warp, sheared along the latitude: eddies on the band edges
 	vec3 q = vec3(p.x * 2.2, p.y * bands * 1.4, p.z * 2.2) + seed;
 	vec3 w1 = vec3(pn_fbm3(q + 1.7), pn_fbm3(q - 4.3), pn_fbm3(q + 8.1)) - 0.5;

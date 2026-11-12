@@ -119,9 +119,11 @@ float pn_day(float ndl) { return pn_day_air(ndl, 1.0); }
 // from the vertical gives it, and nothing depends on a sun or a camera: no terminator, no glint, no limb, no rim. The
 // shaders stay the one implementation of each look; the bake only moves the light and the camera.
 #ifdef PLANET_BAKE
+#define PN_TIME 0.0   // a map is one moment: the drift, the jets and the lamps stand still
 vec4 pn_bake_position(vec2 uv) { return vec4(uv.x * 2.0 - 1.0, uv.y * 2.0 - 1.0, 0.5, 1.0); }
 vec3 pn_sun(vec3 sun, vec3 overhead) { return overhead; }
 #else
+#define PN_TIME TIME
 vec3 pn_sun(vec3 sun, vec3 overhead) { return sun; }
 #endif
 
