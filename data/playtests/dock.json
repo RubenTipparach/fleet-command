@@ -1,0 +1,14 @@
+{
+ "_doc": "The campaign's dock beat alone (a check of ScriptedCaptain.Dock): a new Concord campaign, to your own port, every ship repaired that can be paid for, and a ship bought at the shipyard when the credits allow it after a reserve (owner, 2026-11-11: \"when ship gets damaged you dont get auto repair, you have to pay to repair your ship\", \"buy new ships or upgrade current one, I'll leave it up to you\").",
+ "flow": true,
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "wait_screen", "arg": "menu", "s": 120},
+  {"do": "click", "arg": "menu.campaign"},
+  {"do": "wait_screen", "arg": "factions"},
+  {"do": "click", "arg": "fac.concord"},
+  {"do": "click", "arg": "fac.concord.new"},
+  {"do": "wait_screen", "arg": "map", "s": 120},
+  {"do": "dock"}
+ ]
+}

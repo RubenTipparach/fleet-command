@@ -104,6 +104,7 @@ public sealed partial class ScriptedCaptain
 
     private async Task<string?> CoopBeat(Beat b)
     {
+        if (b.Do == "dock") return await Dock();   // a campaign beat, alone or in co-op
         Lockstep? co = _x.Coop;
         if (co == null) return "not a co-op game (--host or --join)";
         switch (b.Do)
@@ -188,10 +189,16 @@ public sealed partial class ScriptedCaptain
         return await Click("top.menu") ?? await Click("m.crew");
     }
 
+    // credits kept back after a purchase, for the repairs the next missions will need
+    private const int DockReserveCr = 1000;
+
     private async Task<string?> Dock()
     {
         var c = Camp;
         if (await PortBeat(c.S.Side) is { } st) return st;
+        await Frames(10);
+        // into the port from the sector panel: its shipyard, the fleet column (with each ship's Repair key) down its left
+        if (await Click("sec.port.yard") is { } sp) return $"dock: the port did not open ({sp})";
         await Frames(10);
         foreach (CampShip s in c.S.Fleet.ToList())
         {
@@ -205,8 +212,10 @@ public sealed partial class ScriptedCaptain
         await Snap("dock-repaired");
         if (c.S.Fleet.Count < c.Data.Rules.FleetMax && c.Allows("ships"))
         {
-            var buy = c.Data.HullsOf(c.YardSide).Where(h => h.ForSale && c.HullPrice(h.Id) <= c.S.Credits).OrderByDescending(h => c.HullPrice(h.Id)).FirstOrDefault();
-            if (buy != null && await Click("port.tab.yard") == null)
+            var buy = c.Data.HullsOf(c.YardSide).Where(h => h.ForSale && c.HullPrice(h.Id) <= c.S.Credits - DockReserveCr).OrderByDescending(h => c.HullPrice(h.Id)).FirstOrDefault();
+            if (buy == null) GD.Print($"PLAYTEST_COOP no ship affordable ({c.S.Credits:0} cr)");
+            else if (await Click("port.tab.yard") is { } ty) GD.Print($"PLAYTEST_COOP the shipyard tab did not open: {ty}");
+            else
             {
                 await Click($"yard.pick.{buy.Id}");
                 int n = c.S.Fleet.Count;
@@ -214,7 +223,6 @@ public sealed partial class ScriptedCaptain
                 await Frames(10);
                 if (c.S.Fleet.Count > n) { GD.Print($"PLAYTEST_COOP bought the {c.S.Fleet[^1].Name} ({buy.Name}) for {c.HullPrice(buy.Id)} cr, {c.S.Credits:0} cr left"); await Snap("dock-bought"); }
             }
-            else GD.Print($"PLAYTEST_COOP no ship affordable ({c.S.Credits:0} cr)");
         }
         await Click("port.close");
         GD.Print($"PLAYTEST_COOP docked: fleet {string.Join(", ", c.S.Fleet.Select(s => $"{s.Name} {s.HullPct:0}%"))}, credits {c.S.Credits:0}");
