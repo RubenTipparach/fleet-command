@@ -98,7 +98,7 @@ hidden and then with the hull lights off) would say which.
 ## Videos and a cube-marched nebula
 
 Three takes recorded on the Pi with `wf-recorder` (H.264, 1280x748 window, variable frame rate), with the game's own FPS
-burned in. They are on Google Drive at full size, not in the repository (CLAUDE.md section 9). **Recording costs frame
+burned in. They are on Google Drive at full size and kept out of the repository so .git does not grow (the playtest skill keeps takes in the git-ignored `output/`). **Recording costs frame
 rate on the Pi**, because the encoder shares the CPU, so the numbers on screen are lower than the unrecorded runs. The
 recorder keeps only the frames the game drew, so each file's own frame rate is the game's rate while recording:
 
