@@ -368,7 +368,8 @@ public static partial class DataLoader
         }
         var l = new LayoutDef(Positive(o, "reference_w_px"), Positive(o, "reference_h_px"), Positive(o, "min_w_px"), Positive(o, "column_w_px"), Positive(o, "strip_h_px"),
             R("plate"), R("station"), R("ship"), R("weapons"), R("radar"),
-            NonNeg(o, "expanded_x_px"), NonNeg(o, "expanded_y_px"), Frac(o, "expanded_share"), Frac(o, "ship_screen_y"), Positive(o, "view_fov_deg"));
+            NonNeg(o, "expanded_x_px"), NonNeg(o, "expanded_y_px"), Frac(o, "expanded_share"), Frac(o, "ship_screen_y"), Positive(o, "view_fov_deg"))
+            { PanelRedrawHz = Positive(o, "panel_redraw_hz"), PanelRedrawHzLowSpec = Positive(o, "panel_redraw_hz_lowspec") };
         o.Done();
         return l;
     }

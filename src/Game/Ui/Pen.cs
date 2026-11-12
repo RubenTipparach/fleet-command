@@ -4,6 +4,7 @@
 // one-pixel antialiased outline in their own colour, since Godot fills polygons without antialiasing.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 namespace FleetCommand.Game.Ui;
@@ -83,13 +84,29 @@ public sealed class Pen
         while (clean.Count > 1 && clean[0].DistanceSquaredTo(clean[^1]) <= 1e-4f) clean.RemoveAt(clean.Count - 1);
         if (clean.Count < 3) return;
         Vector2[] poly = clean.ToArray();
-        if (Geometry2D.TriangulatePolygon(poly).Length == 0) { GD.PushError($"Pen: a polygon of {poly.Length} points cannot be filled"); return; }
-        c.DrawColoredPolygon(poly, col);
+        int[] tris = Triangles(poly);
+        if (tris.Length == 0) { GD.PushError($"Pen: a polygon of {poly.Length} points cannot be filled"); return; }
+        RenderingServer.CanvasItemAddTriangleArray(c.GetCanvasItem(), tris, poly, new[] { col });
         clean.Add(poly[0]);
         c.DrawPolyline(clean.ToArray(), col, 1, true);
     }
 
     private void FillAbs(Vector2[] pts, Color col) => FillAbs(_c, pts, col);
+
+    // A polygon's triangles, remembered by its points: the console fills the same shapes every redraw, and Godot
+    // triangulated each one again on every call (twice, with the check that it can be filled at all). Empty when
+    // Godot's triangulator refuses the polygon.
+    private static readonly Dictionary<int, int[]> Tris = new();
+
+    private static int[] Triangles(Vector2[] poly)
+    {
+        var h = new HashCode();
+        foreach (Vector2 p in poly) h.Add(p);
+        int key = h.ToHashCode();
+        if (Tris.TryGetValue(key, out int[]? t) && t.Length % 3 == 0 && (t.Length == 0 || t.Max() < poly.Length)) return t;
+        if (Tris.Count > 4096) Tris.Clear();
+        return Tris[key] = Geometry2D.TriangulatePolygon(poly);
+    }
 }
 
 /// <summary>Builds outlines point by point: lines, rounded corners and quadratic curves (a canvas path's moveTo and friends).</summary>
@@ -123,10 +140,16 @@ public sealed class PathBuilder
     }
 }
 
-/// <summary>Shapes drawn in absolute coordinates: rounded rectangles (Godot's antialiased StyleBoxFlat, cached) and ring segments.</summary>
+/// <summary>Shapes drawn in absolute coordinates: rounded rectangles (a cached antialiased mesh) and ring segments.</summary>
 public static class Shapes
 {
-    private static readonly Dictionary<(Color, int, int, int, int), StyleBoxFlat> Boxes = new();
+    // A rounded rectangle is a mesh built once per size and corner radii, white, its edge feathered over AaPx like
+    // Godot's StyleBoxFlat (whose look it keeps: CornerSegs points a corner, an antialiased rim), drawn with the colour
+    // as its modulate. Drawing a StyleBoxFlat tessellated it again on every call, about a thousand times a console
+    // redraw, the console's largest single cost on a Raspberry Pi 5 (docs/playtests/pi/README.md).
+    private const int CornerSegs = 10;
+    private const float AaPx = 0.8f;
+    private static readonly Dictionary<(int, int, int, int, int, int), ArrayMesh> Meshes = new();
 
     public static void RoundRect(CanvasItem c, Rect2 r, Color col, float radius) => RoundRect(c, r, col, radius, radius, radius, radius);
 
@@ -134,18 +157,65 @@ public static class Shapes
     {
         if (r.Size.X <= 0 || r.Size.Y <= 0) return;
         float lim = Math.Min(r.Size.X, r.Size.Y) / 2;
-        var key = (col, (int)MathF.Round(Math.Min(tl, lim)), (int)MathF.Round(Math.Min(tr, lim)), (int)MathF.Round(Math.Min(br, lim)), (int)MathF.Round(Math.Min(bl, lim)));
-        if (!Boxes.TryGetValue(key, out StyleBoxFlat? sb))
+        // sizes in quarter pixels, radii in whole pixels (as the style boxes were)
+        var key = ((int)MathF.Round(r.Size.X * 4), (int)MathF.Round(r.Size.Y * 4),
+            (int)MathF.Round(Math.Min(tl, lim)), (int)MathF.Round(Math.Min(tr, lim)), (int)MathF.Round(Math.Min(br, lim)), (int)MathF.Round(Math.Min(bl, lim)));
+        if (!Meshes.TryGetValue(key, out ArrayMesh? mesh))
         {
-            if (Boxes.Count > 512) Boxes.Clear();
-            sb = new StyleBoxFlat
-            {
-                BgColor = col, AntiAliasing = true, AntiAliasingSize = 0.8f, CornerDetail = 10,
-                CornerRadiusTopLeft = key.Item2, CornerRadiusTopRight = key.Item3, CornerRadiusBottomRight = key.Item4, CornerRadiusBottomLeft = key.Item5,
-            };
-            Boxes[key] = sb;
+            if (Meshes.Count > 2048) Meshes.Clear();
+            Meshes[key] = mesh = RoundRectMesh(key.Item1 / 4f, key.Item2 / 4f, key.Item3, key.Item4, key.Item5, key.Item6);
         }
-        c.DrawStyleBox(sb, r);
+        c.DrawMesh(mesh, null, new Transform2D(0, r.Position), col);
+    }
+
+    /// <summary>A w by h rounded rectangle from (0, 0): a fan over its outline drawn a half feather inside the edge, and
+    /// a ring out to a half feather outside it that fades to clear.</summary>
+    private static ArrayMesh RoundRectMesh(float w, float h, float tl, float tr, float br, float bl)
+    {
+        var outline = new List<Vector2>();
+        var normals = new List<Vector2>();
+        void Corner(float cx, float cy, float rad, float a0)
+        {
+            int n = rad > 0 ? CornerSegs : 0;
+            for (int i = 0; i <= n; i++)
+            {
+                float t = a0 + Mathf.Pi / 2 * (n == 0 ? 0.5f : (float)i / n);
+                var d = new Vector2(Mathf.Cos(t), Mathf.Sin(t));
+                outline.Add(new Vector2(cx, cy) + d * rad);
+                normals.Add(rad > 0 ? d : d * Mathf.Sqrt2);   // a square corner's rim goes out along its diagonal
+            }
+        }
+        Corner(w - tr, tr, tr, -Mathf.Pi / 2);       // top right, from the top edge round to the right
+        Corner(w - br, h - br, br, 0);               // bottom right
+        Corner(bl, h - bl, bl, Mathf.Pi / 2);        // bottom left
+        Corner(tl, tl, tl, Mathf.Pi);                // top left
+        int m = outline.Count;
+        var pts = new Vector2[1 + m * 2];
+        var cols = new Color[pts.Length];
+        pts[0] = new Vector2(w / 2, h / 2);
+        cols[0] = Colors.White;
+        for (int i = 0; i < m; i++)
+        {
+            pts[1 + i] = outline[i] - normals[i] * (AaPx / 2);
+            cols[1 + i] = Colors.White;
+            pts[1 + m + i] = outline[i] + normals[i] * (AaPx / 2);
+            cols[1 + m + i] = new Color(1, 1, 1, 0);
+        }
+        var idx = new List<int>(m * 9);
+        for (int i = 0; i < m; i++)
+        {
+            int j = (i + 1) % m;
+            idx.AddRange(new[] { 0, 1 + i, 1 + j });                              // the body
+            idx.AddRange(new[] { 1 + i, 1 + m + i, 1 + m + j, 1 + i, 1 + m + j, 1 + j });   // the feathered rim
+        }
+        var arr = new Godot.Collections.Array();
+        arr.Resize((int)Mesh.ArrayType.Max);
+        arr[(int)Mesh.ArrayType.Vertex] = pts;
+        arr[(int)Mesh.ArrayType.Color] = cols;
+        arr[(int)Mesh.ArrayType.Index] = idx.ToArray();
+        var mesh = new ArrayMesh();
+        mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arr);
+        return mesh;
     }
 
     /// <summary>A rounded rectangle's outline.</summary>

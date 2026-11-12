@@ -3,6 +3,11 @@
 // with its controls registered as they are drawn (Imm). This class holds the controls every panel shares, each drawn
 // only from the kit's named pieces and its style (the ink, type, padding and shapes that differ by skin): the frame with
 // its title notch or placard and Expand key, keys, tabs, rails of icon tabs, rows of allocation boxes, bars and text.
+// A panel redraws at a capped rate (data/console/layout.json panel_redraw_hz), and at once when it is touched (a press,
+// the pointer moving over it or leaving it, a resize, shown or hidden), so its keys answer on the next frame: redrawing
+// every panel every frame was half the battle's frame on a Raspberry Pi 5 (docs/playtests/pi/README.md). Godot keeps a
+// canvas item's drawing until the next QueueRedraw, so a panel between redraws costs nothing, and its controls stay
+// those of its last drawing.
 // Docked in a skin's column (the Krai's one plate with the panels formed into it as wells), a panel draws the column's
 // plate under its own rectangle, and a station, ship or weapons panel no frame of its own.
 using System;
@@ -39,13 +44,31 @@ public abstract partial class ConsolePanel : Control, IControlSource
     {
         X = ctx;
         Region = region;
+        _sinceDraw = (int)region * 0.37 % 1.0 * RedrawEvery;
         Name = region.ToString();
         ClipContents = true;
         MouseFilter = MouseFilterEnum.Stop;
         Ui.Pressed = () => X.Sounds.Key(X.Kit.Style.KeySound);
     }
 
-    public override void _Process(double delta) => QueueRedraw();
+    private double _sinceDraw;
+    private bool _dirty = true;
+
+    /// <summary>Seconds between redraws of an untouched panel.</summary>
+    private double RedrawEvery => 1.0 / (LowSpec.On ? X.Data.Layout.PanelRedrawHzLowSpec : X.Data.Layout.PanelRedrawHz);
+
+    public override void _Process(double delta)
+    {
+        _sinceDraw += delta;
+        if (!_dirty && _sinceDraw < RedrawEvery) return;
+        // the panels' redraws are spread over the interval by region, so they do not all fall on one frame
+        _sinceDraw = _dirty ? 0 : (_sinceDraw - RedrawEvery) % RedrawEvery;
+        _dirty = false;
+        QueueRedraw();
+    }
+
+    /// <summary>Redraws the panel on the next frame (something it shows changed by a touch, not by the battle).</summary>
+    public void Touch() => _dirty = true;
 
     /// <summary>This panel's controls of the last frame, in screen (canvas) coordinates.</summary>
     public IEnumerable<(string Id, Rect2 R, bool Live)> Controls() =>
@@ -71,12 +94,14 @@ public abstract partial class ConsolePanel : Control, IControlSource
 
     public override void _GuiInput(InputEvent e)
     {
+        _dirty = true;
         if (Ui.Handle(e)) AcceptEvent();
         else if (e is InputEventMouseButton) AcceptEvent(); // a press on the console never reaches the view
     }
 
     public override void _Notification(int what)
     {
+        if (what is (int)NotificationMouseExit or (int)NotificationResized or (int)NotificationVisibilityChanged or (int)NotificationThemeChanged) _dirty = true;
         if (what == NotificationMouseExit) Ui.Leave();
         // a panel hidden under the pointer (the goals strip shut by its own X) draws no more, so it takes its hover card
         // away now; else the card ("Close") stays on screen with nothing under it (owner, 2026-11-07: "close button stuck

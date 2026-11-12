@@ -214,7 +214,13 @@ public sealed record Tuning(
 public sealed record LayoutDef(
     double ReferenceW, double ReferenceH, double MinW, double ColumnW, double StripH,
     Rect Plate, Rect Station, Rect Ship, Rect Weapons, Rect Radar,
-    double ExpandedX, double ExpandedY, double ExpandedShare, double ShipScreenY, double ViewFovDeg);
+    double ExpandedX, double ExpandedY, double ExpandedShare, double ShipScreenY, double ViewFovDeg)
+{
+    /// <summary>How many times a second an untouched console panel redraws from the battle's state (panel_redraw_hz).</summary>
+    public double PanelRedrawHz { get; init; } = 30;
+    /// <summary>The same in the low-spec mode (panel_redraw_hz_lowspec).</summary>
+    public double PanelRedrawHzLowSpec { get; init; } = 15;
+}
 
 /// <summary>Everything the battle needs, loaded once at startup. Scenarios are in menu order; the first is the one the
 /// game starts in.</summary>

@@ -1,18 +1,45 @@
 {
-  "_doc": "The battle console's layout in reference pixels (openspec/changes/battle-console/design.md section 2; the mockup's rects()). The console scales to the window's height, and to 1500 px of width at most, so panels keep their reference size and only the strips and the view stretch.",
+  "_doc": "The battle console's layout in reference pixels (openspec/changes/battle-console/design.md section 2; the mockup's rects()). The console scales to the window's height, and to 1500 px of width at most, so panels keep their reference size and only the strips and the view stretch. panel_redraw_hz is how many times a second a console panel redraws itself from the battle's state when nothing touches it (a press, hover, resize or a panel opening or closing redraws it at once); panel_redraw_hz_lowspec the same in the low-spec mode (--lowspec). Measured on a Raspberry Pi 5 (docs/playtests/pi/README.md): redrawing every panel every frame was half the battle's frame.",
   "reference_w_px": 1920,
   "reference_h_px": 1080,
   "min_w_px": 1500,
   "column_w_px": 480,
   "strip_h_px": 56,
-  "plate": [10, 6, 460, 56],
-  "station": [6, 68, 468, 420],
-  "ship": [6, 494, 468, 276],
-  "weapons": [6, 776, 468, 160],
-  "radar": [6, 942, 468, 132],
+  "plate": [
+    10,
+    6,
+    460,
+    56
+  ],
+  "station": [
+    6,
+    68,
+    468,
+    420
+  ],
+  "ship": [
+    6,
+    494,
+    468,
+    276
+  ],
+  "weapons": [
+    6,
+    776,
+    468,
+    160
+  ],
+  "radar": [
+    6,
+    942,
+    468,
+    132
+  ],
   "expanded_x_px": 6,
   "expanded_y_px": 34,
   "expanded_share": 0.6666666667,
   "ship_screen_y": 0.74,
-  "view_fov_deg": 50
+  "view_fov_deg": 50,
+  "panel_redraw_hz": 30,
+  "panel_redraw_hz_lowspec": 15
 }
