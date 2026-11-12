@@ -78,10 +78,11 @@ public sealed partial class ScriptedCaptain
                 if (B.Player.Reactor.Loops[j].Hp > 0.2 && B.Player.Reactor.Loops[j].Flow < R.FlowMax)
                 {
                     int before = B.Player.Reactor.Loops[j].Flow;
-                    // every point of output spoken for: a box taken from a lesser system first (the Power page's
+                    // every point of output spoken for: a box taken from a lesser system first (the engines last, never below one box: a slower
+                    // ship rather than a melted one) (the Power page's
                     // allocation), as a player frees power for the pumps, then back to the Reactor page
                     if (B.Rules.PowerRoom(B.Player, before) <= before
-                        && new[] { "tractor", "transport", "sensors" }.FirstOrDefault(k => B.Player.Power.GetValueOrDefault(k) > 0) is { } spare)
+                        && new[] { "tractor", "transport", "sensors", "engines" }.FirstOrDefault(k => B.Player.Power.GetValueOrDefault(k) > (k == "engines" ? 1 : 0)) is { } spare)
                     {
                         int had = B.Player.Power[spare];
                         await SetBoxes($"{spare}={had - 1}");
