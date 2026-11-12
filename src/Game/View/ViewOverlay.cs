@@ -311,11 +311,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             f.DrawRich(this, new[] { ("in arc ", C.Lilac), (arc.Length.ToString(), C.Sky), (" · charged ", C.Lilac), (arc.Count(Rules.Ready).ToString(), C.Sky) }, 18, ry, 22, mw);
         }
         else f.DrawRich(this, new[] { ("No target", C.Sky), (" · click a ship to select it", C.Lilac) }, 18, ry, 22, mw);
-        if (b.Log.Count > 0 && b.T - b.Log[^1].T < 5)
-        {
-            LogLine l = b.Log[^1];
-            f.DrawRich(this, new[] { ($"{l.Speaker}: {l.Text}", C.Lilac) }, 18, ry - 64, 22, Size.X * 0.7f);
-        }
+        // every comms message is in the comms box over the view's bottom left (ChatBox), alone or in co-op
         if (b.Over is { } over) Banner(over == "won" ? "Victory" : over == "withdrawn" ? "Withdrawn" : over == "jumped" ? "Jumped to warp" : "Fleet lost",
             over is "won" or "jumped" ? C.Accord : over == "withdrawn" ? C.Caution : C.Alert);
 

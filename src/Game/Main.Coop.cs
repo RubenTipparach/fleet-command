@@ -87,12 +87,13 @@ public sealed partial class Main
         }
     }
 
-    /// <summary>Places the chat box: over the view in a battle, over the whole screen elsewhere; shown in co-op only.</summary>
+    /// <summary>Places the comms box: over the view in every battle (alone or in co-op: owner, 2026-11-11: "Standardize this
+    /// across all the game"), not under an expanded panel; in co-op also over the waiting screen and the campaign map.</summary>
     private void PlaceChat(Rect2 view, Vector2 screen)
     {
         if (_chat == null) return;
-        bool battle = !_crew.Lobby && (_flow == null || _flow.Screen == Flow.FlowScreen.Battle) && _x.Coop?.Battle != null;
-        _chat.Visible = _x.Coop != null;
+        bool battle = !_crew.Lobby && (_flow == null || _flow.Screen == Flow.FlowScreen.Battle) && _console.Visible;
+        _chat.Visible = battle ? _x.State.Expanded == null : _x.Coop != null;
         // only its own corner (bottom left, above the view's message lines), so it never takes a click meant for the view
         Rect2 area = battle ? view : new Rect2(Vector2.Zero, screen);
         float w = Math.Min(660, area.Size.X), h = Math.Min(300, area.Size.Y);

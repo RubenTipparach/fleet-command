@@ -44,3 +44,6 @@
 - [ ] 7.2 A crew member joining mid-battle
 - [ ] 7.3 Star Crew's matchmaker codes for play off the LAN
 - [ ] 7.4 The owner's call on reactor fragility: a frigate's coolant loops go at about 78 % hull (`docs/playtests/2026-11-11-coop-stage2-3.md`)
+- [x] 7.4b The comms box in every battle, alone or in co-op: every comms message there, the lone last line gone; no Chat key alone (owner, 2026-11-11: "All comms messages should be in the chat box", "Standardize this across all the game")
+- [ ] 7.5 The battle console mockup (and every faction's console page) draws the comms box (`docs/design/mockup-sync.md`)
+- [ ] 7.6 Dialogue option keys in the comms box for campaign missions (owner: "some campaign missions will have buttons for dialogue options")
