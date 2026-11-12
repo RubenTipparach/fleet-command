@@ -140,16 +140,22 @@ public sealed class PathBuilder
     }
 }
 
-/// <summary>Shapes drawn in absolute coordinates: rounded rectangles (a cached antialiased mesh) and ring segments.</summary>
+/// <summary>Shapes drawn in absolute coordinates: rounded rectangles and their outlines (9-slices from a corner atlas)
+/// and ring segments.</summary>
 public static class Shapes
 {
-    // A rounded rectangle is a mesh built once per size and corner radii, white, its edge feathered over AaPx like
-    // Godot's StyleBoxFlat (whose look it keeps: CornerSegs points a corner, an antialiased rim), drawn with the colour
-    // as its modulate. Drawing a StyleBoxFlat tessellated it again on every call, about a thousand times a console
-    // redraw, the console's largest single cost on a Raspberry Pi 5 (docs/playtests/pi/README.md).
-    private const int CornerSegs = 10;
+    // A rounded rectangle, filled or outlined, is a 9-slice drawn from one shared atlas of white corner shapes, tinted by
+    // its colour (the owner, 2026-11-12: "Rounded rectangles? shouldnt that just be texture-fied", "we talked about
+    // sliing stuff in the ui document"). Each atlas cell is one set of corner radii (and line width), drawn once by its
+    // signed distance with the edge feathered over AaPx as Godot's StyleBoxFlat was, a pixel of clear round it. Drawing
+    // a StyleBoxFlat tessellated it again on every call, about a thousand times a console redraw, the console's largest
+    // single cost on a Raspberry Pi 5 (docs/playtests/pi/README.md); a 9-slice from one texture batches with its
+    // neighbours instead.
     private const float AaPx = 0.8f;
-    private static readonly Dictionary<(int, int, int, int, int, int), ArrayMesh> Meshes = new();
+    private const int AtlasPx = 1024;
+    private static readonly Dictionary<(int, int, int, int, int), (int Page, Rect2 Src, int L, int T, int R, int B)> Cells = new();
+    private static readonly List<(Image Img, ImageTexture Tex)> Pages = new();
+    private static int _cx, _cy, _rowH;
 
     public static void RoundRect(CanvasItem c, Rect2 r, Color col, float radius) => RoundRect(c, r, col, radius, radius, radius, radius);
 
@@ -157,77 +163,66 @@ public static class Shapes
     {
         if (r.Size.X <= 0 || r.Size.Y <= 0) return;
         float lim = Math.Min(r.Size.X, r.Size.Y) / 2;
-        // sizes in quarter pixels, radii in whole pixels (as the style boxes were)
-        var key = ((int)MathF.Round(r.Size.X * 4), (int)MathF.Round(r.Size.Y * 4),
-            (int)MathF.Round(Math.Min(tl, lim)), (int)MathF.Round(Math.Min(tr, lim)), (int)MathF.Round(Math.Min(br, lim)), (int)MathF.Round(Math.Min(bl, lim)));
-        if (!Meshes.TryGetValue(key, out ArrayMesh? mesh))
-        {
-            if (Meshes.Count > 2048) Meshes.Clear();
-            Meshes[key] = mesh = RoundRectMesh(key.Item1 / 4f, key.Item2 / 4f, key.Item3, key.Item4, key.Item5, key.Item6);
-        }
-        c.DrawMesh(mesh, null, new Transform2D(0, r.Position), col);
+        Slice(c, r, col, (int)MathF.Round(Math.Min(tl, lim)), (int)MathF.Round(Math.Min(tr, lim)), (int)MathF.Round(Math.Min(br, lim)), (int)MathF.Round(Math.Min(bl, lim)), 0);
     }
 
-    /// <summary>A w by h rounded rectangle from (0, 0): a fan over its outline drawn a half feather inside the edge, and
-    /// a ring out to a half feather outside it that fades to clear.</summary>
-    private static ArrayMesh RoundRectMesh(float w, float h, float tl, float tr, float br, float bl)
-    {
-        var outline = new List<Vector2>();
-        var normals = new List<Vector2>();
-        void Corner(float cx, float cy, float rad, float a0)
-        {
-            int n = rad > 0 ? CornerSegs : 0;
-            for (int i = 0; i <= n; i++)
-            {
-                float t = a0 + Mathf.Pi / 2 * (n == 0 ? 0.5f : (float)i / n);
-                var d = new Vector2(Mathf.Cos(t), Mathf.Sin(t));
-                outline.Add(new Vector2(cx, cy) + d * rad);
-                normals.Add(rad > 0 ? d : d * Mathf.Sqrt2);   // a square corner's rim goes out along its diagonal
-            }
-        }
-        Corner(w - tr, tr, tr, -Mathf.Pi / 2);       // top right, from the top edge round to the right
-        Corner(w - br, h - br, br, 0);               // bottom right
-        Corner(bl, h - bl, bl, Mathf.Pi / 2);        // bottom left
-        Corner(tl, tl, tl, Mathf.Pi);                // top left
-        int m = outline.Count;
-        var pts = new Vector2[1 + m * 2];
-        var cols = new Color[pts.Length];
-        pts[0] = new Vector2(w / 2, h / 2);
-        cols[0] = Colors.White;
-        for (int i = 0; i < m; i++)
-        {
-            pts[1 + i] = outline[i] - normals[i] * (AaPx / 2);
-            cols[1 + i] = Colors.White;
-            pts[1 + m + i] = outline[i] + normals[i] * (AaPx / 2);
-            cols[1 + m + i] = new Color(1, 1, 1, 0);
-        }
-        var idx = new List<int>(m * 9);
-        for (int i = 0; i < m; i++)
-        {
-            int j = (i + 1) % m;
-            idx.AddRange(new[] { 0, 1 + i, 1 + j });                              // the body
-            idx.AddRange(new[] { 1 + i, 1 + m + i, 1 + m + j, 1 + i, 1 + m + j, 1 + j });   // the feathered rim
-        }
-        var arr = new Godot.Collections.Array();
-        arr.Resize((int)Mesh.ArrayType.Max);
-        arr[(int)Mesh.ArrayType.Vertex] = pts;
-        arr[(int)Mesh.ArrayType.Color] = cols;
-        arr[(int)Mesh.ArrayType.Index] = idx.ToArray();
-        var mesh = new ArrayMesh();
-        mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arr);
-        return mesh;
-    }
-
-    /// <summary>A rounded rectangle's outline.</summary>
+    /// <summary>A rounded rectangle's outline, <paramref name="width"/> wide, centred on the rectangle's edge.</summary>
     public static void RoundRectLine(CanvasItem c, Rect2 r, Color col, float radius, float width)
     {
-        float rad = Math.Min(radius, Math.Min(r.Size.X, r.Size.Y) / 2);
-        var pb = new PathBuilder();
-        Vector2 p = r.Position, s = r.Size;
-        pb.ArcPts(p.X + rad, p.Y + rad, rad, Mathf.Pi, 1.5f * Mathf.Pi, 6).ArcPts(p.X + s.X - rad, p.Y + rad, rad, -0.5f * Mathf.Pi, 0, 6)
-          .ArcPts(p.X + s.X - rad, p.Y + s.Y - rad, rad, 0, 0.5f * Mathf.Pi, 6).ArcPts(p.X + rad, p.Y + s.Y - rad, rad, 0.5f * Mathf.Pi, Mathf.Pi, 6);
-        pb.Pts.Add(pb.Pts[0]);
-        c.DrawPolyline(pb.Pts.ToArray(), col, width, true);
+        if (r.Size.X <= 0 || r.Size.Y <= 0 || width <= 0) return;
+        int rad = (int)MathF.Round(Math.Min(radius, Math.Min(r.Size.X, r.Size.Y) / 2));
+        Slice(c, r, col, rad, rad, rad, rad, (int)MathF.Round(width * 4));
+    }
+
+    // Draws the cell for these radii (and line width in quarter pixels, 0 for a fill) stretched over r.
+    private static void Slice(CanvasItem c, Rect2 r, Color col, int tl, int tr, int br, int bl, int line4)
+    {
+        var key = (tl, tr, br, bl, line4);
+        if (!Cells.TryGetValue(key, out var cell)) Cells[key] = cell = Bake(tl, tr, br, bl, line4 / 4f);
+        float pad = 1 + (line4 > 0 ? MathF.Ceiling(line4 / 8f) : 0);
+        RenderingServer.CanvasItemAddNinePatch(c.GetCanvasItem(), r.Grow(pad), cell.Src, Pages[cell.Page].Tex.GetRid(),
+            new Vector2(cell.L, cell.T), new Vector2(cell.R, cell.B), RenderingServer.NinePatchAxisMode.Stretch, RenderingServer.NinePatchAxisMode.Stretch, true, col);
+    }
+
+    // One cell: the shape's corners at their radii, two pixels of straight edge between, and a clear border wide enough
+    // for the feather (and half the line) outside the rectangle. Its margins are each corner side plus that border.
+    private static (int, Rect2, int, int, int, int) Bake(int tl, int tr, int br, int bl, float line)
+    {
+        int pad = 1 + (line > 0 ? (int)MathF.Ceiling(line / 2) : 0);
+        int L = Math.Max(tl, bl), R = Math.Max(tr, br), T = Math.Max(tl, tr), B = Math.Max(bl, br);
+        int w = L + R + 2, h = T + B + 2, cw = w + pad * 2, ch = h + pad * 2;
+        if (Pages.Count == 0 || _cx + cw > AtlasPx) { _cx = 0; _cy += _rowH; _rowH = 0; }
+        if (Pages.Count == 0 || _cy + ch > AtlasPx)
+        {
+            var img = Image.CreateEmpty(AtlasPx, AtlasPx, false, Image.Format.Rgba8);
+            Pages.Add((img, ImageTexture.CreateFromImage(img)));
+            _cx = 0; _cy = 0; _rowH = 0;
+        }
+        int page = Pages.Count - 1, ox = _cx, oy = _cy;
+        Image im = Pages[page].Img;
+        for (int y = 0; y < ch; y++)
+            for (int x = 0; x < cw; x++)
+            {
+                float px = x + 0.5f - pad, py = y + 0.5f - pad;
+                float d = Sd(px, py, w, h, tl, tr, br, bl);
+                float cov = line > 0 ? Math.Clamp(0.5f - (MathF.Abs(d) - line / 2) / AaPx, 0, 1) : Math.Clamp(0.5f - d / AaPx, 0, 1);
+                im.SetPixel(ox + x, oy + y, new Color(1, 1, 1, cov));
+            }
+        Pages[page].Tex.Update(im);
+        _cx += cw + 1; _rowH = Math.Max(_rowH, ch + 1);
+        return (page, new Rect2(ox, oy, cw, ch), L + pad, T + pad, R + pad, B + pad);
+    }
+
+    // Signed distance from (x, y) to a w by h rectangle from (0, 0) with these corner radii; negative inside.
+    private static float Sd(float x, float y, float w, float h, int tl, int tr, int br, int bl)
+    {
+        bool left = x < w / 2, top = y < h / 2;
+        float rad = top ? (left ? tl : tr) : (left ? bl : br);
+        float cx = left ? rad : w - rad, cy = top ? rad : h - rad;
+        float qx = left ? cx - x : x - cx, qy = top ? cy - y : y - cy;   // how far past the corner's centre, outward
+        if (qx > 0 && qy > 0) return MathF.Sqrt(qx * qx + qy * qy) - rad;
+        float dx = Math.Max(-x, x - w), dy = Math.Max(-y, y - h);
+        return Math.Max(dx, dy);
     }
 
     /// <summary>A segment of a ring between radii r0 and r1, angles a0 to a1 (the helm pad's keys).</summary>

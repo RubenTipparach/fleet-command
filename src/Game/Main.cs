@@ -28,6 +28,11 @@ public sealed partial class Main : Node
     private BattleView _view = null!;
     private ViewOverlay _overlay = null!;
     private Control _root = null!;
+    /// <summary>The console's panels and column, drawn into a viewport that renders only on a frame where something in it
+    /// redrew (ConsoleCache), so a quiet frame costs one draw call (openspec/changes/console-draw-cost D3).</summary>
+    private ConsoleCache _cache = null!;
+    /// <summary>The hover cards, above the cached panels and drawn every frame.</summary>
+    private Control _tipsRoot = null!;
     private ColumnBacking _column = null!;
     private MenuCard _menu = null!;
     private OptionsCard _options = null!;
@@ -91,10 +96,16 @@ public sealed partial class Main : Node
 
         var layer = _console = new CanvasLayer { Name = "Console" };
         AddChild(layer);
+        // under the panels the 3D view's overlay (brackets and labels that follow the ships, drawn every frame), then the
+        // cached panels and column, then the hover cards
         _root = new Control { Name = "Root", MouseFilter = Control.MouseFilterEnum.Ignore };
         layer.AddChild(_root);
+        _cache = new ConsoleCache();
+        layer.AddChild(_cache);
+        _tipsRoot = new Control { Name = "TipsRoot", MouseFilter = Control.MouseFilterEnum.Ignore };
+        layer.AddChild(_tipsRoot);
         _column = new ColumnBacking { Kit = kit };
-        _root.AddChild(_column);
+        _cache.Panels.AddChild(_column);
         _overlay = new ViewOverlay();
         _overlay.Init(_x, _view);
         _root.AddChild(_overlay);
@@ -114,7 +125,7 @@ public sealed partial class Main : Node
         menuLayer.AddChild(_menu);
         var tips = new TooltipLayer();
         tips.Init(_x);
-        _root.AddChild(tips);
+        _tipsRoot.AddChild(tips);
         // the Options sheet over every screen (the menus and the battle), under the loading screen's fade
         var optLayer = new CanvasLayer { Name = "Options", Layer = 12 };
         AddChild(optLayer);
@@ -163,7 +174,7 @@ public sealed partial class Main : Node
     private void Add(ConsolePanel p, Region r)
     {
         p.Init(_x, r);
-        _root.AddChild(p);
+        _cache.Panels.AddChild(p);
         _panels[r] = p;
     }
 
@@ -299,6 +310,9 @@ public sealed partial class Main : Node
         _x.State.Expanded = f.Expanded;
         _root.Position = Vector2.Zero;
         _root.Size = size;
+        _tipsRoot.Position = Vector2.Zero;
+        _tipsRoot.Size = size;
+        _cache.Place(size);
         foreach (var (r, p) in _panels)
         {
             if (f.Regions.TryGetValue(r, out Rect rect)) { p.Visible = true; p.Position = V(rect.X, rect.Y); p.Size = V(rect.W, rect.H); }

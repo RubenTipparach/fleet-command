@@ -34,6 +34,7 @@ public sealed partial class ColumnBacking : Control
 
     public override void _Draw()
     {
+        ConsoleCache.RenderFor(this);
         var r = new Rect2(Vector2.Zero, Size);
         DrawRect(r, Colors.Black);
         if (_kit == null) return;
