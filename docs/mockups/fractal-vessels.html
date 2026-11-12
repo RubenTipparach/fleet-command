@@ -96,6 +96,10 @@
     color: var(--ink); text-shadow: 0 0 6px #000, 0 0 2px #000; max-width: min(640px, calc(100% - 32px)); }
   .cap b { display: block; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
   .cap span { font-size: 17px; }
+  /* Tags stay under the panels; on an upright phone the caption sits under the title, clear of the view strip. */
+  #tags { position: relative; z-index: 0; }
+  .side, .title, .views { z-index: 2; }
+  @media (max-width: 760px) and (orientation: portrait) { .cap { top: 92px; bottom: auto; } }
   /* The video: the view alone, with its caption. */
   body.video .side, body.video .title, body.video .views, body.video .meter, body.video #tags, body.video .sheetHead { display: none !important; }
   body.video .cap { bottom: 40px; }

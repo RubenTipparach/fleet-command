@@ -34,3 +34,5 @@
   `tools/mockups/render_video.mjs` (1280 x 720 copies in `docs/screenshots/mockups/fractal-vessels/battles/`, the
   1920 x 1080 originals sent to the owner). Published from the cloud session on `claude/vigilant-keller-s93pth`, artifact
   version 6, version id `1794448148-9fd3`.
+- 2026-11-12, artifact version 7 (the page's v6 with a phone fix: the battle caption under the title on an upright phone,
+  name tags under the panels). Version id `1794448516-5228`.
