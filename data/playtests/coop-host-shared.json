@@ -1,0 +1,14 @@
+{
+ "_doc": "Co-op, the admiral shares a ship with a crew member (openspec/changes/bridge-crew-coop; owner, 2026-11-11: \"Just have the admiral swap ships to a ship that another player is on. Remember. Roles are not exclusive\", \"It's whatever the admiral sets up\"). Host a skirmish (--host), wait for one crew member, restart so the battle starts on both, send them to the first wingman (its captain, holding every role), step onto its bridge from the Tactical station, take its helm from them (the admiral flies, they keep weapons, science and the rest), and fight from there while the AI flies the empty flagship. The crew member plays coop-crew.json.",
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "wait_crew", "arg": "1", "s": 300},
+  {"do": "click", "arg": "menu"},
+  {"do": "click", "arg": "m.restart"},
+  {"do": "hold", "s": 2},
+  {"do": "crew_ship", "arg": "1=2"},
+  {"do": "admiral_bridge", "arg": "1"},
+  {"do": "crew_role", "arg": "helm=-2@1"},
+  {"do": "fight", "s": 400}
+ ]
+}

@@ -75,6 +75,7 @@ public sealed partial class Battle
     /// energy in the tractor, or held by another's beam.</summary>
     public void TractorHold()
     {
+        if (Sent(nameof(TractorHold))) return;
         Ship s = Player;
         if (!s.Alive) return;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
@@ -87,6 +88,7 @@ public sealed partial class Battle
     /// <summary>Break: lets go of the beam held, or stops the power-up, at any time.</summary>
     public void TractorBreak()
     {
+        if (Sent(nameof(TractorBreak))) return;
         Ship s = Player;
         if (s.Tractor == TractorMode.Off) return;
         if (s.Beam != null && ShipById(s.Beam.On) is { } h) Say("Tractor", $"Beam on {h.Name} released.");
@@ -97,6 +99,7 @@ public sealed partial class Battle
     /// tractor's reach.</summary>
     public void Reel(int dir)
     {
+        if (Sent(nameof(Reel), dir)) return;
         TractorBeam? b = Player.Beam;
         if (b == null || dir == 0) return;
         TractorDef td = Data.Systems.Tractor;
@@ -133,7 +136,7 @@ public sealed partial class Battle
         }
         if (s.Beam == null)
         {
-            Ship? t = TargetOf(s);
+            Ship? t = TargetOf(s, "tractor");
             if (s.Tractor == TractorMode.Hold && t != null && !TractorDown(s) && HeldBy(s) == null && Rules.DistKm(s, t) <= td.ReachKm && s.RelockOn != t.Id)
                 TakeHold(s, t, "takes hold of");
             return;

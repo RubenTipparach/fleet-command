@@ -21,13 +21,13 @@ public static class Geometry
     public static int HeadingDeg(double h) => ((int)Math.Round(h / Deg) % 360 + 360) % 360;
 
     /// <summary>The unit vector of heading h: (x, z).</summary>
-    public static (double X, double Z) Forward(double h) => (Math.Sin(h), -Math.Cos(h));
+    public static (double X, double Z) Forward(double h) => (DMath.Sin(h), -DMath.Cos(h));
 
     /// <summary>The unit vector to starboard of heading h.</summary>
-    public static (double X, double Z) Right(double h) => (Math.Cos(h), Math.Sin(h));
+    public static (double X, double Z) Right(double h) => (DMath.Cos(h), DMath.Sin(h));
 
     /// <summary>The heading from (x0, z0) toward (x1, z1).</summary>
-    public static double HeadingTo(double x0, double z0, double x1, double z1) => Math.Atan2(x1 - x0, -(z1 - z0));
+    public static double HeadingTo(double x0, double z0, double x1, double z1) => DMath.Atan2(x1 - x0, -(z1 - z0));
 
     public static double Dist(double x0, double z0, double x1, double z1) => Math.Sqrt((x1 - x0) * (x1 - x0) + (z1 - z0) * (z1 - z0));
 }

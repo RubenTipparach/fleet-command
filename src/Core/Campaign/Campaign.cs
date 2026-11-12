@@ -353,7 +353,17 @@ public sealed class Campaign
         S.Mp = Ru.MovePoints;
         // an encounter goes with the freighter it was met with, taken or not
         foreach (Offer m in S.Missions.Where(m => ScriptOf(m).Encounter || ScriptOf(m).Event)) S.Active.Remove(m.Id);
-        S.Missions = S.Missions.Where(m => !ScriptOf(m).Encounter && !ScriptOf(m).Event && (m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0)).ToList();
+        var lapsed = new List<Offer>();
+        S.Missions = S.Missions.Where(m =>
+        {
+            if (ScriptOf(m).Encounter || ScriptOf(m).Event) return false;
+            if (m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0) return true;
+            lapsed.Add(m);
+            return false;
+        }).ToList();
+        // a mission passed by hands the story on (the shakedown left unflown still leads to the next story mission)
+        foreach (Offer m in lapsed)
+            foreach (string next in ScriptOf(m).Lapse) OfferMission(next);
         int n = 1 + R.Below(2);
         for (int i = 0; i < n && S.Missions.Count < Ru.MissionsMax; i++) OfferMission();
         RollOfficers();
@@ -595,7 +605,7 @@ public sealed class Campaign
     {
         var m = new Offer
         {
-            Id = ++S.Mid, Script = def.Id, C = h.C, R = h.R, Turns = def.Story ? null : def.Turns,
+            Id = ++S.Mid, Script = def.Id, C = h.C, R = h.R, Turns = def.Expires ? def.Turns : null,
             Strength = Ru.Strengths[(int)Math.Floor(R.Next() * Ru.Strengths.Count)],
             Reward = def.Reward + (def.Story ? 0 : Math.Floor(R.Next() * Ru.RewardSteps) * Ru.RewardStep),
         };
@@ -787,12 +797,20 @@ public sealed class Campaign
     }
 
     /// <summary>Buys a hull at your own port. Returns why not, or null.</summary>
+    /// <summary>Why the shipyard will not sell a hull for want of prestige, or null: each tier asks its prestige.</summary>
+    public string? PrestigeShort(string hullId)
+    {
+        int need = Data.TierOf(Data.Hulls[hullId]).Prestige;
+        return S.Prestige >= need ? null : $"Needs {need} prestige (you have {S.Prestige:0}).";
+    }
+
     public string? Buy(string hullId)
     {
         if (!Allows("ships")) return At.IsPort && !IsPort(At) ? $"Their shipyard sells to friends of standing {StandingFor("ships")} or more." : "The shipyard is at your own ports.";
         if (S.Fleet.Count >= Ru.FleetMax) return $"A fleet has at most {Ru.FleetMax} ships.";
         Hull h = Data.Hulls[hullId];
         if (h.Side != YardSide || !h.ForSale) return $"{h.Name} is not built here.";
+        if (PrestigeShort(hullId) is { } why) return why;
         string? err = Pay(HullPrice(hullId));
         if (err != null) return err;
         S.Fleet.Add(NewShip(hullId, Side.Prefix + Side.Names[S.Fleet.Count % Side.Names.Count]));

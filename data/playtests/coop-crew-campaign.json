@@ -1,0 +1,7 @@
+{
+ "_doc": "Co-op campaign, a crew member's seat (openspec/changes/bridge-crew-coop): join the admiral (--join=address --name=...) and fight every battle of the campaign from the stations given, then as captain of the ship given, until the admiral leaves (up to 12 battles).",
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "crew_session", "arg": "12", "s": 10800}
+ ]
+}

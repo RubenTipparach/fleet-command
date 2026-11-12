@@ -1,0 +1,7 @@
+{
+ "_doc": "Co-op, a crew member's seat (openspec/changes/bridge-crew-coop): join the admiral (--join=address[:port] --name=...), then fight every battle the admiral starts from the stations given (or as captain of the ship given), for as many battles as the arg says.",
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "crew_session", "arg": "1", "s": 1800}
+ ]
+}

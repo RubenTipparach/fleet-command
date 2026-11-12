@@ -78,7 +78,7 @@ public static class HexGrid
     {
         var (ax, az) = Pos(ac, ar);
         var (bx, bz) = Pos(bc, br);
-        return Math.Atan2(bx - ax, bz - az);
+        return Sim.DMath.Atan2(bx - ax, bz - az);
     }
 }
 

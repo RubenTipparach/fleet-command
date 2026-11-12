@@ -1,10 +1,10 @@
 {
- "_doc": "The campaign's data (openspec/changes/game-flow-engine): factions, sector terrain, hulls by tier, ship systems and supplies, the rules' numbers, and the map (its territory seeds; its star systems, each a star with its belt of asteroids at belt_r sectors, a share of that ring taken, and a nebula of that many sectors beside it; the deep space between them, dust clouds and asteroid fields with no star, clear_of_stars sectors from any; how far your fleet and friendly ships see; ports, fleets and freight routes). A planet with no star within 3 sectors is a rogue planet. The one copy the game and the campaign mockup (docs/mockups/game-flow.html, inlined by tools/mockups/inline_data.py) read. Missions are in data/missions/. Prices are points; the campaign charges points x credit_rate credits. Hulls: each faction's by tier (1 the smallest); battle_class is the ship class it fights as (data/battle/classes.json), schematic its top-down picture (assets/ships/schematics/), empty while the hull is a stand-in. Supplies: at most one per hp_per hull points, per_fit per fitted system fit, or fixed. Freighters (openspec/changes/freighter-missions; owner, 2026-11-07): each faction's freighter is the hull its 'freighter' names (the faction's own approved freighter, mockup 24; a faction with none flies the neutral 'freighter' stand-in); freighter hulls are neutral and never for sale. Ships do not mend between battles: a hull is repaired at your own port (repair_share of its price) or in the field with a repair kit (the parts supply), each mending kit_repair_pct of the hull. A freighter destroyed or taken is off its route for freighter_refit_turns turns.",
+ "_doc": "The campaign's data (openspec/changes/game-flow-engine): factions, sector terrain, hulls by tier, ship systems and supplies, the rules' numbers, and the map (its territory seeds; its star systems, each a star with its belt of asteroids at belt_r sectors, a share of that ring taken, and a nebula of that many sectors beside it; the deep space between them, dust clouds and asteroid fields with no star, clear_of_stars sectors from any; how far your fleet and friendly ships see; ports, fleets and freight routes). A planet with no star within 3 sectors is a rogue planet. The one copy the game and the campaign mockup (docs/mockups/game-flow.html, inlined by tools/mockups/inline_data.py) read. Missions are in data/missions/. Prices are points; the campaign charges points x credit_rate credits. Hulls: each faction's by tier (1 the smallest); battle_class is the ship class it fights as (data/battle/classes.json), schematic its top-down picture (assets/ships/schematics/), empty while the hull is a stand-in. Supplies: at most one per hp_per hull points, per_fit per fitted system fit, or fixed. Freighters (openspec/changes/freighter-missions; owner, 2026-11-07): each faction's freighter is the hull its 'freighter' names (the faction's own approved freighter, mockup 24; a faction with none flies the neutral 'freighter' stand-in); freighter hulls are neutral and never for sale. Ships do not mend between battles: a hull is repaired at your own port (repair_share of its price) or in the field with a repair kit (the parts supply), each mending kit_repair_pct of the hull. A freighter destroyed or taken is off its route for freighter_refit_turns turns. Each tier's prestige is the prestige the shipyard asks before it sells a hull of that tier, and contracts pay reward_step_cr a step: tuned 2026-11-11 so ten missions, mostly won, bring a fleet up to a heavy cruiser (owner: \"tune it so that 10 missions gets you up to a cruiser ship in prestige\").",
  "rules": {
   "cols": 30,
   "rows": 22,
   "seed": 7,
-  "start_credits_cr": 4000,
+  "start_credits_cr": 500,
   "start_marines": 2,
   "move_points": 3,
   "fleet_max": 4,
@@ -40,7 +40,7 @@
    "Heavy"
   ],
   "reward_steps": 5,
-  "reward_step_cr": 50,
+  "reward_step_cr": 80,
   "repair_share": 0.5,
   "kit_repair_pct": 25,
   "freighter_refit_turns": 6,
@@ -377,7 +377,8 @@
     "bridge": 1,
     "engines": 1
    },
-   "hp": 60
+   "hp": 60,
+   "prestige": 0
   },
   {
    "cost": 230,
@@ -389,7 +390,8 @@
     "bridge": 1,
     "engines": 1
    },
-   "hp": 90
+   "hp": 90,
+   "prestige": 25
   },
   {
    "cost": 320,
@@ -401,7 +403,8 @@
     "bridge": 1,
     "engines": 1
    },
-   "hp": 130
+   "hp": 130,
+   "prestige": 50
   },
   {
    "cost": 450,
@@ -413,7 +416,8 @@
     "bridge": 2,
     "engines": 1
    },
-   "hp": 190
+   "hp": 190,
+   "prestige": 90
   },
   {
    "cost": 620,
@@ -425,7 +429,8 @@
     "bridge": 2,
     "engines": 2
    },
-   "hp": 260
+   "hp": 260,
+   "prestige": 140
   }
  ],
  "hulls": {

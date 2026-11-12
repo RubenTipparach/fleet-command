@@ -1,0 +1,41 @@
+{
+ "_doc": "Co-op, the admiral's seat (openspec/changes/bridge-crew-coop): host a skirmish (--host --play=...), wait for one crew member, give them Weapons and Science in the captain's menu, restart the battle so it starts on both machines, give them the first wingman to captain, and fight it from the helm (pinging the target and sending the wingman's captain to attack it). The crew member plays coop-crew.json (--join=address).",
+ "beats": [
+  {
+   "do": "wait_ready"
+  },
+  {
+   "do": "wait_crew",
+   "arg": "1",
+   "s": 300
+  },
+  {
+   "do": "crew_role",
+   "arg": "weapons=2"
+  },
+  {
+   "do": "crew_role",
+   "arg": "science=2"
+  },
+  {
+   "do": "click",
+   "arg": "menu"
+  },
+  {
+   "do": "click",
+   "arg": "m.restart"
+  },
+  {
+   "do": "hold",
+   "s": 2
+  },
+  {
+   "do": "crew_ship",
+   "arg": "1=2"
+  },
+  {
+   "do": "fight",
+   "s": 400
+  }
+ ]
+}

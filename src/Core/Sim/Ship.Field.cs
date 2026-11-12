@@ -18,6 +18,8 @@ public sealed partial class Ship
     public bool Runs;
     /// <summary>Under a truce until the player's side fires first.</summary>
     public bool Truce;
+    /// <summary>Fires training rounds: its hits drain shields and stop there.</summary>
+    public bool Training;
     /// <summary>Battle time its fire last landed (AI captains close in when theirs has not landed for a while).</summary>
     public double LastLandedT;
     /// <summary>What it is asked to do once it arrives or wakes.</summary>

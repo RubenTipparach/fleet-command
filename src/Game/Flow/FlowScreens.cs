@@ -156,7 +156,7 @@ public sealed partial class FactionView : Control
         var box = new SubViewportContainer { Stretch = true, MouseFilter = MouseFilterEnum.Ignore, Name = "View" };
         box.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(box);
-        var vp = new SubViewport { OwnWorld3D = true, Msaa3D = Viewport.Msaa.Msaa4X, HandleInputLocally = false, Name = "FactionWorld" };
+        var vp = new SubViewport { OwnWorld3D = true, Msaa3D = LowSpec.Msaa(Viewport.Msaa.Msaa4X), HandleInputLocally = false, Name = "FactionWorld" };
         box.AddChild(vp);
         vp.AddChild(Stage);
         screen.Stage = Stage;

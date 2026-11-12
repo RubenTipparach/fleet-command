@@ -1,0 +1,15 @@
+{
+ "_doc": "Co-op with three players, the admiral's seat (openspec/changes/bridge-crew-coop; owner, 2026-11-11: \"Also you can assign multiple people to a ship? And then filter out their roles? Make a game and include the desktop player too\"). Host a skirmish (--host), wait for two crew members, restart the battle so it starts on all three, send both to the first wingman (the first to join its captain, the second its crew), give the second the wingman's Weapons and Science from its roles tab (the captain keeps the rest), and fight from the flagship's helm. Each crew member plays coop-crew.json.",
+ "beats": [
+  {"do": "wait_ready"},
+  {"do": "wait_crew", "arg": "2", "s": 300},
+  {"do": "click", "arg": "menu"},
+  {"do": "click", "arg": "m.restart"},
+  {"do": "hold", "s": 2},
+  {"do": "crew_ship", "arg": "1=2"},
+  {"do": "crew_ship", "arg": "1=3"},
+  {"do": "crew_role", "arg": "weapons=3@1"},
+  {"do": "crew_role", "arg": "science=3@1"},
+  {"do": "fight", "s": 400}
+ ]
+}

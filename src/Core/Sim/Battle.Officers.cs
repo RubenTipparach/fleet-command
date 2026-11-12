@@ -48,6 +48,7 @@ public sealed partial class Battle
     /// roster order, after the one there now.</summary>
     public void OfficerNext(string station)
     {
+        if (Sent(nameof(OfficerNext), station)) return;
         Ship s = Player;
         if (s.Crew.Count == 0 || !OfficersDef.Stations.Contains(station)) return;
         var taken = new HashSet<string>(s.Officers.Where(kv => kv.Key != station && kv.Value != null).Select(kv => kv.Value!.Id));

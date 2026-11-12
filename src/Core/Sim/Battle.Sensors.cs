@@ -16,7 +16,7 @@ public sealed partial class Battle
         foreach (Ship s in _ships)
         {
             if (!s.Alive || s.ScanId == null) continue;
-            if (s.ScanId != s.Target) { s.ScanId = null; s.ScanP = 0; continue; }
+            if (s.ScanId != RoleTargetId(s, "science")) { s.ScanId = null; s.ScanP = 0; continue; }
             int free = Math.Max(0, s.Power["sensors"] - s.Ecm - s.Eccm);
             double rate = (sr.ScanBasePerS + sr.ScanPerES * free) * (s.Passive ? sr.PassiveScanX : 1) * s.Sys["sensors"] * (1 + OfficerSkill(s, "science") * sr.OfficerScan);
             s.ScanP = Math.Min(1, s.ScanP + dt * rate);
@@ -27,8 +27,9 @@ public sealed partial class Battle
     /// <summary>Scan target: starts scanning the locked target (a scan of it already under way carries on).</summary>
     public void Scan()
     {
+        if (Sent(nameof(Scan))) return;
         Ship s = Player;
-        if (TargetOf(s) is not { } t) return;
+        if (TargetOf(s, "science") is not { } t) return;
         s.ScanP = s.ScanId == t.Id ? s.ScanP : 0;
         s.ScanId = t.Id;
     }
@@ -40,13 +41,14 @@ public sealed partial class Battle
     /// sensors' energy leaves after the other.</summary>
     public void SetEw(bool eccm, int n)
     {
+        if (Sent(nameof(SetEw), eccm, n)) return;
         Ship s = Player;
         int other = eccm ? s.Ecm : s.Eccm, v = Math.Clamp(n, 0, Math.Max(0, Math.Min(Cs.Sensors.EwCells, s.Power["sensors"] - other)));
         if (eccm) s.Eccm = v; else s.Ecm = v;
     }
 
     /// <summary>Active (false) or passive (true) sensors for the commanded ship.</summary>
-    public void SetPassive(bool passive) => Player.Passive = passive;
+    public void SetPassive(bool passive) { if (Sent(nameof(SetPassive), passive)) return; Player.Passive = passive; }
 
     // ECM and ECCM fit inside the sensors' energy: when it is cut, ECM keeps what it can, then ECCM.
     private void ClampEw(Ship s)

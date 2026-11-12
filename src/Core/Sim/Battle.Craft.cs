@@ -44,6 +44,7 @@ public sealed partial class Battle
     /// <summary>Launches every fighter in the bay on the ship's mission.</summary>
     public void LaunchFighters()
     {
+        if (Sent(nameof(LaunchFighters))) return;
         Ship s = Player;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
         if (!s.Alive || s.Fighters <= 0) return;
@@ -58,12 +59,14 @@ public sealed partial class Battle
     /// <summary>Recalls the ship's fighters to the bay.</summary>
     public void RecallFighters()
     {
+        if (Sent(nameof(RecallFighters))) return;
         foreach (Craft c in _craft) if (c.Home == Player.Id && c.Kind == "fighter") c.Recall = true;
     }
 
     /// <summary>The fighters' mission, for those in the bay and those flying: attack, defend or defences.</summary>
     public void SetMission(string mission)
     {
+        if (Sent(nameof(SetMission), mission)) return;
         if (!ScenarioExtras.Missions.Contains(mission)) return;
         Player.Mission = mission;
         foreach (Craft c in _craft) if (c.Home == Player.Id && c.Kind == "fighter") c.Mission = mission;
@@ -72,9 +75,10 @@ public sealed partial class Battle
     /// <summary>Launches a disguised shuttle at the locked target.</summary>
     public void LaunchShuttle()
     {
+        if (Sent(nameof(LaunchShuttle))) return;
         Ship s = Player;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
-        Ship? t = TargetOf(s);
+        Ship? t = TargetOf(s, "weapons");
         if (t == null || s.Shuttles <= 0 || !s.Alive) return;
         s.Shuttles--;
         _craft.Add(new Craft { Kind = "shuttle", Home = s.Id, Side = s.Side, To = t.Id, X = s.X, Z = s.Z });
@@ -84,9 +88,10 @@ public sealed partial class Battle
     /// <summary>Fires a missile barrage at the locked target: a salvo, or what is left in the racks.</summary>
     public void FireBarrage()
     {
+        if (Sent(nameof(FireBarrage))) return;
         Ship s = Player;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
-        if (TargetOf(s) == null || s.Missiles <= 0 || s.Barrage > 0 || !s.Alive) return;
+        if (TargetOf(s, "weapons") == null || s.Missiles <= 0 || s.Barrage > 0 || !s.Alive) return;
         s.Barrage = Math.Min(Data.Systems.Barrage.Salvo, s.Missiles);
         s.BarrageT = 0;
         Say("Tactical", $"Missile barrage: {s.Barrage} away.");
@@ -110,9 +115,9 @@ public sealed partial class Battle
         FighterDef fd = Data.Systems.Fighters;
         Ship? home = ShipById(c.Home);
         if (home == null) { c.Gone = true; c.Fate = "lost"; return; }
-        Ship t = c.Recall || !home.Alive || c.Mission == "defend" ? home : TargetOf(home) ?? home;
+        Ship t = c.Recall || !home.Alive || c.Mission == "defend" ? home : TargetOf(home, "weapons") ?? home;
         c.A += dt * fd.OrbitRadS;
-        double r = c.Recall ? 0 : fd.OrbitM, gx = t.X + Math.Cos(c.A) * r, gz = t.Z + Math.Sin(c.A) * r, d = Geometry.Dist(c.X, c.Z, gx, gz), sp = fd.SpeedMS * dt;
+        double r = c.Recall ? 0 : fd.OrbitM, gx = t.X + DMath.Cos(c.A) * r, gz = t.Z + DMath.Sin(c.A) * r, d = Geometry.Dist(c.X, c.Z, gx, gz), sp = fd.SpeedMS * dt;
         if (d > sp) { c.X += (gx - c.X) / d * sp; c.Z += (gz - c.Z) / d * sp; } else { c.X = gx; c.Z = gz; }
         if (c.Recall && d < fd.RecoverM) { c.Gone = true; c.Fate = "recovered"; home.Fighters++; return; }
         c.Cool -= dt;
@@ -172,7 +177,7 @@ public sealed partial class Battle
     private void BarrageStep(Ship s, double dt)
     {
         if (s.Barrage <= 0) return;
-        Ship? t = TargetOf(s);
+        Ship? t = TargetOf(s, "weapons");
         if (t == null || s.Missiles <= 0) { s.Barrage = 0; return; }
         if ((s.BarrageT -= dt) > 0) return;
         BarrageDef bd = Data.Systems.Barrage;

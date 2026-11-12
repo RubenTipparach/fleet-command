@@ -78,7 +78,7 @@ public sealed partial class Rules
         double dx = x - s.X, dz = z - s.Z;
         var f = Geometry.Forward(s.H);
         var r = Geometry.Right(s.H);
-        return Math.Atan2(dx * r.X + dz * r.Z, dx * f.X + dz * f.Z);
+        return DMath.Atan2(dx * r.X + dz * r.Z, dx * f.X + dz * f.Z);
     }
 
     /// <summary>The shield facing of s that a point at (x, z) strikes: 0 F, 1 FR, 2 AR, 3 A, 4 AL, 5 FL.</summary>

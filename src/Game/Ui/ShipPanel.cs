@@ -22,7 +22,13 @@ public sealed partial class ShipPanel : ConsolePanel
 
     protected override void DrawPanel()
     {
-        string cur = X.State.ShipPage;
+        if (OpenOr("sh", Pages, X.State.ShipPage) is not { } cur)
+        {
+            Rect2 none = Frame("No page");
+            Rail("sh", none.Position.X, none.Position.Y, Pages, "", X.Act.ShipPage);
+            Lbl("No ship page is yours", none.Position.X + 64, none.Position.Y + 30, none.Size.X - 70);
+            return;
+        }
         var pg = Array.Find(Pages, p => p.Id == cur);
         Rect2 p = Frame(cur is "systems" or "shields" ? $"{pg.Label} · {Me.Name}" : pg.Label);
         Rail("sh", p.Position.X, p.Position.Y, Pages, cur, X.Act.ShipPage);

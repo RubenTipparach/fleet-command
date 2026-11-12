@@ -266,9 +266,14 @@ public abstract partial class ConsolePanel : Control, IControlSource
         for (int i = 0; i < list.Length; i++)
         {
             string id = list[i].Id;
-            Tab($"{idp}.{id}", new Rect2(x, y + i * 42, 48, 40), list[i].Label, () => set(id), cur == id, list[i].Icon);
+            // in co-op a tab of a role this player does not hold is shown, disabled (ConsoleContext.Opens)
+            Tab($"{idp}.{id}", new Rect2(x, y + i * 42, 48, 40), list[i].Label, () => set(id), cur == id, list[i].Icon, !X.Opens($"{idp}.{id}"));
         }
     }
+
+    /// <summary>The open tab, or in co-op the first this player opens if theirs is shut to them (null if none is open).</summary>
+    protected string? OpenOr(string idp, (string Id, string Label, string Icon)[] list, string cur) =>
+        X.Opens($"{idp}.{cur}") ? cur : list.Select(t => t.Id).FirstOrDefault(id => X.Opens($"{idp}.{id}"));
 
     /// <summary>A row of discrete boxes (CLAUDE.md section 7): value lit, those at or past cap locked, a tap sets the count.</summary>
     protected void CellRow(string idp, Rect2 r, int n, double value, Action<int>? set, int? cap, Func<int, bool>? warn = null, string litPiece = "cell.lit", float gap = 3)

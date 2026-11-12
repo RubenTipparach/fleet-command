@@ -50,6 +50,8 @@ public sealed record DeckLook(float UndersideKm, float ThicknessKm, float HangKm
             PlanetLooks.Range(o, "far_to_km", 1, 3000), PlanetLooks.Range(o, "contrast", 0, 1),
             PlanetLooks.Range(o, "fog_km", 5, 5000), PlanetLooks.Range(o, "fog_lit", 0, 1), PlanetLooks.Range(o, "fog_sky", 0, 1),
             o.Str("style"), PlanetLooks.Range(o, "deck_puff_km", 2, 100));
+        // the low-spec mode draws the nebula as billboards in fog (LowSpec)
+        if (LowSpec.On) look = look with { Style = "billboards" };
         // the stills tool and a comparison run may name another style (--nebula-style=volume|meshes|billboards)
         foreach (string a in OS.GetCmdlineUserArgs())
             if (a.StartsWith("--nebula-style=")) look = look with { Style = a["--nebula-style=".Length..] };

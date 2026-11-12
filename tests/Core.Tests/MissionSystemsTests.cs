@@ -172,7 +172,10 @@ public sealed class MissionSystemsTests
         Ship late = b.ShipById(plan.Groups["wave3"][0])!;
         Assert.True(late.Absent);
         Assert.DoesNotContain(late, b.SeenFoes(b.Player));
+        // the arrival under test, not the fight: the waves already here hold their fire, so the battle cannot end first
+        foreach (Ship e in b.Ships.Where(s => s.Side != b.Player.Side)) e.HoldFire = true;
         Run(b, plan.Battle.Groups.First(g => g.Id == "wave3").ArriveS + 1);
+        Assert.True(b.Over == null, $"the battle ended first: {b.Over} at {b.T:0} s");
         Assert.False(late.Absent);
         Assert.True(Math.Abs(late.Z) < 200_000);
     }

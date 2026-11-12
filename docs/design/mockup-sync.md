@@ -248,3 +248,10 @@ each mockup difference has its task:
 | What | Mockup | Game | Task |
 |---|---|---|---|
 | Hull scars | The page draws no damage | Fireballs where shots land (on the plain surfaces), pieces blown off whole and the breakup; no scorch or hole marks (no hull shader on a placeholder) | `placeholder-fleets` 2.5 |
+
+### Mockup 2 (the battle console): the comms box (2026-11-11)
+
+| What | Mockup | Game | Task |
+|---|---|---|---|
+| The view's messages | The last log line, alone, under the target readout for a few seconds | The comms box over the view's bottom left in every battle: the battle's log, each station's reports fading after 30 s, warnings in caution; in co-op also the crew's chat, pings, directives and crew notes in each sender's name and colour, with the Chat and Ping keys (owner, 2026-11-11: "All comms messages should be in the chat box", "Standardize this across all the game", "Single player included. Just ommit chat button in single") | `bridge-crew-coop` 7.5 (the page's console to draw the comms box; every skin's page with it) |
+| Dialogue options | None | None yet; some campaign missions will put answer keys in the comms box (owner: "some campaign missions will have buttons for dialogue options") | `bridge-crew-coop` 7.6 |

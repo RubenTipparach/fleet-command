@@ -121,6 +121,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
 
     private void LeftClick(Vector2 local)
     {
+        if (PingClick(local)) return;   // co-op's Ping key (ViewOverlay.Coop.cs)
         if (_x.State.PlacingHet)
         {
             _x.State.PlacingHet = false;
@@ -134,7 +135,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         if (_view.PlaneAt(local + Position) is { } q)
         {
             B.HelmTo(q.X, q.Z);
-            B.Say("Helm", $"Come to {Geometry.HeadingDeg(B.Player.HOrder):000}.");
+            if (_x.Opens("st.helm")) B.Say("Helm", $"Come to {Geometry.HeadingDeg(B.Player.HOrder):000}.");
         }
     }
 
@@ -149,6 +150,31 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         _x.Tips.Offer(this, _ui.CurrentTip(), Position);
     }
 
+    // co-op: over a ship, the icon of every station of your bridge whose own target it is (owner, 2026-11-11: "each station
+    // targeting various ships would have the station icon marked on the traget showing they have targeted someone"), each
+    // in a dark disc, with the holder's name on its tip
+    // returns whether any station has the ship locked
+    private bool RoleMarks(Vector2 p, Ship s, Ship me, float above)
+    {
+        if (_x.Coop is not { } co || me.RoleTargets == null) return false;
+        var roles = co.Crew.Roles.List.Where(r => r.Targets && Battle.RoleTargetId(me, r.Id) == s.Id).ToList();
+        if (roles.Count == 0) return false;
+        const float Sz = 26, Gap = 4;
+        float x0 = p.X - (roles.Count * Sz + (roles.Count - 1) * Gap) / 2, y = p.Y - above - Sz;
+        string bridge = co.Crew.BridgeOf(co.Me);
+        foreach (FleetCommand.Coop.RoleDef r in roles)
+        {
+            var at = new Rect2(x0, y, Sz, Sz);
+            bool mine = co.Crew.Holds(bridge, r.Id, co.Me);
+            DrawCircle(at.GetCenter(), Sz / 2 + 2, new Color(0, 0, 0, 0.7f), true, -1, true);
+            DrawArc(at.GetCenter(), Sz / 2 + 2, 0, Mathf.Tau, 24, mine ? C.Sky : C.Lilac, 1.5f, true);
+            _x.Kit.Icon(this, r.Icon, at.Grow(-4), mine ? C.Sky : C.Lilac);
+            _ui.Reg($"v.role.{s.Id}.{r.Id}", at, null, null, new Tip($"{r.Name}: {string.Join(", ", co.Crew.HoldersOf(bridge, r.Id).Select(co.Crew.NameOf).Prepend(co.Crew.NameOf(FleetCommand.Coop.Crew.AdmiralId)))}"));
+            x0 += Sz + Gap;
+        }
+        return true;
+    }
+
     // Over the 3D view, after the mockup's uiView (v65): markers and names, the locked target's bracket and hull, your
     // own hull, the helm ring, the 3D shield display, the Target key, the objective, the readout and the
     // last message bottom left, and the Target box.
@@ -157,7 +183,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         Fonts f = _x.Fonts;
         Battle b = B;
         Ship me = b.Player;
-        Ship? t = b.TargetOf(me);
+        Ship? t = _x.MyTarget();
         var view = new Rect2(Vector2.Zero, Size);
 
         // the 3D shield display is always shown (owner, 2026-11-03: "Re move shield view toggle"): every ship's, drawn in the
@@ -221,6 +247,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 DrawArc(p, r, 0, Mathf.Tau, 32, hot ? col.Lightened(0.35f) : new Color(col, 0.7f), 1.5f + (hot ? 1 : 0), true);
                 f.Draw(this, Aiming.ContactName(b, s).ToUpperInvariant(), p.X, p.Y + 34, 16, col, HorizontalAlignment.Center);
             }
+            // a ship one of your bridge's stations has locked shows its hull too, not only your own target (owner, 2026-11-11:
+            // "if crew targets a different ship than captain, we should be able to see that ships health")
+            if (RoleMarks(p, s, me, locked ? 36 * (hot ? 1.08f : 1) + 8 : 24) && !locked) HullBar(p.X, p.Y + 46, s);
         }
         // a mission's marker beacons: each shown one a diamond with its name and range, a click steering for it (as a click on
         // open space does); one reached is drawn dim with a tick; one that follows a beacon not yet reached is not drawn
@@ -263,11 +292,13 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
         // your own hull under your ship
         if (me.Alive && Local(me) is { } mp) HullBar(mp.X, mp.Y + 74, me);
 
+        DrawCoop(f);
         if (big) { f.Draw(this, "LIVE · TAP TO RETURN", Size.X / 2, 28, 18, C.Sky, HorizontalAlignment.Center, 0, 600, 1); return; }
 
         // the Target key shows only while the Target box is shut, in the box's corner, top right (owner, 2026-11-07: "target
         // button should only reveal if target panel was closed", "Target button shold also be in the right corner")
         if (!_x.State.ShowTarget) Key("v.target", new Rect2(Size.X - 90 - 16, 14, 90, 30), "Target", () => _x.State.ShowTarget = true, false, "Show the Target box");
+        CoopKeys();
         // a campaign mission's battle has its own objectives (the mission strip) and no scene selector
         if (!_x.State.InMission) ScenePicker();
         if (b.Scenario.DamageRange && !_x.State.SceneOpen) RangePanel();
@@ -284,11 +315,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             f.DrawRich(this, new[] { ("in arc ", C.Lilac), (arc.Length.ToString(), C.Sky), (" · charged ", C.Lilac), (arc.Count(Rules.Ready).ToString(), C.Sky) }, 18, ry, 22, mw);
         }
         else f.DrawRich(this, new[] { ("No target", C.Sky), (" · click a ship to select it", C.Lilac) }, 18, ry, 22, mw);
-        if (b.Log.Count > 0 && b.T - b.Log[^1].T < 5)
-        {
-            LogLine l = b.Log[^1];
-            f.DrawRich(this, new[] { ($"{l.Who}: {l.Text}", C.Lilac) }, 18, ry - 64, 22, Size.X * 0.7f);
-        }
+        // every comms message is in the comms box over the view's bottom left (ChatBox), alone or in co-op
         if (b.Over is { } over) Banner(over == "won" ? "Victory" : over == "withdrawn" ? "Withdrawn" : over == "jumped" ? "Jumped to warp" : "Fleet lost",
             over is "won" or "jumped" ? C.Accord : over == "withdrawn" ? C.Caution : C.Alert);
 
