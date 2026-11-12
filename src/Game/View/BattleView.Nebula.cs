@@ -45,6 +45,7 @@ public sealed partial class BattleView
     private readonly List<NebulaPlume> _plumes = new();
     private NebulaDeck? _decks;
     private NebulaPuffs? _puffs;
+    private NebulaShells? _shells;
     private readonly List<Bolt> _bolts = new();
     private readonly HashSet<LightningHit> _seenHits = new();
     private double[] _nextFlashS = Array.Empty<double>();
@@ -74,6 +75,7 @@ public sealed partial class BattleView
         // the decks the columns rise between, cut from their own place in the noise; or the whole nebula as puffs
         _decks = null;
         _puffs = null;
+        _shells = null;
         if (_plumes.Count == 0) return;
         var deckSeed = new Vector3((float)looks.Next(), (float)looks.Next(), (float)looks.Next());
         string style = DeckLook.Get().Style;
@@ -85,6 +87,13 @@ public sealed partial class BattleView
         }
         else if (style == "none")
             foreach (NebulaPlume p in _plumes) p.Node.Visible = false;
+        else if (style == "shells")
+        {
+            // the plumes stay for the lightning's places, unseen
+            foreach (NebulaPlume p in _plumes) p.Node.Visible = false;
+            _shells = NebulaShells.Build(_plumes, field, b.Scenario.Seed);
+            _nebula.AddChild(_shells.Node);
+        }
         else
         {
             // the plumes stay for the lightning's places, unseen
@@ -161,6 +170,7 @@ public sealed partial class BattleView
         }
         _decks?.Sync(sun, _sun.LightEnergy, b.T);
         _puffs?.Sync(sun, _sun.LightEnergy, b.T, cam);
+        _shells?.Sync(sun, _sun.LightEnergy);
         foreach (Ship s in b.Ships)
         {
             bool down = s.Alive && s.CoreDown;
