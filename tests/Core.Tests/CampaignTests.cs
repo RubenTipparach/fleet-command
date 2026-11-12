@@ -461,6 +461,26 @@ public sealed class CampaignTests
     }
 
     [Fact]
+    public void The_shakedown_is_offered_once_lapses_after_five_turns_and_hands_the_story_on_to_first_blood()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        Assert.Single(c.S.Missions, x => x.Script == "shakedown");
+        for (int i = 0; i < 4; i++)
+        {
+            c.EndTurn();
+            Assert.Single(c.S.Missions, x => x.Script == "shakedown");
+            Assert.DoesNotContain(c.S.Missions, x => x.Script == "first_blood");
+        }
+        c.EndTurn();
+        Assert.DoesNotContain(c.S.Missions, x => x.Script == "shakedown");
+        Assert.Single(c.S.Missions, x => x.Script == "first_blood");
+        // never offered again, and First blood waits until flown
+        for (int i = 0; i < 20; i++) c.EndTurn();
+        Assert.DoesNotContain(c.S.Missions, x => x.Script == "shakedown");
+        Assert.Single(c.S.Missions, x => x.Script == "first_blood");
+    }
+
+    [Fact]
     public void A_mission_asking_for_a_beacon_it_does_not_place_is_refused_on_load()
     {
         string json = TestData.Read("missions/shakedown.json").Replace("reached('home')", "reached('hmoe')");

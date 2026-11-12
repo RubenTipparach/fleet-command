@@ -5,6 +5,8 @@
  "glyph": "1",
  "kind": "story",
  "reward_cr": 250,
+ "turns": 5,
+ "lapse_next": ["first_blood"],
  "where": "plain && dist_home >= 2 && dist_home <= 3 && terrain == 'open'",
  "objective": "Take her out to the marker beacon, put her guns through their trials on the target drones, and bring her back.",
  "brief": "Your first command is fresh from the yard. Take her out to the marker beacon, try her guns on the yard's target drones on the way, and bring her back to where you started, so the crew finds her faults before anyone else does. The drones hold still and fire training rounds back: they will knock your shields down but cannot hurt the hull or any system.",
@@ -22,10 +24,10 @@
   {
    "next": [
     {
-     "mission": "shakedown"
+     "mission": "first_blood"
     }
    ],
-   "log": "Shakedown cut short: the yard wants her out again."
+   "log": "Shakedown cut short: the yard signs her off as she is."
   }
  ],
  "type": "Patrol",

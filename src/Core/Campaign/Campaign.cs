@@ -353,7 +353,17 @@ public sealed class Campaign
         S.Mp = Ru.MovePoints;
         // an encounter goes with the freighter it was met with, taken or not
         foreach (Offer m in S.Missions.Where(m => ScriptOf(m).Encounter || ScriptOf(m).Event)) S.Active.Remove(m.Id);
-        S.Missions = S.Missions.Where(m => !ScriptOf(m).Encounter && !ScriptOf(m).Event && (m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0)).ToList();
+        var lapsed = new List<Offer>();
+        S.Missions = S.Missions.Where(m =>
+        {
+            if (ScriptOf(m).Encounter || ScriptOf(m).Event) return false;
+            if (m.Turns == null || S.Active.Contains(m.Id) || --m.Turns > 0) return true;
+            lapsed.Add(m);
+            return false;
+        }).ToList();
+        // a mission passed by hands the story on (the shakedown left unflown still leads to the next story mission)
+        foreach (Offer m in lapsed)
+            foreach (string next in ScriptOf(m).Lapse) OfferMission(next);
         int n = 1 + R.Below(2);
         for (int i = 0; i < n && S.Missions.Count < Ru.MissionsMax; i++) OfferMission();
         RollOfficers();
@@ -595,7 +605,7 @@ public sealed class Campaign
     {
         var m = new Offer
         {
-            Id = ++S.Mid, Script = def.Id, C = h.C, R = h.R, Turns = def.Story ? null : def.Turns,
+            Id = ++S.Mid, Script = def.Id, C = h.C, R = h.R, Turns = def.Expires ? def.Turns : null,
             Strength = Ru.Strengths[(int)Math.Floor(R.Next() * Ru.Strengths.Count)],
             Reward = def.Reward + (def.Story ? 0 : Math.Floor(R.Next() * Ru.RewardSteps) * Ru.RewardStep),
         };
