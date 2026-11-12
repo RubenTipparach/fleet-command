@@ -275,8 +275,8 @@ vec3 pp_ruins(vec3 d, vec3 cu, float pxc, vec3 col, float night, float clear, in
 		rise += w.x * 0.3 / k;
 		// the shaft at its hub is dark by day and still lit at night; one work in two still breathes, a slow pulse
 		// running out along its rings
-		lamps += step(0.4, r.x) * exp(-dot(q, q) / 0.0004) * (0.6 + 0.4 * sin(TIME * 0.9 + r.x * 40.0));
-		pulse += w.x * step(r.y, 0.5) * pow(0.5 + 0.5 * sin(length(q) * 60.0 - TIME * 0.8 + r.z * 30.0), 8.0);
+		lamps += step(0.4, r.x) * exp(-dot(q, q) / 0.0004) * (0.6 + 0.4 * sin(PN_TIME * 0.9 + r.x * 40.0));
+		pulse += w.x * step(r.y, 0.5) * pow(0.5 + 0.5 * sin(length(q) * 60.0 - PN_TIME * 0.8 + r.z * 30.0), 8.0);
 		col = mix(col, c0 * 0.4, w.z * clear * 0.8);
 	}
 	// the towns: a footprint with a ragged edge in about half the cells, its own grid turned its own way; plots with the
@@ -335,7 +335,7 @@ vec3 pp_ruins(vec3 d, vec3 cu, float pxc, vec3 col, float night, float clear, in
 	vec3 metal = pattern_color * (0.7 + 0.6 * pn_vnoise3(d * 60.0 + seed.yzx));
 	col = mix(col, col * 0.68 + metal * 0.08, floors * show);
 	col = mix(col, mix(col * 0.5, metal, 0.4), walls * show);
-	float flicker = 0.75 + 0.25 * sin(TIME * 11.0 + d.x * 90.0);
+	float flicker = 0.75 + 0.25 * sin(PN_TIME * 11.0 + d.x * 90.0);
 	emit += glow * (lamps * flicker * (night * 1.5 + 0.02) + pulse * show * (night * 0.45 + 0.01)) * clear;
 	return col;
 }

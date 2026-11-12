@@ -1,0 +1,200 @@
+{
+  "_doc": "Planet maps baked by src/Game/View/PlanetBaker.cs (tools/space/bake_planets.sh) from the planet shaders at the commit below, for the low-spec mode. Ground and clouds: 2:1 equirectangular on the UVs of a SphereMesh, lit from overhead (no sun). Rings: one row, ring_inner on the left to ring_outer on the right, in planet radii.",
+  "shaders_commit": "0e8c2b35",
+  "map_px": [
+    1024,
+    512
+  ],
+  "ring_px": 1024,
+  "kinds": {
+    "terran": {
+      "seed": [
+        97.5,
+        31.1,
+        50
+      ],
+      "atmosphere": "6fb6ff",
+      "atmosphere_strength": 0.9,
+      "atmosphere_height": 0.05,
+      "cloud_radius": 1.0175,
+      "layers": [
+        "ground",
+        "clouds"
+      ]
+    },
+    "ocean": {
+      "seed": [
+        52.3,
+        8,
+        11.6
+      ],
+      "atmosphere": "7fc8ff",
+      "atmosphere_strength": 1,
+      "atmosphere_height": 0.05,
+      "cloud_radius": 1.0175,
+      "layers": [
+        "ground",
+        "clouds"
+      ]
+    },
+    "desert": {
+      "seed": [
+        93.4,
+        35.4,
+        0.4
+      ],
+      "atmosphere": "f0c08a",
+      "atmosphere_strength": 0.7,
+      "atmosphere_height": 0.04,
+      "craters": true,
+      "layers": [
+        "ground"
+      ]
+    },
+    "ice": {
+      "seed": [
+        38.6,
+        32.3,
+        78.6
+      ],
+      "atmosphere": "bfe8ff",
+      "atmosphere_strength": 0.6,
+      "atmosphere_height": 0.035,
+      "craters": true,
+      "layers": [
+        "ground"
+      ]
+    },
+    "lava": {
+      "seed": [
+        20.1,
+        53.8,
+        57.5
+      ],
+      "atmosphere": "ff8a4a",
+      "atmosphere_strength": 0.38,
+      "atmosphere_height": 0.04,
+      "layers": [
+        "ground"
+      ]
+    },
+    "barren": {
+      "seed": [
+        17.3,
+        12.8,
+        60.6
+      ],
+      "atmosphere": "000000",
+      "atmosphere_strength": 0,
+      "atmosphere_height": 0.03,
+      "craters": true,
+      "layers": [
+        "ground"
+      ]
+    },
+    "gas": {
+      "seed": [
+        70.4,
+        10.2,
+        34
+      ],
+      "atmosphere": "f0d0a0",
+      "atmosphere_strength": 0.8,
+      "atmosphere_height": 0.04,
+      "ring_inner": 1.45,
+      "ring_outer": 2.35,
+      "layers": [
+        "ground",
+        "rings"
+      ]
+    },
+    "ice_giant": {
+      "seed": [
+        59.6,
+        37.6,
+        26.7
+      ],
+      "atmosphere": "a8e4ff",
+      "atmosphere_strength": 0.9,
+      "atmosphere_height": 0.045,
+      "ring_inner": 1.7,
+      "ring_outer": 2.05,
+      "layers": [
+        "ground",
+        "rings"
+      ]
+    },
+    "toxic": {
+      "seed": [
+        80.2,
+        61.8,
+        53.1
+      ],
+      "atmosphere": "c8e060",
+      "atmosphere_strength": 1.1,
+      "atmosphere_height": 0.06,
+      "cloud_radius": 1.021,
+      "layers": [
+        "ground",
+        "clouds"
+      ]
+    },
+    "city": {
+      "seed": [
+        50.4,
+        15,
+        8.4
+      ],
+      "atmosphere": "d8c890",
+      "atmosphere_strength": 0.8,
+      "atmosphere_height": 0.045,
+      "cloud_radius": 1.01575,
+      "layers": [
+        "ground",
+        "clouds"
+      ]
+    },
+    "archipelago": {
+      "seed": [
+        92.4,
+        28.5,
+        41
+      ],
+      "atmosphere": "7fd0ff",
+      "atmosphere_strength": 1,
+      "atmosphere_height": 0.05,
+      "cloud_radius": 1.0175,
+      "layers": [
+        "ground",
+        "clouds"
+      ]
+    },
+    "fossil": {
+      "seed": [
+        75.9,
+        94.8,
+        88.4
+      ],
+      "atmosphere": "f0e0c0",
+      "atmosphere_strength": 0.5,
+      "atmosphere_height": 0.04,
+      "layers": [
+        "ground"
+      ]
+    },
+    "ruins": {
+      "seed": [
+        80.6,
+        55.4,
+        71
+      ],
+      "atmosphere": "c8b0a0",
+      "atmosphere_strength": 0.4,
+      "atmosphere_height": 0.035,
+      "craters": true,
+      "layers": [
+        "ground"
+      ]
+    }
+  }
+}

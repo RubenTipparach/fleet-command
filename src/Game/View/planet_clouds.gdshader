@@ -49,6 +49,9 @@ varying vec3 mpos;
 
 void vertex() {
 	mpos = VERTEX;
+#ifdef PLANET_BAKE
+	POSITION = pn_bake_position(UV);
+#endif
 }
 
 // two octaves, about 0 to 1: the broad field that bends the weather
@@ -74,9 +77,9 @@ vec3 swirl(vec3 d) {
 // near (0 to 1) adds the small puffs a camera coming down can see
 float cloud_density(vec3 nd, float near) {
 	vec3 ax = normalize(wind_axis);
-	vec3 q = swirl(pn_rot(nd, ax, TIME * wind_speed));
+	vec3 q = swirl(pn_rot(nd, ax, PN_TIME * wind_speed));
 	vec3 p1 = q * pattern_scale + seed;
-	vec3 p2 = pn_rot(q, ax, -TIME * wind_speed * 1.6) * pattern_scale * 3.4 + seed.zxy + 37.0;
+	vec3 p2 = pn_rot(q, ax, -PN_TIME * wind_speed * 1.6) * pattern_scale * 3.4 + seed.zxy + 37.0;
 	vec3 warp = vec3(fbm2(p1 * 0.5 + 7.7), fbm2(p1 * 0.5 - 3.1), fbm2(p1 * 0.5 + 2.4)) - 0.5;
 	float big = pn_fbm3(p1 + warp * 1.6);
 	// the fine layer, bent by the same field, eats into the systems' edges
@@ -117,9 +120,9 @@ void fragment() {
 	vec3 n_model = pn_relief(nd, ta, tb, ha * ease, hb * ease, eps, cloud_relief, relief_max_slope);
 	n_model = normalize(mix(nd, n_model, edge_mask));
 
-	vec3 L = normalize(sun_dir);
 	vec3 n_world = normalize(MODEL_NORMAL_MATRIX * n_model);
 	vec3 g_world = normalize(MODEL_NORMAL_MATRIX * nd);
+	vec3 L = pn_sun(normalize(sun_dir), g_world);
 	// the sphere's own light, which the relief shades and lights by its turn from it (a cloud is never black by its slope
 	// alone: the relief tipping a top away from the sun only shades it)
 	float ndl_g = dot(g_world, L);
