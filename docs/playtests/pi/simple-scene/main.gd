@@ -1,6 +1,7 @@
 # Bare-bones Pi render test: low-poly ships, a low-poly planet, a starfield, one sun, StandardMaterial3D only.
 extends Node3D
 var ships := []
+var cam: Camera3D
 var t := 0.0
 var frames := 0
 var acc := 0.0
@@ -14,8 +15,10 @@ func _ready():
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR; e.ambient_light_color = Color(0.25,0.25,0.35)
 	e.fog_enabled = "--fog" in OS.get_cmdline_user_args(); e.fog_light_color = Color(0.3,0.2,0.5); e.fog_density = 0.002
 	env.environment = e; add_child(env)
+	if "--nebula" in OS.get_cmdline_user_args():
+		var neb := Node3D.new(); neb.set_script(load("res://nebula.gd")); neb.position = Vector3(30, 0, -120); add_child(neb)
 	var sun := DirectionalLight3D.new(); sun.rotation_degrees = Vector3(-40, 30, 0); add_child(sun)
-	var cam := Camera3D.new(); cam.position = Vector3(0, 30, 90); cam.look_at_from_position(cam.position, Vector3.ZERO); add_child(cam)
+	cam = Camera3D.new(); cam.position = Vector3(0, 30, 90); cam.look_at_from_position(cam.position, Vector3.ZERO); add_child(cam)
 	var planet := MeshInstance3D.new(); var sm := SphereMesh.new(); sm.radius = 60; sm.height = 120; sm.radial_segments = 24; sm.rings = 12
 	planet.mesh = sm; var pm := StandardMaterial3D.new(); pm.albedo_color = Color(0.3,0.5,0.8); planet.material_override = pm
 	planet.position = Vector3(-120, -40, -250); add_child(planet)
@@ -37,8 +40,10 @@ func _process(dt):
 	for e in ships:
 		var a: float = e[1] + t * 20.0 / e[2]
 		e[0].position = Vector3(cos(a)*e[2], e[3], sin(a)*e[2]); e[0].rotation.y = -a
+	var ca := t * 0.12
+	cam.look_at_from_position(Vector3(sin(ca) * 140.0, 35.0, cos(ca) * 140.0 - 60.0), Vector3(0, 0, -60))
 	frames += 1; acc += dt
 	if acc >= 1.0:
 		fps_list.append(frames); print("FPS ", frames); frames = 0; acc = 0.0
-	if t > 25.0:
+	if t > float(OS.get_environment("TEST_SECONDS") if OS.has_environment("TEST_SECONDS") else "25"):
 		fps_list.sort(); print("RESULT min=%d median=%d max=%d" % [fps_list[1], fps_list[fps_list.size()/2], fps_list[-1]]); get_tree().quit()

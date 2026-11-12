@@ -94,3 +94,22 @@ where the time goes. The suspects are what the game adds per ship and per frame:
 pools and 7-9 lamps per ship (if these are real lights, Compatibility draws one extra pass per light per mesh), the
 console UI's many textured controls, and the C# view code. A profile (Godot's monitors, or the game with the console
 hidden and then with the hull lights off) would say which.
+
+## Videos and a cube-marched nebula
+
+`videos/` holds two takes recorded on the Pi with `wf-recorder` (H.264, 1280x748 window, 30 fps), with the game's own
+FPS burned in. **Recording costs frame rate on the Pi**, because the encoder shares the CPU, so the numbers on screen
+are lower than the unrecorded runs:
+
+- `fleet-command-2026-11-12-pi5-battle-100pct.mp4`: the battle at `--lowspec --lowspec-scale=1.0`, won in 126 s.
+  It ran at a median of 16 fps while recording (20 without).
+- `fleet-command-2026-11-12-pi5-marched-nebula.mp4`: the bare scene with a cube-marched nebula and an orbiting camera.
+  It ran at a median of 35 fps while recording (85 without).
+
+**The nebula as geometry** (`simple-scene/nebula.gd`): a 41^3 grid of simplex noise inside a flattened ellipsoid
+falloff, polygonised once at load with naive surface nets (the table-free cousin of marching cubes) into three nested
+shells at rising density (0.10, 0.25, 0.40), drawn unshaded, additive, double-sided, with no depth writes, and each
+fragment's alpha faded by how face-on it is, so the shells' edges go soft. That comes to 20,714 triangles, built in
+about 2 s. At 1280x720, v-sync off and not recording: 104 fps from a fixed view (the same scene without it: 130), and
+66 / 85 / 103 fps with the camera orbiting through it, where it fills more of the screen. This one is a test on the
+Pi, not a design for the game.
