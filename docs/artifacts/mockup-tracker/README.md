@@ -176,3 +176,4 @@
 - 2026-11-11, desktop session: version 176, version id `1794383516-a813`: the survey at version 46; the fractal vessels as M37F (from main).
 - Version 183 published 2026-11-11, cloud session, version id `1794418711-00b9`: M37 at v16, approved for the game (the Ram cut); faction readiness at v2.
 - Version 184 published 2026-11-12, cloud session, version id `1794446665-b46d`: M39 Crew leveling added; the survey at v48.
+- Version 186, 2026-11-12: mockup 40 (Nebula shells) added; mockup 39 at v2, from the Pi's desktop session.
