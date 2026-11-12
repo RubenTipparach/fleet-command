@@ -30,7 +30,12 @@ def main() -> int:
         sys.exit("lowspec-prep: the tree has changes; run it on a clean checkout (or --force)")
     n = 0
     for f in ROOT.rglob("*.import"):
-        if any(p in (".godot", ".tools", ".git", "node_modules") for p in f.relative_to(ROOT).parts):
+        rel = f.relative_to(ROOT)
+        if any(p in (".godot", ".tools", ".git", "node_modules") for p in rel.parts):
+            continue
+        # the baked planet maps are the low-spec mode's own textures, made for it at their size (PlanetBaker); capping
+        # them would blur the planets the mode exists to show
+        if rel.parts[:3] == ("assets", "space", "planets_baked"):
             continue
         text = f.read_text()
         if 'importer="texture"' not in text:

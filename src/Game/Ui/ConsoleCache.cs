@@ -39,6 +39,16 @@ public sealed partial class ConsoleCache : SubViewportContainer
         Panels.ChildEnteredTree += _ => Render();
     }
 
+    /// <summary>The container takes the pointer only where a panel or the column is, so a click on the 3D view reaches the
+    /// view's overlay under it (its keys and the helm) as it did before the console was cached.</summary>
+    public override bool _HasPoint(Vector2 point)
+    {
+        Vector2 q = point * Scale;   // the window's pixels to layout units
+        foreach (Node n in Panels.GetChildren())
+            if (n is Control c && c.Visible && c.MouseFilter != MouseFilterEnum.Ignore && c.GetRect().HasPoint(q)) return true;
+        return false;
+    }
+
     /// <summary>Fills the window (<paramref name="size"/>, in the console's layout units) and renders once.</summary>
     public void Place(Vector2 size)
     {
