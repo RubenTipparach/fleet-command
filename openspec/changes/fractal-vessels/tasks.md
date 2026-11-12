@@ -22,6 +22,8 @@
 
 - [x] 1.11 v6 (owner, 2026-11-12: "Benesi kifs not animated, can you setup some battle situations mockups with the vessels? and render me a video"): the KIFS's turn on the slider and drift, three battles with a film camera, `tools/mockups/render_video.mjs`, the Ambush rendered to video (design D3d)
 
+- [x] 1.12 v7 (owner, 2026-11-12: the fold lattice, delta lattice and branching cut; the pine "just moves back and forth"): five forms, the battles re-cast with the Mandelbulb, the pine's ring twist (design D3e)
+
 ## 2. In the game (once approved for implementation)
 
 - [ ] 2.1 Documented exceptions in CLAUDE.md section 14: no mesh, no UVs and no baked maps for a raymarched vessel

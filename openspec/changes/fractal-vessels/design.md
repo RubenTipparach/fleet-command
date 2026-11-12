@@ -257,6 +257,22 @@ hidden, steps it one frame's time at a time, captures each frame and pipes it to
 therefore plays at true speed, however slowly the software renderer draws. A cloud session cannot record a live run
 (CLAUDE.md section 9), so this is a render, not a recording.
 
+## D3e. Version 7: five forms, and the pine twists
+
+The owner, 2026-11-12: "fold lattice and delta latice sucks Id get rid of those, branching is also not the right style
+eitgher"; "benesi pine doesnt really animate, it just moves back and forth, I rally like how it looks though".
+
+**Three forms cut.** The fold lattice, the delta lattice and the branching tree are gone, with their code (the Menger
+fold and the lattice block went with the two lattices). Five forms are left: the Julia slice, the octahedral lattice,
+Benesi KIFS, the Benesi pine and the Mandelbulb. The branchers' school has no form now. The line-up is two rows, three then
+two. In the battles the Mandelbulb flies where the delta (Skirmish) and the fold lattice (The line) flew:
+- Skirmish: the Mandelbulb and the octahedral lattice are lost at about 18 s;
+- The line: a Swift is lost, then the Julia slice, then the Mandelbulb; the pine holds on.
+
+**The pine twists.** Its slider used to shift every point's seed along the axis, which only slid the shape fore and aft.
+Now the slider turns each step's doubled angle further round the axis, by up to 0.5 rad a step. The banded rings twist
+into a spiral while the needle and the body stay where they are, and the drift turns them back and forth.
+
 ## D4. Damage
 
 - **Fold levels lost**: `iterations - floor(damage x iterations x 0.45)`, never fewer than 2. A hurt Julia slice swells
@@ -326,6 +342,6 @@ open).
 |---|---|---|---|
 | FV1 | Whose vessels are these? | The Axiom's. They replace the placeholder line once approved | FV1 |
 | FV2 | Is the vessel the being (framing 1), or made by a people who think in fractals (framing 2)? | Framing 2, which keeps the Axiom's draft culture and console | FV2 |
-| FV3 | Which forms make the line? | Since v3, from the owner's notes (the lattice "looks most like a spaceship", the Julia slice liked): the frigate the octahedral lattice, the cruiser the fold or delta lattice, the capital the Julia slice; since v5 Benesi KIFS (the render the owner picked) as a capital or station; the Benesi pine and the Mandelbulb as other options, the tree dropped unless asked for | FV3 |
+| FV3 | Which forms make the line? | Since v3, from the owner's notes (the lattice "looks most like a spaceship", the Julia slice liked): the frigate the octahedral lattice, the cruiser the Benesi pine or the Mandelbulb, the capital Benesi KIFS (the render the owner picked) or the Julia slice; since v7 the fold lattice, delta lattice and tree are cut (owner: "fold lattice and delta latice sucks", branching "not the right style") | FV3 |
 | FV4 | How do phones draw them? | A mesh baked from the same field (marching cubes, a few LODs) on phones; the raymarch on desktop | FV4 |
 | FV5 | How does the game hit them? | The C# copy of the field, tied to the shader's by a test (D6) | FV5 |
