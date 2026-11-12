@@ -36,6 +36,11 @@
   hash), so a changed sound is never played from the viewer's cache.
 - Version 10 published 2026-11-07, version id `1793956237-fd25`: the brown-noise bed is the bridge (owner: "delete
   amb_bridge, use amb_bridge_brown"); the space ambience removed, and with it the only CC-BY pack.
+- 2026-11-11, recorded from the live tracker by the Vos ships session: another session republished the page at a new link, https://claude.ai/artifact/7zWthg14SmsRfaFZpj1vAE (version 3, "36 cues, the weapons redone and every sound in the game"); its own record of that publish is on that session's branch.
+- Version 11 of the first artifact (the cloud account's, https://claude.ai/artifact/P2PEz2NG6Yv8NnKXT2SrNW) published
+  2026-11-11, version id `1794381223-1d29`: the shield hit without its ding (owner: "IT IS ELECTROMAGNETIC"): a field whump,
+  fizz and crackle; the ringing shield takes and the glassy shimmer removed. Merged into main with PR #78: the long
+  `shield_hit` and `shields_collapse` are these; the short shield hit the game plays is the desktop artifact's T1-T3.
 - Version 11 ready to publish 2026-11-10, not yet published (the artifact tools stopped working in the desktop session that
   made it): the weapons redone without the arcade lasers (owner: "Sfx are really goofy for the weapons. We need to fix
   that"), the doomsday laser cannon and a ship's cannon in the Lance, Disruptor and Pulse torpedo, the missile's ignition

@@ -1,0 +1,685 @@
+{
+ "schema": "fleetcommand.ship-plan/1",
+ "_doc": "A Vos specialist's rooms as blocks (Ship Design Bible chapter 2), laid out inside the parts it is built from, since a Vos ship is a conversion: the hull came first and the rooms are fitted into it, the opposite of a warship designed inside out. Frame: the page's build frame (mockup 37, window.MOCKUP_PARTS): +X port, +Y up, +Z bow, metres, the drive block's stern at z = 0. Functional rooms only, in our own words; what the Syndicate calls them is the owner's (survey U7). A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top); deck_floor_m each deck's floor, headroom_m its clear height, clearance_m and structure_m the air and plating between a room and the outside, which the page checks against every part. The Deck runner: two Hunt freighters cut and joined, one's drive block and the other's bow end, with a welded collar between and a flight deck welded over the drive block. Its crew live in the block; the pilots and flight control are in the bow end.",
+ "ship": "vos_deck_runner",
+ "crew": 70,
+ "deck_floor_m": [
+  12.1,
+  8.6,
+  5.1,
+  1.6,
+  -1.9,
+  -5.4,
+  -8.9,
+  -12.4
+ ],
+ "headroom_m": 2.8,
+ "clearance_m": 0.45,
+ "structure_m": 0.6,
+ "nose_m": 4,
+ "tail_m": 4,
+ "rooms": [
+  {
+   "id": "engineering",
+   "name": "Engineering (the freighter's drive)",
+   "kind": "engineering",
+   "decks": [
+    2,
+    3,
+    4
+   ],
+   "x_m": [
+    -14.5,
+    14.5
+   ],
+   "z_m": [
+    8,
+    26
+   ]
+  },
+  {
+   "id": "reactor",
+   "name": "Reactor",
+   "kind": "engineering",
+   "decks": [
+    5,
+    6,
+    7
+   ],
+   "x_m": [
+    -9,
+    9
+   ],
+   "z_m": [
+    10,
+    26
+   ]
+  },
+  {
+   "id": "corr_0",
+   "name": "Corridor, deck A",
+   "kind": "corridor",
+   "decks": [
+    0
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    12,
+    54
+   ]
+  },
+  {
+   "id": "corr_1",
+   "name": "Corridor, deck B",
+   "kind": "corridor",
+   "decks": [
+    1
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    12,
+    54
+   ]
+  },
+  {
+   "id": "corr_2",
+   "name": "Corridor, deck C",
+   "kind": "corridor",
+   "decks": [
+    2
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "corr_3",
+   "name": "Corridor, deck D",
+   "kind": "corridor",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "corr_4",
+   "name": "Corridor, deck E",
+   "kind": "corridor",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "corr_5",
+   "name": "Corridor, deck F",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "corr_6",
+   "name": "Corridor, deck G",
+   "kind": "corridor",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "corr_7",
+   "name": "Corridor, deck H",
+   "kind": "corridor",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "bunks_b_p",
+   "name": "Crew bunks, port",
+   "kind": "crew",
+   "decks": [
+    1
+   ],
+   "x_m": [
+    1.2,
+    21
+   ],
+   "z_m": [
+    12,
+    54
+   ]
+  },
+  {
+   "id": "bunks_b_s",
+   "name": "Crew bunks, starboard",
+   "kind": "crew",
+   "decks": [
+    1
+   ],
+   "x_m": [
+    -21,
+    -1.2
+   ],
+   "z_m": [
+    12,
+    54
+   ]
+  },
+  {
+   "id": "bunks_e_p",
+   "name": "Crew bunks, lower, port",
+   "kind": "crew",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    1.2,
+    15
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "bunks_e_s",
+   "name": "Crew bunks, lower, starboard",
+   "kind": "crew",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -15,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "mess",
+   "name": "Mess",
+   "kind": "crew",
+   "decks": [
+    2
+   ],
+   "x_m": [
+    1.2,
+    18
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "medbay",
+   "name": "Medbay",
+   "kind": "crew",
+   "decks": [
+    2
+   ],
+   "x_m": [
+    -18,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "hold_p",
+   "name": "Hold (taken goods), port",
+   "kind": "systems",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    1.2,
+    15
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "hold_s",
+   "name": "Hold (taken goods), starboard",
+   "kind": "systems",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    -15,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "fuel_p",
+   "name": "Fuel and spares, port",
+   "kind": "systems",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    15
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "fuel_s",
+   "name": "Fuel and spares, starboard",
+   "kind": "systems",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -15,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "air_p",
+   "name": "Air and water, port",
+   "kind": "systems",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    1.2,
+    13
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "air_s",
+   "name": "Air and water, starboard",
+   "kind": "systems",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -13,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    54
+   ]
+  },
+  {
+   "id": "magazine_p",
+   "name": "Magazine, port",
+   "kind": "weapons",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    1.2,
+    9
+   ],
+   "z_m": [
+    26,
+    50
+   ]
+  },
+  {
+   "id": "magazine_s",
+   "name": "Magazine, starboard",
+   "kind": "weapons",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    -9,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    50
+   ]
+  },
+  {
+   "id": "workshop",
+   "name": "Fighter workshop",
+   "kind": "systems",
+   "decks": [
+    0
+   ],
+   "x_m": [
+    -20,
+    -1.2
+   ],
+   "z_m": [
+    12,
+    40
+   ]
+  },
+  {
+   "id": "ready_room",
+   "name": "Ready room",
+   "kind": "crew",
+   "decks": [
+    0
+   ],
+   "x_m": [
+    1.2,
+    20
+   ],
+   "z_m": [
+    12,
+    40
+   ]
+  },
+  {
+   "id": "ordnance",
+   "name": "Fighter ordnance",
+   "kind": "weapons",
+   "decks": [
+    0
+   ],
+   "x_m": [
+    1.2,
+    20
+   ],
+   "z_m": [
+    40,
+    55
+   ]
+  },
+  {
+   "id": "deck_crew",
+   "name": "Deck crew room",
+   "kind": "crew",
+   "decks": [
+    0
+   ],
+   "x_m": [
+    -20,
+    -1.2
+   ],
+   "z_m": [
+    40,
+    55
+   ]
+  },
+  {
+   "id": "spine_3",
+   "name": "Spine corridor",
+   "kind": "corridor",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    54,
+    124
+   ]
+  },
+  {
+   "id": "spine_4",
+   "name": "Spine corridor, lower",
+   "kind": "corridor",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    54,
+    132
+   ]
+  },
+  {
+   "id": "to_hangar_p",
+   "name": "Passage to the hangar, port",
+   "kind": "corridor",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    1.2,
+    12.4
+   ],
+   "z_m": [
+    80,
+    82.4
+   ]
+  },
+  {
+   "id": "to_hangar_s",
+   "name": "Passage to the hangar, starboard",
+   "kind": "corridor",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    -12.4,
+    -1.2
+   ],
+   "z_m": [
+    80,
+    82.4
+   ]
+  },
+  {
+   "id": "hangar_p",
+   "name": "Fighter spares and fuel (a container), port",
+   "kind": "bay",
+   "decks": [
+    3,
+    4
+   ],
+   "x_m": [
+    12.4,
+    22
+   ],
+   "z_m": [
+    71.4,
+    92.6
+   ]
+  },
+  {
+   "id": "hangar_s",
+   "name": "Fighter spares and fuel (a container), starboard",
+   "kind": "bay",
+   "decks": [
+    3,
+    4
+   ],
+   "x_m": [
+    -22,
+    -12.4
+   ],
+   "z_m": [
+    71.4,
+    92.6
+   ]
+  },
+  {
+   "id": "flight_control",
+   "name": "Flight control",
+   "kind": "command",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    -6,
+    6
+   ],
+   "z_m": [
+    124,
+    134
+   ]
+  },
+  {
+   "id": "pilots_p",
+   "name": "Pilots' quarters, port",
+   "kind": "crew",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    1.2,
+    7.5
+   ],
+   "z_m": [
+    99,
+    124
+   ]
+  },
+  {
+   "id": "pilots_s",
+   "name": "Pilots' quarters, starboard",
+   "kind": "crew",
+   "decks": [
+    3
+   ],
+   "x_m": [
+    -7.5,
+    -1.2
+   ],
+   "z_m": [
+    99,
+    124
+   ]
+  },
+  {
+   "id": "briefing",
+   "name": "Briefing room",
+   "kind": "command",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    1.2,
+    7.5
+   ],
+   "z_m": [
+    99,
+    112
+   ]
+  },
+  {
+   "id": "pilots_mess",
+   "name": "Pilots' mess",
+   "kind": "crew",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -7.5,
+    -1.2
+   ],
+   "z_m": [
+    99,
+    112
+   ]
+  },
+  {
+   "id": "fighter_armoury_p",
+   "name": "Fighter armoury, port",
+   "kind": "weapons",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    1.2,
+    6
+   ],
+   "z_m": [
+    112,
+    132
+   ]
+  },
+  {
+   "id": "fighter_armoury_s",
+   "name": "Fighter armoury, starboard",
+   "kind": "weapons",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -6,
+    -1.2
+   ],
+   "z_m": [
+    112,
+    132
+   ]
+  }
+ ]
+}

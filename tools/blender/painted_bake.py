@@ -21,6 +21,10 @@ and the paint-over writes the maps a page uses:
     /opt/blender/blender -b --python tools/blender/painted_bake.py -- --ship hooded_lance,forked_prow,harpoon,trident [--px 2048]
     /opt/blender/blender -b --python tools/blender/painted_bake.py -- --faction kelvane --ship kelvane_frigate [--px 2048]
 
+Iterating on a ship's look, fastest first: --repaint (paint only: colours, the seams' colour, ink, AO, dulling; about 40 s,
+no Cycles); --quick (a full bake without the breakup field, which is most of a large ship's bake time: --px 1024 --samples
+16 --quick to judge plate cuts and gaps on the page). Commit a full bake at 2048 px.
+
 Writes assets/textures/painted/ and its manifest.json (sizes in metres, sha256 of every file).
 """
 
@@ -319,8 +323,9 @@ def img_array(img):
     return a.reshape(h, w, 4)
 
 
-def bake_ship(slug, px, samples, panes_only=False):
-    """Bake one ship. panes_only: build its detail and return only its panes (no bake, no maps written)."""
+def bake_ship(slug, px, samples, panes_only=False, quick=False):
+    """Bake one ship. panes_only: build its detail and return only its panes (no bake, no maps written). quick: leave out the
+    breakup field (hull_sdf), most of a big ship's bake time, for iterating on its look; the manifest keeps the last field."""
     import bmesh
     import hull_detail as HD
     import hull_sdf
@@ -333,8 +338,12 @@ def bake_ship(slug, px, samples, panes_only=False):
     obs = sorted((o for o in sc.objects if o.type == "MESH"), key=lambda o: o.name)
     img = bpy.data.images.new(slug + "_bake", px, px, alpha=True, float_buffer=True); img.colorspace_settings.name = "Non-Color"
     lo_hull, lo_glow, lo_well = lo_material(img, "lo_hull"), lo_material(img, "lo_glow"), lo_material(img, "lo_well")
+    lo_maker = {}   # hull_<maker>_* a part taken from another faction's ship (a Vos conversion): its own material, so its maker is baked
     for o in obs:   # glow_* the light strips, well_* dark glass (hull_detail keeps both bare of armour), the rest the hull
-        o.data.materials.clear(); o.data.materials.append(lo_glow if o.name.startswith("glow") else lo_well if o.name.startswith("well") else lo_hull)
+        mk = o.name.split("_")[1] if o.name.startswith("hull_") and o.name.split("_")[1] in MAKERS else None
+        if mk and mk not in lo_maker:
+            lo_maker[mk] = lo_material(img, "lo_hull_" + mk)
+        o.data.materials.clear(); o.data.materials.append(lo_glow if o.name.startswith("glow") else lo_well if o.name.startswith("well") else lo_maker[mk] if mk else lo_hull)
     bpy.ops.object.select_all(action="DESELECT")
     for o in obs:
         o.select_set(True)
@@ -413,6 +422,17 @@ def bake_ship(slug, px, samples, panes_only=False):
     lightp = bake("DIFFUSE", "light", pass_filter={"DIRECT"})[:, :, :3]
     lightp = np.dstack([blur(lightp[..., c], 1) for c in range(3)])   # the emissive faces' sampling speckle out
     passes = {"data": data, "glowp": glowp, "P": P, "nor": nor, "nts": nts, "ao": ao, "sunp": sunp, "lightp": lightp}
+    if lo_maker:   # which maker each texel's part came from: the low-poly's own faces, each maker's material glowing its index
+        for m in ship.data.materials:
+            mk = m.name[len("lo_hull_"):] if m.name.startswith("lo_hull_") else None
+            bsdf = m.node_tree.nodes.get("Principled BSDF")
+            bsdf.inputs["Emission Color"].default_value = ((MAKERS.index(mk) if mk else 0) / 8.0, 0.0, 0.0, 1.0)
+            bsdf.inputs["Emission Strength"].default_value = 1.0
+        bpy.ops.object.select_all(action="DESELECT"); ship.select_set(True); bpy.context.view_layer.objects.active = ship
+        img.pixels.foreach_set(np.zeros(px * px * 4, np.float32))
+        bpy.ops.object.bake(type="EMIT", margin=8, use_selected_to_active=False)
+        passes["maker"] = np.rint(img_array(img)[:, :, 0] * 8.0).astype(np.int8)
+        print(f"  makers: {sorted(lo_maker)}", flush=True)
     np.savez_compressed(passes_path(slug), **passes)   # kept (a build intermediate), so --repaint repaints without a bake
     paint_and_write(slug, D, S, passes)
     lref = D["defaults"]["light_ref"]
@@ -426,8 +446,8 @@ def bake_ship(slug, px, samples, panes_only=False):
     bm.free()
     return {"tris": len(pos) // 9, "tex_px": px, "smooth_deg": smooth, "samples": samples, "uv_m": round(ship_uv_m(ship), 3),
             "high_faces": nfaces, "light_ref": lref, "light_gamma": 1.6,
-            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "pads": pads, "mesh": {"pos": pos, "uv": uv},
-            "sdf": hull_sdf.hull_sdf(pos)}   # the inside its breakup cuts by (lib/ship-break.js)
+            "fixtures": [{k: F[k] for k in ("kind", "pos", "rgb")} for F in HD.FIXTURES], "panes": panes, "pads": pads, "masts": [dict(m) for m in HD.MASTS], "mesh": {"pos": pos, "uv": uv},
+            **({} if quick else {"sdf": hull_sdf.hull_sdf(pos)})}   # the inside its breakup cuts by (lib/ship-break.js)
 
 
 def passes_path(slug):
@@ -452,6 +472,18 @@ def paint_and_write(slug, D, S, ps):
     faction = D.get("faction", FACTION)
     col, emit = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction)
     pbr, orm = paint_pbr(data, P, nor, ao, cover, S, faction)
+    if "maker" in ps and S.get("makers"):   # a conversion's taken parts in their makers' looks, dulled (S["makers"])
+        keep, mk = dict(PT), ps["maker"]
+        for name, Z in S["makers"].items():
+            m = mk == MAKERS.index(name)
+            if not m.any():
+                continue
+            PT.clear(); PT.update({**keep, **look_paint(Z["look"]), **Z.get("paint", {})})
+            c2, e2 = paint_ship(data, glowp, P, nor, ao, sunp, cover, S, faction)
+            p2, o2 = paint_pbr(data, P, nor, ao, cover, S, faction)
+            d = Z.get("dull", 0.0)
+            col[m], emit[m], pbr[m], orm[m] = dull(c2, d)[m], e2[m], dull(p2, d)[m], o2[m]
+        PT.clear(); PT.update(keep)
     lref = D["defaults"]["light_ref"]
     lmap = half(np.clip(lightp / lref, 0, 1) ** (1 / 1.6))   # stored with a gentle curve; the page and game undo it
     os.makedirs(ships_out(), exist_ok=True)
@@ -472,6 +504,28 @@ def paint_and_write(slug, D, S, ps):
     print(f"  light map: 99th percentile {np.percentile(lightp[cover].max(axis=1), 99):.3f} against light_ref {lref}", flush=True)
 
 
+MAKERS = ("none", "vos", "concord", "krai", "ssarith", "kelvane")   # the maker pass's indices (a hull_<maker>_* part)
+
+
+def look_paint(name):
+    """A faction's look by name, the freighters' list of looks (data/ships/freighters/hull_detail.json "looks"), so a taken part
+    wears the same look its maker's freighters do (CLAUDE.md 6.1): its paint, from the faction's own file where the look says so."""
+    L = json.load(open(os.path.join(ROOT, "data", "ships", "freighters", "hull_detail.json")))["looks"][name]
+    if "from" in L:
+        return json.load(open(os.path.join(ROOT, "data", "ships", L["from"], "hull_detail.json")))["paint"]
+    return L["paint"]
+
+
+def dull(c, d):
+    """A colour dulled by d (0 to 1): toward its own grey, darkened a little and warmed, as paint goes under grime and years."""
+    if not d:
+        return c
+    g = c[..., :3].mean(axis=-1, keepdims=True)
+    out = c.copy()
+    out[..., :3] = c[..., :3] * (1 - d) + (g * 0.62 + np.array([0.04, 0.025, 0.01], np.float32)) * d
+    return out
+
+
 def repaint_main(slugs):
     """Repaint ships from their kept passes (no bake): the maps and their hashes in the manifest; the mesh, fixtures and
     field are the bake's and stay."""
@@ -487,6 +541,9 @@ def repaint_main(slugs):
             f = f"{slug}_{m}.png"
             man["pieces" if m != "ao" else "kept"][f"{slug}_{m}"] = {"file": f, "sha256": hashlib.sha256(open(os.path.join(ships_out(), f), "rb").read()).hexdigest()}
         print(f"repainted {slug}", flush=True)
+    D_ = json.load(open(detail_path()))
+    if D_.get("maps_dir"):   # as ship_main: the page's maps written beside it as files (inline_data.py)
+        man["maps_dir"] = D_["maps_dir"]
     with open(mpath, "w") as fh:
         json.dump(man, fh, separators=(",", ":"), sort_keys=True)
         fh.write("\n")
@@ -807,7 +864,7 @@ def half(a):
     return (a[0::2, 0::2] + a[1::2, 0::2] + a[0::2, 1::2] + a[1::2, 1::2]) / 4
 
 
-def ship_main(slugs, px, samples, panes_only=False):
+def ship_main(slugs, px, samples, panes_only=False, quick=False):
     mpath = os.path.join(ships_out(), "manifest.json")
     man = json.load(open(mpath)) if os.path.exists(mpath) else {"pieces": {}, "ships": {}}
     man.setdefault("kept", {})
@@ -824,7 +881,9 @@ def ship_main(slugs, px, samples, panes_only=False):
             man["ships"][slug]["panes"] = bake_ship(slug, px, samples, True)["panes"]
             print(f"panes for {slug}: {len(man['ships'][slug]['panes'])}", flush=True)
             continue
-        info = bake_ship(slug, px, samples)
+        info = bake_ship(slug, px, samples, quick=quick)
+        if quick and "sdf" in man["ships"].get(slug, {}):   # an iteration keeps the last full bake's breakup field
+            info["sdf"] = man["ships"][slug]["sdf"]
         n = int(open(os.path.join(SHIPS_RAW, mesh_of(slug) + ".obj")).readline().split()[1])
         info["n"] = n
         man["ships"][slug] = info
@@ -850,7 +909,7 @@ def main():
         FACTION = arg("--faction", "ssarith")
         if "--repaint" in argv:
             return repaint_main(arg("--ship", "").split(","))
-        return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv)
+        return ship_main(arg("--ship", "").split(","), int(arg("--px", "2048")), int(arg("--samples", "64")), "--panes-only" in argv, "--quick" in argv)
     names = arg("--tile", ",".join(TILES)).split(",")
     samples, ppm = int(arg("--samples", "32")), float(arg("--ppm", "128"))
     os.makedirs(OUT, exist_ok=True); os.makedirs(RAW, exist_ok=True)

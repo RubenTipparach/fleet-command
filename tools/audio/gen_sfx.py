@@ -300,12 +300,12 @@ def energy_bloom(r):
     return mix(drop, 0.6 * flare)
 
 
-@sound("shield_shimmer", "_layer", "A shield taking a hit: inharmonic glassy partials with a slow wobble.")
-def shield_shimmer(r):
-    n = int(1.4 * SR)
-    partials = ring([620, 931, 1384, 2077, 2950], [1.0, 0.8, 0.6, 0.45, 0.3], n)
-    wob = 1 + 0.3 * sine(np.full(n, 11.0))
-    return partials * wob * adsr(n, 0.003, 0.2, 0.6, 0.9)
+@sound("field_whump", "_layer", "A shield field absorbing a hit (owner, 2026-11-11: \"IT IS NOT GLASS< NOT CERAMIC< NOT METAL< IT CANNOT DING\", \"IT IS ELECTROMAGNETIC\"): a burst of noise whose brightness falls from 900 to 120 Hz in a quarter second. Noise only, no tone, nothing that rings.")
+def field_whump(r):
+    n = int(0.6 * SR)
+    burst = brown(r, n) + 0.3 * noise(r, n)
+    body = lp(burst, sweep(900, 120, n, 0.35), order=4)
+    return hp(body, 45.0, order=2) * adsr(n, 0.004, 0.05, 0.6, 0.45) * exp_decay(n, 0.5)
 
 
 @sound("sub_thump", "_layer", "A deep sub thump under launches and hits.")

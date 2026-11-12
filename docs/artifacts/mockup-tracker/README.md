@@ -154,7 +154,25 @@
 - Artifact version 159 (2026-11-08, cloud session, version id `1794141153-189d`): M36 at v2.
 - Artifact version 160 (2026-11-08, cloud session, version id `1794141174-ee48`): the Faction readiness page added to the misc list.
 - Version 161 published 2026-11-08, version id `1794141205-9779`: M1 v30, M34 v8 (approved for implementation in the owner's words, recorded in the tracker's reviews), merged onto the live version (M4 v33, M36 Placeholder fleets, the Faction readiness page).
+- Version 162 published 2026-11-10, cloud session, version id `1794302230-2d50`: M37 Vos Syndicate ships added to the Vos card; the survey at v35; the repository's newer entries (M30 v2, the Missions guide v4) now live.
+- Version 163 published 2026-11-10, cloud session, version id `1794303421-b3f0`: M37 at v2 (conversions); the survey at v36.
+- Version 164 published 2026-11-10, cloud session, version id `1794304097-cf0c`: M37 at v3 (battle freighters); the survey at v37.
+- Version 165 published 2026-11-10, cloud session, version id `1794305341-ed9c`: M37 at v4 (blunt noses); the survey at v38.
+- Version 166 published 2026-11-10, cloud session, version id `1794310801-f213`: M37 at v5 (six specialists); the survey at v39.
+- Version 167 published 2026-11-10, cloud session, version id `1794315335-2539`: M37 at v6 (the Vos's own fighters); the survey at v40.
+- Versions 168 and 169 published 2026-11-10, cloud session, version ids `1794327655-2ac3` and `1794327672-8456`: M37 at v7 (the Cutter and Twin boom detailed); the survey at v41.
+- Version 170 published 2026-11-10, cloud session, version id `1794334506-418f`: M37 at v8 (rooms, the Saucer runner detailed); the survey at v42.
+- Version 174 published 2026-11-11, cloud session, version id `1794382796-b81d`: merged onto another session's version (M17 sounds at its new link, v3); M37 at v9; the survey at v44.
+- Version 177 published 2026-11-11, cloud session, version id `1794390066-cec8`: merged onto another session's version (M17 v4, M37F Fractal vessels, the survey at v46); M37 at v10; the Ship Design Bible at v3.
+- Version 178 published 2026-11-11, cloud session, version id `1794400287-3029`: M37 at v11; the Ship Design Bible at v4.
+- Version 179 published 2026-11-11, cloud session, version id `1794401946-a2fe`: M37 at v12; the Ship Design Bible at v5.
+- Version 180 published 2026-11-11, cloud session, version id `1794401964-7472`: M37 at v13.
+- Version 181 published 2026-11-11, cloud session, version id `1794403501-a5be`: M37 at v14; the Ship Design Bible at v6.
+- Version 182 published 2026-11-11, cloud session, version id `1794409578-f05a`: M37 at v15; the Ship Design Bible at v7.
 - 2026-11-10, desktop session: version 171, version id `1794367258-1e3f`: the Sounds page (M17) at its new link, version 1; the survey at version 43; the live page's Vos ships entry (M37, published from another session) merged into `docs/mockups/tracker.html` first.
 - 2026-11-11, desktop session: version 172, version id `1794377182-f2fa`: the Sounds page (M17) at version 2.
 - 2026-11-11, desktop session: version 173, version id `1794377846-f62d`: the Sounds page (M17) at version 3.
 - 2026-11-11, desktop session: version 175, version id `1794382882-61c4`: the Sounds page (M17) at version 4 (38 cues); merged onto the live version 174 first (M37 Vos ships at v9 and the survey at v44, both published from another session).
+- 2026-11-11, desktop session: version 176, version id `1794383516-a813`: the survey at version 46; the fractal vessels as M37F (from main).
+- Version 183 published 2026-11-11, cloud session, version id `1794418711-00b9`: M37 at v16, approved for the game (the Ram cut); faction readiness at v2.
+- Version 184 published 2026-11-12, cloud session, version id `1794446665-b46d`: M39 Crew leveling added; the survey at v48.

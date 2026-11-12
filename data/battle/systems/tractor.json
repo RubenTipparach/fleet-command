@@ -87,6 +87,8 @@
   "hunt_ff_harpoon": { "mines": 2 },
   "hunt_ff_trident": { "mines": 2 },
   "hunt_ca": { "mines": 4 },
-  "hunt_cv": { "mines": 2 }
+  "hunt_cv": { "mines": 2 },
+  "vos_drum": { "mines": 12 },
+  "vos_deck_runner": { "fighters": 6 }
  }
 }

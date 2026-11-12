@@ -115,6 +115,14 @@ lot of the other weapons, check the procedure in crab breeze how audio was softe
   as water or rain); nothing that moves in pitch (it reads as whirling). Judge scattered sounds over it A-weighted, as
   the ear hears them, at most about 10 dB over the bed, and set their gain against the bed's average, not its peak.
 
+## What a thing is decides how it sounds
+
+Sound a thing by what it is made of, not by what sounds sci-fi (owner, 2026-11-11, of a shield hit with a glassy ring:
+"IT IS NOT GLASS< NOT CERAMIC< NOT METAL< IT CANNOT DING", "IT IS ELECTROMAGNETIC"). A shield is a field: noise and
+electricity (a whump, a fizz, a crackle), never a ringing tone. A hull is metal: it may ring. Before keeping a layer,
+check its ringing (`python3 tools/audio/inspect_sfx.py check` prints it for every cue; `NO_RING` caps the shield
+sounds), and do not trust a pack's name: every take in "space ship shield sounds" rang 58-100%.
+
 ## Levels
 
 Cues are peak-normalised when written: `-1 dBFS` for weapons and blasts, about `-9 dBFS` for

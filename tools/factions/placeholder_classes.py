@@ -7,14 +7,23 @@ owns are written (each class id from placeholders.json, the factions named there
 The battle numbers are a role's: each class copies the stats and mounts of the approved class that fills the same role
 (TEMPLATE below), since the placeholders' armament is a sketch and each faction's combat change sets its own. A class's
 battle length is its true length times BATTLE_X, the framing every approved class uses (classes.json _doc). The older
-Kethran and Vos stand-in classes (kff, kdd, vcr) get the placeholder glbs of their roles.
+Kethran and Vos stand-in classes (kff, kdd, vcr) get the glbs of their roles.
+
+A faction whose ships are designed and approved writes its line the same way from its own file, data/ships/<faction>/line.json
+(DESIGNED below), and its placeholder line is retired: the Vos Syndicate's (mockup 37; owner, 2026-11-11: "everything else is
+good to go, implmenet it"). A designed class names its own template, code, hull share (hull_x), power, mines, fighters and
+marines.
 
     python3 tools/factions/placeholder_classes.py [--check]
 """
 import json, pathlib, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
-PH = json.loads((ROOT / 'data/ships/placeholders.json').read_text())['factions']
+# the lines this script writes: each placeholder line (mockup 36), but where a faction's own line is designed, that line
+DESIGNED = ('vos',)
+PH = {fid: (json.loads((ROOT / f'data/ships/{fid}/line.json').read_text()) if fid in DESIGNED else F)
+      for fid, F in json.loads((ROOT / 'data/ships/placeholders.json').read_text())['factions'].items()}
+TRACTOR = ROOT / 'data/battle/systems/tractor.json'
 CLASSES, BFAC, CAMP = (ROOT / p for p in ('data/battle/classes.json', 'data/battle/factions.json', 'data/campaign/campaign.json'))
 COMMS, CLOAK, SCEN = ROOT / 'data/battle/systems/comms.json', ROOT / 'data/battle/systems/cloak.json', ROOT / 'data/battle/scenarios.json'
 # the damage ranges that stand every class with a model (RangeTests): a row of each placeholder line behind the approved rows
@@ -26,7 +35,7 @@ CAPITAL = 'kelvane_bc'
 CODE = {'Frigate': 'FF', 'Destroyer': 'DD', 'Cruiser': 'CA', 'Carrier': 'CV', 'Battleship': 'BB', 'Dreadnought': 'DN', 'Flagship': 'FL', 'Capital': 'CC'}
 SHAPE = {'axiom': 'wedge', 'exponent': 'saucer', 'redtithe': 'claw', 'vos': 'claw', 'kethran': 'wedge', 'tarsine': 'saucer',
          'aelith': 'saucer', 'ombrai': 'saucer', 'vhorr': 'claw'}
-OLD = {'kff': 'kethran_ff', 'kdd': 'kethran_dd', 'vcr': 'vos_dd'}
+OLD = {'kff': 'kethran_ff', 'kdd': 'kethran_dd', 'vcr': 'vos_boarder'}
 # Campaign names: short name and ship names, ours and provisional (survey U8, N1-N6), from each written culture.
 CAMPAIGN = {
     'axiom': ('Axiom', ['Fixed Point', 'Invariant', 'Limit', 'Root', 'Bound', 'Fold']),
@@ -48,6 +57,10 @@ def dump(p, d): return json.dumps(d, indent=1) + '\n'
 
 SPECIAL = {k for k in json.loads((ROOT / 'data/battle/special_weapons.json').read_text()) if k != '_doc'}
 
+def template(C):
+    """The approved class whose battle numbers a class copies: its own (a designed line's), or its role's."""
+    return C.get('template') or TEMPLATE.get(C['role'], CAPITAL)
+
 def build():
     classes, bfac, camp = (json.loads(p.read_text()) for p in (CLASSES, BFAC, CAMP))
     for fid, F in PH.items():
@@ -59,11 +72,14 @@ def build():
                                  'rival': old.get('rival', ''), 'playable': old.get('playable', False), 'prefix': old.get('prefix', ''), 'home': old.get('home', ''),
                                  'names': old.get('names', names), **({'freighter': old['freighter']} if 'freighter' in old else {})}
         for tier, C in enumerate(F['classes'], 1):
-            t = classes[TEMPLATE.get(C['role'], CAPITAL)]
-            classes[C['id']] = {'name': F['name'].replace('The ', '') + ' ' + C['role'].lower() + ' (' + C['name'] + ')', 'code': CODE[C['role']], 'shape': SHAPE[fid],
-                                'model': f"assets/ships/{fid}/{C['id']}.glb", 'length_m': round(C['length_m'] * BATTLE_X),
-                                **{k: v for k, v in t.items() if k not in ('name', 'code', 'shape', 'model', 'length_m', 'mounts')},
-                                'mounts': [m for m in t['mounts'] if m['weapon'] not in SPECIAL]}   # a special weapon is its own faction's
+            t = classes[template(C)]
+            c = {'name': F['name'].replace('The ', '') + ' ' + C['role'].lower() + ' (' + C['name'] + ')', 'code': C.get('code') or CODE[C['role']], 'shape': SHAPE[fid],
+                 'model': f"assets/ships/{fid}/{C['id']}.glb", 'length_m': round(C['length_m'] * BATTLE_X),
+                 **{k: v for k, v in t.items() if k not in ('name', 'code', 'shape', 'model', 'length_m', 'mounts')},
+                 'mounts': [m for m in t['mounts'] if m['weapon'] not in SPECIAL]}   # a special weapon is its own faction's
+            if 'hull_x' in C: c['hull_hp'] = round(t['hull_hp'] * C['hull_x'])
+            if 'power_e' in C: c['power_e'] = {**t['power_e'], **C['power_e']}
+            classes[C['id']] = c
             camp['hulls'][C['id']] = {'side': fid, 'tier': tier, 'name': C['name'], 'cls': C['role'], 'battle_class': C['id'], 'schematic': f"{fid}/{C['id']}"}
     for old_id, new_id in OLD.items():
         fid = new_id.split('_')[0]
@@ -71,18 +87,26 @@ def build():
     # each class's comms and its boarding numbers (marines, deck plan) are its template's; comms.json is written whole, the
     # hand-laid cloak.json has the new keys put after its last entry in each block, so the rest of the file keeps its layout
     comms = json.loads(COMMS.read_text())
-    ids = [(C['id'], TEMPLATE.get(C['role'], CAPITAL)) for F in PH.values() for C in F['classes']]
+    ids = [(C['id'], template(C)) for F in PH.values() for C in F['classes']]
     for cid, tid in ids:
         comms['classes'][cid] = comms['classes'][tid]
     cloak_t = CLOAK.read_text(); cloak = json.loads(cloak_t)
     for block, sec, start in (('marines', cloak['security']['marines'], '"marines": {'), ('deck_plans', cloak['deck_plans']['classes'], '"classes": {')):
         missing = [(cid, tid) for cid, tid in ids if cid not in sec and tid in sec]
+        own = {C['id']: C['marines'] for F in PH.values() for C in F['classes'] if 'marines' in C} if block == 'marines' else {}
         if not missing: continue
         # the block's end: the first two-space closing brace after its opening (each block's entries sit three spaces in)
         i = cloak_t.index(start, cloak_t.index('"deck_plans": {') if block == 'deck_plans' else 0)
         j = cloak_t.index('\n  }', i)
-        add = ''.join(f',\n   "{cid}": {json.dumps(sec[tid])}' for cid, tid in missing)
+        add = ''.join(f',\n   "{cid}": {json.dumps(own.get(cid, sec[tid]))}' for cid, tid in missing)
         cloak_t = cloak_t[:j].rstrip() + add + cloak_t[j:]
+    # a designed class's mines and fighters (tractor.json loadouts), put after the block's last entry as cloak.json's are
+    tractor_t = TRACTOR.read_text(); load = json.loads(tractor_t)['loadouts']
+    adds = [(C['id'], {k: C[k] for k in ('mines', 'fighters') if k in C}) for F in PH.values() for C in F['classes'] if 'mines' in C or 'fighters' in C]
+    adds = [(cid, lo) for cid, lo in adds if cid not in load]
+    if adds:
+        i = tractor_t.index('"loadouts": {'); j = tractor_t.index('\n }', i)
+        tractor_t = tractor_t[:j].rstrip() + ''.join(f',\n  "{cid}": {{ ' + ', '.join(f'"{k}": {v}' for k, v in lo.items()) + ' }' for cid, lo in adds) + tractor_t[j:]
     scen = json.loads(SCEN.read_text())
     for sc in scen['scenarios']:
         if sc['id'] not in RANGES: continue
@@ -92,7 +116,7 @@ def build():
             for k, cid in enumerate(line):
                 sc['ships'].append({'id': 'ph_' + cid, 'name': classes[cid]['name'], 'captain': CAMPAIGN[fid][0] + ' captain', 'class': cid, 'faction': fid, 'side': 1,
                                     'x_m': round((k - (len(line) - 1) / 2) * 20000), 'z_m': -150000 - 22000 * row, 'heading_deg': 90, 'speed_m_s': 0, 'stance': 'hold', 'hold_fire': True})
-    return {CLASSES: dump(CLASSES, classes), BFAC: dump(BFAC, bfac), CAMP: dump(CAMP, camp), COMMS: dump(COMMS, comms), CLOAK: cloak_t, SCEN: dump(SCEN, scen)}
+    return {CLASSES: dump(CLASSES, classes), BFAC: dump(BFAC, bfac), CAMP: dump(CAMP, camp), COMMS: dump(COMMS, comms), CLOAK: cloak_t, TRACTOR: tractor_t, SCEN: dump(SCEN, scen)}
 
 out = build()
 if '--check' in sys.argv:
