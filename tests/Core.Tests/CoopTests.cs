@@ -316,15 +316,19 @@ public class CoopTests
     {
         var p = new Pair(Sc("concord_battle"));
         Ship wing = p.HB.Fleet().First(s => s != p.HB.Player);
+        p.Host.AskCrew(new JsonObject { ["op"] = "role", ["role"] = "weapons", ["to"] = p.Guest.Me, ["bridge"] = Crew.Flag });
+        p.Steps(1);
         p.Host.AskCrew(new JsonObject { ["op"] = "assign", ["member"] = p.Guest.Me, ["bridge"] = wing.Id });
         p.Host.AskCrew(new JsonObject { ["op"] = "bridge", ["bridge"] = wing.Id });
         p.Steps(1);
+        Assert.False(p.Host.Crew.Holds(Crew.Flag, "weapons", p.Guest.Me));
         Assert.True(p.HB.FlagUnmanned);
         Assert.True(p.GB.FlagUnmanned);
         p.HB.ShipById(wing.Id)!.Alive = false; p.GB.ShipById(wing.Id)!.Alive = false;   // the wingman lost, the same on both
         p.Steps(120);
         Assert.Equal(Crew.Flag, p.Host.Crew.BridgeOf(p.Guest.Me));
         Assert.Equal(Crew.Flag, p.Host.Crew.AdmiralAt);
+        Assert.True(p.Host.Crew.Holds(Crew.Flag, "weapons", p.Guest.Me));   // back at the stations held before the wingman
         Assert.False(p.HB.FlagUnmanned);
         Assert.Equal(p.Host.Sum(), p.Guest.Sum());
     }

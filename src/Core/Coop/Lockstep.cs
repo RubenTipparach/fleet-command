@@ -530,7 +530,7 @@ public sealed class Lockstep
         if (why != null) Note($"COOP_REFUSED {Crew.NameOf(by)} {(string?)op["op"]}: {why}");
         else
         {
-            Note($"COOP_CREW {Crew.NameOf(by)} {(string?)op["op"]} {(string?)op["role"] ?? (string?)op["ship"]} to {Crew.NameOf(to)}");
+            Note($"COOP_CREW {Crew.NameOf(by)} {(string?)op["op"]} {(string?)op["role"] ?? (string?)op["ship"] ?? (string?)op["bridge"]} to {Crew.NameOf(to)}");
             string what = (string?)op["op"] == "role" ? Crew.Roles[(string)op["role"]!].Name
                 : $"the {NameOfBridge((string?)op["ship"] ?? "")}";
             bool ship = (string?)op["op"] == "ship";
@@ -583,13 +583,15 @@ public sealed class Lockstep
         var ships = new JsonObject(); foreach (var (k, v) in c.Ships) ships[k] = v;
         var grants = new JsonArray(); foreach (string g in c.Grants) grants.Add(g);
         var aboard = new JsonObject(); foreach (var (k, v) in c.Aboard) aboard[k.ToString()] = v;
-        return new JsonObject { ["members"] = members, ["ships"] = ships, ["grants"] = grants, ["aboard"] = aboard, ["admiral_at"] = c.AdmiralAt };
+        var before = new JsonObject(); foreach (var (k, v) in c.FlagRolesBefore) before[k.ToString()] = new JsonArray(v.Select(r => (JsonNode?)JsonValue.Create(r)).ToArray());
+        return new JsonObject { ["members"] = members, ["ships"] = ships, ["grants"] = grants, ["aboard"] = aboard, ["admiral_at"] = c.AdmiralAt, ["flag_before"] = before };
     }
 
     /// <summary>Replaces a roster with one sent as JSON (CrewJson).</summary>
     public static void ReadCrew(Crew c, JsonObject j)
     {
-        c.Members.Clear(); c.Ships.Clear(); c.Grants.Clear(); c.Aboard.Clear();
+        c.Members.Clear(); c.Ships.Clear(); c.Grants.Clear(); c.Aboard.Clear(); c.FlagRolesBefore.Clear();
+        if (j["flag_before"] is JsonObject fb) foreach (var (k, v) in fb) c.FlagRolesBefore[int.Parse(k)] = v!.AsArray().Select(n => (string)n!).ToArray();
         c.AdmiralAt = (string?)j["admiral_at"] ?? Crew.Flag;
         if (j["aboard"] is JsonObject ab) foreach (var (k, v) in ab) c.Aboard[int.Parse(k)] = (string)v!;
         foreach (JsonNode? m in j["members"]!.AsArray()) c.Members.Add(new CrewMember((int)m!["id"]!, (string)m["name"]!) { Xp = (double?)m["xp"] ?? 0 });

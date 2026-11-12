@@ -245,17 +245,26 @@ public sealed partial class ScriptedCaptain
             Battle bt = co.Battle;
             // the admiral gives roles and ships in the battle's first seconds: the seat is read once they settle
             await Seconds(8);
-            string bridge = co.Crew.BridgeOf(co.Me);
-            bool captain = co.Crew.CaptainOf(bridge) == co.Me;
-            var mine = co.Crew.Roles.List.Where(r => co.Crew.Holds(bridge, r.Id, co.Me)).Select(r => r.Id).ToList();
-            GD.Print($"PLAYTEST_COOP battle {k + 1} {bt.Scenario.Id}: {(captain ? $"captain of the {co.OwnShip()?.Name}" : $"on the {co.OwnShip()?.Name} holding {string.Join(", ", mine)}")}");
-            await Snap($"crew-battle-{k + 1}");
-            // a station the member holds is opened, as a player would look at it first
-            if (!captain && mine.FirstOrDefault(r => r is "weapons" or "science") is { } first)
-                await Click(first == "weapons" ? "st.tactical" : "st.science");
-            bool fights = captain || mine.Contains("weapons");
-            if (fights) await Fight(maxS, steer: captain || mine.Contains("helm"));
-            else while (co.Battle == bt && bt.Over == null) await Frames(10);
+            // the seat as it stands, read again whenever it changes (a ship lost sends its crew back to the flagship, at the
+            // stations they held there: laptop playtest 2026-11-11, where the crew bot kept firing from a seat it had lost)
+            bool first = true;
+            while (co.Battle == bt && bt.Over == null && !CrewIdle())
+            {
+                string bridge = co.Crew.BridgeOf(co.Me);
+                bool captain = co.Crew.CaptainOf(bridge) == co.Me;
+                var mine = co.Crew.Roles.List.Where(r => co.Crew.Holds(bridge, r.Id, co.Me)).Select(r => r.Id).ToList();
+                GD.Print($"PLAYTEST_COOP battle {k + 1} {bt.Scenario.Id}: {(captain ? $"captain of the {co.OwnShip()?.Name}" : $"on the {co.OwnShip()?.Name} holding {string.Join(", ", mine)}")}");
+                if (first) { await Snap($"crew-battle-{k + 1}"); first = false; }
+                // a station the member holds is opened, as a player would look at it first
+                if (!captain && mine.FirstOrDefault(r => r is "weapons" or "science") is { } open)
+                    await Click(open == "weapons" ? "st.tactical" : "st.science");
+                string seat = bridge + "|" + string.Join(",", mine);
+                if (captain || mine.Contains("weapons")) await Fight(maxS, steer: captain || mine.Contains("helm"));
+                // no weapons to fire, or the fight ended (its ship lost): wait for the battle to end or the seat to change
+                while (co.Battle == bt && bt.Over == null && !CrewIdle()
+                       && seat == co.Crew.BridgeOf(co.Me) + "|" + string.Join(",", co.Crew.Roles.List.Where(r => co.Crew.Holds(co.Crew.BridgeOf(co.Me), r.Id, co.Me)).Select(r => r.Id)))
+                    await Frames(10);
+            }
             while (co.Battle == bt && bt.Over == null && !CrewIdle()) await Frames(10);
             GD.Print($"PLAYTEST_COOP battle {k + 1} ended {bt.Over ?? "stopped"} at {bt.T:0} s; in sync {co.Synced}, desync {co.Desyncs}");
             await Snap($"crew-battle-{k + 1}-end");

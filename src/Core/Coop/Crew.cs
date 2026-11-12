@@ -40,6 +40,10 @@ public sealed class Crew
     public SortedDictionary<int, string> Aboard { get; } = new();
     /// <summary>The bridge the admiral stands on: the flagship's, or any other ship of the fleet they stepped onto.</summary>
     public string AdmiralAt { get; set; } = Flag;
+    /// <summary>The flagship roles each member held when sent to another ship: given back when they return to the flagship's
+    /// bridge because that ship is gone (a ship lost or sold), so they land at their old stations (laptop playtest
+    /// 2026-11-11: a crew member back from a lost ship held nothing and every order was refused).</summary>
+    public SortedDictionary<int, string[]> FlagRolesBefore { get; } = new();
     /// <summary>The roles granted on each bridge: "bridge|role|member" for each grant (a role may be granted to several).</summary>
     public SortedSet<string> Grants { get; } = new(StringComparer.Ordinal);
 
@@ -152,6 +156,7 @@ public sealed class Crew
         if (id == AdmiralId) return;
         Members.RemoveAll(m => m.Id == id);
         Aboard.Remove(id);
+        FlagRolesBefore.Remove(id);
         foreach (string s in Ships.Where(kv => kv.Value == id).Select(kv => kv.Key).ToList()) Ships.Remove(s);
         Ungrant(id);
     }
@@ -212,6 +217,9 @@ public sealed class Crew
         if (BridgeOf(member) == bridge) return null;
         if (!aiShip && bridge != Flag && !Ships.ContainsKey(bridge)) return "not a ship of the fleet";
         foreach (string s in Ships.Where(kv => kv.Value == member).Select(kv => kv.Key).ToList()) Ships.Remove(s);
+        // leaving the flagship for another ship: what they held there is kept for when that ship is gone
+        if (BridgeOf(member) == Flag && bridge != Flag)
+            FlagRolesBefore[member] = Roles.List.Where(r => Grants.Contains(Key(Flag, r.Id, member))).Select(r => r.Id).ToArray();
         Ungrant(member);
         Aboard.Remove(member);
         if (aiShip) { Ships[bridge] = member; GrantAll(bridge, member); }
@@ -224,7 +232,13 @@ public sealed class Crew
     {
         if (by != AdmiralId) return "only the admiral";
         if (!Ships.ContainsKey(bridge)) return "the AI has it";
-        foreach (int m in On(bridge).Where(m => m != AdmiralId).ToList()) { Ungrant(m); Aboard[m] = Flag; }
+        foreach (int m in On(bridge).Where(m => m != AdmiralId).ToList())
+        {
+            Ungrant(m);
+            Aboard[m] = Flag;
+            // back at the stations they held on the flagship before they left it
+            if (FlagRolesBefore.Remove(m, out string[]? before)) foreach (string r in before) Grants.Add(Key(Flag, r, m));
+        }
         Ships.Remove(bridge);
         if (AdmiralAt == bridge) AdmiralAt = Flag;
         return null;
