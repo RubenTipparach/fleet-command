@@ -43,6 +43,7 @@ public sealed partial class Main : Node
     public override void _Ready()
     {
         ParseArgs();
+        LowSpec.Apply(GetViewport());
         // the planet gallery (the planet-shaders skill's stills): every planet and rock kind alone, then quit
         if (_args.TryGetValue("planet-gallery", out string? gallery))
         {

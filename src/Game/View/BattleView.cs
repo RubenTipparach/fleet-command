@@ -109,7 +109,7 @@ public sealed partial class BattleView : Node3D
         var sun = new DirectionalLight3D
         {
             Name = "Sun", LightEnergy = (float)Scenario.DeepSpaceSun, LightColor = new Color("#fff4e6"),
-            ShadowEnabled = true, DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits,
+            ShadowEnabled = !LowSpec.On, DirectionalShadowMode = DirectionalLight3D.ShadowMode.Parallel4Splits,
             DirectionalShadowMaxDistance = 60f, DirectionalShadowSplit1 = 0.04f, DirectionalShadowSplit2 = 0.12f, DirectionalShadowSplit3 = 0.35f,
             DirectionalShadowBlendSplits = true, ShadowBias = 0.004f, ShadowNormalBias = 0.6f, ShadowBlur = 0.8f,
         };

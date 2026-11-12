@@ -37,7 +37,10 @@ elif [[ "$HOST" == "macos" ]]; then
   GODOT_BIN="$DEST/Godot$([[ -n "$MONO_TAG" ]] && echo _mono).app/Contents/MacOS/Godot"
   TEMPLATE_DIR="$HOME/Library/Application Support/Godot/export_templates/$GODOT_VERSION.$GODOT_RELEASE$TEMPLATE_SUFFIX"
 else
-  EDITOR_SLUG="${MONO_TAG}linux$([[ -n "$MONO_TAG" ]] && echo _ || echo .)x86_64.zip"; EDITOR_PLATFORM="linux.64"
+  # x86_64 (cloud sessions, CI) or arm64 (a Raspberry Pi 5, the low-spec test: LowSpec.cs)
+  ARCH="x86_64"; PLAT="linux.64"
+  [[ "$(uname -m)" == "aarch64" || "$(uname -m)" == "arm64" ]] && { ARCH="arm64"; PLAT="linux.arm64"; }
+  EDITOR_SLUG="${MONO_TAG}linux$([[ -n "$MONO_TAG" ]] && echo _ || echo .)$ARCH.zip"; EDITOR_PLATFORM="$PLAT"
   GODOT_BIN="$DEST/godot"
   TEMPLATE_DIR="$HOME/.local/share/godot/export_templates/$GODOT_VERSION.$GODOT_RELEASE$TEMPLATE_SUFFIX"
 fi
