@@ -297,12 +297,15 @@ const float VOLCANO_HEIGHT = 0.6;
 
 void vertex() {
 	v_obj = normalize(VERTEX);
+#ifdef PLANET_BAKE
+	POSITION = pn_bake_position(UV);
+#endif
 }
 
 void fragment() {
 	vec3 n = normalize(NORMAL);
-	vec3 L = normalize((VIEW_MATRIX * vec4(normalize(sun_dir), 0.0)).xyz);
-	vec3 V = normalize(-VERTEX);
+	vec3 L = pn_sun(normalize((VIEW_MATRIX * vec4(normalize(sun_dir), 0.0)).xyz), n);
+	vec3 V = pn_sun(normalize(-VERTEX), n);
 	vec3 p = v_obj * detail + seed;
 	float lat = abs(v_obj.y);
 	float ndl = dot(n, L);
@@ -432,7 +435,7 @@ void fragment() {
 	float rise = 0.0;
 	if (pattern > 0 && surface != 2) {
 		float gone = max(smoothstep(0.01, 0.06, -crater), cut);
-		vec3 sun_m = normalize(inverse(mat3(MODEL_MATRIX)) * normalize(sun_dir));
+		vec3 sun_m = pn_sun(normalize(inverse(mat3(MODEL_MATRIX)) * normalize(sun_dir)), v_obj);
 		col = pp_surface(v_obj, px, h_base, col, close, 1.0 - smoothstep(-0.16, -0.02, ndl), 1.0 - gone, sun_m, emissive, rise, spec);
 	}
 	// the ground's own grain, once the camera is close enough to see it
@@ -510,6 +513,9 @@ void fragment() {
 	// the sun on the sea: a tight glint inside a broad sheen
 	float ndh = max(dot(n, normalize(L + V)), 0.0);
 	float sp = (pow(ndh, 200.0) * 0.45 + pow(ndh, 24.0) * 0.09) * spec * day;
+#ifdef PLANET_BAKE
+	sp = 0.0;   // no glint in a map
+#endif
 	vec3 sun = sun_color * sun_energy;
 	vec3 lit_col = pn_lit(col, day_land * relief, ndl, air, sun) + sp * sun * pn_twilight(ndl, air) + emissive;
 	// the air's rim, seen from afar (from inside the air, coming down, the shell scatters instead)

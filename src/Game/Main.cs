@@ -44,6 +44,14 @@ public sealed partial class Main : Node
     {
         ParseArgs();
         LowSpec.Apply(GetViewport());
+        // the planet bake (tools/space/bake_planets.sh): every planet kind's maps for the low-spec mode, then quit
+        if (_args.TryGetValue("planet-bake", out string? bake))
+        {
+            AddChild(new PlanetBaker { Out = bake.Length > 0 ? bake : "assets/space/planets_baked", Commit = _args.GetValueOrDefault("planet-bake-commit", ""),
+                Only = _args.GetValueOrDefault("planet-bake-only", "").Split(',', StringSplitOptions.RemoveEmptyEntries),
+                CheckDir = _args.GetValueOrDefault("planet-bake-check", "") });
+            return;
+        }
         // the planet gallery (the planet-shaders skill's stills): every planet and rock kind alone, then quit
         if (_args.TryGetValue("planet-gallery", out string? gallery))
         {

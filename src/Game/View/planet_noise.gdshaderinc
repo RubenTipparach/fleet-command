@@ -99,11 +99,31 @@ vec3 pn_fib_dir(float i, float n) {
 // terminator lines. i would prefer it be done in the shader"): the band is a few degrees wide under air and under one on
 // a world with none, and the ground just inside it is already at two fifths of full day, so the fall into night is a
 // step, not a long fade.
+// how steeply the bake's overhead light falls off a slope (the bake only; see pn_sun below)
+#define PN_BAKE_SLOPE 6.0
 float pn_day_air(float ndl, float air) {
+#ifdef PLANET_BAKE
+	// the bake's overhead light: a slope is shaded by how far it turns from the vertical, steeply enough that a crater wall
+	// or a ridge still reads in the map with no sun to pick it out
+	return pow(clamp(ndl, 0.0, 1.0), PN_BAKE_SLOPE);
+#endif
 	float edge = smoothstep(mix(-0.004, -0.025, air), mix(0.02, 0.07, air), ndl);
 	return edge * (0.42 + 0.58 * pow(clamp(ndl, 0.0, 1.0), 0.6));
 }
 float pn_day(float ndl) { return pn_day_air(ndl, 1.0); }
+
+// The bake (tools/space/bake_planets.sh, PlanetBaker.cs; owner, 2026-11-12: "planets should be textures, have the mac
+// render some planets as textures to be cached and used for pi only"): a shader compiled with PLANET_BAKE defined draws its
+// sphere (or ring plane) straight into its own UVs, the image a 2:1 equirectangular map, with every point lit from
+// straight overhead and seen from straight above. A flat surface shows its own colour, a slope keeps the shade its turn
+// from the vertical gives it, and nothing depends on a sun or a camera: no terminator, no glint, no limb, no rim. The
+// shaders stay the one implementation of each look; the bake only moves the light and the camera.
+#ifdef PLANET_BAKE
+vec4 pn_bake_position(vec2 uv) { return vec4(uv.x * 2.0 - 1.0, uv.y * 2.0 - 1.0, 0.5, 1.0); }
+vec3 pn_sun(vec3 sun, vec3 overhead) { return overhead; }
+#else
+vec3 pn_sun(vec3 sun, vec3 overhead) { return sun; }
+#endif
 
 // the sun's colour through the air at the terminator: reddened in the narrow band where its light comes in low (nothing
 // on an airless world)
@@ -127,6 +147,9 @@ vec3 pn_lit(vec3 col, float day, float ndl, float air, vec3 sun) {
 // through the terminator, and only a trace round the night side (owner, 2026-11-10: "The fresnel on dark sides of
 // planets is a little too strong").
 vec3 pn_rim(vec3 atmo, float strength, float ndv, float ndl, float close) {
+#ifdef PLANET_BAKE
+	return vec3(0.0);
+#endif
 	float limb = pow(1.0 - max(ndv, 0.0), 2.5) * (1.0 - close);
 	return atmo * (strength * limb * (0.05 + 0.95 * smoothstep(-0.08, 0.4, ndl)));
 }

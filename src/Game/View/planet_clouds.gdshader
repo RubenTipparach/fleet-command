@@ -49,6 +49,9 @@ varying vec3 mpos;
 
 void vertex() {
 	mpos = VERTEX;
+#ifdef PLANET_BAKE
+	POSITION = pn_bake_position(UV);
+#endif
 }
 
 // two octaves, about 0 to 1: the broad field that bends the weather
@@ -117,9 +120,9 @@ void fragment() {
 	vec3 n_model = pn_relief(nd, ta, tb, ha * ease, hb * ease, eps, cloud_relief, relief_max_slope);
 	n_model = normalize(mix(nd, n_model, edge_mask));
 
-	vec3 L = normalize(sun_dir);
 	vec3 n_world = normalize(MODEL_NORMAL_MATRIX * n_model);
 	vec3 g_world = normalize(MODEL_NORMAL_MATRIX * nd);
+	vec3 L = pn_sun(normalize(sun_dir), g_world);
 	// the sphere's own light, which the relief shades and lights by its turn from it (a cloud is never black by its slope
 	// alone: the relief tipping a top away from the sun only shades it)
 	float ndl_g = dot(g_world, L);

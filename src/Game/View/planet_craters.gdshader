@@ -44,6 +44,9 @@ varying vec3 mpos;
 
 void vertex() {
 	mpos = VERTEX;
+#ifdef PLANET_BAKE
+	POSITION = pn_bake_position(UV);
+#endif
 }
 
 // the profile's slope at x radii out (height in radii): a flat floor to floor_x with a peak of peak_h at the centre, a
@@ -145,7 +148,7 @@ void fragment() {
 	// uses (pn_day_air), taken on the slope's normal over the plain's, so a wall facing the sun is brighter, one turned
 	// from it in shade, a flat floor exactly as lit as the plain round it; past the terminator the plain is night and the
 	// multiple does nothing to it
-	vec3 L = normalize(sun_dir);
+	vec3 L = pn_sun(normalize(sun_dir), normalize(MODEL_NORMAL_MATRIX * nd));
 	float ndl = dot(normalize(MODEL_NORMAL_MATRIX * n_model), L);
 	float ndl_g = dot(normalize(MODEL_NORMAL_MATRIX * nd), L);
 	float turn = clamp(pn_day_air(ndl, air) / max(pn_day_air(ndl_g, air), 0.03), 0.06, 2.4);
