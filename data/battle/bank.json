@@ -1,0 +1,10 @@
+{
+ "_doc": "How far a ship rolls into a turn, the view's only (owner, 2026-11-12: \"when ship turns it needs to roll a little. 30 degrees for small ship, 20 degrees for medium ship, 10 degrees for large ship\", \"if turning, slerp to roll angle (for 5 seconds), if stop turning slerp roll angle back to 0\"). A ship's size is read from how fast its class turns (a frigate's 36-46 deg/s, a destroyer's or cruiser's 26-35, a capital's 24 or less). Read by src/Game/View/BattleView.Bank.cs.",
+ "small_deg": 30,
+ "medium_deg": 20,
+ "large_deg": 10,
+ "small_from_turn_deg_s": 36,
+ "medium_from_turn_deg_s": 26,
+ "ease_s": 5,
+ "turning_from_deg_s": 1
+}

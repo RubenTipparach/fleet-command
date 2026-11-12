@@ -257,7 +257,7 @@ public sealed partial class BattleView : Node3D
             if (!_models.TryGetValue(s.Id, out Node3D? m)) continue;
             m.Visible = !s.Jumped && (s.Alive || _damage.ContainsKey(s.Id)) && (!s.Alive || b.Detected(b.Player, s));   // an approved ship stays to come apart; a stand-in just goes; a ship gone to warp is gone; a cloaked ship unseen is not drawn
             m.Position = new Vector3((float)(s.X / MPerU), LiftOf(s.Id), (float)(s.Z / MPerU));
-            m.Rotation = new Vector3(0, -(float)s.H, 0);
+            m.Rotation = new Vector3(0, -(float)s.H, BankOf(b, s, sdt));   // rolled into its turn (BattleView.Bank.cs)
             bool broken = !s.Alive || (_damage.TryGetValue(s.Id, out ShipDamage? dm) && dm.Broken);
             if (_parked.TryGetValue(s.Id, out ParkedCraft? pc)) pc.Show(s.Fighters, broken);
             if (_cargo.TryGetValue(s.Id, out Cargo? cg)) cg.Show(broken);
