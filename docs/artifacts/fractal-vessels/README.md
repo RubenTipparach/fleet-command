@@ -28,3 +28,9 @@
   KIFS with Benesi's turn before the third fold, matched to the render's silhouette at its own camera); every form in its
   own blues, purples and greens, with accent masks and a fuller light. Published from the cloud session on
   `claude/vigilant-keller-s93pth`, artifact version 5, version id `1794391519-5368`.
+- 2026-11-12, version 6 (owner: "Benesi kifs not animated, can you setup some battle situations mockups with the vessels?
+  and render me a video of what a battle might look like?"): the KIFS breathes (its slider turns Benesi's turn); three
+  battles under Battle (Ambush, Skirmish, The line) with a film camera; the three rendered to MP4 by
+  `tools/mockups/render_video.mjs` (1280 x 720 copies in `docs/screenshots/mockups/fractal-vessels/battles/`, the
+  1920 x 1080 originals sent to the owner). Published from the cloud session on `claude/vigilant-keller-s93pth`, artifact
+  version 6, version id `1794448148-9fd3`.

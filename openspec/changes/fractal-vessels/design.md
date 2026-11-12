@@ -219,7 +219,7 @@ the drift turns the inner levels back and forth and the crown breathes. The leaf
 |---|---|---|---|
 | Ambush | a Petrel, two Swifts on patrol | Benesi KIFS unfolds ahead, two octahedral lattices beside it; the KIFS folds away at 26 s | 30 s |
 | Skirmish | a Petrel, a Swift, circling | an octahedral lattice and a delta lattice, circling the other way | 26 s |
-| The line | a Petrel, two Swifts in line | the Julia slice, a fold lattice and the Benesi pine in line, passing broadside | 28 s |
+| The line | a Petrel, two Swifts in line | the Julia slice, a fold lattice and the Benesi pine in line, passing broadside | 24 s |
 
 One set of rules for all of them:
 - **Paths.** Each ship flies a path that is a function of the battle's clock (a straight run with a weave, or a circle),
