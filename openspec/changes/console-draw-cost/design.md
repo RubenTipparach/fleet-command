@@ -52,6 +52,18 @@ By kind of drawing:
 
 **Also found.** The game's menu screen (the flow, before a battle) drew about 8,126 draw calls at 4 fps on the Pi. That's a separate change.
 
+### D1c. After the work (Pi 5, the console forced to re-render every frame, the worst case)
+
+| Battle | Frame | 3D scene alone | Console |
+|---|---|---|---|
+| Concord | 296 | 166 | about 130 (from about 620) |
+| Kelvane | 331 | 185 | about 146 |
+| Krai | 342 | 207 | about 135 |
+
+In order, the steps: icon atlas (790 to 518 in Concord), weapon glyphs in the atlas (491), shapes batched (346), text
+layers (296), and the rendered kits packed (Krai 386 to 342). Scripted Concord battle: 20 fps median before the
+work, 30 after.
+
 ## D2. Capped redraws (done)
 
 - `ConsolePanel._Process` queues a redraw every `1 / panel_redraw_hz` seconds (`data/console/layout.json`: 30, and 15
