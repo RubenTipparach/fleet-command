@@ -45,7 +45,7 @@
 - [ ] 7.1 The captain's menu mockup in each skin (the Concord first), and the console's sync with it
 - [ ] 7.2 A crew member joining mid-battle
 - [ ] 7.3 Star Crew's matchmaker codes for play off the LAN
-- [ ] 7.4 The owner's call on reactor fragility: a frigate's coolant loops go at about 78 % hull (`docs/playtests/2026-11-11-coop-stage2-3.md`)
+- [x] 7.4 The owner's call on reactor fragility (owner, 2026-11-11: "yea fix it"): cool_per_flow 0.04 to 0.06 (a healthy core near 33 %, one loop lost near 67 %, under critical) and loop_p 0.18 to 0.12; a meltdown now needs both loops gone (a campaign Patrol: at 15 % hull, was 78 %). Was:: a frigate's coolant loops go at about 78 % hull (`docs/playtests/2026-11-11-coop-stage2-3.md`)
 - [x] 7.4b The comms box in every battle, alone or in co-op: every comms message there, the lone last line gone; no Chat key alone (owner, 2026-11-11: "All comms messages should be in the chat box", "Standardize this across all the game")
 - [ ] 7.5 The battle console mockup (and every faction's console page) draws the comms box (`docs/design/mockup-sync.md`)
 - [ ] 7.6 Dialogue option keys in the comms box for campaign missions (owner: "some campaign missions will have buttons for dialogue options")

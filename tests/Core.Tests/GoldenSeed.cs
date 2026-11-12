@@ -20,5 +20,5 @@ namespace FleetCommand.Tests;
 
 public static class GoldenSeed
 {
-    public const string Hulls = "560.00,240.00,380.00,142.84,260.00,320.00";
+    public const string Hulls = "560.00,240.00,380.00,142.99,260.00,320.00";
 }

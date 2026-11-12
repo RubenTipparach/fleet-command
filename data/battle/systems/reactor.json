@@ -1,7 +1,7 @@
 {
  "_doc": "The numbers of the reactor, warp, damage control and officers (src/Core/Data/SystemsDef.Reactor.cs reads them), from the battle console mockup (REACTOR, WARP, REPAIR, REPAIR_JOBS, OFFICER, ROSTER; openspec/changes/reactor, warp, damage-control, officers). Temperatures are percent of the core's limit; a share is a fraction of 1. A missing key takes the code default, which is the mockup's number.",
  "reactor": {
-  "_doc": "Magnetic confinement coils lose alignment while the confinement (the reactor subsystem's health) is damaged; misalignment cuts the output by efficiency_loss of the mean offset and adds heat. Coolant loops' pumps draw flow_e a point of flow; they carry heat away in proportion to the core temperature. Coolant offline, or the core at critical_pct, for meltdown_s and the reactor explodes, blast_dmg falling to 0 at blast_km.",
+  "_doc": "Cooling and loop hits tuned 2026-11-11 (owner: \"yea fix it\", of small ships melting down once one coolant loop was hit, at about 78 % hull): cool_per_flow 0.04 to 0.06, hit.loop_p 0.18 to 0.12, so one loop lost leaves the core near 67 % and a meltdown needs both. Magnetic confinement coils lose alignment while the confinement (the reactor subsystem's health) is damaged; misalignment cuts the output by efficiency_loss of the mean offset and adds heat. Coolant loops' pumps draw flow_e a point of flow; they carry heat away in proportion to the core temperature. Coolant offline, or the core at critical_pct, for meltdown_s and the reactor explodes, blast_dmg falling to 0 at blast_km.",
   "coils": 3,
   "loops": 2,
   "flow_max": 5,
@@ -10,7 +10,7 @@
   "efficiency_loss": 0.6,
   "heat_full_pct_s": 4,
   "heat_misalign_pct_s": 12,
-  "cool_per_flow": 0.04,
+  "cool_per_flow": 0.06,
   "temp_floor_pct": 20,
   "temp_start_pct": 50,
   "stable_pct": 50,
@@ -29,7 +29,7 @@
    "coil_p": 0.3,
    "coil_knock": 0.8,
    "conf_per_dmg": 0.012,
-   "loop_p": 0.18,
+   "loop_p": 0.12,
    "loop_dmg": 0.35,
    "loop_dmg_rand": 0.35,
    "nacelle_p": 0.15,
