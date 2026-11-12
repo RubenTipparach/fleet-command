@@ -6,6 +6,7 @@
 // One implementation for every rendered skin; a skin's kit class adds what is its own (palette, icons, style).
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using FleetCommand.Game.Ui;
 using Godot;
@@ -50,6 +51,52 @@ public sealed class RenderedPieces
             Vector2 inset = e.TryGetProperty("inset", out JsonElement ins) ? Vec(ins) : new Vector2(3, 3);
             float gap = e.TryGetProperty("gap", out JsonElement g) ? g.GetSingle() : 2;
             _pieces[p.Name] = new Entry(kind, tex, new PieceSpec(size, m, inset, gap));
+        }
+        Pack();
+    }
+
+    private const int PagePx = 2048, PackMaxPx = 1024, Bleed = 2;
+
+    // Every piece but the largest (the column and backing plates) packed into shared pages and drawn from there, so a
+    // panel's pieces are one texture and Godot draws a run of them as one batch: each piece its own texture was a draw
+    // call each (openspec/changes/console-draw-cost D4). Each piece keeps a border of its own edge pixels round it, so
+    // a stretched edge never samples its neighbour. The pieces' own sizes and margins are unchanged (an AtlasTexture
+    // reports its region's size).
+    private void Pack()
+    {
+        var pages = new List<Image>();
+        var placed = new List<(string Id, int Page, Rect2I Src)>();
+        int cx = 0, cy = 0, rowH = 0;
+        foreach (var (id, e) in _pieces.OrderByDescending(kv => kv.Value.Tex.GetHeight()))
+        {
+            int w = e.Tex.GetWidth(), h = e.Tex.GetHeight();
+            if (w > PackMaxPx || h > PackMaxPx) continue;
+            Image img = e.Tex.GetImage();
+            if (img == null) continue;
+            if (img.IsCompressed()) img.Decompress();
+            img.Convert(Image.Format.Rgba8);
+            int cw = w + 2 * Bleed, ch = h + 2 * Bleed;
+            if (pages.Count == 0 || cx + cw > PagePx) { cx = 0; cy += rowH; rowH = 0; }
+            if (pages.Count == 0 || cy + ch > PagePx) { pages.Add(Image.CreateEmpty(PagePx, PagePx, false, Image.Format.Rgba8)); cx = cy = rowH = 0; }
+            Image page = pages[^1];
+            page.BlitRect(img, new Rect2I(0, 0, w, h), new Vector2I(cx + Bleed, cy + Bleed));
+            // the bleed: the piece's edge rows and columns copied outward
+            for (int b = 1; b <= Bleed; b++)
+            {
+                page.BlitRect(img, new Rect2I(0, 0, w, 1), new Vector2I(cx + Bleed, cy + Bleed - b));
+                page.BlitRect(img, new Rect2I(0, h - 1, w, 1), new Vector2I(cx + Bleed, cy + Bleed + h - 1 + b));
+                page.BlitRect(page, new Rect2I(cx + Bleed, cy, 1, ch), new Vector2I(cx + Bleed - b, cy));
+                page.BlitRect(page, new Rect2I(cx + Bleed + w - 1, cy, 1, ch), new Vector2I(cx + Bleed + w - 1 + b, cy));
+            }
+            placed.Add((id, pages.Count - 1, new Rect2I(cx + Bleed, cy + Bleed, w, h)));
+            cx += cw;
+            rowH = Math.Max(rowH, ch);
+        }
+        var textures = pages.Select(ImageTexture.CreateFromImage).ToArray();
+        foreach (var (id, page, src) in placed)
+        {
+            Entry e = _pieces[id];
+            _pieces[id] = e with { Tex = new AtlasTexture { Atlas = textures[page], Region = new Rect2(src.Position, src.Size) } };
         }
     }
 
