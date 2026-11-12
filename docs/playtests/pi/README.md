@@ -67,3 +67,30 @@ ERROR lines: every run has one `ERROR: Condition "ctxErrorOccurred || !gl_displa
 GL 3.3 context failing before the GLES fallback). B and C add `RGBAFloat not supported by hardware, converting to
 RGBAHalf` warnings (4 of them), and, on being killed, Godot's exit-time `Unreferenced static string` and
 `Pages in use exist at exit` errors, which come from the kill, not from the game.
+
+## Follow-up: 100% scale, and a bare scene with nothing but simple shading
+
+The owner asked for a 100% 3D scale and wanted to know whether the Pi can draw simple things (plain lighting, low-poly
+backgrounds) well.
+
+**Run E**, the battle at `--lowspec --lowspec-scale=1.0`: `ok`, won in 169 s, FPS 8 / **20** / 40 (p10 19). Full
+resolution costs nothing measurable against 0.5 (21) or 0.35 (21). The 3D scale can stay at 100%.
+
+**A bare Godot scene** (`simple-scene/`, run from a scratch folder with the same Godot build): low-poly ships (6-sided
+cones, StandardMaterial3D), a 24x12 sphere planet, 3000 billboard stars in one MultiMesh, one directional light and an
+ambient colour, Compatibility renderer, v-sync off, 25 s each:
+
+| Resolution | Scene | FPS (min / median / max) |
+|---|---|---|
+| 1280x720 | 40 ships | 124 / 130 / 132 |
+| 1280x720 | 40 ships + depth fog | 101 / 103 / 107 |
+| 1280x720 | 400 ships + fog | 77 / 79 / 81 |
+| 1920x1080 | 40 ships + fog | 46 / 48 / 48 |
+| 1920x1080 | 400 ships + fog | 40 / 41 / 42 |
+
+So the Pi draws simple lit low-poly 3D at full 720p resolution at over 100 fps. At 1080p the GPU's fill rate becomes the
+limit (about 48 fps). The game spends about 48 ms a frame where this scene spends about 8-10 ms, and resolution is not
+where the time goes. The suspects are what the game adds per ship and per frame: the hull shader, the 10-16 floodlight
+pools and 7-9 lamps per ship (if these are real lights, Compatibility draws one extra pass per light per mesh), the
+console UI's many textured controls, and the C# view code. A profile (Godot's monitors, or the game with the console
+hidden and then with the hull lights off) would say which.
