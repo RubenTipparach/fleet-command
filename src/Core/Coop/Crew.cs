@@ -21,7 +21,11 @@ using System.Linq;
 
 namespace FleetCommand.Coop;
 
-public sealed record CrewMember(int Id, string Name);
+/// <summary>A crew member: their id, name and the XP they have earned (their rank: Roles.RankAt).</summary>
+public sealed record CrewMember(int Id, string Name)
+{
+    public double Xp { get; set; }
+}
 
 public sealed class Crew
 {
@@ -164,6 +168,38 @@ public sealed class Crew
         if (on) Grants.Add(Key(bridge, role, to));
         else Grants.Remove(Key(bridge, role, to));
         return null;
+    }
+
+    /// <summary>A member's rank.</summary>
+    public RankDef RankOf(int member) => Roles.RankAt(Member(member)?.Xp ?? 0);
+
+    /// <summary>The skill the crew adds to each station of a bridge: for each role, the best rank's skill among the members
+    /// holding it (the admiral not counted), on every station that role opens.</summary>
+    public SortedDictionary<string, int> StationSkills(string bridge)
+    {
+        var skills = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        foreach (RoleDef r in Roles.List)
+        {
+            int best = HoldersOf(bridge, r.Id).Select(m => RankOf(m).Skill).DefaultIfEmpty(0).Max();
+            if (best <= 0) continue;
+            foreach (string st in r.Stations) skills[st] = Math.Max(skills.GetValueOrDefault(st), best);
+        }
+        return skills;
+    }
+
+    /// <summary>Awards a battle's XP to every member but the admiral: seconds aboard, and the victory bonus if it was won.
+    /// Returns the members promoted, with their new rank.</summary>
+    public List<(CrewMember Member, RankDef Rank)> AwardXp(double battleS, bool won)
+    {
+        var promoted = new List<(CrewMember, RankDef)>();
+        foreach (CrewMember m in Members.Where(m => m.Id != AdmiralId))
+        {
+            RankDef before = Roles.RankAt(m.Xp);
+            m.Xp += Math.Max(0, battleS) * Roles.XpPerBattleS + (won ? Roles.XpVictory : 0);
+            RankDef after = Roles.RankAt(m.Xp);
+            if (after != before) promoted.Add((m, after));
+        }
+        return promoted;
     }
 
     /// <summary>The admiral sends a member to a ship: to a ship the AI flies, they take it as its captain, holding every

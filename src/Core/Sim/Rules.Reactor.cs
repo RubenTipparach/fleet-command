@@ -57,7 +57,8 @@ public sealed partial class Rules
     /// down) in any other, 0 for a vacant slot or a ship without officers. Every officer's ability reads this.</summary>
     public static int OfficerSkill(Ship s, string station)
     {
-        if (!s.Officers.TryGetValue(station, out StationOfficer? o) || o == null) return 0;
-        return o.Spec == station ? o.Skill : o.Skill / 2;
+        int crew = s.CrewSkill.GetValueOrDefault(station);   // a player crew's rank on that station (co-op)
+        if (!s.Officers.TryGetValue(station, out StationOfficer? o) || o == null) return crew;
+        return (o.Spec == station ? o.Skill : o.Skill / 2) + crew;
     }
 }

@@ -13,8 +13,20 @@ namespace FleetCommand.Coop;
 /// opens, and the orders it may give.</summary>
 public sealed record RoleDef(string Id, string Name, string Icon, bool Targets, IReadOnlyList<string> Stations, IReadOnlyList<string> Pages, IReadOnlyList<string> Orders);
 
+/// <summary>A crew rank: its name and short form, the XP it is reached at, and the skill it adds to the stations of every role
+/// the member holds.</summary>
+public sealed record RankDef(string Name, string Short, int Xp, int Skill);
+
 public sealed class Roles
 {
+    /// <summary>The crew's ranks, lowest first (the first at 0 XP).</summary>
+    public IReadOnlyList<RankDef> Ranks { get; private set; } = new[] { new RankDef("Ensign", "Ens.", 0, 0) };
+    /// <summary>XP a crew member earns for each second of a battle they were aboard for, and on top for a battle won.</summary>
+    public double XpPerBattleS { get; private set; }
+    public int XpVictory { get; private set; }
+
+    /// <summary>The rank a member's XP has reached.</summary>
+    public RankDef RankAt(double xp) => Ranks.Last(r => xp >= r.Xp);
     public IReadOnlyList<RoleDef> List { get; }
     /// <summary>The station tabs and ship pages only a ship's captain opens (comms, the fleet, the ship's systems).</summary>
     public IReadOnlyList<string> CaptainStations { get; }
@@ -73,6 +85,14 @@ public sealed class Roles
         foreach (string o in shared) Check($"{root.Where}.shared_orders", o);
         foreach (string o in admiral) Check($"{root.Where}.admiral_orders", o);
         var roles = new Roles(list, root.StrList("captain_stations"), root.StrList("captain_pages"), shared, admiral);
+        var ranks = root.ObjList("ranks").Select(r => { var d = new RankDef(r.Str("name"), r.Str("short"), r.Int("xp"), r.Int("skill")); r.Done(); return d; }).ToList();
+        if (ranks.Count == 0 || ranks[0].Xp != 0) throw new DataError($"{root.Where}.ranks: the first rank must start at 0 XP");
+        for (int i = 1; i < ranks.Count; i++)
+            if (ranks[i].Xp <= ranks[i - 1].Xp || ranks[i].Skill < ranks[i - 1].Skill) throw new DataError($"{root.Where}.ranks[{i}]: each rank needs more XP than the last, and no less skill");
+        roles.Ranks = ranks;
+        roles.XpPerBattleS = root.Num("xp_per_battle_s");
+        roles.XpVictory = root.Int("xp_victory");
+        if (!(roles.XpPerBattleS >= 0) || roles.XpVictory < 0) throw new DataError($"{root.Where}: XP rates must not be negative");
         root.Done();
         foreach (string t in Sim.Ship.TargetRoles)
             if (!roles.Has(t) || !roles[t].Targets) throw new DataError($"{root.Where}.roles: '{t}' must be a role that targets");

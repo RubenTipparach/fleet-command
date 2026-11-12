@@ -49,6 +49,7 @@ public sealed partial class Battle
             Part(s.Id + ".power");
             S(s.Target);
             if (s.RoleTargets != null) foreach (KeyValuePair<string, string?> kv in s.RoleTargets) { S(kv.Key); S(kv.Value); }
+            foreach (KeyValuePair<string, int> kv in s.CrewSkill) { S(kv.Key); U((ulong)kv.Value); }
             foreach (Mount m in s.Mounts) { D(m.Charge); D(m.Hp); U((ulong)m.State); }
             Part(s.Id + ".mounts");
             foreach (KeyValuePair<string, double> kv in s.Sys) { S(kv.Key); D(kv.Value); }

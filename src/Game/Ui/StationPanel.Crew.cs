@@ -37,7 +37,7 @@ public sealed partial class StationPanel
         // the admiral first, on every ship, holding every station; then its own crew with the stations granted them
         foreach (CrewMember m in crew.Members.Where(m => m.Id == Crew.AdmiralId || crew.BridgeOf(m.Id) == key).OrderBy(m => m.Id))
         {
-            Text(m.Name.ToUpperInvariant(), x, y + 18, 15, CrewColors.Of(m.Id, C.Sky), HorizontalAlignment.Left, 104, 600, 1);
+            Text((m.Id == Crew.AdmiralId ? "" : crew.RankOf(m.Id).Short + " ") + m.Name.ToUpperInvariant(), x, y + 18, 15, CrewColors.Of(m.Id, C.Sky), HorizontalAlignment.Left, 104, 600, 1);
             float xx = x + 110;
             bool adm = m.Id == Crew.AdmiralId;
             foreach (RoleDef r in crew.Roles.List.Where(r => crew.Holds(key, r.Id, m.Id)))

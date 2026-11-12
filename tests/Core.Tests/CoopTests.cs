@@ -20,7 +20,7 @@ public class CoopTests
     private sealed class Pair
     {
         public readonly Lockstep Host, Guest;
-        public readonly Battle HB, GB;
+        public Battle HB, GB;
         private readonly Queue<string> _toGuest = new(), _toHost = new();
 
         public Pair(Scenario sc)
@@ -326,6 +326,28 @@ public class CoopTests
         Assert.Equal(Crew.Flag, p.Host.Crew.BridgeOf(p.Guest.Me));
         Assert.Equal(Crew.Flag, p.Host.Crew.AdmiralAt);
         Assert.False(p.HB.FlagUnmanned);
+        Assert.Equal(p.Host.Sum(), p.Guest.Sum());
+    }
+
+    [Fact]
+    public void An_ensign_gives_no_bonus_and_a_lieutenant_adds_skill_to_the_stations_they_hold()
+    {
+        var p = new Pair(Sc("concord_battle"));
+        p.Host.AskCrew(new JsonObject { ["op"] = "role", ["role"] = "science", ["to"] = p.Guest.Me, ["bridge"] = Crew.Flag });
+        p.Steps(1);
+        Assert.Equal(0, p.HB.Player.CrewSkill.GetValueOrDefault("science"));   // an ensign: no bonus
+        // a battle's XP: enough seconds to make lieutenant
+        RankDef lt = R.Ranks[1];
+        Assert.Empty(p.Host.Crew.AwardXp(lt.Xp - 1, false));
+        Assert.Single(p.Host.Crew.AwardXp(1, false));
+        Assert.Equal(lt, p.Host.Crew.RankOf(p.Guest.Me));
+        p.Host.SendRoster();                 // the XP reaches the crew's game with the roster
+        p.Flush();
+        p.Host.Begin(p.HB = new Battle(TestData.Data, Sc("concord_battle")));
+        p.Guest.Begin(p.GB = new Battle(TestData.Data, Sc("concord_battle")));
+        Assert.Equal(lt.Skill, p.HB.Player.CrewSkill["science"]);
+        Assert.Equal(lt.Skill, p.HB.OfficerSkill(p.HB.Player, "science") - (p.HB.Player.Officers.GetValueOrDefault("science") is { } o ? (o.Spec == "science" ? o.Skill : o.Skill / 2) : 0));
+        p.Steps(30);
         Assert.Equal(p.Host.Sum(), p.Guest.Sum());
     }
 

@@ -1,23 +1,223 @@
 {
- "_doc": "The bridge roles a co-op crew is given (openspec/changes/bridge-crew-coop; owner, 2026-11-11: \"players play roles of officers on the bridge, because there are so many staitons some players can assume the roles of multiple stations. It is up to the captain to assign these roles. The different tabs become disabled if your role doesnt have access to that system\", \"by default - captain has access to all roles\"). Each role: its name and icon (an icon of the console's set), the console's station tabs and ship pages it opens (StationPanel.Stations, ShipPanel.Pages), whether it keeps its own target (targets: owner, \"science/sensors, tractor beam, transporters, weapons targetting, and navigation would have acces to independent targetting\"), and the battle's orders it may give (Battle's method names). An order no role lists is the ship's captain's; admiral_orders are the admiral's alone (the host, captain of the fleet: owner, \"the main captain is technically admiral of the fleet\", \"whoeever is designated as captain remains captain the whole game\"). shared_orders any crew member may give (a lock moves the targets of that member's targeting roles). The captain of a ship holds every role no one else holds, and opens every tab.",
+ "_doc": "The bridge roles a co-op crew is given (openspec/changes/bridge-crew-coop; owner, 2026-11-11: \"players play roles of officers on the bridge, because there are so many staitons some players can assume the roles of multiple stations. It is up to the captain to assign these roles. The different tabs become disabled if your role doesnt have access to that system\", \"by default - captain has access to all roles\"). Each role: its name and icon (an icon of the console's set), the console's station tabs and ship pages it opens (StationPanel.Stations, ShipPanel.Pages), whether it keeps its own target (targets: owner, \"science/sensors, tractor beam, transporters, weapons targetting, and navigation would have acces to independent targetting\"), and the battle's orders it may give (Battle's method names). An order no role lists is the ship's captain's; admiral_orders are the admiral's alone (the host, captain of the fleet: owner, \"the main captain is technically admiral of the fleet\", \"whoeever is designated as captain remains captain the whole game\"). shared_orders any crew member may give (a lock moves the targets of that member's targeting roles). The captain of a ship holds every role no one else holds, and opens every tab. ranks: a crew member's rank by the XP they have earned, and the skill their rank adds to every station of the roles they hold (like an officer's skill; owner, 2026-11-11: \"crew members should provide system bonuses\", \"ensigns provide no bonus but gain xp overtime\"); xp_per_battle_s for each second of a battle they were aboard for, xp_victory on top for a battle won.",
  "roles": [
-  { "id": "helm", "name": "Navigation", "icon": "helm", "targets": true, "stations": ["helm"], "pages": [],
-    "orders": ["Turn", "HelmTo", "SetSpeed", "SpeedStep", "AllStop", "HelmOrder", "ToggleOrbitDir", "SetHoldKm", "SetRunRange", "Het", "HetTo", "ToggleErratic", "SelectPlanet"] },
-  { "id": "weapons", "name": "Weapons", "icon": "tactical", "targets": true, "stations": ["tactical"], "pages": ["craft"],
-    "orders": ["Fire", "FireOne", "ArmOne", "SetArming", "ToggleMount", "ToggleVolley", "ToggleAutoFire", "SelectGroup", "Pin", "PinSelected", "UnpinAll", "Aim", "LaunchFighters", "RecallFighters", "SetMission", "FireBarrage", "PlaceMine", "DropMine"] },
-  { "id": "pd", "name": "Point defence", "icon": "pd", "targets": false, "stations": ["pd"], "pages": [],
-    "orders": ["SetPd"] },
-  { "id": "engineering", "name": "Engineering", "icon": "power", "targets": false, "stations": ["power", "repair"], "pages": ["shields"],
-    "orders": ["SetPower", "SetFlow", "SetOverdraw", "AlignCoil", "SetCoil", "OfficerNext", "EmergencyStop", "ToggleOverride", "PlotCourse", "JumpNow", "WarpKey", "RepairFirst", "RepairMove", "RepairDropped", "ToggleShields", "Reinforce"] },
-  { "id": "science", "name": "Science", "icon": "science", "targets": true, "stations": ["science"], "pages": ["sensors"],
-    "orders": ["Scan", "ScanPlanet", "Sweep", "SetEw", "SetPassive", "ToggleCloak"] },
-  { "id": "tractor", "name": "Tractor", "icon": "tractor", "targets": true, "stations": [], "pages": ["tractor"],
-    "orders": ["TractorHold", "TractorBreak", "Reel"] },
-  { "id": "transport", "name": "Transporters", "icon": "transport", "targets": true, "stations": ["transport"], "pages": [],
-    "orders": ["Transfer", "SecurityGo", "Energize", "EnergizeAll", "QueueRole", "Unqueue", "RaidKind", "AimRaid", "BeamDown", "LaunchShuttle", "RecallParty"] }
+  {
+   "id": "helm",
+   "name": "Navigation",
+   "icon": "helm",
+   "targets": true,
+   "stations": [
+    "helm"
+   ],
+   "pages": [],
+   "orders": [
+    "Turn",
+    "HelmTo",
+    "SetSpeed",
+    "SpeedStep",
+    "AllStop",
+    "HelmOrder",
+    "ToggleOrbitDir",
+    "SetHoldKm",
+    "SetRunRange",
+    "Het",
+    "HetTo",
+    "ToggleErratic",
+    "SelectPlanet"
+   ]
+  },
+  {
+   "id": "weapons",
+   "name": "Weapons",
+   "icon": "tactical",
+   "targets": true,
+   "stations": [
+    "tactical"
+   ],
+   "pages": [
+    "craft"
+   ],
+   "orders": [
+    "Fire",
+    "FireOne",
+    "ArmOne",
+    "SetArming",
+    "ToggleMount",
+    "ToggleVolley",
+    "ToggleAutoFire",
+    "SelectGroup",
+    "Pin",
+    "PinSelected",
+    "UnpinAll",
+    "Aim",
+    "LaunchFighters",
+    "RecallFighters",
+    "SetMission",
+    "FireBarrage",
+    "PlaceMine",
+    "DropMine"
+   ]
+  },
+  {
+   "id": "pd",
+   "name": "Point defence",
+   "icon": "pd",
+   "targets": false,
+   "stations": [
+    "pd"
+   ],
+   "pages": [],
+   "orders": [
+    "SetPd"
+   ]
+  },
+  {
+   "id": "engineering",
+   "name": "Engineering",
+   "icon": "power",
+   "targets": false,
+   "stations": [
+    "power",
+    "repair"
+   ],
+   "pages": [
+    "shields"
+   ],
+   "orders": [
+    "SetPower",
+    "SetFlow",
+    "SetOverdraw",
+    "AlignCoil",
+    "SetCoil",
+    "OfficerNext",
+    "EmergencyStop",
+    "ToggleOverride",
+    "PlotCourse",
+    "JumpNow",
+    "WarpKey",
+    "RepairFirst",
+    "RepairMove",
+    "RepairDropped",
+    "ToggleShields",
+    "Reinforce"
+   ]
+  },
+  {
+   "id": "science",
+   "name": "Science",
+   "icon": "science",
+   "targets": true,
+   "stations": [
+    "science"
+   ],
+   "pages": [
+    "sensors"
+   ],
+   "orders": [
+    "Scan",
+    "ScanPlanet",
+    "Sweep",
+    "SetEw",
+    "SetPassive",
+    "ToggleCloak"
+   ]
+  },
+  {
+   "id": "tractor",
+   "name": "Tractor",
+   "icon": "tractor",
+   "targets": true,
+   "stations": [],
+   "pages": [
+    "tractor"
+   ],
+   "orders": [
+    "TractorHold",
+    "TractorBreak",
+    "Reel"
+   ]
+  },
+  {
+   "id": "transport",
+   "name": "Transporters",
+   "icon": "transport",
+   "targets": true,
+   "stations": [
+    "transport"
+   ],
+   "pages": [],
+   "orders": [
+    "Transfer",
+    "SecurityGo",
+    "Energize",
+    "EnergizeAll",
+    "QueueRole",
+    "Unqueue",
+    "RaidKind",
+    "AimRaid",
+    "BeamDown",
+    "LaunchShuttle",
+    "RecallParty"
+   ]
+  }
  ],
- "captain_stations": ["comms", "fleet"],
- "captain_pages": ["systems"],
- "shared_orders": ["Lock", "Unlock", "NextTarget"],
- "admiral_orders": ["TakeCommand", "FleetOrder", "SetStance", "SetRule", "SetRange", "SetRetreat", "SetHoldFire", "Withdraw", "ToggleWithdraw", "CancelWithdraw", "Win", "Lose", "EndWithdrawn", "RangeFire", "RangeRun", "RangeShields", "RangeStop"]
+ "captain_stations": [
+  "comms",
+  "fleet"
+ ],
+ "captain_pages": [
+  "systems"
+ ],
+ "shared_orders": [
+  "Lock",
+  "Unlock",
+  "NextTarget"
+ ],
+ "admiral_orders": [
+  "TakeCommand",
+  "FleetOrder",
+  "SetStance",
+  "SetRule",
+  "SetRange",
+  "SetRetreat",
+  "SetHoldFire",
+  "Withdraw",
+  "ToggleWithdraw",
+  "CancelWithdraw",
+  "Win",
+  "Lose",
+  "EndWithdrawn",
+  "RangeFire",
+  "RangeRun",
+  "RangeShields",
+  "RangeStop"
+ ],
+ "ranks": [
+  {
+   "name": "Ensign",
+   "short": "Ens.",
+   "xp": 0,
+   "skill": 0
+  },
+  {
+   "name": "Lieutenant",
+   "short": "Lt.",
+   "xp": 600,
+   "skill": 1
+  },
+  {
+   "name": "Lieutenant Commander",
+   "short": "Lt Cdr.",
+   "xp": 1800,
+   "skill": 2
+  },
+  {
+   "name": "Commander",
+   "short": "Cdr.",
+   "xp": 4000,
+   "skill": 3
+  }
+ ],
+ "xp_per_battle_s": 1,
+ "xp_victory": 150
 }

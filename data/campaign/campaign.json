@@ -4,7 +4,7 @@
   "cols": 30,
   "rows": 22,
   "seed": 7,
-  "start_credits_cr": 4000,
+  "start_credits_cr": 500,
   "start_marines": 2,
   "move_points": 3,
   "fleet_max": 4,

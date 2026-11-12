@@ -107,8 +107,33 @@ public sealed class Lockstep
         foreach (string id in Crew.Ships.Keys.ToList())
             if (b.ShipById(id) is { Alive: true, Side: 0 } s && s != b.Player) b.SetHelmed(id, true);
         b.Relay = Local;
+        ApplySkills();
         ViewOwn();
     }
+
+    // each crewed ship's stations take its crew's rank skill (Crew.StationSkills), set again whenever the crew changes; the
+    // same on every peer, from the crew they share
+    private void ApplySkills()
+    {
+        if (Battle is not { } b || _flag is not { } flag) return;
+        foreach (Ship s in b.Ships) s.CrewSkill.Clear();
+        foreach (string bridge in Crew.Bridges())
+            if ((bridge == Crew.Flag ? flag : b.ShipById(bridge)) is { } s)
+                foreach (var (st, n) in Crew.StationSkills(bridge)) s.CrewSkill[st] = n;
+    }
+
+    /// <summary>The host, when a battle ends: every crew member's XP for it (seconds aboard, a victory's bonus), each
+    /// promotion told to the crew, and the roster sent with the new XP.</summary>
+    public void HostAward()
+    {
+        if (!IsHost || Battle is not { } b || _awarded == b) return;
+        _awarded = b;
+        foreach (var (m, rank) in Crew.AwardXp(b.T, b.Over == "won"))
+            HostEvent(Crew.AdmiralId, new JsonObject { ["t"] = "event", ["kind"] = "crew", ["text"] = $"{m.Name} promoted to {rank.Name}", ["at"] = b.T });
+        SendRoster();
+    }
+
+    private Battle? _awarded;
 
     /// <summary>Stops sharing the battle (it ended, or the crew left).</summary>
     public void End()
@@ -501,6 +526,7 @@ public sealed class Lockstep
             default: why = "unknown change"; break;
         }
         if (Battle != null) Battle.FlagUnmanned = Crew.AdmiralAt != Crew.Flag && !Crew.On(Crew.Flag).Any();
+        ApplySkills();
         if (why != null) Note($"COOP_REFUSED {Crew.NameOf(by)} {(string?)op["op"]}: {why}");
         else
         {
@@ -553,7 +579,7 @@ public sealed class Lockstep
     /// <summary>The roster as JSON: members, ships given and roles given.</summary>
     public static JsonObject CrewJson(Crew c)
     {
-        var members = new JsonArray(); foreach (CrewMember m in c.Members) members.Add(new JsonObject { ["id"] = m.Id, ["name"] = m.Name });
+        var members = new JsonArray(); foreach (CrewMember m in c.Members) members.Add(new JsonObject { ["id"] = m.Id, ["name"] = m.Name, ["xp"] = m.Xp });
         var ships = new JsonObject(); foreach (var (k, v) in c.Ships) ships[k] = v;
         var grants = new JsonArray(); foreach (string g in c.Grants) grants.Add(g);
         var aboard = new JsonObject(); foreach (var (k, v) in c.Aboard) aboard[k.ToString()] = v;
@@ -566,7 +592,7 @@ public sealed class Lockstep
         c.Members.Clear(); c.Ships.Clear(); c.Grants.Clear(); c.Aboard.Clear();
         c.AdmiralAt = (string?)j["admiral_at"] ?? Crew.Flag;
         if (j["aboard"] is JsonObject ab) foreach (var (k, v) in ab) c.Aboard[int.Parse(k)] = (string)v!;
-        foreach (JsonNode? m in j["members"]!.AsArray()) c.Members.Add(new CrewMember((int)m!["id"]!, (string)m["name"]!));
+        foreach (JsonNode? m in j["members"]!.AsArray()) c.Members.Add(new CrewMember((int)m!["id"]!, (string)m["name"]!) { Xp = (double?)m["xp"] ?? 0 });
         foreach (var (k, v) in j["ships"]!.AsObject()) c.Ships[k] = (int)v!;
         foreach (JsonNode? g in j["grants"]!.AsArray()) c.Grants.Add((string)g!);
     }

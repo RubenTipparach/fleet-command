@@ -537,9 +537,10 @@ public sealed class CampaignTests
     public void The_shipyard_sells_hulls_at_home_for_credits()
     {
         Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        c.S.Credits = 10000;   // the shop under test, not the starting purse (500 cr since 2026-11-11)
         int price = c.HullPrice("petrel");
         Assert.Null(c.Buy("petrel"));
-        Assert.Equal(Camp.Rules.StartCredits - price, c.S.Credits);
+        Assert.Equal(10000 - price, c.S.Credits);
         Assert.Equal(2, c.S.Fleet.Count);
         Assert.NotNull(c.Buy("krai_cv"));
         Assert.Null(c.Sell(c.S.Fleet[1]));
@@ -693,6 +694,7 @@ public sealed class ShopTests
     public void Restocking_fills_every_ship_for_its_quote()
     {
         Campaign.Campaign c = New();
+        c.S.Credits = 10000;   // the restock under test, not the starting purse
         int quote = c.RestockQuote(), before = c.S.Credits;
         Assert.True(quote > 0);
         Assert.Null(c.Restock());

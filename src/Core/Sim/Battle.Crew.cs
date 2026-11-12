@@ -26,6 +26,10 @@ public sealed partial class Ship
     /// <summary>A crewed ship's target per targeting role (role id to ship id, or null for none); null on every ship no
     /// player crew is on, where the one <see cref="Target"/> serves every role.</summary>
     public SortedDictionary<string, string?>? RoleTargets;
+
+    /// <summary>The skill a player crew adds to each station of this ship (co-op: each role's best holder's rank; owner,
+    /// 2026-11-11: "crew members should provide system bonuses"), on top of the station's officer. Empty in single play.</summary>
+    public SortedDictionary<string, int> CrewSkill = new(StringComparer.Ordinal);
 }
 
 public sealed partial class Battle

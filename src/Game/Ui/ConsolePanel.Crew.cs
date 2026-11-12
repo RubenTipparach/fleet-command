@@ -90,7 +90,9 @@ public abstract partial class ConsolePanel
         y += ic + 6;
         foreach (CrewMember m in aboard)
         {
-            Text((m.Id == captain ? "★ " : "") + m.Name.ToUpperInvariant(), x, y + rowH * 0.6f, rowH >= 44 ? 17 : 14, CrewColors.Of(m.Id, C.Sky), HorizontalAlignment.Left, nameW - 6, 600, 1);
+            // the member's rank before their name (Ens., Lt., ...; the admiral is the admiral)
+            string rank = m.Id == Crew.AdmiralId ? "" : crew.RankOf(m.Id).Short + " ";
+            Text((m.Id == captain ? "★ " : "") + rank + m.Name.ToUpperInvariant(), x, y + rowH * 0.6f, rowH >= 44 ? 17 : 14, CrewColors.Of(m.Id, C.Sky), HorizontalAlignment.Left, nameW - 6, 600, 1);
             for (int i = 0; i < roles.Count; i++)
             {
                 RoleDef rd = roles[i];

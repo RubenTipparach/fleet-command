@@ -138,6 +138,7 @@ public sealed partial class Main
         if (_x.Coop is not { } ls) return;
         if (ls.IsHost)
         {
+            ls.HostAward();   // a battle restarted before it was left: its XP first
             var m = new JsonObject { ["t"] = "start", ["title"] = sc.Name };
             if (_flow?.Running is { } offer && _flow.Camp is { } c) { m["kind"] = "mission"; m["save"] = c.Save(); m["offer"] = offer.Id; }
             else { m["kind"] = "scenario"; m["id"] = sc.Id; }
@@ -156,6 +157,7 @@ public sealed partial class Main
     private void CoopStopped()
     {
         if (_x.Coop is not { IsHost: true } ls || ls.Battle == null) return;
+        ls.HostAward();   // the battle's XP, before the crew stops sharing it
         _net!.Broadcast(new JsonObject { ["t"] = "stop", ["over"] = ls.Battle.Over });
         ls.End();
     }
