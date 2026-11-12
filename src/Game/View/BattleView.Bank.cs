@@ -2,8 +2,9 @@
 // small ship, 20 degrees for medium ship, 10 degrees for large ship", "if turning, slerp to roll angle (for 5 seconds)",
 // "if stop turning slerp roll angle back to 0"). The view's only: the simulation's ship has a heading and no roll, so a
 // bank changes nothing a battle decides and lockstep peers need not agree on it. A ship is turning while its heading moved
-// faster than data/battle/bank.json's turning_from_deg_s over the last simulation step (read on the battle's clock, so a
-// frame with no step keeps the last answer and a pause holds the roll). Its roll then moves toward its size's angle, the
+// faster than data/battle/bank.json's turning_from_deg_s over the last simulation step, with at least min_order_deg of
+// its ordered turn still to go (owner: "less than 2 degrees dont roll", so an autopilot's small corrections leave it level);
+// read on the battle's clock, so a frame with no step keeps the last answer and a pause holds the roll. Its roll then moves toward its size's angle, the
 // side it turns to dipping, at the rate that covers the whole angle in ease_s; with no turn it moves back to level the same
 // way. A ship's size is its class's turn rate (bank.json says where the steps fall).
 using System;
@@ -15,7 +16,7 @@ using Godot;
 namespace FleetCommand.Game.View;
 
 /// <summary>The roll into a turn (data/battle/bank.json).</summary>
-public sealed record BankLook(double SmallDeg, double MediumDeg, double LargeDeg, double SmallFromTurnDegS, double MediumFromTurnDegS, double EaseS, double TurningFromDegS)
+public sealed record BankLook(double SmallDeg, double MediumDeg, double LargeDeg, double SmallFromTurnDegS, double MediumFromTurnDegS, double EaseS, double TurningFromDegS, double MinOrderDeg)
 {
     public const string File = "data/battle/bank.json";
     private static BankLook? _look;
@@ -37,7 +38,7 @@ public sealed record BankLook(double SmallDeg, double MediumDeg, double LargeDeg
             return v;
         }
         var look = new BankLook(D("small_deg", 0, 80), D("medium_deg", 0, 80), D("large_deg", 0, 80), D("small_from_turn_deg_s", 0, 360),
-            D("medium_from_turn_deg_s", 0, 360), D("ease_s", 0.05, 60), D("turning_from_deg_s", 0, 90));
+            D("medium_from_turn_deg_s", 0, 360), D("ease_s", 0.05, 60), D("turning_from_deg_s", 0, 90), D("min_order_deg", 0, 90));
         o.Done();
         if (look.MediumFromTurnDegS > look.SmallFromTurnDegS) throw new DataError($"{File}.medium_from_turn_deg_s: not above small_from_turn_deg_s");
         return _look = look;
@@ -65,7 +66,9 @@ public sealed partial class BattleView
         {
             double dh = Math.IEEERemainder(s.H - k.H, Math.Tau);
             double rateDegS = dh / (b.T - k.T) * 180 / Math.PI;
-            k.Turn = s.Alive && Math.Abs(rateDegS) > look.TurningFromDegS ? Math.Sign(rateDegS) : 0;
+            // a turn with less than min_order_deg still to go is not rolled into (a captain's nudge, an AI's small corrections)
+            double leftDeg = Math.Abs(Geometry.Wrap(s.HOrder - s.H)) * 180 / Math.PI;
+            k.Turn = s.Alive && Math.Abs(rateDegS) > look.TurningFromDegS && leftDeg >= look.MinOrderDeg ? Math.Sign(rateDegS) : 0;
             k.H = s.H; k.T = b.T;
         }
         else if (b.T < k.T) { k.H = s.H; k.T = b.T; k.Turn = 0; }   // a new battle, or one wound back
