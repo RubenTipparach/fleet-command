@@ -1,6 +1,6 @@
 {
   "_doc": "Planet maps baked by src/Game/View/PlanetBaker.cs (tools/space/bake_planets.sh) from the planet shaders at the commit below, for the low-spec mode. Ground and clouds: 2:1 equirectangular on the UVs of a SphereMesh, lit from overhead (no sun). Rings: one row, ring_inner on the left to ring_outer on the right, in planet radii.",
-  "shaders_commit": "386ca15d",
+  "shaders_commit": "0e8c2b35",
   "map_px": [
     1024,
     512
