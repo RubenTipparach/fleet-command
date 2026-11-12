@@ -36,3 +36,6 @@
   version 6, version id `1794448148-9fd3`.
 - 2026-11-12, artifact version 7 (the page's v6 with a phone fix: the battle caption under the title on an upright phone,
   name tags under the panels). Version id `1794448516-5228`.
+- 2026-11-12, artifact version 8 (page v7; owner: "fold lattice and delta latice sucks Id get rid of those, branching is
+  also not the right style eitgher"; "benesi pine doesnt really animate, it just moves back and forth"): five forms, the
+  battles re-cast with the Mandelbulb, the pine's rings twist. Version id `1794490012-5fdd`.
