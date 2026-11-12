@@ -21,6 +21,37 @@
 | Text | 11% |
 | Fills | 10% |
 
+
+### D1b. Where the console's draw calls come from (Pi 5, `--scenario=concord_battle`, the cache forced to render every frame)
+
+Each component was hidden in turn and the frame's median draw calls read:
+
+| Hidden | Draw calls saved |
+|---|---|
+| Ship panel (the systems display) | about 276 |
+| Station panel (comms tab) | about 169 |
+| Radar | about 68 |
+| Bottom strip | about 37 |
+| Weapons panel | about 31 |
+| The view's overlay (early in the battle) | about 19 |
+| Top strip | about 17 |
+| Plate and column | about 5 |
+| Every console component | about 623 (the 3D scene alone: about 166) |
+
+By kind of drawing:
+- **Icons:** about 310 draw calls, half the console's. With every icon off, the frame fell from 786 to 476. Each icon is several vector fills, lines and arcs.
+- **Fills:** about 95 draw calls, overlapping the icons.
+
+**Why.** Godot 4's canvas renderer merges consecutive rectangles, nine-patches and text glyphs that share a texture into one draw call. Every polygon-type command is its own draw: `DrawColoredPolygon`, triangle arrays, `DrawArc`, `DrawCircle`, antialiased `DrawPolyline` and wide `DrawLine`. A batch also breaks at every texture change, for example between a kit piece and a run of text.
+
+**What batches, and how:**
+- **Icons:** baked into the kit's atlas once, then drawn as textured rectangles that merge with the 9-slices around them.
+- **Rings and arcs** (shield arcs, the radar's rings, contact dots, lamps): one `MultiMesh` per panel. A unit quad, with a shader that draws a ring segment from each instance's custom data (inner and outer radius, start and end angle) and colour. That makes every arc in a panel one draw call.
+- **Cell rows** (power, systems, capacitor and speed pips): already 9-slices from the atlas. They merge once text no longer interleaves with them.
+- **Text:** drawn in a child canvas item of each panel, above its shapes, so a panel's glyphs are one or two batches.
+
+**Also found.** The game's menu screen (the flow, before a battle) drew about 8,126 draw calls at 4 fps on the Pi. That's a separate change.
+
 ## D2. Capped redraws (done)
 
 - `ConsolePanel._Process` queues a redraw every `1 / panel_redraw_hz` seconds (`data/console/layout.json`: 30, and 15
