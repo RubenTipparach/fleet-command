@@ -26,19 +26,28 @@ pool SHALL cost prestige by level.
 - **WHEN** a level 1 ensign with 300 experience banked is transferred out
 - **THEN** the side gains 6 prestige and the station is vacant
 
-### Requirement: Skills are learned on a pyramid, by hand or by auto level
+### Requirement: Skills are learned on a tree, by hand or by auto level
 
 A skill SHALL be learned with one point only once its prerequisites are met: every skill in its `all` list and at least one
-in its `any` list. An officer on auto level SHALL spend each point up their station's path as it is earned.
+in its `any` list. An officer on auto level SHALL spend each point along their station's path as it is earned.
 
-#### Scenario: A skill that crosses over
-- **WHEN** an officer has learned only the leftmost base skill of a station
-- **THEN** the one tier-2 skill resting on it is open, and no other tier-2 skill is
+#### Scenario: A crossover
+- **WHEN** an officer has learned the left lane's first two skills and nothing in the centre lane
+- **THEN** the crossover between the left and centre lanes is open
 
-#### Scenario: The apex needs both below it
-- **WHEN** an officer has learned one of the two tier-4 skills
-- **THEN** the apex stays closed until the other is learned too
+#### Scenario: The keystone needs both crossovers
+- **WHEN** an officer has learned one of the two crossovers
+- **THEN** the keystone stays closed until the other is learned too
 
 #### Scenario: Auto level
 - **WHEN** an officer on auto level is promoted
 - **THEN** the new point is spent on the next skill of their station's path
+
+### Requirement: Every skill shows what it does
+
+Every skill SHALL show an icon of what it changes, and hovering, focusing or tapping it SHALL show what it changes, what it
+needs and whether it can be learned.
+
+#### Scenario: A locked keystone
+- **WHEN** the player hovers over a station's keystone with one crossover learned
+- **THEN** the tooltip names both crossovers it needs and says it is locked

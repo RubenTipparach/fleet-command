@@ -74,3 +74,4 @@
 - 2026-11-11, cloud session: version 47, version id `1794418985-576b`: Y8 decided and Y10 closed by mockup 37's approval for the game, the Ram cut (owner: "I woudl cut number 12 out (ram) , everything else is good to go, implmenet it").
 - 2026-11-12, cloud session: version 48, version id `1794446664-9c8c`: section CL, crew leveling (CL1-CL8), for mockup 39.
 - 2026-11-12, cloud session: version 49, version id `1794497547-c98e`: CL6 rewritten for ten levels, CL9 added (the pyramid), for mockup 39 v2.
+- 2026-11-12, cloud session: version 50, version id `1794499117-82a4`: CL9 rewritten for the tree, CL10 added (which style), for mockup 39 v3.

@@ -177,3 +177,4 @@
 - Version 183 published 2026-11-11, cloud session, version id `1794418711-00b9`: M37 at v16, approved for the game (the Ram cut); faction readiness at v2.
 - Version 184 published 2026-11-12, cloud session, version id `1794446665-b46d`: M39 Crew leveling added; the survey at v48.
 - Version 185 published 2026-11-12, cloud session, version id `1794497548-f543`: M39 at v2 (the skill pyramid); the survey at v49.
+- Version 187 published 2026-11-12, cloud session, version id `1794499130-2942`: merged onto another session's version 186 (M40 Nebula shells); M39 at v3; the survey at v50.

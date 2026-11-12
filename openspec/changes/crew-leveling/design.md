@@ -32,32 +32,44 @@ prestige, about one victory.
 
 An officer hired above level 1 arrives with their points unspent, so the player shapes them (survey CL4).
 
-## The pyramids (version 2)
+## The trees (version 3)
 
-The owner, of version 1's three separate branches: "I wish crew leveling was kind of like a pyramid tree or something where
-some nodes can cross over, and some nodes have 2 or more prereqs". Each of the six stations has fifteen skills on five
-tiers, laid out as a pyramid with the apex on top:
+The owner, of version 2's pyramid: "it doesnt have to be like an actual pyramid... just a skill tree. mockup a few
+different versions and make it look nice. use art drawing skills to make skill icons, and show tooltips on hover overs".
+Each of the six stations has one tree of fourteen skills, the same shape for every station, its three lanes the station's
+three themes (the helm: piloting, emergency turns, evasion):
 
-| Tier | Skills | Opens when |
+| Skill | Lane, depth | Opens when |
 |---|---|---|
-| 1 (base) | 5 | Always |
-| 2 | 4 | Either of the two below it (any) |
-| 3 | 3 | The sides: either of the two below; the centre keystone: both below it (all) |
-| 4 | 2 | Either of the two below it |
-| 5 (apex) | 1 | Both below it |
+| Three roots | each lane, 1 | Always |
+| A step in each lane | each lane, 2 | The root before it |
+| A third step in the outer lanes | left and right, 3 | The step before it |
+| Two crossovers | between two lanes, 3 | Either centre-lane step or its outer neighbour (any) |
+| The keystone | centre, 4 | Both crossovers (all) |
+| Two lane tips | left and right, 4 | Their lane's third step and the crossover beside them (all) |
+| The capstone | centre, 5 | The keystone |
 
-Because most skills open from either neighbour, a path starts on one side and crosses to the other. The cheapest way to
-the apex is up the centre: one base skill feeds both centre tier-2 skills, which open the keystone, which opens both tier-4
-skills, then the apex: seven points. A level 10 officer has nine, so the apex leaves two to spend elsewhere, and a pyramid of
-fifteen is never full: every officer has chosen.
+A path can change lanes at a crossover; the keystone and the tips are the skills with two prerequisites. The cheapest way to
+the capstone is up the centre (root, step, both crossovers, keystone, capstone): six points of a level 10 officer's nine,
+leaving three for one outer lane or two lane steps and a tip's way; fourteen skills are never all learned.
 
-The base runs across the station's three themes left to right (for the helm: piloting, emergency turns, evasion), so
-crossing over mixes them; the keystone and the apex give two or three abilities at once. Every skill's changes are its
-`fx` (ability keys the battle rules read, as version 1 listed, with the same new keys); `data/campaign/crew.json` has every
-name and number.
+Every layout reads each skill's lane and depth (`data/campaign/crew.json`) and places it its own way; the lines between
+skills come from the prerequisites: dashed for either, solid for every one, lit once the earlier skill is learned.
 
-Auto level spends up the centre to the apex (the station's `auto`, Auto 1 to 7 on the tree), then the first open skill.
-Picking a skill by hand turns auto level off for that officer.
+| Style | Look |
+|---|---|
+| Branches | Grows up the screen from the three roots to the capstone, curved limbs, the themes named under the roots |
+| Constellation | The same skills as stars over a seeded starfield, placed a little off the grid, thin straight lines |
+| Radial | A fan out of the station's hub, rings for depth, the capstone on the outermost ring |
+| Lanes | Left to right in three bands like the console's, every skill a pill key with its icon and name |
+
+**Icons** (`docs/mockups/lib/skill-icons.js`, the Concord's): one picture for each ability (twenty-five), drawn on the
+icon guide's 48 px grid with a 3 px line, solid for the thing and lines for what it gives off, one ink, read at 20 px; a
+skill shows its first ability's. Each skin draws the same subject list its own way (task 2.7).
+
+**Tooltips**: hovering or focusing a skill shows its station and role, each change with its icon, what it needs (either or
+both, by name), and whether it is learned, open or locked; a click or tap pins it, and a pinned open skill carries Learn,
+so nothing needs hover alone (CLAUDE.md 7).
 
 ## The two officer systems
 
@@ -76,6 +88,7 @@ slots take the campaign crew (officers task 2.5); every other ship keeps the ros
 | CL4 | Officers hired above ensign: points unspent, or already placed? | Unspent, for the player to place or auto level |
 | CL5 | Retraining | 10 prestige, every point back |
 | CL6 | Ten levels, ranks every two (Ensign to Captain) | Yes |
-| CL9 | The pyramid: either-below for most skills, both-below for the keystone and the apex | Yes, as drawn |
+| CL9 | The tree: crossovers open from either lane, the keystone and the tips need two | Yes, as drawn |
+| CL10 | Which style of tree | Branches, provisionally |
 | CL7 | Six campaign stations covering the battle's nine | Yes, as mapped above |
 | CL8 | Wounds and deaths in battle (the reference game's) | Not yet |
