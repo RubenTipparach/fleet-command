@@ -62,7 +62,7 @@ account and every link here is updated.
 | 38 | Engagement zone: the warning banner for leaving the zone and for self-destruct, the zone on the radar dial and the tactical map, its border in the 3D view (owner, 2026-11-10: "zone of engagement, a big square, leaving means you are leaving engagement zone and retreating. give players 30 seconds to turn around before abandoning a mission", "abandoning a mision without functional warp drive means you are self destructing", "have the warning for self destruct show up on screen lol") | Listed (2026-11-10) | `engagement-zone` | `docs/mockups/battle-console.html` (to be drafted) | none yet |
 | 39 | Crew leveling: officers who gain experience, are promoted for skill points spent on a station skill tree (by hand or auto level), and are traded and hired for prestige (owner, 2026-11-12: "ensigns provide no bonus but gain xp overtime, and can be traded for prestige so you can get more experienced crew, or just level up your crew member", "need crew skill tree", "skill tree, each level gets a skill point, the player can auto level officers or pick paths on the tree to go down and specialize") | Drafted (2026-11-12, v1) | `crew-leveling` | `docs/mockups/crew-leveling.html` | https://claude.ai/artifact/KSPiMkxRQPkG2K1WnAr9zk |
 
-| 40 | Nebula shells: the plumes and their top and bottom decks as low-poly see-through shells, built once at load (owner, 2026-11-12: "for the nebulas, can you generate some sort of cube marched geometry with transparency?", "the top and bottom decks of clouds need to be lowpoly generated too") | Drafted (2026-11-12, v1) | `nebula-shells` | `docs/mockups/nebula-shells.html` | https://claude.ai/artifact/6AiSU9cr1bCpEuNfswrGHE |
+| 40 | Nebula shells: the plumes and their top and bottom decks as low-poly see-through shells, built once at load (owner, 2026-11-12: "for the nebulas, can you generate some sort of cube marched geometry with transparency?", "the top and bottom decks of clouds need to be lowpoly generated too") | **Approved for implementation** (2026-11-12, owner in conversation: "Nebula shells. The cube marched, generate once static mesh"; in the game as the low-spec mode's nebula on `claude/pi-perf`, PR #84). Drafted (2026-11-12, v1) | `nebula-shells` | `docs/mockups/nebula-shells.html` | https://claude.ai/artifact/6AiSU9cr1bCpEuNfswrGHE |
 New mockups are added at the bottom with the owner's words, never renumbered.
 
 ---
@@ -1214,6 +1214,7 @@ about phone", "I dont really need this stuff to work on a phone", "three js mock
 - **Shows:** up to three plume columns and the decks above and below the battle plane, polygonised once by surface nets
   into 1-4 nested shells. Controls for the look, columns, decks, grid, shading, blend, edge fade, opacity and wireframe,
   with the triangles, build time and draws on screen. Desktop and phone.
-- **Stage:** Drafted.
+- **Stage:** Approved for implementation (2026-11-12, owner in conversation: "Nebula shells. The cube marched, generate once
+  static mesh"). In the game as the low-spec mode's nebula (`claude/pi-perf`, PR #84).
 - **Questions:** NS1-NS4 in the change's design (not yet on the survey).
 
