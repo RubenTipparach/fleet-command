@@ -16,39 +16,48 @@ trees and names are our own.
 
 | Rule | Number (`data/campaign/crew.json`) |
 |---|---|
-| Ranks | Ensign, Lieutenant, Lt. Commander, Commander, Captain; skill points = rank index (0 to 4) |
-| Experience to promote (spent on promotion) | 300, 600, 1000, 1500 |
+| Levels | 1 to 10; skill points = level - 1 (0 to 9) |
+| Ranks, by level | Ensign 1, Lieutenant 2, Lt. Commander 4, Commander 6, Captain 8 |
+| Experience to the next level (spent on promotion) | 300, 400, 500, 650, 800, 1000, 1200, 1450, 1700 |
 | Experience per battle, every crew officer | 100 x grade: crushing 0.25, defeat 0.5, draw 0.75, victory 1, outstanding 1.5 |
 | Experience per campaign turn | 10 |
 | Experience to prestige | 50 experience = 1 prestige, both ways |
-| Transfer out | rank worth (0, 6, 14, 26, 42) + banked experience / 50, in prestige |
-| Hire from the pool | 0, 10, 24, 44, 70 prestige by rank; each station offers 2 ensigns and one each of Lieutenant to Commander, new every turn |
+| Transfer out | 5 prestige a level above the first + banked experience / 50 |
+| Hire from the pool | 8 prestige a level above the first; each station offers levels 1, 1, 3, 5 and 7, new every turn |
 | Retrain | 10 prestige: every point back, auto level off |
 
-A victory is 5 prestige (`campaign.json` rules), so an ensign is promoted after three victories, and a Captain is about
-twelve more; an ensign with 300 experience banked transfers out for 6 prestige, about one victory.
+A victory is 5 prestige and 100 experience, so an ensign reaches level 2 after three victories, Captain (level 8) after
+about 38 and level 10 after about 80, turns helping; a level 1 ensign with 300 experience banked transfers out for 6
+prestige, about one victory.
 
-An officer hired above ensign arrives with their points unspent, so the player shapes them (survey CL4).
+An officer hired above level 1 arrives with their points unspent, so the player shapes them (survey CL4).
 
-## The trees
+## The pyramids (version 2)
 
-Six stations (the campaign's), three branches each, three tiers each; tier 3 is a capstone. A Captain has four points, so
-an officer finishes one branch and starts a second: a specialist. Every node names the ability key its rule reads; the
-battle's existing abilities (`reactor.json` `officers.ability`: het, drift, hit, pd, scan, sweep_km, jam, repair_rate,
-ambush, aboard, pad_rate, wing_hit) carry over with the same per-step values, and the new keys need rules of their own
-(tasks 2.x).
+The owner, of version 1's three separate branches: "I wish crew leveling was kind of like a pyramid tree or something where
+some nodes can cross over, and some nodes have 2 or more prereqs". Each of the six stations has fifteen skills on five
+tiers, laid out as a pyramid with the apex on top:
 
-| Station | Branch 1 | Branch 2 | Branch 3 |
-|---|---|---|---|
-| Helm | Piloting: turn 4 %, accel 5 %, top speed 3 % (new) | Emergency turns: HET 4 %, 4 %, a failed HET never breaks down (new) | Evasion: enemies hit 1 %, 1 %, 2 % less (new) |
-| Tactical | Targeting: hit 2 %, 2 %, 3 % | Point defence: intercept 5 %, 5 %, two missiles a burst (new) | Gunnery: charge 3 %, 3 %, 6 % faster (new) |
-| Engineering | Power: drift -15 %, -15 %, +1 E reactor (new) | Repair: crews 20 %, 20 %, one more crew (new) | Shields: recharge 5 %, 5 %, 10 % (new) |
-| Science | Sensors: scan 25 %, 25 %, shows the weakest system (new) | Sweep: 10, 10, 20 km | Cloak watch: 10 %, 10 %, 15 % (new) |
-| Comms | Counter-jamming: 0.25, 0.25, 0.5 of ECM | Diplomacy: standing +1, +1, +2 (new) | Coordination: wingmen hit 1.5 %, 1.5 %, 3 % |
-| Security | Boarding: aboard 4 %, 4 %, 6 % | Ship's defence: ambush 10 %, 10 %, 15 % | Transporters: pads 10 %, 10 %, 20 % |
+| Tier | Skills | Opens when |
+|---|---|---|
+| 1 (base) | 5 | Always |
+| 2 | 4 | Either of the two below it (any) |
+| 3 | 3 | The sides: either of the two below; the centre keystone: both below it (all) |
+| 4 | 2 | Either of the two below it |
+| 5 (apex) | 1 | Both below it |
 
-Auto level spends along each station's `auto` path (four skills, shown on the tree as Auto 1 to 4), then the first open
-skill. Picking a skill by hand turns auto level off for that officer.
+Because most skills open from either neighbour, a path starts on one side and crosses to the other. The cheapest way to
+the apex is up the centre: one base skill feeds both centre tier-2 skills, which open the keystone, which opens both tier-4
+skills, then the apex: seven points. A level 10 officer has nine, so the apex leaves two to spend elsewhere, and a pyramid of
+fifteen is never full: every officer has chosen.
+
+The base runs across the station's three themes left to right (for the helm: piloting, emergency turns, evasion), so
+crossing over mixes them; the keystone and the apex give two or three abilities at once. Every skill's changes are its
+`fx` (ability keys the battle rules read, as version 1 listed, with the same new keys); `data/campaign/crew.json` has every
+name and number.
+
+Auto level spends up the centre to the apex (the station's `auto`, Auto 1 to 7 on the tree), then the first open skill.
+Picking a skill by hand turns auto level off for that officer.
 
 ## The two officer systems
 
@@ -66,6 +75,7 @@ slots take the campaign crew (officers task 2.5); every other ship keeps the ros
 | CL3 | Trading an officer for prestige: they leave, or only their experience is cashed? | They leave (transfer out) |
 | CL4 | Officers hired above ensign: points unspent, or already placed? | Unspent, for the player to place or auto level |
 | CL5 | Retraining | 10 prestige, every point back |
-| CL6 | Five ranks, Ensign to Captain | Yes |
+| CL6 | Ten levels, ranks every two (Ensign to Captain) | Yes |
+| CL9 | The pyramid: either-below for most skills, both-below for the keystone and the apex | Yes, as drawn |
 | CL7 | Six campaign stations covering the battle's nine | Yes, as mapped above |
 | CL8 | Wounds and deaths in battle (the reference game's) | Not yet |
