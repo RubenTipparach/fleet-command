@@ -772,6 +772,222 @@
    }
   },
   {
+   "faction": "vos",
+   "id": "vos_boarder",
+   "hull": "vos/vos_boarder.hull.png",
+   "wire": "vos/vos_boarder.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.17003,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 52.0,
+    "length_z": 153.217
+   },
+   "source_triangles": 3372,
+   "quads": 1617,
+   "triangles": 138,
+   "edges_drawn": 657,
+   "source": {
+    "glb": "assets/ships/vos/vos_boarder.glb",
+    "sha256": "bf83761ee35d9ff4318f89d1002744466b57f6a67473573b058af4cdc52c68b4"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_drum",
+   "hull": "vos/vos_drum.hull.png",
+   "wire": "vos/vos_drum.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.135387,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 64.0,
+    "length_z": 122.0
+   },
+   "source_triangles": 3480,
+   "quads": 1628,
+   "triangles": 224,
+   "edges_drawn": 1254,
+   "source": {
+    "glb": "assets/ships/vos/vos_drum.glb",
+    "sha256": "2fa4c0ed873640cf82e5de5560c951fd5c8cbe9f4b2859efbe3fb6a19d89b6a6"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_cross",
+   "hull": "vos/vos_cross.hull.png",
+   "wire": "vos/vos_cross.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.148704,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 95.0,
+    "length_z": 134.0
+   },
+   "source_triangles": 3796,
+   "quads": 1805,
+   "triangles": 186,
+   "edges_drawn": 899,
+   "source": {
+    "glb": "assets/ships/vos/vos_cross.glb",
+    "sha256": "7cb909516b876ea53d8977916ae6c35e669573b24a1fa3568e11c8d808a50892"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_deck_runner",
+   "hull": "vos/vos_deck_runner.hull.png",
+   "wire": "vos/vos_deck_runner.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.174612,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 52.0,
+    "length_z": 157.346
+   },
+   "source_triangles": 4168,
+   "quads": 1999,
+   "triangles": 170,
+   "edges_drawn": 774,
+   "source": {
+    "glb": "assets/ships/vos/vos_deck_runner.glb",
+    "sha256": "5da16e325d239bb77229d7c5ed20ca22beb83284de58e33598ebef33b2d7f9fa"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_broadside",
+   "hull": "vos/vos_broadside.hull.png",
+   "wire": "vos/vos_broadside.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.188654,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 45.6,
+    "length_z": 170.0
+   },
+   "source_triangles": 2880,
+   "quads": 1365,
+   "triangles": 150,
+   "edges_drawn": 703,
+   "source": {
+    "glb": "assets/ships/vos/vos_broadside.glb",
+    "sha256": "a151a652d3d18fa495b3d94d8ba27b177606b82e26c8529beaf0b78b8699d004"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_cutter",
+   "hull": "vos/vos_cutter.hull.png",
+   "wire": "vos/vos_cutter.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.018395,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 16.576,
+    "length_z": 15.552
+   },
+   "source_triangles": 512,
+   "quads": 227,
+   "triangles": 58,
+   "edges_drawn": 377,
+   "source": {
+    "glb": "assets/ships/vos/vos_cutter.glb",
+    "sha256": "c23dd04224384ad5fabfda9eaaacc5315d5b09a1efa8ae5af638080b9d523555"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_twin_boom",
+   "hull": "vos/vos_twin_boom.hull.png",
+   "wire": "vos/vos_twin_boom.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.017756,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 16.0,
+    "length_z": 15.71
+   },
+   "source_triangles": 928,
+   "quads": 415,
+   "triangles": 98,
+   "edges_drawn": 648,
+   "source": {
+    "glb": "assets/ships/vos/vos_twin_boom.glb",
+    "sha256": "4a0516975d4065a38cf9a235945615464167e4fbe207c93d636bc8ee1f83dbd6"
+   }
+  },
+  {
+   "faction": "vos",
+   "id": "vos_stack",
+   "hull": "vos/vos_stack.hull.png",
+   "wire": "vos/vos_stack.wire.png",
+   "size_px": [
+    1024,
+    1024
+   ],
+   "m_per_px": 0.01547,
+   "origin_px": [
+    512.0,
+    512.0
+   ],
+   "extent_m": {
+    "beam_x": 13.94,
+    "length_z": 13.547
+   },
+   "source_triangles": 1024,
+   "quads": 454,
+   "triangles": 116,
+   "edges_drawn": 738,
+   "source": {
+    "glb": "assets/ships/vos/vos_stack.glb",
+    "sha256": "ef64b1d64b61795d3009e0c3435c450fdd61fe424f390f0a230017526f4fa812"
+   }
+  },
+  {
    "faction": "axiom",
    "id": "axiom_ff",
    "hull": "axiom/axiom_ff.hull.png",
@@ -1093,114 +1309,6 @@
    "source": {
     "glb": "assets/ships/redtithe/redtithe_fl.glb",
     "sha256": "ddb8cdf30204471b60d0552721545176e801e5c87abcc12cda5eeaf9a035793c"
-   }
-  },
-  {
-   "faction": "vos",
-   "id": "vos_ff",
-   "hull": "vos/vos_ff.hull.png",
-   "wire": "vos/vos_ff.wire.png",
-   "size_px": [
-    1024,
-    1024
-   ],
-   "m_per_px": 0.055819,
-   "origin_px": [
-    512.0,
-    512.0
-   ],
-   "extent_m": {
-    "beam_x": 20.152,
-    "length_z": 50.3
-   },
-   "source_triangles": 1680,
-   "quads": 838,
-   "triangles": 4,
-   "edges_drawn": 1298,
-   "source": {
-    "glb": "assets/ships/vos/vos_ff.glb",
-    "sha256": "d2a6a5cb0ef1c2d321465398b31b1dfc06fdb0c7a66c2f162fe704f3306511cf"
-   }
-  },
-  {
-   "faction": "vos",
-   "id": "vos_dd",
-   "hull": "vos/vos_dd.hull.png",
-   "wire": "vos/vos_dd.wire.png",
-   "size_px": [
-    1024,
-    1024
-   ],
-   "m_per_px": 0.100146,
-   "origin_px": [
-    512.0,
-    512.0
-   ],
-   "extent_m": {
-    "beam_x": 31.437,
-    "length_z": 90.244
-   },
-   "source_triangles": 2260,
-   "quads": 1126,
-   "triangles": 8,
-   "edges_drawn": 1808,
-   "source": {
-    "glb": "assets/ships/vos/vos_dd.glb",
-    "sha256": "74a01746319cf071b4e36ee3461d7e17b0b964a6b5ee5fc1d09c1c3834de566a"
-   }
-  },
-  {
-   "faction": "vos",
-   "id": "vos_ca",
-   "hull": "vos/vos_ca.hull.png",
-   "wire": "vos/vos_ca.wire.png",
-   "size_px": [
-    1024,
-    1024
-   ],
-   "m_per_px": 0.151516,
-   "origin_px": [
-    512.0,
-    512.0
-   ],
-   "extent_m": {
-    "beam_x": 88.97,
-    "length_z": 136.534
-   },
-   "source_triangles": 3072,
-   "quads": 1530,
-   "triangles": 12,
-   "edges_drawn": 2602,
-   "source": {
-    "glb": "assets/ships/vos/vos_ca.glb",
-    "sha256": "abb562163148aa552de2a95eccef13d7ea2ad2dc782d423a64fbf502f900d0a7"
-   }
-  },
-  {
-   "faction": "vos",
-   "id": "vos_cap",
-   "hull": "vos/vos_cap.hull.png",
-   "wire": "vos/vos_cap.wire.png",
-   "size_px": [
-    1024,
-    1024
-   ],
-   "m_per_px": 0.215737,
-   "origin_px": [
-    512.0,
-    512.0
-   ],
-   "extent_m": {
-    "beam_x": 132.696,
-    "length_z": 194.405
-   },
-   "source_triangles": 3478,
-   "quads": 1732,
-   "triangles": 14,
-   "edges_drawn": 2999,
-   "source": {
-    "glb": "assets/ships/vos/vos_cap.glb",
-    "sha256": "507159b7a76740fcf6ba0f577a7add7b04dde916f6492dc248f85a33eec68e53"
    }
   },
   {

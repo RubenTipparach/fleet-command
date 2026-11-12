@@ -7,7 +7,7 @@
 // which still carries its own copy of the rest, with damage and breakup woven in; moving it wholly onto this file is task
 // 3.4 of kelvane-ship-concepts (CLAUDE.md 6.1). Edit it here, then re-run tools/mockups/inline_data.py on each page that inlines it.
 //
-// FCBakedShip(THREE, { onTexture, normals }) returns { tex, geometry, maps, looks, fixtures, blink, panes }. onTexture(promise):
+// FCBakedShip(THREE, { onTexture, normals }) returns { tex, geometry, maps, looks, fixtures, blink, panes, masts, lenses }. onTexture(promise):
 // called for every texture's load, so the page can wait for them before it calls itself ready. normals(points, deg): smooth
 // normals within deg (hull-grow.js creasedNormals), for a ship baked shaded smooth (its manifest's smooth_deg).
 window.FCBakedShip = function FCBakedShip(THREE, opts) {
@@ -136,5 +136,117 @@ function panes(list, U, live, GL, { uniforms = {}, head = 'varying vec3 vObj; va
     fragmentShader: head + paneGLSL(GL) + `
       void main(){ ${main} }` });
   const m = new THREE.Mesh(g, mat); m.userData.panes = true; return m; }
-return { tex, geometry, maps, looks, fixtures, blink, panes };
+/**
+ * The antennas and dishes as geometry (sh.masts, written by tools/blender/hull_detail.py fx_antenna and fx_dish): they
+ * stand metres off the hull, so they cannot be baked into the maps; only their footings are. Each is built in its own frame
+ * (u along the ship, v across, w out of the hull; m: the frame as a row-major 4x4 in ship space, mirrored for a starboard
+ * one), chunky after the owner's references (2026-11-11). No two are the same shape (owner, 2026-11-11: "No two antenna cam
+ * be the same shape", and of a port and starboard pair built alike: "I literally just told you no two antenna should look the
+ * same on a starship"): each takes its design from its own place in the ship's list (port and starboard are two places), a
+ * distinct entry of the list of every combination of head, arms, segments and dish (the place times a step coprime with the
+ * list's length, so no two share a design); dishes differ by size of tilt and turn the same way. No symmetry exception.
+ * mat: the metal; lamp: the tips' material. Returns one group, to add to the ship's root.
+ */
+const MAST_HEADS = ['box', 'drum', 'fork', 'ball', 'plate'], MAST_ARMS = [0, 1, 2], MAST_SEGS = [2, 3, 4], MAST_DISH = [0, 1];
+const MAST_N = MAST_HEADS.length * MAST_ARMS.length * MAST_SEGS.length * MAST_DISH.length;   // 90
+function mastDesign(style) { let k = (style * 37 + 11) % MAST_N; const pick = (a) => { const v = a[k % a.length]; k = Math.floor(k / a.length); return v; };
+  return { head: pick(MAST_HEADS), arms: pick(MAST_ARMS), segs: pick(MAST_SEGS), dish: pick(MAST_DISH) }; }
+function masts(sh, mat, lamp) {
+  const g = new THREE.Group();
+  const box = (f, sx, sy, sz, x, y, z, m = mat) => { const b = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), m); b.position.set(x, y, z + sz / 2); f.add(b); return b; };
+  const cyl = (f, r0, r1, h, x, y, z, seg = 14, m = mat) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, h, seg), m); c.rotation.x = Math.PI / 2; c.position.set(x, y, z + h / 2); f.add(c); return c; };
+  const bowl = (f, d, x, y, z, tilt, yaw) => { const b = new THREE.Mesh(new THREE.SphereGeometry(d / 2, 24, 8, 0, Math.PI * 2, 0, 0.75), mat);
+    b.rotation.set(Math.PI + tilt, 0, yaw); b.position.set(x, y, z); f.add(b);   // a shallow bowl opening away from the hull, tilted
+    const feed = new THREE.Mesh(new THREE.CylinderGeometry(d * 0.03, d * 0.03, d * 0.45, 6), mat); feed.position.set(0, d * 0.22, 0); b.add(feed); return b; };
+  // No two the same length (owner, 2026-11-11: "Antenna need to also be different lengths. No two antenna shall have same
+  // length"): each mast's length starts from its data and its place, and steps up by 13% until it is at least 12% from every
+  // length already given, so every length on the ship is its own.
+  const lengths = [], built = [];
+  const lengthOf = (base, place) => { let L = base * (0.75 + ((place * 0.37) % 0.55));
+    while (lengths.some((o) => Math.abs(L - o) < 0.12 * Math.max(L, o))) L *= 1.13; lengths.push(L); return L; };
+  (sh.masts || []).forEach((A, place) => {
+    const f = new THREE.Group(), z0 = A.base_m;
+    if (A.kind === 'dish') {   // a dish on a pedestal and yoke, its size, tilt and turn from its style
+      const d = A.d_m, h = lengthOf(A.h_m, place), s = place, tilt = 0.35 + (s % 4) * 0.18, yaw = (s * 1.7) % (Math.PI * 2);
+      cyl(f, d * 0.16, d * 0.11, h * 0.6, 0, 0, z0); box(f, d * 0.5, d * 0.12, d * 0.25, 0, 0, z0 + h * 0.6);
+      for (const sv of [-1, 1]) box(f, d * 0.06, d * 0.06, d * 0.3, 0, sv * d * 0.22, z0 + h * 0.6);
+      bowl(f, d, 0, 0, z0 + h * 0.6 + d * 0.32, tilt, yaw);
+      if (s % 2) box(f, d * 0.2, d * 0.14, d * 0.1, d * 0.2, 0, z0);   // a drive housing at the foot of every other one
+    } else {
+      const D = mastDesign(place), r = A.r_m, L = lengthOf(A.h_m, place), W = A.w_m;   // its length its own
+      let z = z0;
+      box(f, r * 5, r * 5, r * 3, 0, 0, z); z += r * 3;                               // a block footing on the baked plate
+      for (let k = 0; k < D.segs; k++) { const sc = 1 - k * (0.6 / D.segs), h = L * 0.78 / D.segs;   // the mast in stepped segments
+        box(f, r * 2.2 * sc, r * 2.2 * sc, h, 0, 0, z); box(f, r * 3 * sc, r * 3 * sc, r * 0.8, 0, 0, z + h - r * 0.8); z += h; }
+      if (D.head === 'box') box(f, r * 4.5, r * 3.5, r * 5, 0, 0, z);
+      else if (D.head === 'drum') cyl(f, r * 2.6, r * 2.6, r * 4, 0, 0, z, 16);
+      else if (D.head === 'fork') { for (const sv of [-1, 1]) box(f, r * 1.2, r * 1.2, r * 6, 0, sv * r * 2, z); box(f, r * 1.4, r * 5.2, r * 1.2, 0, 0, z); }
+      else if (D.head === 'ball') { const b = new THREE.Mesh(new THREE.SphereGeometry(r * 2.6, 16, 10), mat); b.position.set(0, 0, z + r * 2.6); f.add(b); }
+      else box(f, r * 1.2, r * 7, r * 4, 0, 0, z);                                   // plate: a flat panel across the ship
+      z += r * 5;
+      box(f, r * 1.2, r * 1.2, L * 0.18, 0, 0, z);                                     // the tip spike and its red lamp
+      box(f, r * 1.8, r * 1.8, r * 1.8, 0, 0, z + L * 0.18, lamp);
+      for (let a = 0; a < D.arms; a++) { const za = z0 + L * (0.35 + a * 0.25), wa = (W || r * 14) * (1 - a * 0.3);   // cross arms, aerials hanging off
+        box(f, r * 1.4, wa, r * 1.4, 0, 0, za); for (const sv of [-1, 1]) box(f, r * 0.8, r * 0.8, L * 0.2, 0, sv * wa / 2, za - L * 0.2); }
+      if (D.dish || A.dish_m) { const d = A.dish_m || r * 9; bowl(f, d, 0, r * 2.2 + d * 0.15, z0 + L * 0.3, 0.5 + (place % 3) * 0.2, Math.PI / 2 + place * 0.9); }
+    }
+    if (A.kind !== 'dish') { const lean = new THREE.Group(); lean.rotation.y = ((place % 5) - 2) * 0.06; while (f.children.length) lean.add(f.children[0]); f.add(lean);   // its own slight lean
+      const bx = new THREE.Box3(); lean.updateMatrixWorld(true); lean.traverse((m) => { if (m.isMesh) bx.expandByObject(m); }); built.push({ lean, h: bx.max.z - bx.min.z }); }   // its whole height, footing to tip
+    f.userData.mast = A.kind || 'antenna';
+    f.matrixAutoUpdate = false; f.matrix.set(...A.m); g.add(f);
+  });
+  // What is seen is the whole antenna, head and spike included: measured as built, shortest first, each is stretched along
+  // its mast until it stands at least 14% taller than the one before (12% as seen, with the lean), so no two antennas on the ship share a length.
+  built.sort((a, b) => a.h - b.h); let prev = 0;
+  for (const B of built) { const want = Math.max(B.h, prev * 1.14); B.lean.scale.z = want / B.h; prev = want; }
+  return g;
+}
+/**
+ * The glowing mouths (a gun's muzzle, an emitter, a drive) as shaders, not painted light (owner, 2026-11-11, of flat cyan caps
+ * baked into the maps: "They look kinda cheap to me. If you're gonna have glowy bits use baked lighting or shaders"). The bake
+ * paints those faces as dark metal lenses and keeps the light they cast on the hull round them in its light map; here each
+ * glowing face of the page's own hull (meshes, those of them for which isGlow(material) holds) gets a lens laid just off it:
+ * a hot core fading through the glow's colour to a dark edge, a bright rim that catches the light as the view grazes it,
+ * slow rings drawn inward and a gentle pulse, each mouth on its own phase. root: the group the lenses go in (they are built in
+ * its frame); rgb: the glow's colour. Returns { group, time }, time a { value } uniform the page advances in seconds.
+ */
+function lenses(meshes, isGlow, root, rgb) {
+  const group = new THREE.Group(), time = { value: 0 }, V = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+  root.updateMatrixWorld(true); const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const mat = (phase) => new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
+    polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4,
+    uniforms: { uTime: time, uPhase: { value: phase }, uCol: { value: new THREE.Color(...rgb) } },
+    vertexShader: `varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz);
+        gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: `uniform float uTime; uniform float uPhase; uniform vec3 uCol; varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+      void main(){ float r = length(vUv - 0.5) * 2.0; if (r > 1.0) discard;
+        float pulse = 0.82 + 0.18 * sin(uTime * 1.7 + uPhase);
+        float core = exp(-r * r * 7.0);                                        // the hot centre
+        float body = smoothstep(1.0, 0.15, r) * 0.45;                          // the glow falling off toward the lip
+        float rings = 0.10 * (0.5 + 0.5 * sin(r * 22.0 + uTime * 2.6 + uPhase)) * smoothstep(1.0, 0.35, r);   // drawn inward
+        float rim = smoothstep(0.84, 0.95, r) * smoothstep(1.0, 0.95, r);
+        float graze = pow(1.0 - abs(dot(normalize(vN), normalize(vV))), 2.0);  // the rim lights as the view grazes the mouth
+        vec3 c = uCol * (body + rings) * pulse + mix(uCol, vec3(1.0), 0.7) * core * pulse + uCol * rim * (0.25 + 0.9 * graze);
+        gl_FragColor = vec4(c, 1.0); }` });
+  let k = 0;
+  for (const m of meshes) m.updateMatrixWorld(true);
+  for (const m of meshes) m.traverse((o) => { if (!o.isMesh || !isGlow(o.material)) return;
+    const pos = o.geometry.attributes.position, idx = o.geometry.index, n = idx ? idx.count : pos.count, mtx = new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld);
+    const P = (i) => V().fromBufferAttribute(pos, idx ? idx.getX(i) : i).applyMatrix4(mtx);
+    const c = V(), nrm = V(), pts = []; let area = 0;
+    for (let i = 0; i + 2 < n; i += 3) { const a = P(i), b = P(i + 1), e = P(i + 2), x = V().subVectors(b, a).cross(V().subVectors(e, a)), A = x.length() / 2;
+      if (A < 1e-6) continue; area += A; c.addScaledVector(V().add(a).add(b).add(e).multiplyScalar(1 / 3), A); nrm.add(x); pts.push(a, b, e); }
+    if (!area) return; c.multiplyScalar(1 / area); nrm.normalize();
+    let rad = Infinity; for (const p of pts) { const d = V().subVectors(p, c); d.addScaledVector(nrm, -d.dot(nrm)); if (d.length() > 1e-3) rad = Math.min(rad, d.length()); }
+    if (!isFinite(rad)) return;
+    let edge = 0; for (const p of pts) edge = Math.max(edge, V().subVectors(p, c).length());
+    const R = Math.min(edge * 0.9, Math.max(rad, edge * 0.82));   // inside the mouth's lip
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(R, 48), mat(k++ * 1.37));
+    lens.position.copy(c).addScaledVector(nrm, 0.03); lens.quaternion.setFromUnitVectors(V(0, 0, 1), nrm);
+    lens.userData.lens = { c: c.toArray(), n: nrm.toArray(), r_m: R, phase: (k - 1) * 1.37, rgb: [...rgb] }; group.add(lens); });   // what the game's lens is drawn from (tools/mockups/export_ships.mjs)
+  root.add(group);
+  return { group, time };
+}
+return { tex, geometry, maps, looks, fixtures, blink, panes, masts, lenses };
 };

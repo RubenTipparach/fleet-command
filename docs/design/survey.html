@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <title>Fleet Command Survey</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -174,6 +175,26 @@ function styleQ(id, comp, q, rec, why, skip = []) {
     pics: opts.map(([l]) => `${comp}-${l}`).concat([null]), rec: opts.findIndex(([l]) => l === rec), why };
 }
 const SECTIONS = [
+  { tag: 'CL', name: 'Crew leveling (change crew-leveling, mockup 39)',
+    lead: 'Mockup 39 (Crew Leveling, docs/mockups/crew-leveling.html; its link is on the tracker) is your crew screen with officers who level up (you: "ensigns provide no bonus but gain xp overtime, and can be traded for prestige so you can get more experienced crew, or just level up your crew member", "skill tree, each level gets a skill point, the player can auto level officers or pick paths on the tree to go down and specialize"). Fight battles and end turns on the page to watch it work. A blank answer takes the recommendation.',
+    qs: [
+      { id: 'CL1', q: 'What do officers cost to hire?', options: ['Prestige, by rank (ensigns free); credits stay for ships and parts', 'Credits, as now', 'Both: credits for the wage, prestige for the rank'], rec: 0,
+        why: 'Your note trades officers for prestige to get more experienced crew, so prestige is the crew\'s currency; it also gives prestige a use beyond standing.' },
+      { id: 'CL2', q: 'Where does experience come from?', options: ['Each battle (more for a better result) and a little each turn aboard', 'Battles only', 'Battles, turns, and each time the officer\'s skill is used in battle'], rec: 0,
+        why: 'The turn trickle is your "xp overtime"; battles by grade make winning the main way up. Counting every use is fiddly to balance and to show.' },
+      { id: 'CL3', q: 'Trading for prestige: what goes?', options: ['The officer leaves, worth their rank plus their banked experience', 'The officer stays and only their banked experience is cashed in', 'Either, the player\'s choice'], rec: 0,
+        why: 'An ensign who leaves for prestige is the swap you described: send them on, hire someone better. Cashing experience alone would make every officer a prestige mine.' },
+      { id: 'CL4', q: 'An officer hired above ensign: are their skill points already placed?', options: ['No: they arrive with points to place, or to auto level', 'Yes: placed along their station\'s auto path', 'Yes: placed in a school of their own, shown on their card'], rec: 0,
+        why: 'Unspent points let you shape a bought officer like a promoted one; auto level is one press away.' },
+      { id: 'CL5', q: 'Retraining an officer (every point back)', options: ['10 prestige, at any time in port', 'Free in port', 'Not allowed: choices are for good'], rec: 0,
+        why: 'A small price keeps choices meaningful without punishing an experiment.' },
+      { id: 'CL6', q: 'The ranks', options: ['Five: Ensign, Lieutenant, Lt. Commander, Commander, Captain (four skill points at the top)', 'Four, as the battle roster has now (three points at the top)', 'More, with a point every rank (say how many in the notes)'], rec: 0,
+        why: 'Four points against nine skills makes an officer finish one branch and start one more: a specialist, which is what the tree is for.' },
+      { id: 'CL7', q: 'The campaign has six stations and the battle nine. How do they meet?', options: ['The six campaign officers cover the battle\'s nine (Engineering is power and repair, Tactical is tactical and point defence, Comms is comms and fleet, Security is transport)', 'Nine campaign stations, one per battle slot', 'Six battle slots, merged the same way'], rec: 0,
+        why: 'Six trees are enough to learn; the battle keeps its finer slots and reads each from the campaign officer who covers it.' },
+      { id: 'CL8', q: 'Should officers be wounded or killed in battle, as in the reference game?', options: ['Not yet', 'Wounded only: out for a few turns', 'Wounded and killed'], rec: 0,
+        why: 'Losing a Captain you levelled for twenty battles is a big swing; worth adding once leveling plays well on its own.' },
+    ] },
   { tag: 'Y', name: 'Vos Syndicate ships (mockup 37)',
     lead: 'Mockup 37 (Vos Syndicate Ships, docs/mockups/vos-ship-concepts.html; its link is on the tracker) is now version 9: freighter hulls only, no warship parts (you: "I dont like that they have military ship parts, the vos would be sort of a militia organzide from various traders"), six specialists with their rooms, the Deck runner (once the Saucer runner) and two fighters detailed. A blank answer accepts the recommendation.',
     qs: [
@@ -189,15 +210,9 @@ const SECTIONS = [
       { id: 'Y12', q: 'The Vos fighters are plated in a patchwork of salvaged plate (rusts, and a few plates still in another navy\'s dulled colour). The patchwork is mirrored side to side, as every other navy\'s plating is. Should a Vos craft be patched unevenly instead, so its port side does not match its starboard?',
         options: ['Mirrored, as now', 'Uneven: the plate colours differ side to side, the plate shapes stay mirrored', 'Uneven all through: shapes and colours both'], rec: 0,
         why: 'Mirrored is what the bake does today and it reads clean from the battle camera. Uneven colour is a small change to the painter; uneven shapes is a larger one.' },
-      { id: 'Y8', q: 'Each of your picks now has one trade: 3 Boarder boards (a welded grapple fork holds the prize); 10 Drum lays mines (twelve racks round the spine); 11 Cross holds with tractor beams (an emitter at each of four arm tips); 12 Ram breaks rocks (a driver in a hammer head of armour, which it hides behind when the pieces fly); 8 Deck runner launches fighters (six of the Vos\'s own on a deck over its drive block); 9 Broadside passes as a freighter (eight gun houses behind container doors). Is each trade on the right hull?',
-        options: ['Yes, as drawn', 'Swap some (say which in the notes)', 'Bring back the Castle or the Delta for one of them (say which trade in the notes)', 'A new hull for one of the trades (say which in the notes)'], rec: 0,
-        why: 'Each trade went to the pick whose shape already suited it: the drum is a magazine, the cross spreads emitters wide, the hammer head is a shield against its own blast.' },
       { id: 'Y9', q: 'Disguising themselves as freighters: is that one ship\'s trade, or something every Vos ship does?',
         options: ['Every Vos ship reads as a freighter from far off, and the Broadside passes even close up', 'Every Vos ship, equally: no ship specialises in it', 'One ship\'s trade only: the others look like the raiders they are'], rec: 0,
-        why: 'All six are made of freighter parts, so all of them can pass at a distance; one that keeps its containers and hides its guns can pass an inspection.' },
-      { id: 'Y10', q: 'Rock breaking (you: "can split up asteroids causing high damage to ships near them including it self"). How does a captain use it?',
-        options: ['A slow charged shot at a rock in range: the rock splits, and every ship near it takes heavy damage, the breaker too if it is close', 'A charge carried to the rock and set, then run from', 'Different (say in the notes)'], rec: 0,
-        why: 'A shot keeps it a weapon the captain aims and times; the danger to the breaker comes from having to be near enough to hit. It needs rocks in battles first, which is its own piece of work.' },
+        why: 'All five are made of freighter parts, so all of them can pass at a distance; one that keeps its containers and hides its guns can pass an inspection.' },
       { id: 'Y1', q: 'Is this how the Vos get their ships: freighter drive blocks, spines and containers, with parts taken from warships, rearranged by a clan\'s yard, and no hull built from new?',
         options: ['Yes', 'Mostly, but a rich clan builds a few hulls of its own (say what in the notes)', 'Different (say in the notes)'], rec: 0,
         why: 'A clan has a breaking yard, not a shipyard. Every Vos ship then tells you who the clan has raided.' },
@@ -585,6 +600,7 @@ const SECTIONS = [
 ];
 
 const DECIDED = [
+  { text: 'Y8 and mockup 37 approved for implementation (owner, 2026-11-11): "I woudl cut number 12 out (ram) , everything else is good to go, implmenet it": the Ram is cut, and with it rock breaking (Y10 is closed); the other picks keep their trades as drawn: the Boarder boards, the Drum lays mines, the Cross holds with tractor beams, the Deck runner carries six Cutters, the Broadside passes as a freighter; with the fighters, they go into the game and the placeholder Vos line is retired', where: 'openspec/changes/vos-ship-concepts (D22), data/ships/vos/line.json, mockup 37 v16' },
   { text: 'Y7 and the Vos culture (owner, 2026-11-11): "other than freighter hulls lets not reuse any other ships hulls too", "I dont like that they have military ship parts, the vos would be sort of a militia organzide from various traders": no warship parts on any Vos ship. The Boarder\'s Hunt frigate prow is replaced by a welded grapple fork with blunt arms; the Ram\'s Albatross nacelles by welded drive pods; the Saucer runner\'s Petrel by a second Hunt freighter\'s bow end, and it is renamed the Deck runner', where: 'openspec/changes/vos-ship-concepts (D18), mockup 37 v9' },
   { text: 'Y11 (owner, 2026-11-10): "love all 3 of those fighters, lets stick to 21 as standard fighter, twin boom as the shuttle stand in ( but also they will be used as bombers as well) and lets get highres versions fo these built out": the 21 Cutter is the Vos\'s standard fighter; the 22 Twin boom stands in for their shuttle and is also flown as a bomber; the 23 Stack is liked and has no job yet', where: 'openspec/changes/vos-ship-concepts (D14), mockup 37 v7' },
   { text: 'NP8, in part (owner, 2026-11-10): 15 km is the most a lock reaches through a nebula plume, so ships closer than that lock and fight inside a cloud column ("nebula battles - 15km is now max lockon range")', where: 'openspec/changes/nebula-plumes, data/battle/systems/cloak.json lock_km' },
@@ -886,3 +902,5 @@ ALL_QS.forEach((q) => paint(q.id));
 connect();
 setupDownload();
 </script>
+
+</body></html>

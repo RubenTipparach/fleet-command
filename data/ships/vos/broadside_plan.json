@@ -1,0 +1,1060 @@
+{
+ "schema": "fleetcommand.ship-plan/1",
+ "_doc": "A Vos specialist's rooms as blocks (Ship Design Bible chapter 2), laid out inside the parts it is built from, since a Vos ship is a conversion: the hull came first and the rooms are fitted into it, the opposite of a warship designed inside out. Frame: the page's build frame (mockup 37, window.MOCKUP_PARTS): +X port, +Y up, +Z bow, metres, the drive block's stern at z = 0. Functional rooms only, in our own words; what the Syndicate calls them is the owner's (survey U7). A room is a box: x_m and z_m its extent, decks the deck indices it spans (0 the top); deck_floor_m each deck's floor, headroom_m its clear height, clearance_m and structure_m the air and plating between a room and the outside, which the page checks against every part. The Broadside: a Krai freighter's drive block and its full spine, with eight containers on its flanks, each a gun house behind its doors. The gun crews bunk in the spine between them; from outside nothing but the freighter shows.",
+ "ship": "vos_broadside",
+ "crew": 60,
+ "deck_floor_m": [
+  16.1,
+  12.6,
+  9.1,
+  5.6,
+  2.1,
+  -1.4,
+  -4.9,
+  -8.4,
+  -11.9,
+  -15.4
+ ],
+ "headroom_m": 2.8,
+ "clearance_m": 0.45,
+ "structure_m": 0.6,
+ "nose_m": 4,
+ "tail_m": 4,
+ "rooms": [
+  {
+   "id": "engineering",
+   "name": "Engineering (the freighter's drive)",
+   "kind": "engineering",
+   "decks": [
+    6,
+    7
+   ],
+   "x_m": [
+    -10.5,
+    10.5
+   ],
+   "z_m": [
+    8,
+    26
+   ]
+  },
+  {
+   "id": "reactor",
+   "name": "Reactor",
+   "kind": "engineering",
+   "decks": [
+    8,
+    9
+   ],
+   "x_m": [
+    -4,
+    4
+   ],
+   "z_m": [
+    10,
+    26
+   ]
+  },
+  {
+   "id": "bridge",
+   "name": "Bridge",
+   "kind": "command",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -12,
+    12
+   ],
+   "z_m": [
+    28,
+    44
+   ]
+  },
+  {
+   "id": "corr_4",
+   "name": "Corridor, deck E",
+   "kind": "corridor",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    14,
+    28
+   ]
+  },
+  {
+   "id": "corr_5",
+   "name": "Corridor, deck F",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    14,
+    46
+   ]
+  },
+  {
+   "id": "corr_6",
+   "name": "Corridor, deck G",
+   "kind": "corridor",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    46
+   ]
+  },
+  {
+   "id": "corr_7",
+   "name": "Corridor, deck H",
+   "kind": "corridor",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    46
+   ]
+  },
+  {
+   "id": "corr_8",
+   "name": "Corridor, deck I",
+   "kind": "corridor",
+   "decks": [
+    8
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    46
+   ]
+  },
+  {
+   "id": "corr_9",
+   "name": "Corridor, deck J",
+   "kind": "corridor",
+   "decks": [
+    9
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    26,
+    46
+   ]
+  },
+  {
+   "id": "bunks_e_p",
+   "name": "Crew bunks, port",
+   "kind": "crew",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    1.2,
+    13.5
+   ],
+   "z_m": [
+    14,
+    28
+   ]
+  },
+  {
+   "id": "bunks_e_s",
+   "name": "Crew bunks, starboard",
+   "kind": "crew",
+   "decks": [
+    4
+   ],
+   "x_m": [
+    -13.5,
+    -1.2
+   ],
+   "z_m": [
+    14,
+    28
+   ]
+  },
+  {
+   "id": "mess",
+   "name": "Mess",
+   "kind": "crew",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    15
+   ],
+   "z_m": [
+    14,
+    46
+   ]
+  },
+  {
+   "id": "medbay",
+   "name": "Medbay",
+   "kind": "crew",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -15,
+    -1.2
+   ],
+   "z_m": [
+    14,
+    46
+   ]
+  },
+  {
+   "id": "hold_p",
+   "name": "Hold (taken goods), port",
+   "kind": "systems",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    1.2,
+    14.5
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "hold_s",
+   "name": "Hold (taken goods), starboard",
+   "kind": "systems",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -14.5,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "stores_p",
+   "name": "Stores and air, port",
+   "kind": "systems",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    1.2,
+    11
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "stores_s",
+   "name": "Stores and air, starboard",
+   "kind": "systems",
+   "decks": [
+    7
+   ],
+   "x_m": [
+    -11,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "magazine_p",
+   "name": "Magazine, port",
+   "kind": "weapons",
+   "decks": [
+    8
+   ],
+   "x_m": [
+    1.2,
+    7.5
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "magazine_s",
+   "name": "Magazine, starboard",
+   "kind": "weapons",
+   "decks": [
+    8
+   ],
+   "x_m": [
+    -7.5,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "bunks_j_p",
+   "name": "Crew bunks, keel, port",
+   "kind": "crew",
+   "decks": [
+    9
+   ],
+   "x_m": [
+    1.2,
+    4
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "bunks_j_s",
+   "name": "Crew bunks, keel, starboard",
+   "kind": "crew",
+   "decks": [
+    9
+   ],
+   "x_m": [
+    -4,
+    -1.2
+   ],
+   "z_m": [
+    26,
+    45
+   ]
+  },
+  {
+   "id": "spine_5",
+   "name": "Spine corridor, deck F",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    46,
+    160
+   ]
+  },
+  {
+   "id": "spine_6",
+   "name": "Spine corridor, deck G",
+   "kind": "corridor",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -1.2,
+    1.2
+   ],
+   "z_m": [
+    46,
+    160
+   ]
+  },
+  {
+   "id": "to_gun1_p",
+   "name": "Passage to gun house 1, port",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    10.4
+   ],
+   "z_m": [
+    72.8,
+    75.2
+   ]
+  },
+  {
+   "id": "to_gun1_s",
+   "name": "Passage to gun house 1, starboard",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -10.4,
+    -1.2
+   ],
+   "z_m": [
+    72.8,
+    75.2
+   ]
+  },
+  {
+   "id": "gun1_p",
+   "name": "Gun house 1 (a container), port",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    10.4,
+    20
+   ],
+   "z_m": [
+    63.4,
+    84.6
+   ]
+  },
+  {
+   "id": "gun1_s",
+   "name": "Gun house 1 (a container), starboard",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    -20,
+    -10.4
+   ],
+   "z_m": [
+    63.4,
+    84.6
+   ]
+  },
+  {
+   "id": "to_gun2_p",
+   "name": "Passage to gun house 2, port",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    10.4
+   ],
+   "z_m": [
+    97.8,
+    100.2
+   ]
+  },
+  {
+   "id": "to_gun2_s",
+   "name": "Passage to gun house 2, starboard",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -10.4,
+    -1.2
+   ],
+   "z_m": [
+    97.8,
+    100.2
+   ]
+  },
+  {
+   "id": "gun2_p",
+   "name": "Gun house 2 (a container), port",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    10.4,
+    20
+   ],
+   "z_m": [
+    88.4,
+    109.6
+   ]
+  },
+  {
+   "id": "gun2_s",
+   "name": "Gun house 2 (a container), starboard",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    -20,
+    -10.4
+   ],
+   "z_m": [
+    88.4,
+    109.6
+   ]
+  },
+  {
+   "id": "to_gun3_p",
+   "name": "Passage to gun house 3, port",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    10.4
+   ],
+   "z_m": [
+    122.8,
+    125.2
+   ]
+  },
+  {
+   "id": "to_gun3_s",
+   "name": "Passage to gun house 3, starboard",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -10.4,
+    -1.2
+   ],
+   "z_m": [
+    122.8,
+    125.2
+   ]
+  },
+  {
+   "id": "gun3_p",
+   "name": "Gun house 3 (a container), port",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    10.4,
+    20
+   ],
+   "z_m": [
+    113.4,
+    134.6
+   ]
+  },
+  {
+   "id": "gun3_s",
+   "name": "Gun house 3 (a container), starboard",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    -20,
+    -10.4
+   ],
+   "z_m": [
+    113.4,
+    134.6
+   ]
+  },
+  {
+   "id": "to_gun4_p",
+   "name": "Passage to gun house 4, port",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    10.4
+   ],
+   "z_m": [
+    147.8,
+    150.2
+   ]
+  },
+  {
+   "id": "to_gun4_s",
+   "name": "Passage to gun house 4, starboard",
+   "kind": "corridor",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -10.4,
+    -1.2
+   ],
+   "z_m": [
+    147.8,
+    150.2
+   ]
+  },
+  {
+   "id": "gun4_p",
+   "name": "Gun house 4 (a container), port",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    10.4,
+    20
+   ],
+   "z_m": [
+    138.4,
+    159.6
+   ]
+  },
+  {
+   "id": "gun4_s",
+   "name": "Gun house 4 (a container), starboard",
+   "kind": "weapons",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    -20,
+    -10.4
+   ],
+   "z_m": [
+    138.4,
+    159.6
+   ]
+  },
+  {
+   "id": "gun_bunks1_p",
+   "name": "Gun crew 1's bunks, port",
+   "kind": "crew",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    1.2,
+    5
+   ],
+   "z_m": [
+    63.4,
+    84.6
+   ]
+  },
+  {
+   "id": "gun_bunks1_s",
+   "name": "Gun crew 1's bunks, starboard",
+   "kind": "crew",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -5,
+    -1.2
+   ],
+   "z_m": [
+    63.4,
+    84.6
+   ]
+  },
+  {
+   "id": "shells1_p",
+   "name": "Shell room 1, port",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    6.5
+   ],
+   "z_m": [
+    63.4,
+    72.8
+   ]
+  },
+  {
+   "id": "shells1_s",
+   "name": "Shell room 1, starboard",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -6.5,
+    -1.2
+   ],
+   "z_m": [
+    63.4,
+    72.8
+   ]
+  },
+  {
+   "id": "shells1b_p",
+   "name": "Shell room 1, forward, port",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    6.5
+   ],
+   "z_m": [
+    75.2,
+    84.6
+   ]
+  },
+  {
+   "id": "shells1b_s",
+   "name": "Shell room 1, forward, starboard",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -6.5,
+    -1.2
+   ],
+   "z_m": [
+    75.2,
+    84.6
+   ]
+  },
+  {
+   "id": "gun_bunks2_p",
+   "name": "Gun crew 2's bunks, port",
+   "kind": "crew",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    1.2,
+    5
+   ],
+   "z_m": [
+    88.4,
+    109.6
+   ]
+  },
+  {
+   "id": "gun_bunks2_s",
+   "name": "Gun crew 2's bunks, starboard",
+   "kind": "crew",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -5,
+    -1.2
+   ],
+   "z_m": [
+    88.4,
+    109.6
+   ]
+  },
+  {
+   "id": "shells2_p",
+   "name": "Shell room 2, port",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    6.5
+   ],
+   "z_m": [
+    88.4,
+    97.8
+   ]
+  },
+  {
+   "id": "shells2_s",
+   "name": "Shell room 2, starboard",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -6.5,
+    -1.2
+   ],
+   "z_m": [
+    88.4,
+    97.8
+   ]
+  },
+  {
+   "id": "shells2b_p",
+   "name": "Shell room 2, forward, port",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    6.5
+   ],
+   "z_m": [
+    100.2,
+    109.6
+   ]
+  },
+  {
+   "id": "shells2b_s",
+   "name": "Shell room 2, forward, starboard",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -6.5,
+    -1.2
+   ],
+   "z_m": [
+    100.2,
+    109.6
+   ]
+  },
+  {
+   "id": "gun_bunks3_p",
+   "name": "Gun crew 3's bunks, port",
+   "kind": "crew",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    1.2,
+    5
+   ],
+   "z_m": [
+    113.4,
+    134.6
+   ]
+  },
+  {
+   "id": "gun_bunks3_s",
+   "name": "Gun crew 3's bunks, starboard",
+   "kind": "crew",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -5,
+    -1.2
+   ],
+   "z_m": [
+    113.4,
+    134.6
+   ]
+  },
+  {
+   "id": "shells3_p",
+   "name": "Shell room 3, port",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    6.5
+   ],
+   "z_m": [
+    113.4,
+    122.8
+   ]
+  },
+  {
+   "id": "shells3_s",
+   "name": "Shell room 3, starboard",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -6.5,
+    -1.2
+   ],
+   "z_m": [
+    113.4,
+    122.8
+   ]
+  },
+  {
+   "id": "shells3b_p",
+   "name": "Shell room 3, forward, port",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    6.5
+   ],
+   "z_m": [
+    125.2,
+    134.6
+   ]
+  },
+  {
+   "id": "shells3b_s",
+   "name": "Shell room 3, forward, starboard",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -6.5,
+    -1.2
+   ],
+   "z_m": [
+    125.2,
+    134.6
+   ]
+  },
+  {
+   "id": "gun_bunks4_p",
+   "name": "Gun crew 4's bunks, port",
+   "kind": "crew",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    1.2,
+    5
+   ],
+   "z_m": [
+    138.4,
+    159.6
+   ]
+  },
+  {
+   "id": "gun_bunks4_s",
+   "name": "Gun crew 4's bunks, starboard",
+   "kind": "crew",
+   "decks": [
+    6
+   ],
+   "x_m": [
+    -5,
+    -1.2
+   ],
+   "z_m": [
+    138.4,
+    159.6
+   ]
+  },
+  {
+   "id": "shells4_p",
+   "name": "Shell room 4, port",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    6.5
+   ],
+   "z_m": [
+    138.4,
+    147.8
+   ]
+  },
+  {
+   "id": "shells4_s",
+   "name": "Shell room 4, starboard",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -6.5,
+    -1.2
+   ],
+   "z_m": [
+    138.4,
+    147.8
+   ]
+  },
+  {
+   "id": "shells4b_p",
+   "name": "Shell room 4, forward, port",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    1.2,
+    6.5
+   ],
+   "z_m": [
+    150.2,
+    159.6
+   ]
+  },
+  {
+   "id": "shells4b_s",
+   "name": "Shell room 4, forward, starboard",
+   "kind": "weapons",
+   "decks": [
+    5
+   ],
+   "x_m": [
+    -6.5,
+    -1.2
+   ],
+   "z_m": [
+    150.2,
+    159.6
+   ]
+  },
+  {
+   "id": "fore_store",
+   "name": "Forward store",
+   "kind": "systems",
+   "decks": [
+    5,
+    6
+   ],
+   "x_m": [
+    -6,
+    6
+   ],
+   "z_m": [
+    160,
+    167
+   ]
+  }
+ ]
+}

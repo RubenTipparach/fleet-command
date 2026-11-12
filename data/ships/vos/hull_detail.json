@@ -1,0 +1,1343 @@
+{
+ "_doc": "The Vos Syndicate's fighters (mockup 37, change vos-ship-concepts): the detail laid over each low-poly hull by tools/blender/hull_detail.py and baked onto its own UVs by tools/blender/painted_bake.py --faction vos. The recipe is the Breakers' (the salvage yards), written from the Syndicate's accepted culture in openspec/changes/vos-ship-concepts/design.md, 'The fighters, detailed'. Sizes in metres, ship space (+x port, +y up, +z bow).",
+ "faction": "vos",
+ "out": "assets/ships/vos",
+ "_out": "The Vos line's bakes, in the game's own folder since mockup 37 was approved for implementation (owner, 2026-11-11: \"everything else is good to go, implmenet it\"); before, a mockup's bakes went in a folder Godot does not import.",
+ "manifest_doc": "The Vos Syndicate's line (mockup 37): the specialists Boarder, Drum, Cross, Deck runner and Broadside, and the fighters Cutter (the standard fighter), Twin boom (the shuttle stand-in and bomber) and Stack.",
+ "paint": {
+  "armour": [
+   "#6a2c16",
+   "#733519",
+   "#5a2414",
+   "#7c4126",
+   "#633020",
+   "#6f3319",
+   "#58301f",
+   "#5e2a18",
+   "#6b3a22",
+   "#4f2a1c",
+   "#676058",
+   "#565a48",
+   "#746a58"
+  ],
+  "accent": "#9a6a1c",
+  "sub": [
+   "#4a2416",
+   "#52291a",
+   "#432014",
+   "#5a2e1c"
+  ],
+  "under": "#5a3022",
+  "greeble": [
+   "#3f2a22",
+   "#8a6a3a"
+  ],
+  "dome": "#16100e",
+  "dome_glow": 0.0,
+  "slat": "#5a3a2a",
+  "vent": "#22120e",
+  "glass": "#1a0d0a",
+  "livery": "#9a6a1c",
+  "ink": "#2a1410",
+  "light_edge": "#d9b98a",
+  "strip": "whole",
+  "strip_m": 0.7,
+  "pbr": {
+   "armour": [
+    0.68,
+    0.4
+   ],
+   "sub": [
+    0.75,
+    0.45
+   ],
+   "under": [
+    0.85,
+    0.4
+   ],
+   "greeble": [
+    0.6,
+    0.7
+   ],
+   "dome": [
+    0.1,
+    0.0
+   ],
+   "glass": [
+    0.08,
+    0.0
+   ],
+   "slat": [
+    0.6,
+    0.7
+   ],
+   "vent": [
+    0.9,
+    0.3
+   ],
+   "strip": [
+    0.4,
+    0.0
+   ],
+   "lamp": [
+    0.3,
+    0.0
+   ],
+   "machine": [
+    0.5,
+    0.7
+   ]
+  },
+  "livery_pbr": [
+   0.38,
+   0.75
+  ],
+  "strip_k": 0.0,
+  "strip_inner": 1.0,
+  "strip_rim_px": 7,
+  "strip_cell_m": 1.6,
+  "strip_cell_gap": 0.14,
+  "strip_cell_on": 0.7,
+  "strip_cell_k": 0.0,
+  "greeble_ao_floor": 0.6,
+  "glass_cells_k": 0.18,
+  "glass_cell_m": 0.8,
+  "glass_cells_rgb": [
+   0.25,
+   0.72,
+   0.64
+  ],
+  "ink_k": 0.12,
+  "machine": [
+   "#5c5852",
+   "#8e877c"
+  ],
+  "machine_kinds": [
+   "greeble",
+   "machine",
+   "slat",
+   "vent"
+  ],
+  "machine_light": 0.7,
+  "strip_rim_k": 0.0,
+  "_doc": "Breakers' plate: rust is salvage (console-skins, Vos Syndicate), so the armour is a patchwork of rusts, with about one plate in five still in a maker's colour gone dull (a grey, an olive, a sand); brass (loot and luck) is the one metal kept bright, and there is little of it; the light is verdigris (the spoils kept). Nothing is black: the layer under the plates is a dark rust.",
+  "ao_floor": 0.55,
+  "accent_share": 0.0,
+  "_accent_share": "No whole plate is brass: brass is kept for the two bands (the Breakers' principle 3).",
+  "_under": "The layer under the plates, in the seams: a rust a little darker than the plate, never near black, so a seam reads as a fine line, not a drawn one (owner, 2026-11-11).",
+  "_machine": "Machinery in the inset panels and the greebles a worn grey against the rust, so the ordered machinery reads apart from the plate (the owner's references, 2026-11-11).",
+  "_strip_k": "No glow painted into the maps (owner, 2026-11-11, of the Cross's emitters: \"I don't really like these glowy bits on the cross. They look kinda cheap to me. If you're gonna have glowy bits use baked lighting or shaders\"): a gun's mouth, an emitter and a drive bake as dark metal lenses; the light they cast on the hull round them stays in the baked light map, and the glow itself is a shader on the page (docs/mockups/lib/baked-ship.js lenses). Ship Design Bible T14."
+ },
+ "defaults": {
+  "_doc": "A Vos ship of about cruiser size (150 to 190 m). Breakers' plate: stations 5 to 14 m apart, so no two plates match, and each plate stands proud by its own amount (up to 0.12 m on 0.25 m plate). The welds are narrow seams (8 to 14 cm), every cut square to the ship so seams meet cuts and never cross them, and no trenches (owner, 2026-11-11, of the first Saucer runner: \"lihnes are too harsh, and hull plating lines are crossing over each other\"). A fighter's own defaults override these at its scale.",
+  "smooth_deg": 18,
+  "cuts": "grid",
+  "facing_min": 0.38,
+  "seam_y_m": 0.0,
+  "strip_rgb": [
+   0.25,
+   0.72,
+   0.64
+  ],
+  "armour_t_m": 0.25,
+  "sub_t_m": 0.08,
+  "lift_m": 0.12,
+  "gap_m": [
+   0.08,
+   0.14
+  ],
+  "trench_m": [
+   0.2,
+   0.3
+  ],
+  "trench_share": 0.0,
+  "top_station_m": [
+   5.0,
+   14.0
+  ],
+  "spine_half_m": [
+   1.6,
+   3.4
+  ],
+  "flank_station_m": [
+   5.0,
+   14.0
+  ],
+  "flank_rake": [
+   0.0,
+   0.0
+  ],
+  "greebles_per_m2": 0.3,
+  "overlay_min_m2": 1000000.0,
+  "overlay_inset": 0.88,
+  "overlay_lift_m": 0.2,
+  "light_ref": 0.9,
+  "pane_frame_m": {
+   "window": 0.1,
+   "bay": 0.35
+  },
+  "auto_floods": {
+   "step_m": 32,
+   "from_stern_m": 8,
+   "top_x_frac": 0
+  },
+  "flood": {
+   "standoff_m": 4.0,
+   "cone_deg": 110,
+   "tilt_deg": 22,
+   "power_w": 4800
+  },
+  "inner_machinery": false,
+  "corner_m": 0.15,
+  "cage_m": 2.0,
+  "hatch_share": 0.3,
+  "hatch_min_m2": 18.0,
+  "strip_lines_lit": false,
+  "lamp_k": 1.0,
+  "_greebles": "Machinery only where the plating leaves the hull bare (the bow and stern faces, the collar's ends, the deck's edges): no face is left plain (owner, 2026-11-11: \"I exepect greebles and antena here\", Ship Design Bible T9)."
+ },
+ "ships": {
+  "vos_cutter": {
+   "_doc": "21, the Cutter, the standard fighter (owner, 2026-11-10: \"lets stick to 21 as standard fighter\").",
+   "seed": 2101,
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -2.0
+     ],
+     "size_m": 0.09,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      3.0,
+      3.16
+     ]
+    },
+    {
+     "band_z_m": [
+      -4.4,
+      -4.28
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {
+     "to_z_m": 5
+    }
+   },
+   "windows": [],
+   "domes": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      4.6
+     ],
+     "r_m": 0.75,
+     "h_m": 0.34,
+     "straps": [
+      [
+       0,
+       0.07
+      ],
+      [
+       90,
+       0.07
+      ]
+     ]
+    }
+   ],
+   "pods": [],
+   "defaults": {
+    "smooth_deg": 18,
+    "cuts": "grid",
+    "facing_min": 0.38,
+    "seam_y_m": 0.0,
+    "strip_rgb": [
+     0.25,
+     0.72,
+     0.64
+    ],
+    "armour_t_m": 0.06,
+    "sub_t_m": 0.025,
+    "lift_m": 0.04,
+    "gap_m": [
+     0.03,
+     0.06
+    ],
+    "trench_m": [
+     0.1,
+     0.16
+    ],
+    "trench_share": 0.12,
+    "top_station_m": [
+     0.9,
+     2.6
+    ],
+    "spine_half_m": [
+     0.25,
+     0.6
+    ],
+    "flank_station_m": [
+     1.0,
+     2.8
+    ],
+    "flank_rake": [
+     -0.3,
+     0.3
+    ],
+    "greebles_per_m2": 0.0,
+    "overlay_min_m2": 1000000.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+     "window": 0.1,
+     "bay": 0.35
+    },
+    "auto_floods": {
+     "step_m": 7,
+     "from_stern_m": 2.5,
+     "top_x_frac": 0
+    },
+    "flood": {
+     "standoff_m": 0.6,
+     "cone_deg": 120,
+     "tilt_deg": 22,
+     "power_w": 50
+    },
+    "inner_reach_m": 40.0,
+    "inner_machinery": false,
+    "inner_cell_m": [
+     4.0,
+     2.4
+    ],
+    "inner_mix": {
+     "bays": 0.2,
+     "grilles": 0.15,
+     "channels": 0.15,
+     "conduits": 0.12,
+     "plates": 0.2,
+     "coils": 0.1,
+     "pipes": 0.08
+    },
+    "corner_m": 0.05,
+    "cage_m": 0.35,
+    "hatch_share": 0.0,
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false,
+    "lamp_k": 0.22,
+    "_doc": "A fighter 15 m long, so every size is at its scale. Plates are cut from broken hulls: stations and rakes vary widely, each plate stands proud by its own amount (lift up to 4 cm on 6 cm plate), and the welds between them are left plain (gaps 3 to 6 cm)."
+   },
+   "paint": {
+    "strip_cell_m": 0.2,
+    "glass_cell_m": 0.1
+   }
+  },
+  "vos_twin_boom": {
+   "_doc": "22, the Twin boom, the shuttle stand-in, also flown as a bomber (owner, 2026-11-10).",
+   "seed": 2201,
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      1.0
+     ],
+     "size_m": 0.09,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      2.6,
+      2.76
+     ]
+    },
+    {
+     "band_z_m": [
+      -1.2,
+      -1.08
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {
+     "to_z_m": 4
+    }
+   },
+   "windows": [],
+   "domes": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      4.4
+     ],
+     "r_m": 0.7,
+     "h_m": 0.32,
+     "straps": [
+      [
+       0,
+       0.07
+      ],
+      [
+       90,
+       0.07
+      ]
+     ]
+    }
+   ],
+   "pods": [],
+   "defaults": {
+    "smooth_deg": 18,
+    "cuts": "grid",
+    "facing_min": 0.38,
+    "seam_y_m": 0.0,
+    "strip_rgb": [
+     0.25,
+     0.72,
+     0.64
+    ],
+    "armour_t_m": 0.06,
+    "sub_t_m": 0.025,
+    "lift_m": 0.04,
+    "gap_m": [
+     0.03,
+     0.06
+    ],
+    "trench_m": [
+     0.1,
+     0.16
+    ],
+    "trench_share": 0.12,
+    "top_station_m": [
+     0.9,
+     2.6
+    ],
+    "spine_half_m": [
+     0.25,
+     0.6
+    ],
+    "flank_station_m": [
+     1.0,
+     2.8
+    ],
+    "flank_rake": [
+     -0.3,
+     0.3
+    ],
+    "greebles_per_m2": 0.0,
+    "overlay_min_m2": 1000000.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+     "window": 0.1,
+     "bay": 0.35
+    },
+    "auto_floods": {
+     "step_m": 7,
+     "from_stern_m": 2.5,
+     "top_x_frac": 0
+    },
+    "flood": {
+     "standoff_m": 0.6,
+     "cone_deg": 120,
+     "tilt_deg": 22,
+     "power_w": 50
+    },
+    "inner_reach_m": 40.0,
+    "inner_machinery": false,
+    "inner_cell_m": [
+     4.0,
+     2.4
+    ],
+    "inner_mix": {
+     "bays": 0.2,
+     "grilles": 0.15,
+     "channels": 0.15,
+     "conduits": 0.12,
+     "plates": 0.2,
+     "coils": 0.1,
+     "pipes": 0.08
+    },
+    "corner_m": 0.05,
+    "cage_m": 0.35,
+    "hatch_share": 0.0,
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false,
+    "lamp_k": 0.22,
+    "_doc": "A fighter 15 m long, so every size is at its scale. Plates are cut from broken hulls: stations and rakes vary widely, each plate stands proud by its own amount (lift up to 4 cm on 6 cm plate), and the welds between them are left plain (gaps 3 to 6 cm)."
+   },
+   "paint": {
+    "strip_cell_m": 0.2,
+    "glass_cell_m": 0.1
+   }
+  },
+  "vos_deck_runner": {
+   "_doc": "8, the Deck runner (fighter launching): two Hunt freighters cut and joined (one's drive block, the other's bow end, cut short and capped flat), with a welded collar and flight deck. Freighter hulls only, no warship parts (owner, 2026-11-11: \"other than freighter hulls lets not reuse any other ships hulls too\"). Its windows come from its room plan (data/ships/vos/deck_runner_plan.json, moved into the export's frame by dz_m and dy_m, the page's re-centring of the ship). The freighter parts wear the Hunt freighters' look dulled; the Vos metal is the Breakers' plate.",
+   "seed": 802,
+   "makers": {
+    "ssarith": {
+     "look": "ssarith",
+     "dull": 0.4,
+     "paint": {
+      "under": "#4e5440",
+      "ink_k": 0.12,
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
+     }
+    }
+   },
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      22.5,
+      -67.0
+     ],
+     "size_m": 0.5,
+     "colour": "amber"
+    },
+    {
+     "face": "top",
+     "at": [
+      22.5,
+      -55.0
+     ],
+     "size_m": 0.5,
+     "colour": "amber"
+    },
+    {
+     "face": "top",
+     "at": [
+      22.5,
+      -43.0
+     ],
+     "size_m": 0.5,
+     "colour": "amber"
+    },
+    {
+     "face": "top",
+     "at": [
+      22.5,
+      -31.0
+     ],
+     "size_m": 0.5,
+     "colour": "amber"
+    },
+    {
+     "face": "top",
+     "at": [
+      22.5,
+      -19.0
+     ],
+     "size_m": 0.5,
+     "colour": "amber"
+    },
+    {
+     "face": "top",
+     "at": [
+      0,
+      43.0
+     ],
+     "size_m": 0.6,
+     "colour": "red",
+     "housing": true
+    },
+    {
+     "face": "bow",
+     "at": [
+      4.6,
+      -6.0
+     ],
+     "size_m": 0.35,
+     "colour": "amber"
+    },
+    {
+     "face": "bow",
+     "at": [
+      0,
+      -8.6
+     ],
+     "size_m": 0.4,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      14.0,
+      17.0
+     ]
+    },
+    {
+     "band_z_m": [
+      71.0,
+      73.0
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {
+     "to_z_m": 71.0
+    }
+   },
+   "windows": [
+    {
+     "plan": "data/ships/vos/deck_runner_plan.json",
+     "dz_m": 75.0,
+     "dy_m": 3.943,
+     "wall_m": 3.2,
+     "dark_share": 0.25,
+     "rooms": {
+      "crew": "quarters",
+      "command": "quarters",
+      "pilots_mess": "mess",
+      "workshop": "workshop",
+      "ready_room": "mess",
+      "briefing": "mess"
+     }
+    }
+   ],
+   "domes": [],
+   "pods": [],
+   "defaults": {
+    "light_ref": 3.5,
+    "_light_ref": "Its floods and deck lamps reach 2.3 at the 99th percentile on the bake; scaled to 3.5 so a flood's pool on the Petrel's pale body does not burn out at night."
+   },
+   "fixtures": [
+    {
+     "face": "top",
+     "at": [
+      2.6,
+      71.0
+     ],
+     "kind": "antenna",
+     "h_m": 4.9,
+     "w_m": 1.7,
+     "r_m": 0.21
+    },
+    {
+     "face": "top",
+     "at": [
+      0,
+      54.0
+     ],
+     "kind": "antenna",
+     "h_m": 8.4,
+     "w_m": 3.1,
+     "r_m": 0.3,
+     "dish_m": 1.4
+    },
+    {
+     "face": "bow",
+     "at": [
+      3.4,
+      -2.5
+     ],
+     "kind": "antenna",
+     "h_m": 3.1,
+     "w_m": 0.0,
+     "r_m": 0.18
+    },
+    {
+     "face": "top",
+     "at": [
+      18.0,
+      -60.0
+     ],
+     "kind": "antenna",
+     "h_m": 4.2,
+     "w_m": 1.4,
+     "r_m": 0.21
+    },
+    {
+     "face": "bow",
+     "at": [
+      0,
+      -4.2
+     ],
+     "kind": "machinery",
+     "w_m": 6.4,
+     "h_m": 11.0,
+     "cell_m": 1.1
+    },
+    {
+     "face": "top",
+     "at": [
+      4.6,
+      30.0
+     ],
+     "kind": "machinery",
+     "w_m": 10.0,
+     "h_m": 4.0,
+     "cell_m": 1.0
+    },
+    {
+     "face": "top",
+     "at": [
+      4.6,
+      46.0
+     ],
+     "kind": "machinery",
+     "w_m": 6.0,
+     "h_m": 4.0,
+     "cell_m": 1.0
+    },
+    {
+     "face": "port",
+     "at": [
+      -52.0,
+      7.5
+     ],
+     "kind": "machinery",
+     "w_m": 12.0,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    },
+    {
+     "face": "port",
+     "at": [
+      -30.0,
+      7.5
+     ],
+     "kind": "machinery",
+     "w_m": 8.0,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    }
+   ],
+   "_fixtures": "Antennas on the bow cap, a mast with a dish over flight control, probes off the bow face, a pair at the flight deck's after corners; an ordered machinery panel filling the bow face, and inset machinery panels in pairs along the bow end's top and the drive block's flanks (owner, 2026-11-11, with references: greebles at the bow, and inset greeble panels on the plating)."
+  },
+  "vos_boarder": {
+   "_doc": "3, the Boarder (boarding): a Hunt freighter's drive block and spine with a welded collar, lock house and grapple fork. Its windows come from its room plan; its freighter parts wear the Hunt freighters' look, dulled.",
+   "seed": 301,
+   "makers": {
+    "ssarith": {
+     "look": "ssarith",
+     "dull": 0.4,
+     "paint": {
+      "ink_k": 0.12,
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
+     }
+    }
+   },
+   "defaults": {
+    "light_ref": 3.0
+   },
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -46.72
+     ],
+     "size_m": 0.6,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      26.28,
+      29.28
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {}
+   },
+   "windows": [
+    {
+     "plan": "data/ships/vos/boarder_plan.json",
+     "dz_m": 76.716,
+     "dy_m": 0,
+     "wall_m": 3.2,
+     "dark_share": 0.25,
+     "rooms": {
+      "crew": "quarters",
+      "command": "quarters",
+      "mess": "mess",
+      "workshop": "workshop"
+     }
+    }
+   ],
+   "domes": [],
+   "pods": [],
+   "fixtures": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      33.28
+     ],
+     "kind": "antenna",
+     "h_m": 8.0,
+     "w_m": 2.0,
+     "r_m": 0.2
+    },
+    {
+     "face": "top",
+     "at": [
+      6,
+      -46.72
+     ],
+     "kind": "antenna",
+     "h_m": 7.0,
+     "w_m": 0,
+     "r_m": 0.22
+    },
+    {
+     "face": "top",
+     "at": [
+      10,
+      -32.72
+     ],
+     "kind": "dish",
+     "d_m": 4.5
+    },
+    {
+     "face": "port",
+     "at": [
+      -53.72,
+      11.4
+     ],
+     "kind": "machinery",
+     "w_m": 12,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    },
+    {
+     "face": "port",
+     "at": [
+      -31.72,
+      11.4
+     ],
+     "kind": "machinery",
+     "w_m": 8,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    },
+    {
+     "face": "top",
+     "at": [
+      8,
+      -50.72
+     ],
+     "kind": "machinery",
+     "w_m": 8,
+     "h_m": 4,
+     "cell_m": 1.1
+    }
+   ]
+  },
+  "vos_drum": {
+   "_doc": "10, the Drum (mine laying): a Concord freighter's drive block and spine, two welded rings of mine racks and a welded bow cap. Its windows come from its room plan; its freighter parts wear the Concord freighters' look, dulled.",
+   "seed": 1001,
+   "makers": {
+    "concord": {
+     "look": "concord",
+     "dull": 0.4,
+     "paint": {
+      "ink_k": 0.12,
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
+     }
+    }
+   },
+   "defaults": {
+    "light_ref": 3.0
+   },
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -29
+     ],
+     "size_m": 0.6,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      6,
+      8
+     ]
+    },
+    {
+     "band_z_m": [
+      34,
+      36
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {}
+   },
+   "windows": [
+    {
+     "plan": "data/ships/vos/drum_plan.json",
+     "dz_m": 61,
+     "dy_m": -6.091,
+     "wall_m": 3.2,
+     "dark_share": 0.25,
+     "rooms": {
+      "crew": "quarters",
+      "command": "quarters",
+      "mess": "mess",
+      "workshop": "workshop"
+     }
+    }
+   ],
+   "domes": [],
+   "pods": [],
+   "fixtures": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -29
+     ],
+     "kind": "antenna",
+     "h_m": 9.0,
+     "w_m": 2.4,
+     "r_m": 0.24
+    },
+    {
+     "face": "top",
+     "at": [
+      0,
+      55
+     ],
+     "kind": "antenna",
+     "h_m": 4.5,
+     "w_m": 0,
+     "r_m": 0.18
+    },
+    {
+     "face": "top",
+     "at": [
+      16,
+      -11
+     ],
+     "kind": "dish",
+     "d_m": 4.5
+    },
+    {
+     "face": "port",
+     "at": [
+      -31,
+      6.09
+     ],
+     "kind": "machinery",
+     "w_m": 12,
+     "h_m": 4,
+     "cell_m": 1.1
+    },
+    {
+     "face": "port",
+     "at": [
+      -17,
+      -3.91
+     ],
+     "kind": "machinery",
+     "w_m": 8,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    }
+   ]
+  },
+  "vos_cross": {
+   "_doc": "11, the Cross (tractor beams): a Hunt freighter's drive block and spine, a welded hub with four arms and a welded bow cap. Its windows come from its room plan; its freighter parts wear the Hunt freighters' look, dulled.",
+   "seed": 1101,
+   "makers": {
+    "ssarith": {
+     "look": "ssarith",
+     "dull": 0.4,
+     "paint": {
+      "ink_k": 0.12,
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
+     }
+    }
+   },
+   "defaults": {
+    "light_ref": 3.0
+   },
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -37
+     ],
+     "size_m": 0.6,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      32,
+      34
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {}
+   },
+   "windows": [
+    {
+     "plan": "data/ships/vos/cross_plan.json",
+     "dz_m": 67,
+     "dy_m": 0,
+     "wall_m": 3.2,
+     "dark_share": 0.25,
+     "rooms": {
+      "crew": "quarters",
+      "command": "quarters",
+      "mess": "mess",
+      "workshop": "workshop"
+     }
+    }
+   ],
+   "domes": [],
+   "pods": [],
+   "fixtures": [
+    {
+     "face": "top",
+     "at": [
+      8,
+      23
+     ],
+     "kind": "antenna",
+     "h_m": 6.0,
+     "w_m": 1.6,
+     "r_m": 0.2
+    },
+    {
+     "face": "top",
+     "at": [
+      0,
+      60
+     ],
+     "kind": "antenna",
+     "h_m": 4.5,
+     "w_m": 0,
+     "r_m": 0.18
+    },
+    {
+     "face": "top",
+     "at": [
+      10,
+      -27
+     ],
+     "kind": "dish",
+     "d_m": 4.5
+    },
+    {
+     "face": "port",
+     "at": [
+      -44,
+      11.4
+     ],
+     "kind": "machinery",
+     "w_m": 12,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    },
+    {
+     "face": "port",
+     "at": [
+      -22,
+      11.4
+     ],
+     "kind": "machinery",
+     "w_m": 8,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    }
+   ]
+  },
+  "vos_broadside": {
+   "_doc": "9, the Broadside (passing as a freighter): a Krai freighter's drive block and full spine, eight containers as gun houses and a welded bow cap. Its windows come from its room plan; its freighter parts wear the Krai freighters' look, dulled.",
+   "seed": 901,
+   "makers": {
+    "krai": {
+     "look": "krai",
+     "dull": 0.4,
+     "paint": {
+      "ink_k": 0.12,
+      "ao_floor": 0.55,
+      "strip_k": 0.0,
+      "strip_cell_k": 0.0
+     }
+    }
+   },
+   "defaults": {
+    "light_ref": 3.0
+   },
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -49
+     ],
+     "size_m": 0.6,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      75,
+      77
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {}
+   },
+   "windows": [
+    {
+     "plan": "data/ships/vos/broadside_plan.json",
+     "dz_m": 85,
+     "dy_m": 0,
+     "wall_m": 3.2,
+     "dark_share": 0.25,
+     "rooms": {
+      "crew": "quarters",
+      "command": "quarters",
+      "mess": "mess",
+      "workshop": "workshop"
+     }
+    }
+   ],
+   "domes": [],
+   "pods": [],
+   "fixtures": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -49
+     ],
+     "kind": "antenna",
+     "h_m": 8.0,
+     "w_m": 2.0,
+     "r_m": 0.22
+    },
+    {
+     "face": "top",
+     "at": [
+      0,
+      79
+     ],
+     "kind": "antenna",
+     "h_m": 4.5,
+     "w_m": 0,
+     "r_m": 0.18
+    },
+    {
+     "face": "top",
+     "at": [
+      5,
+      15
+     ],
+     "kind": "dish",
+     "d_m": 3.5
+    },
+    {
+     "face": "bow",
+     "at": [
+      0,
+      -1.5
+     ],
+     "kind": "machinery",
+     "w_m": 14,
+     "h_m": 10,
+     "cell_m": 1.2
+    },
+    {
+     "face": "port",
+     "at": [
+      -65,
+      0
+     ],
+     "kind": "machinery",
+     "w_m": 10,
+     "h_m": 3.2,
+     "cell_m": 1.1
+    }
+   ]
+  },
+  "vos_stack": {
+   "_doc": "23, the Stack, a heavy fighter (survey Y14, provisional): one engine, two short wings one above the other, four guns.",
+   "seed": 2301,
+   "defaults": {
+    "smooth_deg": 18,
+    "cuts": "grid",
+    "facing_min": 0.38,
+    "seam_y_m": 0.0,
+    "strip_rgb": [
+     0.25,
+     0.72,
+     0.64
+    ],
+    "armour_t_m": 0.06,
+    "sub_t_m": 0.025,
+    "lift_m": 0.04,
+    "gap_m": [
+     0.03,
+     0.06
+    ],
+    "trench_m": [
+     0.1,
+     0.16
+    ],
+    "trench_share": 0.12,
+    "top_station_m": [
+     0.9,
+     2.6
+    ],
+    "spine_half_m": [
+     0.25,
+     0.6
+    ],
+    "flank_station_m": [
+     1.0,
+     2.8
+    ],
+    "flank_rake": [
+     -0.3,
+     0.3
+    ],
+    "greebles_per_m2": 0.0,
+    "overlay_min_m2": 1000000.0,
+    "overlay_inset": 0.88,
+    "overlay_lift_m": 0.2,
+    "light_ref": 0.9,
+    "pane_frame_m": {
+     "window": 0.1,
+     "bay": 0.35
+    },
+    "auto_floods": {
+     "step_m": 7,
+     "from_stern_m": 2.5,
+     "top_x_frac": 0
+    },
+    "flood": {
+     "standoff_m": 0.6,
+     "cone_deg": 120,
+     "tilt_deg": 22,
+     "power_w": 50
+    },
+    "inner_reach_m": 40.0,
+    "inner_machinery": false,
+    "inner_cell_m": [
+     4.0,
+     2.4
+    ],
+    "inner_mix": {
+     "bays": 0.2,
+     "grilles": 0.15,
+     "channels": 0.15,
+     "conduits": 0.12,
+     "plates": 0.2,
+     "coils": 0.1,
+     "pipes": 0.08
+    },
+    "corner_m": 0.05,
+    "cage_m": 0.35,
+    "hatch_share": 0.0,
+    "hatch_min_m2": 18.0,
+    "strip_lines_lit": false,
+    "lamp_k": 0.22,
+    "_doc": "A fighter 15 m long, so every size is at its scale. Plates are cut from broken hulls: stations and rakes vary widely, each plate stands proud by its own amount (lift up to 4 cm on 6 cm plate), and the welds between them are left plain (gaps 3 to 6 cm)."
+   },
+   "paint": {
+    "strip_cell_m": 0.2,
+    "glass_cell_m": 0.1
+   },
+   "lamps": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      -2.5
+     ],
+     "size_m": 0.09,
+     "colour": "red"
+    }
+   ],
+   "liveries": [
+    {
+     "band_z_m": [
+      2.0,
+      2.16
+     ]
+    },
+    {
+     "band_z_m": [
+      -4.2,
+      -4.08
+     ]
+    }
+   ],
+   "lighting": {
+    "floods": [],
+    "auto_floods": {
+     "to_z_m": 4
+    }
+   },
+   "windows": [],
+   "domes": [
+    {
+     "face": "top",
+     "at": [
+      0,
+      3.6
+     ],
+     "r_m": 0.75,
+     "h_m": 0.34,
+     "straps": [
+      [
+       0,
+       0.07
+      ],
+      [
+       90,
+       0.07
+      ]
+     ]
+    }
+   ],
+   "pods": []
+  }
+ },
+ "maps_dir": "docs/mockups/vos-ship-concepts-maps",
+ "_maps_dir": "Nine baked ships' maps no longer fit inlined in one 16 MiB page, so the page's copies are written beside it as WebP files (tools/mockups/inline_data.py) and published with it."
+}

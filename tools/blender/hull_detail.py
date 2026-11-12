@@ -508,7 +508,10 @@ def lights(lo, S, surf, mats, lamps, feats, defaults=None):
     zmin, zmax = min(v.z for v in vs), max(v.z for v in vs)
     zmid = (zmin + zmax) / 2
 
+    lamp_k = (defaults or {}).get("lamp_k", 1.0)   # a small craft's lamps to its own scale (a 15 m fighter: 0.25)
+
     def lamp_at(loc, n, colour, s, mirror=False):
+        s *= lamp_k
         feats.append(([(place(bm_box(s, s, s * 0.6), frame_at(loc, n, mirror)), "lamp:" + colour)], loc))
 
     def spot(loc, n, aim, rgb, power, cone, standoff, name):
@@ -1330,7 +1333,68 @@ def fx_intake(F, M, cutters, T):
     return parts
 
 
-FIXTURES_KIT = {"deflector": fx_deflector, "launcher": fx_launcher, "intake": fx_intake}
+MASTS = []   # the antennas, for the page and the game to build as geometry (filled by fx_antenna, cleared by build)
+
+
+def fx_antenna(F, M, cutters, T):
+    """A mast standing off the hull (owner, 2026-11-11, of the Deck runner's bare bow cap: "I exepect greebles and antena
+    here"). A mast cannot be baked into a texture (it stands metres off the skin, so it would bake as a smear), so only its
+    footing is built here, to be baked; the mast itself (h_m tall, a cross arm w_m across two thirds up with an aerial off
+    each end, a dish of dish_m when given, a red lamp at the tip) is written to MASTS with its frame, and the page and the
+    game build it as geometry (docs/mockups/lib/baked-ship.js masts)."""
+    r = F.get("r_m", 0.07)
+    MASTS.append({"kind": "antenna", "style": F["_style"], "m": [round(M[i][k], 5) for i in range(4) for k in range(4)], "h_m": F.get("h_m", 3.0),
+                  "w_m": F.get("w_m", 1.2), "r_m": r, "dish_m": F.get("dish_m", 0.0), "base_m": r * 2.5})
+    return [(place(bm_cyl(r * 4.5, r * 2.5, 16), M), "greeble")]
+
+
+def fx_dish(F, M, cutters, T):
+    """A dish on a pedestal (owner, 2026-11-11: "need dishes as well"): d_m across, its yoke and feed built as geometry by
+    the page and the game from MASTS (it stands off the hull, so it cannot be baked); its footing is baked here. Each dish,
+    like each antenna, takes its own design from its style (no two the same shape: owner, 2026-11-11)."""
+    d = F.get("d_m", 3.0)
+    MASTS.append({"kind": "dish", "style": F["_style"], "m": [round(M[i][k], 5) for i in range(4) for k in range(4)], "d_m": d,
+                  "h_m": F.get("h_m", d * 0.6), "base_m": d * 0.06})
+    return [(place(bm_cyl(d * 0.2, d * 0.06, 20), M), "greeble")]
+
+
+def fx_machinery(F, M, cutters, T):
+    """A machinery panel set into the plating (owner, 2026-11-11, with references: greebles on a ship's bow, and "the
+    homeworld greeble pattern on hull plating is very visually pleasing"): a recess w_m along the frame's u by h_m along v,
+    cut through the armour, framed, and filled with machinery laid out in a grid of cell_m (blocks of differing heights,
+    slot banks, pipe pairs, vents, a lamp now and then), so it reads as ordered machinery, not scatter. Seeded by its
+    place, so its mirror is the same panel."""
+    W, H, c = F["w_m"], F["h_m"], F.get("cell_m", 1.2)
+    r = random.Random(int(abs(F["at"][0]) * 1000) * 7919 + int(F["at"][1] * 1000) * 104729 + len(F.get("face", "")))
+    cutters.append(place(bm_box(W, H, 3.0, at=(0, 0, -1.5)), M))
+    fw = min(0.3, 0.06 * min(W, H) + 0.08)
+    parts = [(place(bm_box(W - 0.02, H - 0.02, 0.06, at=(0, 0, -0.04)), M), "sub")]
+    for (sx, sy, ax, ay) in ((W, fw, 0, (H - fw) / 2), (W, fw, 0, -(H - fw) / 2), (fw, H, (W - fw) / 2, 0), (fw, H, -(W - fw) / 2, 0)):
+        parts.append((place(bm_box(sx, sy, T + 0.08, at=(ax, ay, -0.02)), M), "machine"))
+    nu, nv = max(1, int((W - 2 * fw) // c)), max(1, int((H - 2 * fw) // c))
+    cu, cv = (W - 2 * fw) / nu, (H - 2 * fw) / nv
+    for i in range(nu):
+        for j in range(nv):
+            u0, v0 = -W / 2 + fw + (i + 0.5) * cu, -H / 2 + fw + (j + 0.5) * cv
+            k = r.random()
+            if k < 0.35:      # a block, its height its own
+                parts.append((place(bm_box(cu * 0.82, cv * 0.82, r.uniform(0.15, max(0.2, T * 0.9)), at=(u0, v0, 0)), M), "machine"))
+            elif k < 0.55:    # a bank of slots
+                n = r.randint(3, 6)
+                for q in range(n):
+                    parts.append((place(bm_box(cu * 0.8, cv * 0.8 / n * 0.55, 0.12, at=(u0, v0 - cv * 0.4 + (q + 0.5) * cv * 0.8 / n, 0)), M), "slat"))
+            elif k < 0.75:    # a pipe pair along the panel
+                for q in (-1, 1):
+                    parts.append((place(bm_cyl(min(cu, cv) * 0.12, cu * 0.95, 10, at=(u0 - cu * 0.47, v0 + q * cv * 0.2, min(cu, cv) * 0.12), axis="u"), M), "greeble"))
+            elif k < 0.92:    # a vent
+                parts.append((place(bm_box(cu * 0.7, cv * 0.6, 0.05, at=(u0, v0, 0)), M), "vent"))
+            else:             # a lamp on a block
+                parts.append((place(bm_box(cu * 0.6, cv * 0.6, 0.18, at=(u0, v0, 0)), M), "machine"))
+                parts.append((place(bm_box(cu * 0.18, cv * 0.18, 0.12, at=(u0, v0, 0.18)), M), "lamp:amber"))
+    return parts
+
+
+FIXTURES_KIT = {"deflector": fx_deflector, "launcher": fx_launcher, "intake": fx_intake, "antenna": fx_antenna, "dish": fx_dish, "machinery": fx_machinery}
 
 
 # ----------------------------------------------------------------------------- the whole layer
@@ -1338,7 +1402,10 @@ def build(lo, S, D, seed):
     """Build the hull detail for one ship over its low-poly hull `lo` (S: the ship's entry in hull_detail.json, D: the
     defaults). Returns the high-poly objects to bake from."""
     rng = random.Random(seed)
-    PANES.clear(); PADS.clear()
+    PANES.clear(); PADS.clear(); MASTS.clear()
+    for i, F in enumerate([F for F in S.get("fixtures", []) if F["kind"] in ("antenna", "dish")]):
+        F["_style"] = i   # its fixture's number; the page gives each mast its own design by its place in MASTS, so a port and
+        # starboard pair differ too (owner, 2026-11-11: "I literally just told you no two antenna should look the same on a starship")
     LAMP_RGB["strip"] = tuple(D.get("strip_rgb", (0.1, 1.0, 0.24)))   # the faction's strip light (the Hunt's green unless given)
     mats = {k: kind_material(k) for k in ("under", "machine", "greeble", "sub", "armour", "dome", "slat", "vent", "glass")}
     lamps = {c: kind_material("lamp", c) for c in LAMP_RGB}

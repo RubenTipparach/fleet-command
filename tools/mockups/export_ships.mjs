@@ -54,7 +54,11 @@ const FACTIONS = [
   { faction: 'freighters', page: 'docs/mockups/freighter-concepts.html', skip: [], baked: 'Freighter' },
   // mockup 36 (owner, 2026-11-08: "cool start implementation"): the placeholder lines of the nine factions with no designed
   // ships, each built by docs/mockups/lib/placeholder-hulls.js from data/ships/placeholders.json (exportPlaceholdersInPage)
-  ...['axiom', 'exponent', 'redtithe', 'vos', 'kethran', 'tarsine', 'aelith', 'ombrai', 'vhorr'].map((faction) => ({ faction, page: 'docs/mockups/placeholder-fleets.html', skip: [], placeholder: true })),
+  // mockup 37 (owner, 2026-11-11: "I woudl cut number 12 out (ram) , everything else is good to go, implmenet it"): the Vos
+  // Syndicate's five specialists and three fighters, baked on the same page code, each with its containers (MOCKUP_CARGO), its
+  // antennas as geometry and its glowing mouths as lens_* empties; their placeholder line (mockup 36) is retired
+  { faction: 'vos', page: 'docs/mockups/vos-ship-concepts.html', skip: [], baked: 'Vos' },
+  ...['axiom', 'exponent', 'redtithe', 'kethran', 'tarsine', 'aelith', 'ombrai', 'vhorr'].map((faction) => ({ faction, page: 'docs/mockups/placeholder-fleets.html', skip: [], placeholder: true })),
 ];
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -351,6 +355,10 @@ async function exportInPage(cfg) {
       (sh.panes || []).forEach((P2, i) => { const n = V3(...P2.n), v = V3(...P2.v), u = V3(...P2.u);
         empty((P2.kind === 'bay' ? 'bay_' : 'window_') + i, V3(...P2.c), hullP, { kind: P2.kind === 'bay' ? 'launch_bay' : 'window', room: P2.kind, lit: P2.lit, w_m: P2.w_m, h_m: P2.h_m, frame_m: P2.frame_m,
           normal: v3(turn(n)), up: v3(turn(v)), across: v3(turn(u)) }); });   // across: a mirrored pane's own, not up x normal
+      // the glowing mouths (gun mouths, emitters, drives: Ship Design Bible T14), each a shader lens on the page (lib/baked-ship.js
+      // lenses); the game draws the same lens there (src/Game/View/lens.gdshader)
+      let li = 0; root.traverse((o) => { const L = o.userData.lens; if (!L || !vis(o)) return; const at = V3(...L.c).applyMatrix4(toShip(o.parent)), n = V3(...L.n).transformDirection(toShip(o.parent));
+        empty('lens_' + li++, at, hullP, { kind: 'lens', radius_m: r6(L.r_m), normal: v3(turn(n)), phase: r6(L.phase), colour: L.rgb.map(r6) }); });
       (sh.pads || []).forEach((P2, i) => empty('pad_' + i, V3(...P2.c), hullP, { kind: 'landing_pad', radius_m: r6(P2.r_m || 0), normal: v3(turn(V3(...P2.n))), along: v3(turn(V3(...P2.u))),
         ...(ship.parked ? { craft: cfg.faction + '/' + ship.parked.craft + '.glb', stand_m: r6(ship.parked.stand_m) } : {}),
         note: 'the craft parks with its mockup origin stand_m up the pad\'s normal (so one on a ceiling hangs upside down), nosed along along' }));
@@ -530,7 +538,9 @@ async function contactInPage(list) {
 
 // ---------------------------------------------------------------------------------------------------------------
 const sha = (b) => crypto.createHash('sha256').update(b).digest('hex');
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+// file access from files: a page whose maps sit beside it as files (a manifest with maps_dir, the Vos page) is read from
+// file://, where WebGL refuses an image from another file without it
+const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--allow-file-access-from-files'] });
 // The Concord page paints its registries in Antonio: that page's Google Fonts request is answered with assets/fonts' Antonio, so every
 // run paints them the same. Only that page: under the same route the Krai page (which paints no text on its ships) never steps.
 const ANTONIO_B64 = fs.readFileSync(path.join(ROOT, 'assets', 'fonts', 'Antonio-VariableFont_wght.ttf')).toString('base64');

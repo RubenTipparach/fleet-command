@@ -461,40 +461,6 @@
     "pilots": 2
    }
   },
-  "vos_ff": {
-   "pads": 2,
-   "hold_t": 8,
-   "marines": 4
-  },
-  "vos_dd": {
-   "pads": 3,
-   "hold_t": 12,
-   "marines": 6
-  },
-  "vos_ca": {
-   "pads": 4,
-   "hold_t": 20,
-   "marines": 12,
-   "team": {
-    "demo": 4,
-    "medics": 2,
-    "engineers": 3,
-    "hackers": 2,
-    "pilots": 2
-   }
-  },
-  "vos_cap": {
-   "pads": 4,
-   "hold_t": 20,
-   "marines": 12,
-   "team": {
-    "demo": 4,
-    "medics": 2,
-    "engineers": 3,
-    "hackers": 2,
-    "pilots": 2
-   }
-  },
   "kethran_ff": {
    "pads": 2,
    "hold_t": 8,
@@ -654,6 +620,66 @@
    }
   },
   "vhorr_cv": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "vos_drum": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "vos_cross": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "vos_boarder": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "vos_broadside": {
+   "pads": 4,
+   "hold_t": 20,
+   "marines": 12,
+   "team": {
+    "demo": 4,
+    "medics": 2,
+    "engineers": 3,
+    "hackers": 2,
+    "pilots": 2
+   }
+  },
+  "vos_deck_runner": {
    "pads": 4,
    "hold_t": 20,
    "marines": 12,

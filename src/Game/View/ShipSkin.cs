@@ -108,7 +108,8 @@ public static class ShipSkin
         });
         int pools = Pools(ship, offset, cache.Values);
         int panes = Panes(ship, offset);
-        GD.Print($"SHIP_SKIN {file}: hull shader on {hullSurfaces} surfaces, {pools} floodlight pools, {lamps} lamps ({strobes.Count} strobes, {glows} glows), {panes} windows and bays");
+        int lenses = Lenses(ship);
+        GD.Print($"SHIP_SKIN {file}: hull shader on {hullSurfaces} surfaces, {pools} floodlight pools, {lamps} lamps ({strobes.Count} strobes, {glows} glows), {panes} windows and bays, {lenses} lenses");
         return strobes;
     }
 
@@ -228,6 +229,33 @@ public static class ShipSkin
         mat.SetShaderParameter("colour", new Color(c[0], c[1], c[2]));
         mat.SetShaderParameter("pulse", kind.Contains("beacon") ? 1 : 0);
         return new MeshInstance3D { Name = "glow", Mesh = new QuadMesh { Size = new Vector2(w, w), Material = mat }, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off };
+    }
+
+    private static Shader? _lens;
+    /// <summary>A glowing mouth's lens (lens.gdshader).</summary>
+    public static Shader LensShader => _lens ??= GD.Load<Shader>("res://src/Game/View/lens.gdshader");
+
+    /// <summary>The ship's glowing mouths (mockup 37's lenses, Ship Design Bible T14): a disc on each lens_* empty, facing out
+    /// along its normal, its radius, colour and pulse phase the empty's, 0.03 m proud of the mouth as the page lays it. Named
+    /// "glow", so a piece that breaks away puts its lenses out with its lamps (ShipDamage). Returns how many.</summary>
+    private static int Lenses(Node3D ship)
+    {
+        var found = new List<(Node3D E, Godot.Collections.Dictionary X)>();
+        Walk(ship, n => { if (n is Node3D e && e.Name.ToString().StartsWith("lens_") && e.HasMeta("extras")) found.Add((e, e.GetMeta("extras").AsGodotDictionary())); });
+        foreach (var (e, x) in found)
+        {
+            Vector3 n = Vec(x["normal"]).Normalized();
+            float r = (float)x["radius_m"].AsDouble();
+            float[] c = x["colour"].AsFloat32Array();
+            var mat = new ShaderMaterial { Shader = LensShader };
+            mat.SetShaderParameter("colour", new Color(c[0], c[1], c[2]));
+            mat.SetShaderParameter("phase", (float)x["phase"].AsDouble());
+            Vector3 up = Mathf.Abs(n.Y) > 0.9f ? Vector3.Forward : Vector3.Up;
+            var basis = Basis.LookingAt(-n, up);   // the quad's face (+Z) out along the normal
+            e.AddChild(new MeshInstance3D { Name = "glow", Mesh = new QuadMesh { Size = new Vector2(2 * r, 2 * r), Material = mat },
+                Transform = new Transform3D(basis, n * 0.03f), CastShadow = GeometryInstance3D.ShadowCastingSetting.Off });
+        }
+        return found.Count;
     }
 
     /// <summary>Where a mesh's own origin sits in its ship's glb frame (metres): its parents' offsets, up to the ship node.</summary>

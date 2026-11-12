@@ -22,7 +22,7 @@ The player has thirteen officers: one per station and four in reserve. Names, ra
 
 | # | Question | Provisional answer |
 |---|---|---|
-| O1 | Should officers gain experience, be wounded or killed (the reference game's officers can)? | Not yet |
+| O1 | Should officers gain experience, be wounded or killed (the reference game's officers can)? | Experience: yes (owner, 2026-11-12), designed in change `crew-leveling`; wounds and deaths not yet (survey CL8) |
 | O2 | Should enemy ships have officers? | Not yet |
 | O3 | Should a slot be changed only in port (the campaign's officers page), or in battle too? | In battle too, for the mockup |
 | O4 | Portraits on the slot and the card? | Not yet: rank pips and name |
