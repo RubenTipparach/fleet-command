@@ -576,7 +576,8 @@ public sealed partial class Battle
         t.Shields[f] -= absorb / bowX;
         t.Flash[f] = 1;
         double rest = dmg - absorb;
-        if (rest <= 0) { Record(t, sx, sz, kind, absorb, 0); return; }
+        // a training round stops at the shield: what gets past it hurts nothing (a shakedown's target drones)
+        if (rest <= 0 || src is { Training: true }) { Record(t, sx, sz, kind, absorb, 0); return; }
         t.Hull -= rest;
         StrikeDef st = Rules.Tactical.Strike;
         string aim = by?.Aim ?? "hull";

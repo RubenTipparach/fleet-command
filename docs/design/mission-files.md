@@ -64,7 +64,7 @@ A battle is `{ when?, name?, intel?, groups, markers?, planets?, time_limit_s?, 
   - `tag` is `flagship`, `prize`, `rescue`, `decoy`, `drone`, `quarry` (the ship a search is for), `scout` (a runner: it
     holds its course away from the fleet at full speed and never fights) or `truce` (holds its fire and its place until
     someone fires). A **drone** (an enemy group, a shakedown's targets)
-    stands where it is put, never fires, and is a light hulk: no shields, 30 % of its hull. A **prize** is taken, not destroyed: beaten down to a quarter of
+    stands where it is put, fires training rounds (they drop shields and hurt nothing past them: no hull, no system), and is a light hulk: no shields, 30 % of its hull. A **prize** is taken, not destroyed: beaten down to a quarter of
     its hull (`capture_hull_frac` in `data/battle/tuning.json`), it strikes and is boarded. A ship boarded and captured by
     your marines counts as taken too.
   - Enemy groups spread ahead at 100 km unless `bearing_deg` (clockwise from ahead) and `range_km` place them.

@@ -202,6 +202,7 @@ public sealed partial class PortPanel : FlowPanel
         }
         int price2 = c.HullPrice(sel.Id);
         string? why = c.S.Fleet.Count >= c.Data.Rules.FleetMax ? $"Your fleet is full ({c.Data.Rules.FleetMax} ships): sell one first."
+            : c.PrestigeShort(sel.Id) is { } ps ? ps
             : price2 > c.S.Credits ? $"You need {price2 - c.S.Credits:N0} cr more." : null;
         if (why != null) Text(why, x, d.End.Y - 66, 17, C.Caution, HorizontalAlignment.Left, w, 600);
         string hid = sel.Id;

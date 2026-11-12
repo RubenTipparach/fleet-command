@@ -108,6 +108,10 @@ public sealed record ShipStart(string Id, string Name, string Captain, string Cl
     public bool Runs { get; init; }
     /// <summary>Under a truce: it holds its fire and its place until the player's side fires first, then fights.</summary>
     public bool Truce { get; init; }
+    /// <summary>Fires training rounds: its hits drain shields but never reach the hull, a subsystem, a mount or the reactor
+    /// (a shakedown's target drones; owner, 2026-11-11: "shake down cruise they should fire, take down shields but cant
+    /// damage hull", "or subsystems").</summary>
+    public bool Training { get; init; }
     /// <summary>The weapon ids it starts with armed (a weapons test scene's one weapon); its other mounts start Offline.
     /// Null: every mount armed.</summary>
     public IReadOnlyList<string>? ArmOnly { get; init; }

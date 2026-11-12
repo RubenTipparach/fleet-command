@@ -7,7 +7,7 @@
  "reward_cr": 250,
  "where": "plain && dist_home >= 2 && dist_home <= 3 && terrain == 'open'",
  "objective": "Take her out to the marker beacon, put her guns through their trials on the target drones, and bring her back.",
- "brief": "Your first command is fresh from the yard. Take her out to the marker beacon, try her guns on the yard's target drones on the way, and bring her back to where you started, so the crew finds her faults before anyone else does. The drones hold still and never fire.",
+ "brief": "Your first command is fresh from the yard. Take her out to the marker beacon, try her guns on the yard's target drones on the way, and bring her back to where you started, so the crew finds her faults before anyone else does. The drones hold still and fire training rounds back: they will knock your shields down but cannot hurt the hull or any system.",
  "result": [
   {
    "when": "win",

@@ -129,8 +129,9 @@ public class ReactorTests
         foreach (Ship o in b.Ships) if (o.Side != s.Side) o.Z -= 200000;
         Run(b, 120);
         var R = b.Data.Systems.Reactor;
-        double settle = R.HeatFullPctS * b.Rules.Output(s) / s.Class.ReactorE / (R.CoolPerFlow * Rules.Cooling(s));
-        Assert.Equal(Math.Max(R.TempFloorPct, settle), s.Reactor.Temp, 0);
+        double settle = (R.HeatFullPctS * b.Rules.Output(s) / s.Class.ReactorE + R.HeatMisalignPctS * Rules.Misalignment(s)) / (R.CoolPerFlow * Rules.Cooling(s));
+        // within two points: the coils' drift (the misalignment term) is read at one instant, not averaged
+        Assert.InRange(s.Reactor.Temp, Math.Max(R.TempFloorPct, settle) - 2, Math.Max(R.TempFloorPct, settle) + 2);
     }
 
     [Fact]

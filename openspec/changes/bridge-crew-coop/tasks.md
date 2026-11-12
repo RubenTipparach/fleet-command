@@ -49,3 +49,7 @@
 - [x] 7.4b The comms box in every battle, alone or in co-op: every comms message there, the lone last line gone; no Chat key alone (owner, 2026-11-11: "All comms messages should be in the chat box", "Standardize this across all the game")
 - [ ] 7.5 The battle console mockup (and every faction's console page) draws the comms box (`docs/design/mockup-sync.md`)
 - [ ] 7.6 Dialogue option keys in the comms box for campaign missions (owner: "some campaign missions will have buttons for dialogue options")
+- [x] 7.7 Every ship one of your bridge's stations has locked shows its hull bar, not only your own target (owner, 2026-11-11)
+- [x] 7.8 AI captains fight closer (25 / 50 / 90 km for close, mid, long; was 40 / 80 / 130): enemies sat 80 km out at half their hit chance (owner: "enemy bots are really weak, why arent they shooting back?")
+- [x] 7.9 The shakedown's drones fire training rounds: shields only, never the hull or a system (owner: "shake down cruise they should fire, take down shields but cant damage hull", "or subsystems")
+- [x] 7.10 The shipyard asks each tier's prestige (0 / 25 / 50 / 90 / 140) and contracts pay 80 cr a step (was 50), so ten missions mostly won reach a heavy cruiser (owner: "tune it so that 10 missions gets you up to a cruiser ship in prestige")

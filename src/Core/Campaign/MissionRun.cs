@@ -124,13 +124,14 @@ public static class MissionRun
                 ShipSetup? load = grp.Hold.Count > 0
                     ? new ShipSetup(null, new Dictionary<string, int>(), grp.Hold, null, null, null, 0, false, false, new Dictionary<string, int>(), new Dictionary<string, double>(), Array.Empty<double>())
                     : null;
-                // a drone (a shakedown's target) stands where it is put, never fires, and is a light hulk with no shields
+                // a drone (a shakedown's target) stands where it is put and is a light hulk with no shields; it fires training rounds,
+                // which drop shields and hurt nothing past them
                 ships.Add(new ShipStart(id, name, label, cls, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading,
                     drone || still ? 0 : scout ? 2600 : neutral || freighter ? 600 : 1400,
                     grp.Role == GroupRole.Ally && !freighter && !still ? Stance.Escort : neutral || drone || freighter || still || scout ? Stance.Hold : Stance.Attack,
-                    HoldFire: neutral || drone || scout || grp.Hull == "pod",
+                    HoldFire: neutral || scout || grp.Hull == "pod",
                     HullFrac: drone ? DroneHullFrac : 1, ShieldsFrac: drone || grp.Hull == "pod" ? 0 : 1, Prize: grp.Tag == "prize" && i == 0, Setup: load)
-                    { ArriveS = grp.ArriveS, WakeS = grp.WakeS, Fixed = still, Runs = scout, Truce = grp.Tag == "truce" });
+                    { ArriveS = grp.ArriveS, WakeS = grp.WakeS, Fixed = still, Runs = scout, Truce = grp.Tag == "truce", Training = drone });
                 list.Add(id);
                 groups[grp.Role == GroupRole.Enemy ? "enemies" : "allies"].Add(id);
                 labels[id] = (label, i == 0 ? grp.Tag : null, grp.Role);

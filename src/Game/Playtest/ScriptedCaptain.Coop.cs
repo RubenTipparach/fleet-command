@@ -212,7 +212,7 @@ public sealed partial class ScriptedCaptain
         await Snap("dock-repaired");
         if (c.S.Fleet.Count < c.Data.Rules.FleetMax && c.Allows("ships"))
         {
-            var buy = c.Data.HullsOf(c.YardSide).Where(h => h.ForSale && c.HullPrice(h.Id) <= c.S.Credits - DockReserveCr).OrderByDescending(h => c.HullPrice(h.Id)).FirstOrDefault();
+            var buy = c.Data.HullsOf(c.YardSide).Where(h => h.ForSale && c.PrestigeShort(h.Id) == null && c.HullPrice(h.Id) <= c.S.Credits - DockReserveCr).OrderByDescending(h => c.HullPrice(h.Id)).FirstOrDefault();
             if (buy == null) GD.Print($"PLAYTEST_COOP no ship affordable ({c.S.Credits:0} cr)");
             else if (await Click("port.tab.yard") is { } ty) GD.Print($"PLAYTEST_COOP the shipyard tab did not open: {ty}");
             else

@@ -787,12 +787,20 @@ public sealed class Campaign
     }
 
     /// <summary>Buys a hull at your own port. Returns why not, or null.</summary>
+    /// <summary>Why the shipyard will not sell a hull for want of prestige, or null: each tier asks its prestige.</summary>
+    public string? PrestigeShort(string hullId)
+    {
+        int need = Data.TierOf(Data.Hulls[hullId]).Prestige;
+        return S.Prestige >= need ? null : $"Needs {need} prestige (you have {S.Prestige:0}).";
+    }
+
     public string? Buy(string hullId)
     {
         if (!Allows("ships")) return At.IsPort && !IsPort(At) ? $"Their shipyard sells to friends of standing {StandingFor("ships")} or more." : "The shipyard is at your own ports.";
         if (S.Fleet.Count >= Ru.FleetMax) return $"A fleet has at most {Ru.FleetMax} ships.";
         Hull h = Data.Hulls[hullId];
         if (h.Side != YardSide || !h.ForSale) return $"{h.Name} is not built here.";
+        if (PrestigeShort(hullId) is { } why) return why;
         string? err = Pay(HullPrice(hullId));
         if (err != null) return err;
         S.Fleet.Add(NewShip(hullId, Side.Prefix + Side.Names[S.Fleet.Count % Side.Names.Count]));

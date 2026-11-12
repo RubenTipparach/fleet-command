@@ -50,6 +50,7 @@ public sealed partial class Battle
             Ship s = _ships[i];
             s.Fixed = d.Fixed;
             s.Runs = d.Runs;
+            s.Training = d.Training;
             if (d.Truce) { s.Truce = true; s.WakeStance = Stance.Attack; s.WakeHoldFire = false; s.HoldFire = true; s.Stance = Stance.Hold; }
             if (d.Fixed) { s.V = 0; s.VOrder = 0; }
             if (d.WakeS > 0)

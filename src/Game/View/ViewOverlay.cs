@@ -153,11 +153,12 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
     // co-op: over a ship, the icon of every station of your bridge whose own target it is (owner, 2026-11-11: "each station
     // targeting various ships would have the station icon marked on the traget showing they have targeted someone"), each
     // in a dark disc, with the holder's name on its tip
-    private void RoleMarks(Vector2 p, Ship s, Ship me, float above)
+    // returns whether any station has the ship locked
+    private bool RoleMarks(Vector2 p, Ship s, Ship me, float above)
     {
-        if (_x.Coop is not { } co || me.RoleTargets == null) return;
+        if (_x.Coop is not { } co || me.RoleTargets == null) return false;
         var roles = co.Crew.Roles.List.Where(r => r.Targets && Battle.RoleTargetId(me, r.Id) == s.Id).ToList();
-        if (roles.Count == 0) return;
+        if (roles.Count == 0) return false;
         const float Sz = 26, Gap = 4;
         float x0 = p.X - (roles.Count * Sz + (roles.Count - 1) * Gap) / 2, y = p.Y - above - Sz;
         string bridge = co.Crew.BridgeOf(co.Me);
@@ -171,6 +172,7 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
             _ui.Reg($"v.role.{s.Id}.{r.Id}", at, null, null, new Tip($"{r.Name}: {string.Join(", ", co.Crew.HoldersOf(bridge, r.Id).Select(co.Crew.NameOf).Prepend(co.Crew.NameOf(FleetCommand.Coop.Crew.AdmiralId)))}"));
             x0 += Sz + Gap;
         }
+        return true;
     }
 
     // Over the 3D view, after the mockup's uiView (v65): markers and names, the locked target's bracket and hull, your
@@ -245,7 +247,9 @@ public sealed partial class ViewOverlay : Control, Ui.IControlSource
                 DrawArc(p, r, 0, Mathf.Tau, 32, hot ? col.Lightened(0.35f) : new Color(col, 0.7f), 1.5f + (hot ? 1 : 0), true);
                 f.Draw(this, Aiming.ContactName(b, s).ToUpperInvariant(), p.X, p.Y + 34, 16, col, HorizontalAlignment.Center);
             }
-            RoleMarks(p, s, me, locked ? 36 * (hot ? 1.08f : 1) + 8 : 24);
+            // a ship one of your bridge's stations has locked shows its hull too, not only your own target (owner, 2026-11-11:
+            // "if crew targets a different ship than captain, we should be able to see that ships health")
+            if (RoleMarks(p, s, me, locked ? 36 * (hot ? 1.08f : 1) + 8 : 24) && !locked) HullBar(p.X, p.Y + 46, s);
         }
         // a mission's marker beacons: each shown one a diamond with its name and range, a click steering for it (as a click on
         // open space does); one reached is drawn dim with a tick; one that follows a beacon not yet reached is not drawn

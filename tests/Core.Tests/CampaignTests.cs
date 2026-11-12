@@ -439,8 +439,8 @@ public sealed class CampaignTests
         var b = new Battle(TestData.Data, plan.Scenario);
         Ship me = b.Player;
         MarkerDef beacon = plan.Scenario.Markers!.First(k => k.Id == "beacon"), home = plan.Scenario.Markers!.First(k => k.Id == "home");
-        // the drones stand still and hold their fire
-        foreach (string id in plan.Groups["drones"]) { Ship d0 = b.ShipById(id)!; Assert.True(d0.HoldFire); Assert.Equal(0, d0.V); }
+        // the drones stand still and fire training rounds (shields only: owner, 2026-11-11)
+        foreach (string id in plan.Groups["drones"]) { Ship d0 = b.ShipById(id)!; Assert.False(d0.HoldFire); Assert.True(d0.Training); Assert.Equal(0, d0.V); }
         // the start point does not count before the beacon
         b.Step();
         Assert.DoesNotContain("home", b.Reached);
@@ -534,10 +534,44 @@ public sealed class CampaignTests
     }
 
     [Fact]
+    public void The_shakedown_drones_fire_training_rounds_that_drop_shields_and_hurt_nothing_else()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        Offer m = c.OfferMission("shakedown")!;
+        var b = new Battle(TestData.Data, MissionRun.Plan(c, m, TestData.Data)!.Scenario);
+        Ship me = b.Player;
+        double hull = me.Hull, shields = me.Shields.Sum();
+        var sys = me.Sys.ToDictionary(kv => kv.Key, kv => kv.Value);
+        // close on the drones and sit among them for two minutes without firing back
+        Ship drone = b.EnemiesOf(me).First();
+        var ahead = Geometry.Forward(drone.H);
+        me.X = drone.X + ahead.X * 5000; me.Z = drone.Z + ahead.Z * 5000;   // in front of it, in its arcs
+        for (int i = 0; i < 30 * 120; i++) b.Step();
+        Assert.Contains(b.Hits, h => h.ShipId == me.Id && h.Absorbed > 0);   // they fired, and the shields took it
+        Assert.All(b.Hits.Where(h => h.ShipId == me.Id), h => Assert.Equal(0, h.HullDamage));
+        Assert.Equal(hull, me.Hull);                                 // nothing got past
+        Assert.All(sys, kv => Assert.Equal(kv.Value, me.Sys[kv.Key]));
+        Assert.All(me.Reactor.Loops, l => Assert.Equal(1, l.Hp));
+    }
+
+    [Fact]
+    public void The_shipyard_asks_each_tier_its_prestige()
+    {
+        Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
+        c.S.Credits = 100000;
+        Hull cruiser = c.Data.HullsOf("concord").First(h => h.Tier == 3);
+        Assert.NotNull(c.PrestigeShort(cruiser.Id));
+        Assert.NotNull(c.Buy(cruiser.Id));
+        c.S.Prestige = c.Data.TierOf(cruiser).Prestige;
+        Assert.Null(c.Buy(cruiser.Id));
+    }
+
+    [Fact]
     public void The_shipyard_sells_hulls_at_home_for_credits()
     {
         Campaign.Campaign c = Campaign.Campaign.New(Camp, "concord");
         c.S.Credits = 10000;   // the shop under test, not the starting purse (500 cr since 2026-11-11)
+        c.S.Prestige = 1000;   // nor the prestige each tier asks
         int price = c.HullPrice("petrel");
         Assert.Null(c.Buy("petrel"));
         Assert.Equal(10000 - price, c.S.Credits);
