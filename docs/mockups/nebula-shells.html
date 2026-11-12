@@ -1,0 +1,432 @@
+<!doctype html>
+<!--
+  Nebula shells (mockup 38): a battle's nebula plumes drawn as static geometry instead of marched cloud. Each column's
+  density (a column falloff times layered noise) is polygonised once, when the battle loads, with naive surface nets (the
+  table-free cousin of marching cubes) into nested shells at rising density. The shells are drawn unshaded or with a
+  per-vertex sun term, alpha blended, with no depth writes, each fragment faded by how face-on it is so the edges go
+  soft. No noise is evaluated per pixel. The looks are the plumes' own (data/space/plumes.json, inlined).
+  OpenSpec change: nebula-shells. World units are kilometres.
+
+  Contract with tools/mockups/shoot.mjs: window.MOCKUP_SHOTS, window.MOCKUP_READY, window.MOCKUP_SCENE.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nebula Shells</title>
+<style>
+  :root {
+    --bg: #05070b; --panel: #0d1622; --edge: #2c4a6b; --ink: #cfe3ff; --dim: #8aa3c0; --accent: #49d17d;
+  }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font: 14px/1.4 "Rajdhani", "Segoe UI", system-ui, sans-serif; overflow: hidden; }
+  a { color: #8cc8ff; }
+  .stage { position: fixed; inset: 0; }
+  .title { position: fixed; left: 16px; top: 12px; width: min(440px, calc(100% - 360px)); box-sizing: border-box;
+    background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--edge);
+    padding: 8px 12px; border-radius: 4px; }
+  .title h1 { font-size: 16px; margin: 0 0 2px; letter-spacing: .06em; text-transform: uppercase; }
+  .title p { margin: 0; color: var(--dim); }
+  .controls { position: fixed; right: 16px; top: 12px; width: 310px; max-height: calc(100% - 24px); box-sizing: border-box;
+    overflow-y: auto; background: color-mix(in srgb, var(--panel) 92%, transparent); border: 1px solid var(--edge);
+    border-radius: 4px; padding: 8px 12px; }
+  .controls h2 { font-size: 13px; margin: 6px 0 4px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+  .row { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+  .row label { flex: 0 0 70px; color: var(--dim); }
+  .row select, .row input[type=range] { flex: 1; min-width: 0; min-height: 36px; }
+  select { background: var(--bg); color: var(--ink); border: 1px solid var(--edge); border-radius: 4px; font: inherit; }
+  .row output { flex: 0 0 34px; text-align: right; font-variant-numeric: tabular-nums; }
+  .seg { display: flex; flex: 1; gap: 4px; min-width: 0; }
+  .seg button, .views button { min-height: 44px; min-width: 44px; background: var(--bg); color: var(--ink);
+    border: 1px solid var(--edge); border-radius: 4px; font: inherit; padding: 0 8px; flex: 1; }
+  .seg button.on { border-color: var(--accent); color: var(--accent); }
+  .views { display: flex; gap: 4px; flex-wrap: wrap; }
+  .views button { flex: 1 1 30%; white-space: nowrap; }
+  .meter { margin-top: 6px; color: var(--dim); font-variant-numeric: tabular-nums; }
+  @media (max-width: 760px) and (orientation: landscape), (max-height: 480px) {
+    .title { width: calc(100% - 330px); padding: 6px 10px; }
+    .title h1 { font-size: 14px; }
+    .title p.how { display: none; }
+    .controls { width: 290px; }
+  }
+  @media (max-width: 600px) and (orientation: portrait) {
+    .title { width: calc(100% - 32px); }
+    .controls { left: 16px; right: 16px; top: auto; bottom: 12px; width: auto; max-height: 42%; }
+  }
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<div class="title">
+  <h1>Nebula shells</h1>
+  <p><a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a></p>
+  <p>OpenSpec change: <code>nebula-shells</code>. Plumes and their decks built once as see-through shells. The grid is the battle plane, in 10 km squares.</p>
+  <p class="how">Drag to orbit, scroll or pinch to zoom.</p>
+</div>
+<div class="controls" id="controls">
+  <h2>Look</h2>
+  <div class="row"><label for="look">Plume</label><select id="look"></select></div>
+  <div class="row"><label>Columns</label><div class="seg" data-key="columns"></div></div>
+  <div class="row"><label>Decks</label><div class="seg" data-key="decks"></div></div>
+  <h2>Shells</h2>
+  <div class="row"><label>Shells</label><div class="seg" data-key="shells"></div></div>
+  <div class="row"><label>Grid</label><div class="seg" data-key="grid"></div></div>
+  <div class="row"><label>Shading</label><div class="seg" data-key="shading"></div></div>
+  <div class="row"><label>Blend</label><div class="seg" data-key="blend"></div></div>
+  <div class="row"><label for="soft">Edge fade</label><input id="soft" type="range" min="0" max="3" step="0.1"><output id="softOut"></output></div>
+  <div class="row"><label for="opacity">Opacity</label><input id="opacity" type="range" min="0.2" max="2" step="0.05"><output id="opacityOut"></output></div>
+  <div class="row"><label>Wireframe</label><div class="seg" data-key="wire"></div></div>
+  <h2>Views</h2>
+  <div class="views" id="views"></div>
+  <div class="meter" id="meter"></div>
+</div>
+<!-- INLINE data/space/plumes.json -->
+<script type="application/json" data-src="data/space/plumes.json">{"_doc":"How each look of nebula plume is drawn in the battle (src/Game/View/PlumeLooks.cs, read into src/Game/View/nebula_plume.gdshader by NebulaPlume; owner, 2026-11-10: \"something like a 3d noise texture would be cool? something like how Ace Combat 7 does clouds, entering a column of nebula plume can hide you from enemies\", \"some nebulas are ion storms, which will have cool lightning\"). One look per NebulaDef.Looks and no other; a scenario's plume names its look (scenarios.json nebulae[].look). The view only: what a plume does to a ship is data/battle/systems/cloak.json (nebula). A plume is a column of cloud marched through a tiling 3D noise (assets/space/plume_noise.bin, tools/space/plume_noise.py), its circle on the battle plane the rule's own (radius 1 is NebulaDef.RM). lit is the cloud where the sun reaches it, deep the cloud in its own shadow, glow the light its thin edges give off and glow_strength how much (0 to 2); anvil how far the column flares into the decks of cloud above and below the battle, in its radii (0 none, 0.8 a storm's anvil); the column reaches from the deck below into the deck above, so a narrow one stands many of its radii tall and a wide one few (the decks' numbers are data/space/nebula_decks.json; the shape is NebulaPlume.Cover, baked into a small 3D texture of the plume's own); absorption how fast the cloud swallows light, per radius of thick cloud (a ship one radius inside shows through exp(-absorption * density)), low enough that the inside of the cloud shows; contrast how far its density varies inside, in dense cores, veils and holes (0 an even fill, 1 holes right through; owner, 2026-11-10: \"the nebula cloud column has uniform density, so its not something convincing\"); clear_km how far from the camera the cloud is back to its full thickness, in km (it thins toward the camera, so a captain inside a plume still sees their own ship); base_scale how many times the noise repeats across a radius (the size of the billows) and detail_scale the same for the wisps that eat their edges, erosion how deep those bite (0 to 1); drift_per_s how fast the billows rise, in repeats a second. flash is the colour of an ion storm's lightning and flashes_per_min how often it flickers in the cloud where a scenario makes the plume a storm (the view's own lightning; the strikes that trip a core are the simulation's, Battle.Lightning). Provisional until the owner has seen them (survey NP).","violet":{"lit":"#a98cf0","deep":"#150a30","glow":"#6a36e8","glow_strength":0.3,"anvil":0.35,"absorption":2.0,"contrast":0.75,"base_scale":1.25,"detail_scale":2.8,"erosion":0.55,"drift_per_s":0.006,"clear_km":40,"flash":"#d8ccff","flashes_per_min":14},"garnet":{"lit":"#f08a70","deep":"#220a12","glow":"#d02a3a","glow_strength":0.3,"anvil":0.45,"absorption":2.0,"contrast":0.75,"base_scale":1.2,"detail_scale":2.6,"erosion":0.55,"drift_per_s":0.006,"clear_km":40,"flash":"#ffd0c0","flashes_per_min":14},"brass":{"lit":"#f0cc80","deep":"#22150a","glow":"#c87a20","glow_strength":0.28,"anvil":0.3,"absorption":2.0,"contrast":0.75,"base_scale":1.3,"detail_scale":2.9,"erosion":0.5,"drift_per_s":0.005,"clear_km":40,"flash":"#fff0c8","flashes_per_min":14},"teal":{"lit":"#84e0d2","deep":"#061a20","glow":"#1a9a92","glow_strength":0.3,"anvil":0.4,"absorption":2.0,"contrast":0.75,"base_scale":1.25,"detail_scale":2.8,"erosion":0.55,"drift_per_s":0.006,"clear_km":40,"flash":"#d0fff6","flashes_per_min":14},"orchid":{"lit":"#f0a0e0","deep":"#1e0a26","glow":"#b840c8","glow_strength":0.32,"anvil":0.5,"absorption":2.0,"contrast":0.75,"base_scale":1.2,"detail_scale":2.7,"erosion":0.58,"drift_per_s":0.007,"clear_km":40,"flash":"#ffd8f8","flashes_per_min":14},"slate":{"lit":"#7c8aa8","deep":"#070a14","glow":"#2e4488","glow_strength":0.22,"anvil":0.8,"absorption":2.6,"contrast":0.75,"base_scale":1.1,"detail_scale":2.5,"erosion":0.5,"drift_per_s":0.01,"clear_km":40,"flash":"#cfe2ff","flashes_per_min":26},"cinder":{"lit":"#94705c","deep":"#0c0605","glow":"#a83a14","glow_strength":0.26,"anvil":0.75,"absorption":2.6,"contrast":0.75,"base_scale":1.15,"detail_scale":2.6,"erosion":0.5,"drift_per_s":0.01,"clear_km":40,"flash":"#ffdcb0","flashes_per_min":24}}</script>
+<!-- /INLINE -->
+<!-- INLINE data/space/nebula_decks.json -->
+<script type="application/json" data-src="data/space/nebula_decks.json">{"_doc":"The decks of cloud a battle's nebula plumes rise between (src/Game/View/NebulaDeck.cs, read into src/Game/View/nebula_deck.gdshader; owner, 2026-11-10: \"The clouds need to stretch up in columns of varying widths across the map\", \"make a cloud mesh for top and bottom of nebula and fade out the edges, so it looks like the nebula columns are connected to a larger structure above and below the map\"). A battle with any plume has two decks, one above the battle plane and one below, mirror images; every plume's column reaches from one into the other (NebulaPlume.Cover). underside_km is how far the deck's face toward the battle stands off the plane and thickness_km how deep the deck is past it; hang_km how far that face hangs and lifts across the deck (its billows, by the noise); join_km how much further the face reaches toward the plane round the root of a column that reaches it, and funnel_km how far out from the column's edge that funnel spreads, so each column runs up into a funnel of the deck; margin_km how far past the outermost column the deck is whole, and fade_km how far beyond that it thins away to nothing (its edge); planet_clear_x how far round a planet the deck is clear, in the planet's radii, so a planet is never buried in it; coverage how much of the deck is cloud (0 to 1); absorption_per_km how fast its cloud swallows light; contrast how far its density varies inside, as a plume's (data/space/plumes.json); base_km the size of its billows (one repeat of the noise) and detail_km of the wisps that eat their edges, erosion how deep those bite (0 to 1); drift_per_s how fast the billows move, in repeats a second; glow_strength how much its thin edges glow (0 to 2). The face toward the battle lies in the deck's own shadow where the sun is beyond it, and takes a fill of the light the battle's clouds throw back (fill, 0 to 1 of its lit colour); each column darkens the same way as it climbs into that deck, so the two meet in one shade. column_shade is the share of the sun a column's own cloud lets through to its face (0 to 1): a deck's face sees the sun across open space, a column shades itself through its own depth, so the deck takes the column's share and the two read as one cloud of one colour. variety is how much its colour and shade vary across it in broad patches (0 to 1; owner, 2026-11-10: \"give the decks some varying colors so its not all uniform (and vertex color shading)\"); far off it fades into the sky behind it, from far_from_km to far_to_km from the camera (\"fade the decks out so they blend in with the background too\"). Only a column that reaches a deck has a funnel in it (NebulaDef.Forms). Its colours are the plumes' own looks (data/space/plumes.json), each column's round its root and their mean between. A battle among plumes is also hazed (owner, 2026-11-10: \"add in a general layer of fog too, so detail in the distance fades into fog\"): fog_km is the distance at which a thing shows through a little over a third of the haze, fog_lit where its colour sits between the plumes' shadow and their light (0 to 1, each look by the area it covers), fog_sky how much of it lies over the sky (0 to 1); the clouds take the same haze at their own depth. style is how the nebula is drawn (owner, 2026-11-10: \"lets see how all one or the other looks\", \"third technique to try out: crab-breezes cloud system\", \"cheap 3d billboards with lighting\"): volume (every column and deck marched cloud), meshes (puffs of displaced mesh) or billboards (Crab Breeze's lit camera-facing puffs); the two puff styles fill each column inside its own shape and lay each deck as a field of puffs deck_puff_km apart; a run or a still may name another with --nebula-style=. The view only. Provisional until the owner has seen them (survey NP9).","underside_km":18,"thickness_km":20,"hang_km":5,"join_km":8,"funnel_km":12,"margin_km":40,"fade_km":90,"planet_clear_x":1.6,"coverage":0.6,"absorption_per_km":0.22,"contrast":0.75,"fog_km":150,"fog_lit":0.35,"fog_sky":0.55,"style":"volume","deck_puff_km":14,"base_km":55,"detail_km":14,"erosion":0.5,"drift_per_s":0.0015,"glow_strength":0.22,"fill":0.3,"column_shade":0.3,"variety":0.6,"far_from_km":110,"far_to_km":260}</script>
+<!-- /INLINE -->
+<!-- INLINE data/space/starfield.json -->
+<script type="application/json" data-src="data/space/starfield.json">{"schema":"starcrew.starfield/1","_status":"Built (2026-10-16): openspec/changes/nebula-skies design 5, docs/mockups/nebula-skies.html. Read by tools/space/nebula_skies.py (the classes and colours), the mockup and sc-core::sky (the engine's stars and streaks).","_doc":"The vector stars drawn over a nebula sky, and how they streak (nebula-skies design 5). Each star is a direction at infinity; every frame it is drawn as a line from where it is on screen now back toward where it was tail_s ago, so a turning view smears the stars into short lines (FreeSpace's way: the star's last position kept, a line drawn to it, its length capped and its brightness dimmed as it grows). A star's class sets its brightness range (the sky file holds each star's own) and its head's size at rest; its colour is a tint. streak: tail_s the seconds of turning a tail shows, max_deg the longest tail (angle), min_px the least line drawn (a star at rest is a point), dim_per_deg the brightness lost per degree of tail (FreeSpace 2's 7,800 per unit) and dim_floor the least kept (FreeSpace 2 kept 75 of 255 over black space; 0.5 here so a streak still reads over a bright cloud), tail_fade the tail end's share of the head's opacity, alpha_min and whiten: a star is alpha-blended (FreeSpace's alpha-blended lines) toward its colour mixed whiten of the way to white, at an opacity of alpha_min + (1 - alpha_min) x its brightness, times the dim, cut_deg_s a turn faster than this is a camera cut (no tail that frame), faint_floor the faint hashed stars' brightness while the tail is at its cap (design 5.5: they fade during a fast turn). motes: patrol-mission 11.4's dust round the eye, drawn by the same streak rule from eye-space points, so moving forward fast shows. Colours sRGB 0-1.","_owner":"2026-10-15: \"and drawing stars and simulating motion blur with gl lines\", \"like old school games\", \"freespace 1 did fake motion blur with vector graphics stars\"","classes":[{"name":"faint","share":0.56,"brightness":[0.1,0.28],"size_px":1.0},{"name":"plain","share":0.29,"brightness":[0.28,0.52],"size_px":1.0},{"name":"bright","share":0.12,"brightness":[0.52,0.82],"size_px":2.0},{"name":"brilliant","share":0.03,"brightness":[0.82,1.0],"size_px":3.0}],"colours":[{"name":"blue-white","share":0.16,"srgb":[0.74,0.84,1.0]},{"name":"white","share":0.34,"srgb":[1.0,1.0,1.0]},{"name":"cream","share":0.28,"srgb":[1.0,0.95,0.85]},{"name":"gold","share":0.15,"srgb":[1.0,0.85,0.62]},{"name":"red","share":0.07,"srgb":[1.0,0.7,0.56]}],"streak":{"tail_s":0.025,"max_deg":1.7,"min_px":1.0,"dim_per_deg":0.534,"dim_floor":0.5,"tail_fade":0.45,"alpha_min":0.3,"whiten":0.4,"cut_deg_s":720,"faint_floor":0.3},"motes":{"count":200,"cube_m":300,"tail_s":0.033,"fade_from_m":150,"brightness":0.35}}</script>
+<!-- /INLINE -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+
+const PLUMES = JSON.parse(document.querySelector('script[data-src="data/space/plumes.json"]').textContent);
+const STARS = JSON.parse(document.querySelector('script[data-src="data/space/starfield.json"]').textContent);
+const DECKS = JSON.parse(document.querySelector('script[data-src="data/space/nebula_decks.json"]').textContent);
+const LOOKS = Object.keys(PLUMES).filter(k => !k.startsWith('_'));
+
+const state = { look: 'violet', columns: 2, decks: 'on', shells: 3, grid: 32, shading: 'lit', blend: 'glow', soft: 1.0, opacity: 1, wire: 'off' };
+const OPTIONS = {
+  columns: [[1, '1'], [2, '2'], [3, '3']],
+  decks: [['on', 'On'], ['off', 'Off']],
+  shells: [[1, '1'], [2, '2'], [3, '3'], [4, '4']],
+  grid: [[32, '32'], [48, '48'], [64, '64']],
+  shading: [['lit', 'Lit'], ['flat', 'Unlit']],
+  blend: [['glow', 'Glow'], ['soft', 'Soft']],
+  wire: [['off', 'Off'], ['on', 'On']],
+};
+
+// ---------- noise: an integer hash with full avalanche (CLAUDE.md 10: never fract(sin)) ----------
+function hash3(x, y, z, seed) {
+  let h = Math.imul(x, 0x8da6b343) ^ Math.imul(y, 0xd8163841) ^ Math.imul(z, 0xcb1ab31f) ^ Math.imul(seed, 0x165667b1);
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b);
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+const fade = t => t * t * t * (t * (t * 6 - 15) + 10);
+function vnoise(x, y, z, seed) {
+  const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+  const u = fade(x - xi), v = fade(y - yi), w = fade(z - zi);
+  const l = (a, b, t) => a + (b - a) * t;
+  const c = (dx, dy, dz) => hash3(xi + dx, yi + dy, zi + dz, seed);
+  return l(l(l(c(0,0,0), c(1,0,0), u), l(c(0,1,0), c(1,1,0), u), v),
+           l(l(c(0,0,1), c(1,0,1), u), l(c(0,1,1), c(1,1,1), u), v), w) * 2 - 1;
+}
+function fbm(x, y, z, seed) {
+  let s = 0, a = 0.5, f = 1;
+  for (let o = 0; o < 4; o++) { s += a * vnoise(x * f, y * f, z * f, seed + o); a *= 0.5; f *= 2.03; }
+  return s;
+}
+
+// ---------- the columns: where they stand, how tall, how wide (km) ----------
+const COLUMN_SITES = [
+  { x: 0, z: 0, r: 26, h: 70 },
+  { x: 70, z: -40, r: 20, h: 60 },
+  { x: -60, z: -55, r: 17, h: 54 },
+];
+
+// Density of one column at p (km, relative to its foot): a soft cylinder that swells and narrows with height, its
+// edge eaten by noise. Positive is cloud.
+function columnDensity(px, py, pz, site, look, seed, reach) {
+  const k = look.base_scale / (site.r * 0.42);
+  // a domain warp first, so the billows fold over each other instead of reading as one smooth tube
+  const wx = fbm(px * k * 0.5 + 11, py * k * 0.5, pz * k * 0.5, seed + 7) * 6;
+  const wz = fbm(px * k * 0.5, py * k * 0.5 + 23, pz * k * 0.5, seed + 9) * 6;
+  const n = fbm((px + wx) * k, py * k * 0.7, (pz + wz) * k, seed);
+  const swell = 1 + 0.35 * Math.sin(py / reach * Math.PI * 0.8 + seed) + 0.5 * Math.pow(Math.abs(py) / reach, 4);
+  const rad = Math.hypot(px, pz) / (site.r * swell);
+  const vert = Math.abs(py) / reach;
+  const body = 1 - Math.max(rad, Math.pow(vert, 3));
+  return body * 0.75 + n * look.erosion * 1.7;
+}
+
+
+// Density of the deck above the battle plane at (x, y, z) km, after data/space/nebula_decks.json: its underside face
+// stands underside_km off the plane and hangs hang_km lower in billows; round each column's root it reaches join_km
+// further down in a funnel funnel_km wide, so the column runs up into it; it is thickness_km deep; past margin_km from
+// the outermost column it thins away over fade_km; coverage is how much of it is cloud.
+function deckDensity(x, y, z, sites, look, seed) {
+  const kb = 1 / DECKS.base_km, kd = 1 / DECKS.detail_km;
+  const billow = fbm(x * kb * 2, 0, z * kb * 2, seed) * 0.5 + 0.5;
+  let funnel = 0, near = Infinity;
+  for (const c of sites) {
+    const d = Math.hypot(x - c.x, z - c.z) - c.r;
+    near = Math.min(near, d);
+    funnel = Math.max(funnel, 1 - Math.max(0, d) / DECKS.funnel_km);
+  }
+  const under = DECKS.underside_km - DECKS.hang_km * billow - DECKS.join_km * Math.max(0, funnel) ** 2;
+  const topF = DECKS.underside_km + DECKS.thickness_km;
+  const slab = Math.min((y - under) / 6, (topF - y) / 8, 1);
+  const edge = Math.min(1, Math.max(0, 1 - (near - DECKS.margin_km) / DECKS.fade_km));
+  const cover = fbm(x * kb, 3.1, z * kb, seed + 5) + (DECKS.coverage - 0.5) * 0.8;
+  const detail = fbm(x * kd, y * kd * 1.5, z * kd, seed + 11);
+  return Math.min(slab, 0.9) * edge + cover * 0.6 * edge + detail * DECKS.erosion * 0.7 - 0.25 + (edge - 1) * 0.6;
+}
+
+// ---------- naive surface nets: one vertex per crossed cell, one quad per crossed lattice edge ----------
+function surfaceNets(field, dims, iso, origin, step) {
+  const [NX, NY, NZ] = dims, SX = NX + 1, SY = NY + 1;
+  const at = (x, y, z) => field[x + SX * (y + SY * z)];
+  const cellV = new Int32Array(NX * NY * NZ).fill(-1);
+  const pos = [], nrm = [], idx = [];
+  const C = [[0,0,0],[1,0,0],[0,1,0],[1,1,0],[0,0,1],[1,0,1],[0,1,1],[1,1,1]];
+  const E = [[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];
+  const v = new Float32Array(8);
+  for (let z = 0; z < NZ; z++) for (let y = 0; y < NY; y++) for (let x = 0; x < NX; x++) {
+    let inside = 0;
+    for (let k = 0; k < 8; k++) { v[k] = at(x + C[k][0], y + C[k][1], z + C[k][2]) - iso; if (v[k] > 0) inside++; }
+    if (inside === 0 || inside === 8) continue;
+    let sx = 0, sy = 0, sz = 0, n = 0;
+    for (const [a, b] of E) {
+      if ((v[a] > 0) === (v[b] > 0)) continue;
+      const t = v[a] / (v[a] - v[b]);
+      sx += C[a][0] + (C[b][0] - C[a][0]) * t; sy += C[a][1] + (C[b][1] - C[a][1]) * t; sz += C[a][2] + (C[b][2] - C[a][2]) * t; n++;
+    }
+    cellV[x + NX * (y + NY * z)] = pos.length / 3;
+    pos.push(origin[0] + (x + sx / n) * step[0], origin[1] + (y + sy / n) * step[1], origin[2] + (z + sz / n) * step[2]);
+    const gx = v[1]+v[3]+v[5]+v[7]-v[0]-v[2]-v[4]-v[6], gy = v[2]+v[3]+v[6]+v[7]-v[0]-v[1]-v[4]-v[5], gz = v[4]+v[5]+v[6]+v[7]-v[0]-v[1]-v[2]-v[3];
+    const ax = gx / step[0], ay = gy / step[1], az = gz / step[2], al = Math.hypot(ax, ay, az) || 1;
+    nrm.push(-ax / al, -ay / al, -az / al);
+  }
+  const cv = (x, y, z) => cellV[x + NX * (y + NY * z)];
+  for (let z = 1; z < NZ; z++) for (let y = 1; y < NY; y++) for (let x = 1; x < NX; x++) {
+    const d0 = at(x, y, z) - iso;
+    for (let axis = 0; axis < 3; axis++) {
+      const d1 = axis === 0 ? at(x + 1, y, z) - iso : axis === 1 ? at(x, y + 1, z) - iso : at(x, y, z + 1) - iso;
+      if ((d0 > 0) === (d1 > 0)) continue;
+      const q = axis === 0 ? [cv(x,y-1,z-1), cv(x,y,z-1), cv(x,y,z), cv(x,y-1,z)]
+              : axis === 1 ? [cv(x-1,y,z-1), cv(x-1,y,z), cv(x,y,z), cv(x,y,z-1)]
+              :              [cv(x-1,y-1,z), cv(x,y-1,z), cv(x,y,z), cv(x-1,y,z)];
+      if (q.some(i => i < 0)) continue;
+      idx.push(q[0], q[1], q[2], q[0], q[2], q[3]);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(nrm, 3));
+  g.setIndex(idx);
+  return g;
+}
+
+// ---------- the shells' material: lit by the sun per vertex, faded at grazing angles ----------
+const SUN = new THREE.Vector3(0.55, 0.6, 0.35).normalize();
+function shellMaterial(lit, deep, glow, alpha) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      lit: { value: new THREE.Color(lit) }, deep: { value: new THREE.Color(deep) }, glow: { value: new THREE.Color(glow) },
+      alpha: { value: alpha }, soft: { value: state.soft }, shade: { value: state.shading === 'lit' ? 1 : 0 },
+      sun: { value: SUN },
+    },
+    vertexShader: `
+      varying vec3 vN; varying vec3 vV; varying float vSun;
+      uniform vec3 sun;
+      void main() {
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vN = normalize(mat3(modelMatrix) * normal);
+        vV = normalize(cameraPosition - wp.xyz);
+        vSun = dot(vN, sun);
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }`,
+    fragmentShader: `
+      varying vec3 vN; varying vec3 vV; varying float vSun;
+      uniform vec3 lit, deep, glow; uniform float alpha, soft, shade;
+      void main() {
+        float facing = abs(dot(normalize(vN), normalize(vV)));
+        float rim = 1.0 - facing;
+        float s = mix(0.6, clamp(vSun * 0.5 + 0.5, 0.0, 1.0), shade);
+        vec3 c = mix(deep, lit, s) + glow * rim * rim * 0.6;
+        gl_FragColor = vec4(c, alpha * pow(facing, soft));
+      }`,
+    transparent: true, depthWrite: false, blending: state.blend === 'glow' ? THREE.AdditiveBlending : THREE.NormalBlending, side: THREE.DoubleSide, wireframe: state.wire === 'on',
+  });
+}
+
+// ---------- scene ----------
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputEncoding = THREE.sRGBEncoding;
+stage.append(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x03040a);
+const camera = new THREE.PerspectiveCamera(50, 1, 0.5, 6000);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+const grid = new THREE.GridHelper(400, 40, 0x2c4a6b, 0x111d2c);
+scene.add(grid);
+
+// Stars: a seeded generator (Mulberry32) on a far sphere; brightness and colour by the classes and shares in
+// data/space/starfield.json, most stars faint.
+function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const pick = (list, u) => { let acc = 0; for (const e of list) { acc += e.share; if (u < acc) return e; } return list[list.length - 1]; };
+(function stars() {
+  const r = mulberry32(1931), n = 2600, p = new Float32Array(n * 3), c = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    const u = r() * 2 - 1, th = r() * Math.PI * 2, s = Math.sqrt(1 - u * u);
+    p.set([s * Math.cos(th) * 2500, u * 2500, s * Math.sin(th) * 2500], i * 3);
+    const cls = pick(STARS.classes, r()), col = pick(STARS.colours, r());
+    const b = cls.brightness[0] + r() * (cls.brightness[1] - cls.brightness[0]);
+    c.set([col.srgb[0] * b, col.srgb[1] * b, col.srgb[2] * b], i * 3);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(p, 3)); g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ size: 1.6, sizeAttenuation: false, vertexColors: true })));
+})();
+
+
+let nebula = new THREE.Group(); scene.add(nebula);
+let lastBuild = { ms: 0, tris: 0 };
+function build() {
+  scene.remove(nebula);
+  nebula.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+  nebula = new THREE.Group();
+  const look = PLUMES[state.look];
+  const t0 = performance.now();
+  let tris = 0;
+  const shellsOf = (field, dims, origin, step, renderBase) => {
+    for (let k = 0; k < state.shells; k++) {
+      const f = state.shells === 1 ? 0.5 : k / (state.shells - 1);
+      const iso = 0.05 + f * 0.45;
+      const g = surfaceNets(field, dims, iso, origin, step);
+      tris += g.index.count / 3;
+      const lit = new THREE.Color(look.deep).lerp(new THREE.Color(look.lit), 0.45 + 0.55 * f);
+      const alpha = (state.blend === 'glow' ? 0.16 + 0.16 * f : 0.22 + 0.2 * f) * state.opacity * (look.absorption / 2);
+      const m = new THREE.Mesh(g, shellMaterial(lit, look.deep, look.glow, alpha));
+      m.renderOrder = renderBase + state.shells - k;
+      nebula.add(m);
+    }
+  };
+  const sites = COLUMN_SITES.slice(0, state.columns);
+  const reach = DECKS.underside_km + DECKS.thickness_km * 0.5;   // a column runs from deck to deck
+  for (let ci = 0; ci < sites.length; ci++) {
+    const site = sites[ci], N = state.grid;
+    const half = Math.max(site.r * 1.7, reach * 1.05), st = (half * 2) / N;
+    const S = N + 1, field = new Float32Array(S * S * S);
+    for (let z = 0; z < S; z++) for (let y = 0; y < S; y++) for (let x = 0; x < S; x++)
+      field[x + S * (y + S * z)] = columnDensity(-half + x * st, -half + y * st, -half + z * st, site, look, 17 + ci * 31, reach);
+    shellsOf(field, [N, N, N], [site.x - half, -half, site.z - half], [st, st, st], 0);
+  }
+  if (state.decks === 'on') {
+    // One deck above the battle plane and its mirror below (data/space/nebula_decks.json): the same field, flipped.
+    const N = state.grid, NY = Math.max(6, Math.round(N / 4));
+    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
+    for (const c of sites) { x0 = Math.min(x0, c.x - c.r); x1 = Math.max(x1, c.x + c.r); z0 = Math.min(z0, c.z - c.r); z1 = Math.max(z1, c.z + c.r); }
+    const out = DECKS.margin_km + DECKS.fade_km * 0.6;
+    x0 -= out; x1 += out; z0 -= out; z1 += out;
+    const y0 = DECKS.underside_km - DECKS.hang_km - DECKS.join_km - 2, y1 = DECKS.underside_km + DECKS.thickness_km + 2;
+    const NX = N * 2, NZ = Math.round(NX * (z1 - z0) / (x1 - x0));
+    const step = [(x1 - x0) / NX, (y1 - y0) / NY, (z1 - z0) / NZ];
+    const SX = NX + 1, SY = NY + 1, field = new Float32Array(SX * SY * (NZ + 1));
+    for (let z = 0; z <= NZ; z++) for (let y = 0; y <= NY; y++) for (let x = 0; x <= NX; x++)
+      field[x + SX * (y + SY * z)] = deckDensity(x0 + x * step[0], y0 + y * step[1], z0 + z * step[2], sites, look, 101);
+    shellsOf(field, [NX, NY, NZ], [x0, y0, z0], step, 10);
+    const top = nebula.children.slice(-state.shells);
+    for (const m of top) {
+      const g = m.geometry.clone();
+      g.scale(1, -1, 1);
+      const idx = g.index.array; for (let i = 0; i < idx.length; i += 3) { const t = idx[i + 1]; idx[i + 1] = idx[i + 2]; idx[i + 2] = t; }
+      const n = g.attributes.normal.array; for (let i = 1; i < n.length; i += 3) n[i] = -n[i];
+      tris += idx.length / 3;
+      const mm = new THREE.Mesh(g, m.material.clone()); mm.renderOrder = m.renderOrder;
+      nebula.add(mm);
+    }
+  }
+  scene.add(nebula);
+  lastBuild = { ms: performance.now() - t0, tris };
+}
+
+// ---------- controls ----------
+const lookSel = document.getElementById('look');
+for (const k of LOOKS) { const o = document.createElement('option'); o.value = k; o.textContent = k[0].toUpperCase() + k.slice(1); lookSel.append(o); }
+lookSel.value = state.look;
+lookSel.onchange = () => { state.look = lookSel.value; build(); };
+for (const seg of document.querySelectorAll('.seg')) {
+  const key = seg.dataset.key;
+  for (const [val, text] of OPTIONS[key]) {
+    const b = document.createElement('button'); b.textContent = text;
+    b.onclick = () => { state[key] = val; syncSegs(); build(); };
+    b.dataset.val = String(val); seg.append(b);
+  }
+}
+function syncSegs() {
+  for (const seg of document.querySelectorAll('.seg'))
+    for (const b of seg.children) b.classList.toggle('on', b.dataset.val === String(state[seg.dataset.key]));
+  lookSel.value = state.look;
+  document.getElementById('soft').value = state.soft; document.getElementById('softOut').textContent = state.soft.toFixed(1);
+  document.getElementById('opacity').value = state.opacity; document.getElementById('opacityOut').textContent = state.opacity.toFixed(2);
+}
+function liveUniforms() {
+  nebula.traverse(o => { if (o.material && o.material.uniforms) o.material.uniforms.soft.value = state.soft; });
+}
+document.getElementById('soft').oninput = e => { state.soft = +e.target.value; syncSegs(); liveUniforms(); };
+document.getElementById('opacity').oninput = e => { state.opacity = +e.target.value; syncSegs(); };
+document.getElementById('opacity').onchange = () => build();
+syncSegs();
+build();
+
+const VIEWS = {
+  overview: () => { camera.position.set(150, 80, 190); controls.target.set(10, 5, -20); },
+  close: () => { camera.position.set(52, 8, 48); controls.target.set(0, 4, 0); },
+  inside: () => { camera.position.set(8, 2, 10); controls.target.set(-20, 6, -24); },
+  low: () => { camera.position.set(90, 3, 80); controls.target.set(0, 12, 0); },
+  top: () => { camera.position.set(0, 320, 0.01); controls.target.set(0, 0, -20); },
+};
+const bar = document.getElementById('views');
+for (const [name, set] of Object.entries(VIEWS)) {
+  const b = document.createElement('button'); b.textContent = name.replace(/_/g, ' '); b.onclick = set; bar.append(b);
+}
+VIEWS.overview();
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+resize();
+
+const meter = document.getElementById('meter');
+let frames = 0, last = performance.now(), fps = 0;
+renderer.setAnimationLoop(() => {
+  controls.update();
+  renderer.render(scene, camera);
+  frames++;
+  const now = performance.now();
+  if (now - last > 500) { fps = frames * 1000 / (now - last); frames = 0; last = now; }
+  meter.textContent = `${lastBuild.tris.toLocaleString()} shell tris, built in ${lastBuild.ms.toFixed(0)} ms; ` +
+    `${renderer.info.render.calls} draws; ${fps.toFixed(0)} fps`;
+});
+
+// Shots: each sets the look and the view, then rebuilds.
+const shot = (s, view) => () => { Object.assign(state, s); syncSegs(); build(); VIEWS[view](); };
+window.MOCKUP_SCENE = scene;
+window.MOCKUP_SHOTS = {
+  decks: shot({ look: 'violet', columns: 3, decks: 'on', shells: 3, grid: 32, shading: 'lit', blend: 'glow', wire: 'off' }, 'low'),
+  no_decks: shot({ look: 'violet', columns: 3, decks: 'off', shells: 3, grid: 32, shading: 'lit', blend: 'glow', wire: 'off' }, 'overview'),
+  overview: shot({ look: 'violet', columns: 3, decks: 'on', shells: 3, grid: 32, shading: 'lit', blend: 'glow', wire: 'off' }, 'overview'),
+  close: shot({ look: 'violet', columns: 2, decks: 'on', shells: 3, grid: 32, shading: 'lit', blend: 'glow', wire: 'off' }, 'close'),
+  inside: shot({ look: 'teal', columns: 2, decks: 'on', shells: 3, grid: 32, shading: 'lit', blend: 'glow', wire: 'off' }, 'inside'),
+  garnet: shot({ look: 'garnet', columns: 3, decks: 'on', shells: 3, grid: 48, shading: 'lit', blend: 'glow', wire: 'off' }, 'overview'),
+  top: shot({ look: 'orchid', columns: 3, decks: 'off', shells: 3, grid: 32, shading: 'lit', blend: 'glow', wire: 'off' }, 'top'),
+  slate_unlit: shot({ look: 'slate', columns: 2, decks: 'on', shells: 3, grid: 32, shading: 'flat', blend: 'soft', wire: 'off' }, 'low'),
+  wireframe: shot({ look: 'brass', columns: 1, decks: 'off', shells: 2, grid: 32, shading: 'lit', blend: 'glow', wire: 'on' }, 'close'),
+};
+window.MOCKUP_READY = true;
+})();
+</script>
+</body>
+</html>
