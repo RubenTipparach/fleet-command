@@ -61,3 +61,5 @@
 - 2026-11-10, desktop session: version 43, version id `1794367196-0313`. Sections CR and DW (2026-11-09) and today's NP8-NP12, EZ and BS published, with the NP8 decision; the live page's section Y and decision Y11 (published from another session) merged into `docs/design/survey.html` first, so nothing of theirs was lost. The answers database carried forward.
 
 - 2026-11-10, cloud session (branch `claude/gallant-brown-1vddu9`): version 14 of the cloud account copy (https://claude.ai/artifact/YHX4u5fPn5hQ1CMr3HhEbt), version id `1794339857-c91f`: the repo copy published whole, bringing this copy up to date (sections N, CR, DW, V, H6, I9-I11) and adding section FV (fractal vessels, mockup 37, FV1-FV5); capabilities kept. The main-account copy is still to republish.
+
+- 2026-11-11, desktop session (PR #81): section ST added (the Concord story, ST1-ST5, from docs/design/story-missions.md); committed, not yet published (the artifact tools stopped answering in this session); the next desktop session publishes it.
