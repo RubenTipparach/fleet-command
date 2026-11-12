@@ -118,3 +118,45 @@ fragment's alpha faded by how face-on it is, so the shells' edges go soft. That 
 about 2 s. At 1280x720, v-sync off and not recording: 104 fps from a fixed view (the same scene without it: 130), and
 66 / 85 / 103 fps with the camera orbiting through it, where it fills more of the screen. This one is a test on the
 Pi, not a design for the game.
+
+## Where the battle's frame goes (2026-11-12)
+
+The battle runs at about 20 fps at any 3D scale, so I measured where the time goes. I used a probe that was never
+committed: a node printing Godot's frame time and draw calls each second, with switches to turn suspects off. I also
+sampled the C# code with `dotnet-trace` (sampled thread time, 20 s mid-battle). Battle at `--lowspec --lowspec-scale=1.0`,
+1280x720, not recording; medians after the first 15 s:
+
+| Run | FPS | Frame | Draw calls |
+|---|---|---|---|
+| As it is | 20 | 50 ms | about 1,280 |
+| Ships' running lights off (7-9 OmniLight3Ds a ship) | 20 | 50 ms | about 1,270 |
+| Hull floodlight pools off | 21 | 50 ms | about 1,270 |
+| Console panels' per-frame updates frozen (still drawn) | 32 | 31 ms | about 1,300 |
+| Console hidden | 41 | 25 ms | about 190 |
+
+**The console costs half the frame.** Every panel (`ConsolePanel._Process` calls `QueueRedraw()`), and the view overlay
+too, rebuilds all of its drawing every frame in immediate mode. That means every rounded rectangle tessellated, every
+arc, icon, lamp and label, each a call from C# into the engine. In the trace, 70% of the main thread's wall time is inside
+`ConsolePanel._Draw`. The largest parts:
+
+| Inside the console | Share of the main thread |
+|---|---|
+| `BottomStrip.DrawPanel` | 34% |
+| `Shapes.RoundRect` (tessellating rounded rectangles) | 33% |
+| `ConcordKit.Piece` | 27% |
+| `SystemsDisplay.Draw` | 22% |
+| `ConcordKit.Icon` | 16% |
+| `StationPanel.DrawPanel` | 14% |
+
+Outside it, `ViewOverlay._Draw` takes 18% (the brackets and labels in the 3D view) and `BattleView.Sync` 7%. The
+console's drawing also costs about 1,100 of the frame's 1,280 draw calls.
+
+**The lights are not the problem.** Neither the running lights nor the floodlight pools changed the frame measurably.
+
+What would fix it, cheapest first (not done; game code waits for the owner):
+
+1. **Redraw a panel only when what it shows changes**, or at a capped rate (10-15 Hz for slow readouts). Godot keeps a
+   canvas item's commands until the next `QueueRedraw`, so a panel that is not redrawn costs nearly nothing.
+2. **Cache shapes**: tessellate a rounded rectangle, arc or icon once per size and reuse the points, instead of every frame.
+3. **Split static from live**: draw each panel's frame, rails, keys and labels once (into their own canvas item or a
+   texture), and redraw only the readouts that move. That also cuts the 1,100 draw calls.
