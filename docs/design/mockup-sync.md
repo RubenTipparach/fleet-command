@@ -253,6 +253,9 @@ each mockup difference has its task:
 | What the crew brings | A panel summing the crew's skills | Not drawn in the port | `crew-leveling` 2.3 |
 | Mockup 1's Crew tab | Mockup 1 still shows the old officers (skill pips, credits) | Mockup 39's screen | `crew-leveling` 2.3a |
 | Weakest facing | Science's skill that shows the target's weakest shield | No rule yet: no readout to show it in | `crew-leveling` 2.5a |
+| On a phone | Mockup 39 lays its crew list, tree and pool out for a phone | The port (every tab, not only Crew) is the desktop layout scaled down, too small to read in portrait (`docs/screenshots/game/flow-crew-390x844.png`) | open: the port has no phone layout yet |
+
+Stills: `docs/screenshots/game/flow-crew*.png` (1920x1080, 1280x720, 844x390, 390x844); beside the mockup in `docs/screenshots/compare/crew-leveling.png`.
 
 ### Mockup 36 (placeholder fleets)
 
