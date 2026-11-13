@@ -77,3 +77,4 @@
 - 2026-11-12, cloud session: version 50, version id `1794499117-82a4`: CL9 rewritten for the tree, CL10 added (which style), for mockup 39 v3.
 - 2026-11-11, desktop session (PR #81): section ST added (the Concord story, ST1-ST5, from docs/design/story-missions.md); committed, not yet published (the artifact tools stopped answering in this session); the next desktop session publishes it.
 - 2026-11-13, cloud session: version 51, version id `1794580712-961c`: CL10 now Branches or Lanes, for mockup 39 v4.
+- 2026-11-13, cloud session: version 52, version id `1794586911-2f5a`: CL10 decided (Branches), with mockup 39 approved for implementation.
