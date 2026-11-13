@@ -177,10 +177,23 @@ public sealed class CrewTests
         Assert.Equal(4, power.Card!.Level);
         Assert.Equal(120, power.Card.Xp);
         Assert.Equal(c.NextXp(eng), power.Card.NextXp);
-        Assert.Equal(c.TreeOf(eng).Skill("eng.b1")!.Name, Assert.Single(power.Card.Skills).Name);
+        Assert.Equal(1, power.Card.Skills);
+        var (ab, v) = Assert.Single(c.TreeOf(eng).Skill("eng.b1")!.Fx);
+        Assert.Equal(c.Data.Crew.Bonus(ab, v), Assert.Single(power.Card.Bonuses));
         Assert.Equal(c.RankOf(eng), b.RankOf(power));
         Assert.Null(b.Player.Officers["helm"]);
         Assert.Single(b.Player.Crew);
         Assert.Equal(0, b.OfficerSkill(b.Player, "power"));   // what they bring is their skills (ManCrew), not a roster skill
+    }
+
+    [Fact]
+    public void An_officers_skills_sum_into_bonuses_by_ability_written_as_the_data_says()
+    {
+        CrewDef cd = CampaignTests.Camp.Crew;
+        var sum = cd.Sum("Helm", new[] { "helm.b1", "helm.b2" });
+        Assert.Equal(0.07, Assert.Single(sum, e => e.Ability == "het").Value, 6);
+        Assert.Equal(("HET chance", "+7 %"), cd.Bonus("het", 0.07));
+        Assert.Equal(("Coil drift", "-30 %"), cd.Bonus("drift", 0.3));
+        Assert.Equal(("Safe HETs", "yes"), cd.Bonus("het_safe", 1));
     }
 }

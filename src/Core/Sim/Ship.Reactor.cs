@@ -46,11 +46,9 @@ public sealed record StationOfficer(string Id, string Ship, string Name, int Ran
 }
 
 /// <summary>A campaign officer as the battle shows them (Battle.SeatCrew; Campaign.CrewSeats): their campaign station, rank
-/// and level, experience banked and needed for the next level (null at the highest), and the skills they have learned.</summary>
-public sealed record OfficerCard(string Station, string Rank, int Level, int Xp, int? NextXp, IReadOnlyList<OfficerCardSkill> Skills);
-
-/// <summary>A learned skill on a crew card: its name and what it does.</summary>
-public sealed record OfficerCardSkill(string Name, string Text);
+/// and level, experience banked and needed for the next level (null at the highest), how many skills they have learned, and
+/// what those add up to, each bonus a name and a value as the player reads it ("turn rate", "+8 %").</summary>
+public sealed record OfficerCard(string Station, string Rank, int Level, int Xp, int? NextXp, int Skills, IReadOnlyList<(string Name, string Value)> Bonuses);
 
 /// <summary>A campaign officer to seat on the flagship: the battle stations they take, their name, rank index and card.</summary>
 public sealed record CrewSeat(IReadOnlyList<string> Stations, string Name, int Rank, OfficerCard Card);

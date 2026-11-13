@@ -30,7 +30,7 @@ public sealed partial class StationPanel
         int k = Rules.OfficerSkill(s, st);
         OfficersDef d = B.Data.Systems.Officers;
         string name = Battle.StationName(st);
-        Tip tip = o?.Card is { } cc ? OfficerCardTip(o, cc, name)
+        Tip tip = o?.Card is { } cc ? OfficerCardTip(o, cc)
             : o != null
             ? new Tip($"{B.RankOf(o)} {o.Name}", new (string, string, Color?)[] { ("Station", name, null), ("Specialty", Battle.StationName(o.Spec) + (o.Spec == st ? "" : " · half skill"), null),
                 ("Skill", d.Skills[o.Skill] + (o.Spec == st ? "" : $" (as {d.Skills[k]})"), null) }
@@ -54,18 +54,17 @@ public sealed partial class StationPanel
     }
 
     // A campaign officer's hover card (change crew-leveling; owner, 2026-11-13: "in battle,hovering over crew members should
-    // show their skills , lvl and xp"): their campaign station and level, experience to the next level, and every skill they
-    // have learned with what it does; what those skills add is on the ship (Battle.ManCrew), read by each ability's rule.
-    private Tip OfficerCardTip(StationOfficer o, OfficerCard c, string station)
+    // show their skills , lvl and xp"; "instead of listing each skill, why cant you just list the bonuses"): their campaign
+    // station and level, experience to the next level, and their learned skills summed into bonuses (CrewDef.Sum, Bonus), the
+    // same that reach the ship (Battle.ManCrew) and are read by each ability's rule.
+    private Tip OfficerCardTip(StationOfficer o, OfficerCard c)
     {
         var rows = new List<(string, string, Color?)>
         {
-            ("Station", c.Station == station ? station : $"{station} · {c.Station} officer", null),
-            ("Level", $"{c.Level} · {c.Rank}", null),
-            ("Experience", c.NextXp is int n ? $"{c.Xp} / {n} to level {c.Level + 1}" : $"{c.Xp} · the highest level", c.NextXp is int n2 && c.Xp >= n2 ? C.Accord : null),
+            ($"Level {c.Level}", c.NextXp is int n ? $"{c.Xp} / {n} XP" : $"{c.Xp} XP · max", c.NextXp is int n2 && c.Xp >= n2 ? C.Accord : null),
         };
-        if (c.Skills.Count == 0) rows.Add(("Skills", c.Level <= 1 ? "None: an ensign brings nothing yet" : "None learned: points to place in port", C.Lilac));
-        foreach (OfficerCardSkill k in c.Skills) rows.Add((k.Name, k.Text, C.Accord));
+        if (c.Bonuses.Count == 0) rows.Add(("Bonuses", "none", C.Lilac));
+        foreach (var (nm, v) in c.Bonuses) rows.Add((nm, v, C.Accord));
         return new Tip($"{c.Rank} {o.Name}", rows);
     }
 

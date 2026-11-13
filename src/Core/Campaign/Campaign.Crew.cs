@@ -174,7 +174,7 @@ public sealed partial class Campaign
         Data.Officers.Stations.Select(AtStation).OfType<Officer>().Select(o => new FleetCommand.Sim.CrewSeat(
             Cd.Covers[o.Station], o.Name, Math.Max(0, Cd.RankLevel.Count(l => l <= o.Level) - 1),
             new FleetCommand.Sim.OfficerCard(o.Station, RankOf(o), o.Level, o.Xp, NextXp(o),
-                o.Skills.Select(id => TreeOf(o).Skill(id)).OfType<CrewSkill>().Select(s => new FleetCommand.Sim.OfficerCardSkill(s.Name, s.Text)).ToList()))).ToList();
+                o.Skills.Count, Cd.Sum(o.Station, o.Skills).Select(e => Cd.Bonus(e.Ability, e.Value)).ToList()))).ToList();
 
     /// <summary>What the whole crew's learned skills add up to, by ability (the rules' keys, data/campaign/crew.json fx): what
     /// the flagship's officers bring to a battle (Ship.SkillBonus) and the campaign's own (standing).</summary>

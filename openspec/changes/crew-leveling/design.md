@@ -84,8 +84,10 @@ repair, Tactical is tactical and point defence, Security is transport, Comms is 
 slots take the campaign crew (officers task 2.5); every other ship keeps the roster's officers. `covers` in `crew.json`
 holds the mapping. A campaign officer sits in every slot their station covers, with no roster skill: what they bring is
 their learned skills (`Battle.ManCrew`); a station with no officer is vacant. Hovering over a slot shows the officer's
-level and rank, experience against the next level, and each skill learned with what it does (owner, 2026-11-13: "in
-battle,hovering over crew members should show their skills , lvl and xp").
+rank, level and XP, then their skills summed into bonuses, one short line each ("Turn rate +8 %"), the names and forms
+from `crew.json` `abilities`, which the mockup's What the crew brings also reads (owner, 2026-11-13: "in battle,hovering
+over crew members should show their skills , lvl and xp", "instead of listing each skill, why cant you just list the
+bonuses", "try to make that stuff breif to , avoid making it wordy").
 
 ## Open questions
 
