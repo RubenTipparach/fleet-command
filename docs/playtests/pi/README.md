@@ -160,3 +160,24 @@ What would fix it, cheapest first (not done; game code waits for the owner):
 2. **Cache shapes**: tessellate a rounded rectangle, arc or icon once per size and reuse the points, instead of every frame.
 3. **Split static from live**: draw each panel's frame, rails, keys and labels once (into their own canvas item or a
    texture), and redraw only the readouts that move. That also cuts the 1,100 draw calls.
+
+## The menu and the campaign map (2026-11-13)
+
+Measured with a local probe (never committed), `--lowspec`, 1280x720, the campaign playtest:
+
+| Screen | Before | After |
+|---|---|---|
+| Loading screen | stalled in Mesa's compiler on the unused planet and nebula shaders | reaches the menu (low-spec warms one ship a faction and skips `LowSpec.UnusedShaders`) |
+| Menu | about 6,000 draw calls, 6 fps (each star a circle) | 8 draw calls, 45-46 fps (the still stars painted once into a texture) |
+| Campaign map | 872 draw calls, 7 fps, GPU 100% | about 390 draw calls, 13-16 fps |
+
+What the map's frame was, found by switching parts off one at a time: the paper sheet's shader (nine hexes searched, five
+layers read, per pixel) run again under each of the 7 sun lamps and the table lamp; the map's 3D drawn at 1920 x 1080 in
+a 720p window; the hidden battle's sky still drawn under it; glow; 259 drawings each its own draw; each map ship's parts
+and 5-8 real lamps. Fixes, all low-spec only except the drawings: the sheet baked into a texture each time the chart
+changes (`chart_sheet_bake.gdshader`, the same code as the live sheet through `chart_sheet.gdshaderinc`) and cut into 8 x 8
+tiles so a lamp's pass draws only the tiles in its reach; the map's 3D at the window's pixels; the battle's 3D off while it
+is hidden; no glow and no lamp shadow, as in the low-spec battle; the map's ships baked as in the battle (`LowShips`); the
+drawings one MultiMesh a drawing on every platform (the camera-facing quads they were, so nothing changes on screen).
+Stills before and after look the same. The map is still GPU-bound; the next suspects are the remaining lamp passes on the
+room and the pieces.

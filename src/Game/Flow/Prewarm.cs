@@ -93,7 +93,10 @@ public static class Prewarm
         vp.AddChild(new DirectionalLight3D { RotationDegrees = new Vector3(-50, -30, 0) });
         vp.AddChild(new OmniLight3D { Position = new Vector3(0, 4, 4), OmniRange = 30 });
         int i = 0;
-        foreach (PackedScene ps in scenes)
+        // the low-spec mode draws one ship of each faction (the same pipelines, a fraction of the draw calls: all 68 were
+        // about 6,000 a frame at 5 fps on a Raspberry Pi 5)
+        IEnumerable<PackedScene> warm = LowSpec.On ? scenes.GroupBy(p => p.ResourcePath.GetBaseDir()).Select(g => g.First()) : scenes;
+        foreach (PackedScene ps in warm)
         {
             Node3D ship = ps.Instantiate<Node3D>();
             string path = ps.ResourcePath;
@@ -108,6 +111,7 @@ public static class Prewarm
         foreach (string f in DirAccess.GetFilesAt("res://src/Game/View"))
         {
             if (!f.EndsWith(".gdshader") || f == "nebula_sky.gdshader") continue;
+            if (LowSpec.On && LowSpec.UnusedShaders.Contains(f)) continue;   // never drawn there, and some stall its compiler
             var sh = GD.Load<Shader>("res://src/Game/View/" + f);
             vp.AddChild(new MeshInstance3D { Mesh = new QuadMesh(), MaterialOverride = new ShaderMaterial { Shader = sh }, Position = new Vector3(-12 + 3 * (i % 8), 6, 2) });
             i++;

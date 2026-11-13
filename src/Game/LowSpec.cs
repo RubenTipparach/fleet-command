@@ -21,6 +21,16 @@ public static class LowSpec
     /// Raspberry Pi 5 runs a battle at about 38 fps; borderless fullscreen on its 2560 x 1080 monitor ran at 22.</summary>
     public static readonly Vector2I DefaultWindow = new(1280, 720);
 
+    /// <summary>The view's shaders the low-spec mode never draws (it has baked planets, nebula shells and baked ships
+    /// instead), which Prewarm leaves uncompiled: the full planet and volume-nebula shaders stall a Raspberry Pi 5's shader
+    /// compiler for minutes (docs/playtests/pi/README.md), and with them the loading screen never reached the menu.</summary>
+    public static readonly string[] UnusedShaders =
+    {
+        "planet.gdshader", "planet_gas.gdshader", "planet_atmosphere.gdshader", "planet_craters.gdshader", "planet_clouds.gdshader",
+        "planet_rings.gdshader", "nebula_plume.gdshader", "nebula_deck.gdshader", "nebula_mesh.gdshader", "nebula_billboard.gdshader",
+        "ship_bake.gdshader",
+    };
+
     /// <summary>The share of the window's width and height the 3D view is drawn at (--lowspec-scale=1 by default: the owner,
     /// 2026-11-12, "I want 100% scale renderer too").</summary>
     public static readonly float Scale3D = ReadScale();
@@ -36,6 +46,18 @@ public static class LowSpec
         vp.ScreenSpaceAA = Viewport.ScreenSpaceAAEnum.Disabled;
         vp.Scaling3DMode = Viewport.Scaling3DModeEnum.Bilinear;
         vp.Scaling3DScale = Scale3D;
+    }
+
+    /// <summary>In the low-spec mode, draws a stretched SubViewport's 3D at the window's pixels (times Scale3D), not at the
+    /// reference size its container gives it (a 1920 x 1080 map in a 1280 x 720 window shades 2.25 times the pixels shown);
+    /// call it each frame, it changes the viewport only when the window or the container did. Nothing when off.</summary>
+    public static void FitToWindow(SubViewport vp)
+    {
+        if (!On || DisplayServer.GetName() == "headless" || vp.Size.X <= 0) return;
+        float want = Scale3D * Mathf.Min(1f, (float)DisplayServer.WindowGetSize().X / vp.Size.X);
+        if (Mathf.Abs(vp.Scaling3DScale - want) < 0.01f && vp.Scaling3DMode == Viewport.Scaling3DModeEnum.Bilinear) return;
+        vp.Scaling3DMode = Viewport.Scaling3DModeEnum.Bilinear;
+        vp.Scaling3DScale = want;
     }
 
     private static float ReadScale()

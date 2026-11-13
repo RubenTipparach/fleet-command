@@ -35,8 +35,18 @@ public sealed partial class ChartRoom : Node3D
     /// <summary>The fog mask's pixels per map unit, and its blur: two box passes this many pixels wide each way, about the
     /// page's 0.28 units of blur (paperSheet's softDraw).</summary>
     private const int MaskPx = 8, MaskBlur = 1;
+    /// <summary>The low-spec mode's baked sheet, this many pixels across (the layers are 56 a unit, about 2,800 across).</summary>
+    private const int BakePx = 2048;
+    /// <summary>The low-spec mode's sheet is cut into this many tiles each way.</summary>
+    private const int SheetTiles = 8;
+    private SubViewport? _bake;
+    private ShaderMaterial? _lowMat;
+    private ImageTexture? _baked;
     // the drawn pieces that stand in a sector, hidden while it is uncharted
     private readonly List<(Node3D Node, int C, int R)> _fogged = new();
+    // the drawings (billboards) and cloud shadows, batched: one MultiMesh a drawing, each instance its place and sector, so the
+    // chart's several hundred drawings cost a few dozen draw calls; an uncharted sector's instances fold to nothing
+    private readonly List<(MultiMesh Mm, int I, Transform3D At, int C, int R)> _fogInst = new();
 
     private static Vector3 V(JsonElement a) => new(a[0].GetSingle(), a[1].GetSingle(), a[2].GetSingle());
 
@@ -74,7 +84,9 @@ public sealed partial class ChartRoom : Node3D
         _sheet = new Rect2(sb[0].GetSingle(), sb[1].GetSingle(), sb[2].GetSingle() - sb[0].GetSingle(), sb[3].GetSingle() - sb[1].GetSingle());
         _maskImg = Image.CreateEmpty(Mathf.CeilToInt(_sheet.Size.X * MaskPx), Mathf.CeilToInt(_sheet.Size.Y * MaskPx), false, Image.Format.L8);
         _maskTex = ImageTexture.CreateFromImage(_maskImg);
-        var sheetMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/Flow/chart_sheet.gdshader") };
+        // the sheet's colour, live on the sheet (chart_sheet.gdshader) or, in the low-spec mode, baked into a texture each time
+        // the chart changes (chart_sheet_bake.gdshader, the same code) and lit from it (chart_sheet_low.gdshader)
+        var sheetMat = new ShaderMaterial { Shader = GD.Load<Shader>(LowSpec.On ? "res://src/Game/Flow/chart_sheet_bake.gdshader" : "res://src/Game/Flow/chart_sheet.gdshader") };
         foreach (string k in new[] { "base", "screen", "over", "mul" }) sheetMat.SetShaderParameter(k + "_tex", GD.Load<Texture2D>(Dir + $"sheet_{k}.png"));
         sheetMat.SetShaderParameter("owner_tex", _ownerTex);
         sheetMat.SetShaderParameter("fog_tex", _fogTex);
@@ -83,11 +95,22 @@ public sealed partial class ChartRoom : Node3D
         sheetMat.SetShaderParameter("sheet_bounds", new Vector4(b[0].GetSingle(), b[1].GetSingle(), b[2].GetSingle(), b[3].GetSingle()));
         sheetMat.SetShaderParameter("print_bounds", new Vector4(pr[0].GetSingle(), pr[1].GetSingle(), pr[2].GetSingle(), pr[3].GetSingle()));
         sheetMat.SetShaderParameter("grid_size", new Vector2(cols, rows));
+        if (LowSpec.On)
+        {
+            var px = new Vector2I(BakePx, Mathf.RoundToInt(BakePx * _sheet.Size.Y / _sheet.Size.X));
+            _bake = new SubViewport { Name = "SheetBake", Size = px, TransparentBg = true, Disable3D = true, RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled };
+            _bake.AddChild(new ColorRect { Size = px, Material = sheetMat });
+            AddChild(_bake);
+            sheetMat = _lowMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/Flow/chart_sheet_low.gdshader") };
+        }
         Node3D paper = GD.Load<PackedScene>(Dir + "paper.glb").Instantiate<Node3D>();
         AddChild(paper);
         GraphMaterial.Dress(paper, name => name == "chart_sheet" ? sheetMat : null);
         // the sheet takes the pieces' shadows but throws none: lying almost flat under the lamp it would shadow itself in bands
         foreach (Node n in paper.FindChildren("*", "MeshInstance3D", true, false)) ((MeshInstance3D)n).CastShadow = GeometryInstance3D.ShadowCastingSetting.Off;
+        // low-spec: the sheet in tiles, so each lamp's extra pass (one a light an object, in the Compatibility renderer) draws
+        // only the tiles in its reach, not the whole sheet under every sun's lamp
+        if (LowSpec.On) foreach (Node n in paper.FindChildren("chart_sheet", "MeshInstance3D", true, false)) Tile((MeshInstance3D)n, SheetTiles);
 
         BuildLights(m.GetProperty("lights"));
         BuildDrawn(m, regions);
@@ -105,7 +128,8 @@ public sealed partial class ChartRoom : Node3D
             AmbientLightSource = Godot.Environment.AmbientSource.Color, AmbientLightColor = sky.Lerp(ground, 0.4f),
             AmbientLightEnergy = h.GetProperty("intensity").GetSingle() * LightScale,
             ReflectedLightSource = Godot.Environment.ReflectionSource.Disabled,
-            TonemapMode = Godot.Environment.ToneMapper.Aces, GlowEnabled = true, GlowIntensity = 0.3f, GlowBloom = 0.02f,
+            // low-spec: no glow, as in its battle (on a Raspberry Pi 5 the glow's passes cost about a third of a frame)
+            TonemapMode = Godot.Environment.ToneMapper.Aces, GlowEnabled = !LowSpec.On, GlowIntensity = 0.3f, GlowBloom = 0.02f,
         };
     }
 
@@ -132,7 +156,7 @@ public sealed partial class ChartRoom : Node3D
                 {
                     Name = "Lamp", LightColor = col, LightEnergy = energy, SpotRange = at.DistanceTo(to) * 3, SpotAttenuation = 0,
                     SpotAngle = Mathf.RadToDeg(e.GetProperty("angle_rad").GetSingle()), SpotAngleAttenuation = 1.2f - e.GetProperty("penumbra").GetSingle(),   // the page's penumbra: its outer part fading
-                    ShadowEnabled = true, ShadowBias = 0.08f, ShadowNormalBias = 1.5f,
+                    ShadowEnabled = !LowSpec.On, ShadowBias = 0.08f, ShadowNormalBias = 1.5f,   // low-spec: no shadow pass, as in its battle
                 };
                 AddChild(lamp);
                 lamp.LookAtFromPosition(at, to, Vector3.Up);
@@ -153,19 +177,14 @@ public sealed partial class ChartRoom : Node3D
             tex[p.Name] = (GD.Load<Texture2D>(Dir + p.Value.GetProperty("file").GetString()), p.Value.GetProperty("foot").GetSingle());
         Color tint = new(m.GetProperty("sprite_tint").GetString()!);
         void Put(Node3D n, Sector h) { AddChild(n); _fogged.Add((n, h.C, h.R)); }
-        Sprite3D Bill(string id, float w, Vector3 at)
+        // each drawing's instances: a camera-facing quad w units wide, its foot (the drawing's lowest point) on the position
+        var bills = new Dictionary<string, List<(Transform3D At, int C, int R)>>();
+        void Bill(string id, float w, Vector3 at, Sector h)
         {
-            var (t, foot) = tex[id];
-            return new Sprite3D
-            {
-                Texture = t, PixelSize = w / t.GetWidth(), Billboard = BaseMaterial3D.BillboardModeEnum.Enabled, Shaded = false, Modulate = tint,
-                AlphaCut = SpriteBase3D.AlphaCutMode.Discard, TextureFilter = BaseMaterial3D.TextureFilterEnum.LinearWithMipmaps,
-                // the drawing's foot (its lowest point) on the piece's position
-                Offset = new Vector2(0, t.GetHeight() * (foot - 0.5f)), Position = at,
-            };
+            if (!bills.TryGetValue(id, out var list)) bills[id] = list = new();
+            list.Add((new Transform3D(Basis.Identity.Scaled(Vector3.One * w), at), h.C, h.R));
         }
-        var shadowMat = new StandardMaterial3D { AlbedoTexture = tex["cloud-shadow"].Tex, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha };
-        var shadowMesh = new PlaneMesh { Size = new Vector2(1.75f, 1.55f) };
+        var shadows = new List<(Transform3D At, int C, int R)>();
         float Rf(Mulberry32 r) => (float)r.Next();
         foreach (Sector h in _c.S.Sectors)
         {
@@ -177,21 +196,21 @@ public sealed partial class ChartRoom : Node3D
                 string kind = reg.Id % 3 == 2 ? "storm" : "cloud";
                 float w = 1.2f + Rf(R) * 0.3f;
                 float x = p.X + (Rf(R) - 0.5f) * 0.4f, z = p.Z - 0.25f + (Rf(R) - 0.5f) * 0.2f;
-                Put(Bill($"{kind}:{reg.MainIdx}:{v}", w, new Vector3(x, 0.06f, z)), h);
+                Bill($"{kind}:{reg.MainIdx}:{v}", w, new Vector3(x, 0.06f, z), h);
                 float sx = p.X + (Rf(R) - 0.5f) * 0.15f;
-                Put(new MeshInstance3D { Mesh = shadowMesh, MaterialOverride = shadowMat, Position = new Vector3(sx, 0.033f, p.Z + 0.05f), CastShadow = GeometryInstance3D.ShadowCastingSetting.Off }, h);
+                shadows.Add((new Transform3D(Basis.Identity, new Vector3(sx, 0.033f, p.Z + 0.05f)), h.C, h.R));
                 if (R.Next() < 0.6)
                 {
                     int v2 = (v + 1) % 3;
                     float w2 = 0.75f + Rf(R) * 0.2f;
                     float side = R.Next() < 0.5 ? -1 : 1;
                     float x2 = p.X + side * (0.3f + Rf(R) * 0.15f), z2 = p.Z + 0.12f + Rf(R) * 0.15f;
-                    Put(Bill($"{kind}:{reg.MainIdx}:{v2}", w2, new Vector3(x2, 0.06f, z2)), h);
+                    Bill($"{kind}:{reg.MainIdx}:{v2}", w2, new Vector3(x2, 0.06f, z2), h);
                 }
             }
             else if (h.Terrain == "star")
             {
-                Put(Bill("sun:" + (h.C * 7 + h.R) % 3, 2.0f, new Vector3(p.X, 0.02f, p.Z - 0.15f)), h);
+                Bill("sun:" + (h.C * 7 + h.R) % 3, 2.0f, new Vector3(p.X, 0.02f, p.Z - 0.15f), h);
                 // the sun's warm light on the pieces round it (the page's PointLight beside each drawn sun)
                 var lamp = new OmniLight3D { LightColor = new Color("#ffc26a"), LightEnergy = 0.8f * LightScale, OmniRange = 3f, Position = new Vector3(p.X, 0.6f, p.Z) };
                 Put(lamp, h);
@@ -210,10 +229,37 @@ public sealed partial class ChartRoom : Node3D
                     if (k % 2 == 1) continue;
                     var at = new Vector3((float)(cx + Math.Cos(a0 + u) * rr), (float)(0.03 + R.Next() * 0.06), (float)(cz + Math.Sin(a0 + u) * rr));
                     if (new Vector2(at.X - p.X, at.Z - p.Z).Length() > 0.85f) continue;
-                    Put(Bill("rock:" + rv, (float)(big * 5.5), at), h);
+                    Bill("rock:" + rv, (float)(big * 5.5), at, h);
                 }
             }
         }
+        foreach (string id in bills.Keys.Order())
+        {
+            var (t, foot) = tex[id];
+            float aspect = (float)t.GetHeight() / t.GetWidth();
+            var quad = new QuadMesh { Size = new Vector2(1, aspect), CenterOffset = new Vector3(0, aspect * (foot - 0.5f), 0) };
+            var mat = new StandardMaterial3D
+            {
+                AlbedoTexture = t, AlbedoColor = tint, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                BillboardMode = BaseMaterial3D.BillboardModeEnum.Enabled, BillboardKeepScale = true,
+                Transparency = BaseMaterial3D.TransparencyEnum.AlphaScissor, AlphaScissorThreshold = 0.5f,
+                CullMode = BaseMaterial3D.CullModeEnum.Disabled, TextureFilter = BaseMaterial3D.TextureFilterEnum.LinearWithMipmaps,
+            };
+            Batch(quad, mat, bills[id], id);
+        }
+        var shadowMat = new StandardMaterial3D { AlbedoTexture = tex["cloud-shadow"].Tex, ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded, Transparency = BaseMaterial3D.TransparencyEnum.Alpha };
+        Batch(new PlaneMesh { Size = new Vector2(1.75f, 1.55f) }, shadowMat, shadows, "cloud-shadow");
+    }
+
+    private void Batch(Mesh mesh, Material mat, List<(Transform3D At, int C, int R)> list, string name)
+    {
+        var mm = new MultiMesh { TransformFormat = MultiMesh.TransformFormatEnum.Transform3D, Mesh = mesh, InstanceCount = list.Count };
+        for (int i = 0; i < list.Count; i++)
+        {
+            mm.SetInstanceTransform(i, list[i].At);
+            _fogInst.Add((mm, i, list[i].At, list[i].C, list[i].R));
+        }
+        AddChild(new MultiMeshInstance3D { Name = "Drawn " + name, Multimesh = mm, MaterialOverride = mat, CastShadow = GeometryInstance3D.ShadowCastingSetting.Off });
     }
 
     /// <summary>Redraws what changes in play: each sector's holder as last known and its fog (uncharted, seen before, seen
@@ -232,6 +278,79 @@ public sealed partial class ChartRoom : Node3D
         _fogTex.Update(_fogImg);
         FogMask(vis);
         foreach (var (n, cc, rr) in _fogged) n.Visible = _c.OnMap(cc, rr) && _c.Hex(cc, rr).Known;
+        Rebake();
+        var none = new Transform3D(Basis.Identity.Scaled(Vector3.Zero), Vector3.Zero);
+        foreach (var (mm, i, at, cc, rr) in _fogInst) mm.SetInstanceTransform(i, _c.OnMap(cc, rr) && _c.Hex(cc, rr).Known ? at : none);
+    }
+
+    // cuts a mesh into n x n meshes by where each triangle's middle falls across its box (the same vertices, normals, uvs and
+    // material, so it looks the same), each its own node beside the original, which goes
+    private static void Tile(MeshInstance3D mi, int n)
+    {
+        if (mi.Mesh is not { } mesh || mesh.GetSurfaceCount() != 1) return;
+        Godot.Collections.Array a = mesh.SurfaceGetArrays(0);
+        Vector3[] pos = a[(int)Mesh.ArrayType.Vertex].AsVector3Array();
+        int[] idx = a[(int)Mesh.ArrayType.Index].AsInt32Array();
+        if (idx.Length == 0) idx = Enumerable.Range(0, pos.Length).ToArray();
+        Aabb box = mesh.GetAabb();
+        // the sheet lies in the box's two widest axes
+        int u = box.Size.X >= box.Size.Z || box.Size.X >= box.Size.Y ? 0 : 1, v = box.Size.Z >= box.Size.Y ? 2 : 1;
+        if (v == u) v = u == 0 ? 2 : 0;
+        var buckets = new List<int>[n * n];
+        for (int t = 0; t + 2 < idx.Length; t += 3)
+        {
+            Vector3 c = (pos[idx[t]] + pos[idx[t + 1]] + pos[idx[t + 2]]) / 3 - box.Position;
+            int bu = Math.Clamp((int)(c[u] / Math.Max(box.Size[u], 1e-6f) * n), 0, n - 1), bv = Math.Clamp((int)(c[v] / Math.Max(box.Size[v], 1e-6f) * n), 0, n - 1);
+            (buckets[bv * n + bu] ??= new()).Add(t);
+        }
+        Material? mat = mi.MaterialOverride ?? mi.GetSurfaceOverrideMaterial(0) ?? mesh.SurfaceGetMaterial(0);
+        Node parent = mi.GetParent();
+        for (int b = 0; b < buckets.Length; b++)
+        {
+            if (buckets[b] is not { } tris) continue;
+            var remap = new Dictionary<int, int>();
+            var order = new List<int>();
+            var ix = new int[tris.Count * 3];
+            for (int k = 0; k < tris.Count; k++)
+                for (int j = 0; j < 3; j++)
+                {
+                    int o = idx[tris[k] + j];
+                    if (!remap.TryGetValue(o, out int nw)) { remap[o] = nw = order.Count; order.Add(o); }
+                    ix[k * 3 + j] = nw;
+                }
+            var arrays = new Godot.Collections.Array();
+            arrays.Resize((int)Mesh.ArrayType.Max);
+            if (a[(int)Mesh.ArrayType.Vertex].VariantType != Variant.Type.Nil) arrays[(int)Mesh.ArrayType.Vertex] = order.Select(o => pos[o]).ToArray();
+            if (a[(int)Mesh.ArrayType.Normal].VariantType != Variant.Type.Nil) { var src = a[(int)Mesh.ArrayType.Normal].AsVector3Array(); arrays[(int)Mesh.ArrayType.Normal] = order.Select(o => src[o]).ToArray(); }
+            if (a[(int)Mesh.ArrayType.Tangent].VariantType != Variant.Type.Nil) { var src = a[(int)Mesh.ArrayType.Tangent].AsFloat32Array(); arrays[(int)Mesh.ArrayType.Tangent] = order.SelectMany(o => new[] { src[o * 4], src[o * 4 + 1], src[o * 4 + 2], src[o * 4 + 3] }).ToArray(); }
+            if (a[(int)Mesh.ArrayType.TexUV].VariantType != Variant.Type.Nil) { var src = a[(int)Mesh.ArrayType.TexUV].AsVector2Array(); arrays[(int)Mesh.ArrayType.TexUV] = order.Select(o => src[o]).ToArray(); }
+            arrays[(int)Mesh.ArrayType.Index] = ix;
+            var am = new ArrayMesh();
+            am.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+            parent.AddChild(new MeshInstance3D { Name = $"{mi.Name}_tile{b}", Mesh = am, MaterialOverride = mat, Transform = mi.Transform, CastShadow = mi.CastShadow });
+        }
+        parent.RemoveChild(mi);
+        mi.QueueFree();
+    }
+
+    // the low-spec mode's sheet: drawn into the bake viewport in this frame, then read back with its mipmaps once it is drawn
+    private void Rebake()
+    {
+        if (_bake == null || _baking) return;
+        _baking = true;
+        _bake.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
+        RenderingServer.FramePostDraw += Grab;
+    }
+    private bool _baking;
+    private void Grab()
+    {
+        RenderingServer.FramePostDraw -= Grab;
+        _baking = false;
+        if (_bake == null || !IsInstanceValid(_bake) || _lowMat == null) return;
+        Image img = _bake.GetTexture().GetImage();
+        img.GenerateMipmaps();
+        if (_baked == null || _baked.GetSize() != img.GetSize()) { _baked = ImageTexture.CreateFromImage(img); _lowMat.SetShaderParameter("baked", _baked); }
+        else _baked.Update(img);
     }
 
     // The fog's mask, drawn once each time the fog changes rather than in every pixel every frame (a phone holds 60 fps): flat

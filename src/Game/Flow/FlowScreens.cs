@@ -91,31 +91,76 @@ public sealed partial class MenuScreen : FlowPanel
     private static Vector2 _starsFor;
     private static (System.Collections.Generic.List<FleetCommand.Space.StarClass> Classes, System.Collections.Generic.List<FleetCommand.Space.StarColour> Colours)? _spec;
 
-    /// <summary>Draws the backdrop's stars over a control of this size (remade when the size changes).</summary>
+    private static ImageTexture? _still;
+
+    /// <summary>Draws the backdrop's stars over a control of this size (remade when the size changes). The stars that do not
+    /// twinkle (all but the bright and brilliant) are painted once into a texture, each as the antialiased disc it was drawn
+    /// as, and drawn as one rectangle; the few that twinkle are drawn live through Draw2D, one batch. Each star was a draw
+    /// call of its own before: about 6,000 a frame, 6 fps on a Raspberry Pi 5 (the owner, 2026-11-13: "fix up menu as well,
+    /// 8000 is insane, the menu is so simple").</summary>
     public static void DrawStars(CanvasItem c, Vector2 size)
     {
         _spec ??= FleetCommand.Space.Starfield2D.LoadSpec(FileAccess.GetFileAsString("res://data/space/starfield.json"));
-        if (_starsFor != size) { _stars = FleetCommand.Space.Starfield2D.Make((int)size.X, (int)size.Y, 20261105, _spec.Value.Classes, _spec.Value.Colours); _starsFor = size; }
+        if (_starsFor != size || _still == null)
+        {
+            _stars = FleetCommand.Space.Starfield2D.Make((int)size.X, (int)size.Y, 20261105, _spec.Value.Classes, _spec.Value.Colours);
+            _starsFor = size;
+            _still = PaintStill(size);
+        }
+        Draw2D.Texture(c, _still, Vector2.Zero);
         float t = (float)(Time.GetTicksMsec() / 1000.0);
         foreach (var st in _stars)
         {
-            var k = _spec.Value.Classes[st.Class];
-            var co = _spec.Value.Colours[st.Colour];
-            float b = st.Brightness;
-            if (st.Class >= 2) b *= 0.88f + 0.12f * Mathf.Sin(t * 0.9f + st.Phase);
-            // a colour mixed 40 % to white, as the battle's stars are
-            var col = new Color(Mathf.Lerp((float)co.R, 1, 0.4f), Mathf.Lerp((float)co.G, 1, 0.4f), Mathf.Lerp((float)co.B, 1, 0.4f));
-            var p = new Vector2(st.X, st.Y);
-            float r = (float)k.SizePx * 0.5f + 0.25f;
-            if (st.Class >= 2) c.DrawCircle(p, r * 4.5f, new Color(col, 0.08f * b), true, -1, true);
-            c.DrawCircle(p, r, new Color(col, 0.25f + 0.75f * b), true, -1, true);
+            if (st.Class < 2) continue;
+            var (p, r, col, b) = Look(st);
+            b *= 0.88f + 0.12f * Mathf.Sin(t * 0.9f + st.Phase);
+            Draw2D.Circle(c, p, r * 4.5f, new Color(col, 0.08f * b), true, -1, true);
+            Draw2D.Circle(c, p, r, new Color(col, 0.25f + 0.75f * b), true, -1, true);
             if (st.Class == 3)
             {
                 float len = 9 * b;
-                c.DrawLine(p - new Vector2(len, 0), p + new Vector2(len, 0), new Color(col, 0.22f * b), 1, true);
-                c.DrawLine(p - new Vector2(0, len), p + new Vector2(0, len), new Color(col, 0.22f * b), 1, true);
+                Draw2D.Line(c, p - new Vector2(len, 0), p + new Vector2(len, 0), new Color(col, 0.22f * b), 1, true);
+                Draw2D.Line(c, p - new Vector2(0, len), p + new Vector2(0, len), new Color(col, 0.22f * b), 1, true);
             }
         }
+    }
+
+    // a star's place, radius, colour (mixed 40 % to white, as the battle's stars are) and brightness
+    private static (Vector2 P, float R, Color Col, float B) Look(FleetCommand.Space.Star st)
+    {
+        var k = _spec!.Value.Classes[st.Class];
+        var co = _spec.Value.Colours[st.Colour];
+        var col = new Color(Mathf.Lerp((float)co.R, 1, 0.4f), Mathf.Lerp((float)co.G, 1, 0.4f), Mathf.Lerp((float)co.B, 1, 0.4f));
+        return (new Vector2(st.X, st.Y), (float)k.SizePx * 0.5f + 0.25f, col, st.Brightness);
+    }
+
+    // the stars that never change, each an antialiased disc (coverage falling off over its last pixel, as DrawCircle's
+    // antialiased edge), laid over each other on a clear image
+    private static ImageTexture PaintStill(Vector2 size)
+    {
+        int w = Math.Max(1, (int)size.X), h = Math.Max(1, (int)size.Y);
+        var px = new float[w * h * 4];
+        foreach (var st in _stars)
+        {
+            if (st.Class >= 2) continue;
+            var (p, r, col, b) = Look(st);
+            float a = 0.25f + 0.75f * b;
+            int x0 = Math.Max(0, (int)(p.X - r - 1)), x1 = Math.Min(w - 1, (int)(p.X + r + 1)), y0 = Math.Max(0, (int)(p.Y - r - 1)), y1 = Math.Min(h - 1, (int)(p.Y + r + 1));
+            for (int y = y0; y <= y1; y++)
+                for (int x = x0; x <= x1; x++)
+                {
+                    float d = new Vector2(x + 0.5f - p.X, y + 0.5f - p.Y).Length();
+                    float cov = Math.Clamp(r + 0.5f - d, 0, 1) * a;
+                    if (cov <= 0) continue;
+                    int i = (y * w + x) * 4;
+                    float da = px[i + 3], oa = cov + da * (1 - cov);
+                    for (int ch = 0; ch < 3; ch++) px[i + ch] = (col[ch] * cov + px[i + ch] * da * (1 - cov)) / Math.Max(oa, 1e-6f);
+                    px[i + 3] = oa;
+                }
+        }
+        var bytes = new byte[w * h * 4];
+        for (int i = 0; i < bytes.Length; i++) bytes[i] = (byte)Math.Clamp(Math.Round(px[i] * 255), 0, 255);
+        return ImageTexture.CreateFromImage(Image.CreateFromData(w, h, false, Image.Format.Rgba8, bytes));
     }
 
     protected override void DrawPanel()
@@ -140,10 +185,12 @@ public sealed partial class FactionView : Control
 {
     public FactionStage Stage { get; } = new();
     private bool _built;
+    private SubViewport? _vp;
 
     // the stage is built the first time the screen shows, after the boot has loaded its glbs (Prewarm)
     public override void _Process(double delta)
     {
+        if (_vp != null) LowSpec.FitToWindow(_vp);
         if (_built || !IsVisibleInTree()) return;
         _built = true;
         Stage.Build();
@@ -156,7 +203,7 @@ public sealed partial class FactionView : Control
         var box = new SubViewportContainer { Stretch = true, MouseFilter = MouseFilterEnum.Ignore, Name = "View" };
         box.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(box);
-        var vp = new SubViewport { OwnWorld3D = true, Msaa3D = LowSpec.Msaa(Viewport.Msaa.Msaa4X), HandleInputLocally = false, Name = "FactionWorld" };
+        var vp = _vp = new SubViewport { OwnWorld3D = true, Msaa3D = LowSpec.Msaa(Viewport.Msaa.Msaa4X), HandleInputLocally = false, Name = "FactionWorld" };
         box.AddChild(vp);
         vp.AddChild(Stage);
         screen.Stage = Stage;

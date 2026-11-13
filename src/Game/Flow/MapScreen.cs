@@ -56,7 +56,11 @@ public sealed partial class MapScreen : Control
 
     // The port covers the whole screen, so it is shown only while a port is open: shut but shown, it took every press meant
     // for the HUD under it (Move here, End turn, Briefing) and passed it on to the map, which picked a sector instead.
-    public override void _Process(double delta) => _port.Visible = _f.Port != null && _f.Camp != null;
+    public override void _Process(double delta)
+    {
+        _port.Visible = _f.Port != null && _f.Camp != null;
+        LowSpec.FitToWindow(_vp);
+    }
 
     public void Refresh() { Map?.Rebuild(); Map?.Select(_f.Sel); Map?.ShowRoute(_f.Path, _f.Course); }
 
