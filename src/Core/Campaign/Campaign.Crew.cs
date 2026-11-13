@@ -168,6 +168,14 @@ public sealed partial class Campaign
     /// <summary>The experience a battle of a grade gives every officer of the crew.</summary>
     public int BattleXp(string grade) => (int)Math.Round(Cd.XpBattle * Cd.GradeX.GetValueOrDefault(grade));
 
+    /// <summary>The crew as the flagship seats them in battle (Battle.SeatCrew): each officer on the battle stations their
+    /// station covers (crew.json covers), with their rank, level, experience and learned skills for the hover card.</summary>
+    public List<FleetCommand.Sim.CrewSeat> CrewSeats() =>
+        Data.Officers.Stations.Select(AtStation).OfType<Officer>().Select(o => new FleetCommand.Sim.CrewSeat(
+            Cd.Covers[o.Station], o.Name, Math.Max(0, Cd.RankLevel.Count(l => l <= o.Level) - 1),
+            new FleetCommand.Sim.OfficerCard(o.Station, RankOf(o), o.Level, o.Xp, NextXp(o),
+                o.Skills.Count, Cd.Sum(o.Station, o.Skills).Select(e => Cd.Bonus(e.Ability, e.Value)).ToList()))).ToList();
+
     /// <summary>What the whole crew's learned skills add up to, by ability (the rules' keys, data/campaign/crew.json fx): what
     /// the flagship's officers bring to a battle (Ship.SkillBonus) and the campaign's own (standing).</summary>
     public Dictionary<string, double> CrewBonus()

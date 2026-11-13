@@ -36,7 +36,8 @@ public sealed record CrewLayout(float StageW, float StageH, float LaneX0, float 
 /// give, the rate between experience and prestige, what an officer is worth and costs by level, the pool, and the trees.</summary>
 public sealed record CrewDef(int Levels, IReadOnlyList<string> Ranks, IReadOnlyList<int> RankLevel, IReadOnlyList<int> XpNext, int XpBattle,
     IReadOnlyDictionary<string, double> GradeX, int XpTurn, int XpPerPrestige, int WorthPerLevel, int HirePerLevel, IReadOnlyList<int> PoolLevels,
-    int Retrain, IReadOnlyDictionary<string, CrewTree> Trees, CrewLayout Layout)
+    int Retrain, IReadOnlyDictionary<string, CrewTree> Trees, CrewLayout Layout, IReadOnlyDictionary<string, IReadOnlyList<string>> Covers,
+    IReadOnlyDictionary<string, (string Name, string Show)> AbilityNames)
 {
     /// <summary>The path, relative to data/.</summary>
     public const string File = "campaign/crew.json";
@@ -48,6 +49,34 @@ public sealed record CrewDef(int Levels, IReadOnlyList<string> Ranks, IReadOnlyL
         "turn", "accel", "speed", "het", "het_safe", "evade", "hit", "charge", "pd", "pd_double", "drift", "shield_rate", "repair_rate",
         "repair_crews", "reactor_e", "scan", "sweep_km", "anticloak", "scan_weak", "jam", "wing_hit", "standing", "aboard", "ambush", "pad_rate",
     };
+
+    /// <summary>How each ability's bonus is written (crew.json abilities show).</summary>
+    public static readonly string[] Shows = { "pct", "less_pct", "flag", "km", "energy", "count" };
+
+    /// <summary>A bonus to an ability as the player reads it, by the data's name and form: ("turn rate", "+8 %").</summary>
+    public (string Name, string Value) Bonus(string ability, double v)
+    {
+        var (name, show) = AbilityNames[ability];
+        string N(double x) => x.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+        return (name, show switch
+        {
+            "flag" => "yes", "km" => $"+{N(v)} km", "energy" => $"+{N(v)} E", "count" => $"+{N(v)}", "less_pct" => $"-{N(v * 100)} %", _ => $"+{N(v * 100)} %",
+        });
+    }
+
+    /// <summary>An officer's skills summed by ability, in the order their skills first name them.</summary>
+    public List<(string Ability, double Value)> Sum(string station, IEnumerable<string> skillIds)
+    {
+        var sum = new List<(string Ability, double Value)>();
+        foreach (string id in skillIds)
+            if (Trees[station].Skill(id) is { } s)
+                foreach (var (ab, v) in s.Fx)
+                {
+                    int i = sum.FindIndex(e => e.Ability == ab);
+                    if (i < 0) sum.Add((ab, v)); else sum[i] = (ab, sum[i].Value + v);
+                }
+        return sum;
+    }
 
     /// <summary>The rank an officer of a level holds.</summary>
     public string RankOf(int level)
@@ -80,6 +109,23 @@ public sealed record CrewDef(int Levels, IReadOnlyList<string> Ranks, IReadOnlyL
         int[] pool = root.IntList("pool_levels");
         if (pool.Any(l => l < 1 || l > levels)) throw new DataError($"{W}.pool_levels: levels from 1 to {levels}");
 
+        StrictJson an = root.Obj("abilities");
+        var abilityNames = new Dictionary<string, (string, string)>();
+        foreach (string ab in Abilities)
+        {
+            StrictJson a = an.Obj(ab);
+            string nm = a.Str("name"), show = a.Str("show");
+            a.Done();
+            if (!Shows.Contains(show)) throw new DataError($"{a.Where}.show: one of {string.Join(", ", Shows)}");
+            abilityNames[ab] = (nm, show);
+        }
+        an.Done();
+        StrictJson cv = root.Obj("covers");
+        var covers = stations.ToDictionary(st => st, st => (IReadOnlyList<string>)cv.StrList(st));
+        cv.Done();
+        var battle = covers.Values.SelectMany(v => v).ToList();
+        if (battle.Count != OfficersDef.Stations.Length || OfficersDef.Stations.Any(b => battle.Count(x => x == b) != 1))
+            throw new DataError($"{W}.covers: every battle station ({string.Join(", ", OfficersDef.Stations)}) under exactly one campaign station");
         StrictJson lo = root.Obj("layout");
         double[] stage = lo.NumList("stage_px"), lane = lo.NumList("lane_x"), tierY = lo.NumList("tier_y");
         var layout = new CrewLayout((float)stage[0], (float)stage[1], (float)lane[0], (float)lane[1], tierY.Select(v => (float)v).ToList(), (float)lo.Num("themes_y"));
@@ -126,6 +172,6 @@ public sealed record CrewDef(int Levels, IReadOnlyList<string> Ranks, IReadOnlyL
         tr.Done();
         root.Done();
         if (trees.Values.SelectMany(t => t.Skills).Any(s => s.Depth > layout.TierY.Count)) throw new DataError($"{W}.layout.tier_y: a height for every depth");
-        return new CrewDef(levels, ranks, rankLevel, xpNext, xpBattle, gradeX, xpTurn, xpPerPrestige, worth, hire, pool, retrain, trees, layout);
+        return new CrewDef(levels, ranks, rankLevel, xpNext, xpBattle, gradeX, xpTurn, xpPerPrestige, worth, hire, pool, retrain, trees, layout, covers, abilityNames);
     }
 }

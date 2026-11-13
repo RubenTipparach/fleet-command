@@ -446,9 +446,12 @@ public sealed partial class GameFlow : Node
                 await Step(report, 0.6f, "Bringing the ships in", () =>
                 {
                     _startBattle(sc);
-                    // a mission's flagship is manned by the campaign crew's learned skills (change crew-leveling)
+                    // a mission's flagship is manned by the campaign crew: seated in its slots, and their learned skills (change crew-leveling)
                     if (Plan != null && Camp != null && Camp.S.Fleet.Count > 0 && Plan.FleetShips.FirstOrDefault(kv => kv.Value == Camp.S.Fleet[0].Id).Key is { } flag)
+                    {
+                        X.Battle.SeatCrew(flag, Camp.CrewSeats());
                         X.Battle.ManCrew(flag, Camp.CrewBonus());
+                    }
                 });
                 await Step(report, 0.9f, "Manning the console", () => Go(FlowScreen.Battle));
             });

@@ -181,3 +181,4 @@
 - Version 186, 2026-11-12: mockup 40 (Nebula shells) added; mockup 39 at v2, from the Pi's desktop session.
 - Version 188 published 2026-11-13, cloud session, version id `1794580714-7d77`: M39 at v4; the survey at v51.
 - 2026-11-13, cloud session: version 189, version id `1794586912-0392`: M39 at v5, approved for build and implementation (reviews/M39).
+- 2026-11-13, cloud session: version 190, version id `1794600421-6a32`: M39 at v6 (short bonus names).

@@ -30,7 +30,8 @@ public sealed partial class StationPanel
         int k = Rules.OfficerSkill(s, st);
         OfficersDef d = B.Data.Systems.Officers;
         string name = Battle.StationName(st);
-        Tip tip = o != null
+        Tip tip = o?.Card is { } cc ? OfficerCardTip(o, cc)
+            : o != null
             ? new Tip($"{B.RankOf(o)} {o.Name}", new (string, string, Color?)[] { ("Station", name, null), ("Specialty", Battle.StationName(o.Spec) + (o.Spec == st ? "" : " · half skill"), null),
                 ("Skill", d.Skills[o.Skill] + (o.Spec == st ? "" : $" (as {d.Skills[k]})"), null) }
                 .Concat(Abilities(st, k)).Append(("Click", "Next officer", null)).ToArray())
@@ -49,7 +50,22 @@ public sealed partial class StationPanel
             Draw2D.ColoredPolygon(this, new[] { new Vector2(px0, y + 6), new Vector2(px0 + 4, y + 11), new Vector2(px0, y + 16), new Vector2(px0 - 4, y + 11) }, C.Caution);
         }
         float px = x0 + 14 + (o.Rank + 1) * 10;
-        Text($"{B.RankOf(o, true)} {o.Name}".ToUpperInvariant(), px, y + 17, 16, o.Spec == st ? C.Text : C.Caution, HorizontalAlignment.Left, w - (px - x) - 8, 600, 1);
+        Text($"{B.RankOf(o, true)} {o.Name}".ToUpperInvariant(), px, y + 17, 16, o.Spec == st || o.Card != null ? C.Text : C.Caution, HorizontalAlignment.Left, w - (px - x) - 8, 600, 1);
+    }
+
+    // A campaign officer's hover card (change crew-leveling; owner, 2026-11-13: "in battle,hovering over crew members should
+    // show their skills , lvl and xp"; "instead of listing each skill, why cant you just list the bonuses"): their campaign
+    // station and level, experience to the next level, and their learned skills summed into bonuses (CrewDef.Sum, Bonus), the
+    // same that reach the ship (Battle.ManCrew) and are read by each ability's rule.
+    private Tip OfficerCardTip(StationOfficer o, OfficerCard c)
+    {
+        var rows = new List<(string, string, Color?)>
+        {
+            ($"Level {c.Level}", c.NextXp is int n ? $"{c.Xp} / {n} XP" : $"{c.Xp} XP · max", c.NextXp is int n2 && c.Xp >= n2 ? C.Accord : null),
+        };
+        if (c.Bonuses.Count == 0) rows.Add(("Bonuses", "none", C.Lilac));
+        foreach (var (nm, v) in c.Bonuses) rows.Add((nm, v, C.Accord));
+        return new Tip($"{c.Rank} {o.Name}", rows);
     }
 
     // What a station's officer does, as the hover card says it, at skill k (the mockup's ABILITIES).

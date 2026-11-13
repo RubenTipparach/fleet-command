@@ -17,6 +17,7 @@
 - [x] 2.2 Experience from battles and turns, promotion, transfer, hiring for prestige, retraining (`Campaign`), with tests
 - [x] 2.3 The game's crew screen from mockup 39 (`PortPanel.Crew.cs`, still `--flow=crew`)
 - [ ] 2.3a Sync task: mockup 1's Crew tab still shows the old officers (skill pips, credits); redraw it from mockup 39's screen
+- [x] 2.4a The flagship's slots seat the campaign crew (`Battle.SeatCrew`, `crew.json` covers), each slot's hover card: rank, level, XP and their bonuses summed by ability (`crew.json` abilities) (owner, 2026-11-13: "in battle,hovering over crew members should show their skills , lvl and xp"); still `--flow=battle-crew`
 - [x] 2.4 The flagship's battle slots take the campaign crew (officers 2.5); an officer's ability is the sum of their skills
 - [x] 2.5 The new abilities' rules: turn, accel, speed, het_safe, evade, pd_double, charge, reactor_e, repair_crews, shield_rate, anticloak, standing (and the rest of the 25 in `CrewDef.Abilities`)
 - [ ] 2.5a scan_weak: needs a scan readout of the target's weakest shield facing to show it in
