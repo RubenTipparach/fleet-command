@@ -719,7 +719,18 @@ public sealed partial class Main : Node
                     c.Buy(c.Data.HullsOf(side).Skip(1).First().Id);
                     c.Refit(c.S.Fleet[0], "primary", 0, null);
                     c.S.Fleet[0].HullPct = 72;
-                    if (what == "crew") c.Hire(c.S.OfficerPool[0]);
+                    if (what == "crew")
+                    {
+                        // a seasoned helm officer hired, a lane and a crossover learned by hand, two points left, an open skill picked
+                        c.S.Prestige += 200;
+                        Officer o = c.S.OfficerPool.Where(x => x.Station == "Helm").OrderByDescending(x => x.Level).First();
+                        c.Hire(o);
+                        foreach (string id in new[] { "helm.a1", "helm.a2", "helm.x1", "helm.b1" }) c.Learn(o, id);
+                        o.Xp = 900;
+                        c.CrewGains(c.BattleXp("victory"));
+                        f.CrewStation = "Helm";
+                        f.CrewSkill = "helm.a3";
+                    }
                     f.Port = what switch { "port" => "yard", "outfit" => "outfit", "supply" => "supply", _ => "crew" };
                 }
                 if (what == "market")

@@ -55,9 +55,6 @@ public sealed partial class Campaign
         RollOfficers();
     }
 
-    /// <summary>Whether an officer is an ensign (level 1, no points, nothing brought to a battle).</summary>
-    public bool IsCadet(Officer o) => o.Level <= 1;
-
     /// <summary>An officer's rank, by their level.</summary>
     public string RankOf(Officer o) => Cd.RankOf(o.Level);
 

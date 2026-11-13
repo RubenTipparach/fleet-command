@@ -62,7 +62,11 @@ skills come from the prerequisites: dashed for either, solid for every one, lit 
 | Lanes | Left to right in three bands like the console's, every skill a pill key with its icon and name |
 
 Version 3 also drew a Constellation (the skills as stars) and a Radial fan; the owner kept Branches and Lanes ("branches
-are good, lanes are good").
+are good, lanes are good"). **Version 5 is Branches only** (owner, 2026-11-13: "taller where the nodes branch out please,
+lets do branches, implement that"): the tiers sit at 110, 250, 450, 650 and 800 px on an 660 by 860 px stage, so the
+gaps where a lane fans into the crossovers and the crossovers merge into the keystone and tips are 200 px against 140 px
+between the roots and their second step. The stage is `layout` in `crew.json`, read by the page and by the game's crew
+tab (`PortPanel.Crew.cs`, scaled into its panel), so the two draw one tree.
 
 **Icons** (`docs/mockups/lib/skill-icons.js`, the Concord's): one picture for each ability (twenty-five), drawn on the
 icon guide's 48 px grid with a 3 px line, solid for the thing and lines for what it gives off, one ink, read at 20 px; a
@@ -90,6 +94,6 @@ slots take the campaign crew (officers task 2.5); every other ship keeps the ros
 | CL5 | Retraining | 10 prestige, every point back |
 | CL6 | Ten levels, ranks every two (Ensign to Captain) | Yes |
 | CL9 | The tree: crossovers open from either lane, the keystone and the tips need two | Yes, as drawn |
-| CL10 | Branches or Lanes | Branches, provisionally |
+| CL10 | Branches or Lanes | Branches (decided 2026-11-13) |
 | CL7 | Six campaign stations covering the battle's nine | Yes, as mapped above |
 | CL8 | Wounds and deaths in battle (the reference game's) | Not yet |

@@ -531,16 +531,8 @@ public sealed partial class Campaign
     public HashSet<(int, int)> RoutesOf(string fac) =>
         S.Freighters.Where(f => f.Fac == fac).SelectMany(f => f.Route).Select(k => (k[0], k[1])).ToHashSet();
 
-    /// <summary>The officers on offer for one station, experienced first by level, then the cadets.</summary>
+    /// <summary>The officers on offer for one station.</summary>
     public List<Officer> OnOffer(string station) => S.OfficerPool.Where(o => o.Station == station).ToList();
-
-    /// <summary>Puts an officer back on offer at their station in place of the last one of the same kind, so each station
-    /// keeps its count of experienced officers and cadets.</summary>
-    private void BackOnOffer(Officer o)
-    {
-        int at = S.OfficerPool.FindLastIndex(x => x.Station == o.Station && IsCadet(x) == IsCadet(o));
-        if (at >= 0) S.OfficerPool[at] = o; else S.OfficerPool.Add(o);
-    }
 
     // ---- Missions on offer -----------------------------------------------------------------------------------------------
 
@@ -946,13 +938,6 @@ public sealed partial class Campaign
 
     /// <summary>The officer serving at a station, or null.</summary>
     public Officer? AtStation(string station) => S.Crew.FirstOrDefault(o => o.Station == station);
-
-    /// <summary>Lets an officer go (no refund); they go back on offer.</summary>
-    public void Dismiss(Officer o)
-    {
-        if (!S.Crew.Remove(o)) return;
-        BackOnOffer(o);
-    }
 
     /// <summary>A wingman's standing orders (data behaviours); the flagship has none.</summary>
     public void SetBehaviour(CampShip s, string behaviour)

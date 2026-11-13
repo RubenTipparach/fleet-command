@@ -244,6 +244,16 @@ each mockup difference has its task:
 | Patrols (game ahead) | Mockup 1 offers contracts evenly | By weight (Patrol 4, the nebula, belt and orbital patrols 2) | `campaign-space` 2.1 |
 | Faction screen grid (matched 2026-11-08) | Mockup 1 v30: every faction at the table in a grid (four playable in front, five, four), the nine placeholder emblems as coins, a phone's grid of keys (`.fgrid`) | The same seats from `export_faction.mjs` (x and z), `FactionScreen.KeyGrid` on a phone (under 1100 by 560 px) with the emblem pictures (`Emblem`: the badges' renders and the placeholder SVGs) where the page renders each badge | none |
 
+### Mockup 39 (crew leveling, v5, implemented 2026-11-13)
+
+| What | Mockup | Game | Task |
+|---|---|---|---|
+| The tree | Branches, the stage and lanes from `crew.json` `layout`, the icons from `lib/skill-icons.js` | The same layout and the same icons exported to `assets/ui/skills/`, drawn in the port's Crew tab | none: in step |
+| The screen's frame | The crew list down the left, the officer and tree, what the crew brings, the pool in a grid | The stations across the top, the officer and tree on the left, the picked skill's card and the pool on the right (the port's two columns) | none: the port's own frame, approved with mockup 1 |
+| What the crew brings | A panel summing the crew's skills | Not drawn in the port | `crew-leveling` 2.3 |
+| Mockup 1's Crew tab | Mockup 1 still shows the old officers (skill pips, credits) | Mockup 39's screen | `crew-leveling` 2.3a |
+| Weakest facing | Science's skill that shows the target's weakest shield | No rule yet: no readout to show it in | `crew-leveling` 2.5a |
+
 ### Mockup 36 (placeholder fleets)
 
 | What | Mockup | Game | Task |

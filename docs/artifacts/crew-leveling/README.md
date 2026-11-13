@@ -4,7 +4,7 @@
 - Page: `docs/mockups/crew-leveling.html` (its data inlined by `tools/mockups/inline_data.py`: `data/campaign/crew.json`,
   `data/campaign/campaign.json`).
 - OpenSpec: `openspec/changes/crew-leveling`.
-- Shots: `docs/screenshots/mockups/crew-leveling/` (Branches and Lanes, each with its capstone and its tooltip, promoted, vacant; desktop and phone).
+- Shots: `docs/screenshots/mockups/crew-leveling/` (Branches, its capstone and its tooltip, promoted, vacant; desktop and phone; Lanes until v4).
 - Questions: survey section CL (CL1-CL10).
 
 ## Publishes
