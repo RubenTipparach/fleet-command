@@ -27,7 +27,7 @@ public sealed partial class Battle
     /// <summary>Who works where: the crews down the queue, at most max_crews on a job, only on jobs not yet whole.</summary>
     public List<(string Job, int Crews)> RepairPlan(Ship s)
     {
-        int left = s.Power.GetValueOrDefault("repair"), max = Data.Systems.Repair.MaxCrews;
+        int left = s.Power.GetValueOrDefault("repair") + (s.Power.GetValueOrDefault("repair") > 0 ? (int)s.Skill("repair_crews") : 0), max = Data.Systems.Repair.MaxCrews;   // the chief engineer's Third shift: a crew more
         var plan = new List<(string, int)>();
         foreach (string k in s.RepairQueue)
         {
@@ -46,7 +46,7 @@ public sealed partial class Battle
     // what one crew mends a second, before brownout: the mounts their own rate, every other job the crews' rate, the chief
     // engineer's skill adding repair_rate a level to both
     private double CrewRate(Ship s, string job) =>
-        (job == "mounts" ? Tuning.MountRepairPerES : Tuning.RepairPerES) * (1 + Rules.OfficerSkill(s, "repair") * Data.Systems.Officers.Ability.RepairRate);
+        (job == "mounts" ? Tuning.MountRepairPerES : Tuning.RepairPerES) * (1 + Rules.OfficerSkill(s, "repair") * Data.Systems.Officers.Ability.RepairRate + s.Skill("repair_rate"));
 
     partial void RepairCrewsStep(double dt)
     {

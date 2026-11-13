@@ -178,12 +178,19 @@ public sealed class Offer
     }
 }
 
+/// <summary>An officer of the crew or on offer (change crew-leveling): their level (1, an ensign, to CrewDef.Levels), the
+/// experience banked toward the next, the skills learned on their station's tree (a point each for every level after the
+/// first), and whether auto level spends their points.</summary>
 public sealed class Officer
 {
     public string Name { get; set; } = "";
     public string Station { get; set; } = "";
-    public string Skill { get; set; } = "";
-    public int Cost { get; set; }
+    public int Level { get; set; }
+    public int Xp { get; set; }
+    public List<string> Skills { get; set; } = new();
+    public bool Auto { get; set; }
+    /// <summary>A save from before crew leveling: the officer's skill level by name (Cadet to Legendary), read once into Level.</summary>
+    public string? Skill { get; set; }
 }
 
 /// <summary>A finished mission's record for the log and the debrief: the grade, what it paid, prestige and standing.</summary>
@@ -196,6 +203,8 @@ public sealed class Debrief
     public int Credits { get; set; }
     public int Prestige { get; set; }
     public int PrestigeNow { get; set; }
+    /// <summary>The experience every officer of the crew gained from the battle.</summary>
+    public int CrewXp { get; set; }
     public List<(string Fac, int Delta, int Now)> Standing { get; set; } = new();
     public List<(string Text, bool Primary, bool Met)> Objectives { get; set; } = new();
     public List<(string Ship, string Fate)> Ships { get; set; } = new();

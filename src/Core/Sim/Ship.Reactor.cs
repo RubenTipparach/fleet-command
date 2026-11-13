@@ -43,6 +43,13 @@ public sealed record StationOfficer(string Id, string Ship, string Name, int Ran
 
 public sealed partial class Ship
 {
+    /// <summary>What the campaign crew's learned skills add to this ship's abilities, by the ability's key (data/campaign/crew.json
+    /// fx; Campaign.CrewBonus, set on the flagship by Battle.ManCrew). Each rule adds its own ability's share; empty on every
+    /// other ship and in a skirmish.</summary>
+    public readonly Dictionary<string, double> SkillBonus = new();
+    /// <summary>The crew's skills' total for one ability (0 when none).</summary>
+    public double Skill(string ability) => SkillBonus.GetValueOrDefault(ability);
+
     public readonly ReactorState Reactor = new();
     public readonly WarpState Warp = new();
     /// <summary>The repair queue, job ids in the order the crews take them.</summary>

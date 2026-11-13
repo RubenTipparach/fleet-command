@@ -103,6 +103,8 @@ public sealed partial class Battle
             s.Het = deg * Geometry.Deg;
             Say("Helm", $"High energy turn, {Math.Abs(deg):0} degrees {(deg < 0 ? "to port" : "to starboard")}.");
         }
+        else if (s.Skill("het_safe") > 0)   // the helm officer's No breakdowns: the turn fails, the engines hold
+            Say("Helm", "High energy turn failed; the engines held.");
         else
         {
             s.Broke = Tuning.HetBreakdownS;

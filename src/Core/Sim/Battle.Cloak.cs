@@ -126,7 +126,7 @@ public sealed partial class Battle
     /// <summary>Whether s sees t at all: its own side, not fully cloaked, revealed to s's side by a sweep, or within the
     /// cloak's detect range.</summary>
     public bool Detected(Ship s, Ship t) =>
-        !t.Absent && (t.Side == s.Side || !t.Cloaked || (s.Side < t.SeenBy.Length && t.SeenBy[s.Side] > 0) || Rules.DistKm(s, t) <= Cs.Cloak.DetectKm);
+        !t.Absent && (t.Side == s.Side || !t.Cloaked || (s.Side < t.SeenBy.Length && t.SeenBy[s.Side] > 0) || Rules.DistKm(s, t) <= Cs.Cloak.DetectKm * (1 + s.Skill("anticloak")));   // the science officer's Cloak watch: further
 
     /// <summary>Whether s can lock t: seen, and not hidden by a nebula (any plume on the sight line between them, either
     /// ship's included: Rules.NebulaOnLine), beyond its lock range, unless s's ECCM beats t's ECM.</summary>

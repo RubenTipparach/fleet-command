@@ -19,7 +19,7 @@ public sealed record Route(List<(int C, int R)> Path, int Cost, List<List<(int C
 /// <summary>A fleet's move on the map: the sectors it passed, start first, for the view to glide it along.</summary>
 public sealed record FleetMove(string Name, List<(int C, int R)> Steps);
 
-public sealed class Campaign
+public sealed partial class Campaign
 {
     public CampaignData Data { get; }
     public CampaignState S { get; }
@@ -114,6 +114,8 @@ public sealed class Campaign
         var c = new Campaign(data, s);
         // a save from before the fog of war knows nothing yet: what is seen now is revealed
         c.Reveal();
+        // a save from before crew leveling: its officers given levels
+        c.CrewFromOldSave();
         return c;
     }
 
@@ -347,6 +349,7 @@ public sealed class Campaign
     public List<FleetMove> EndTurn()
     {
         S.Turn++;
+        CrewGains(Data.Crew.XpTurn);   // a turn served: every officer of the crew gains a little experience
         Alarm();
         List<FleetMove> moves = FactionsMove();
         Reveal();
@@ -528,50 +531,8 @@ public sealed class Campaign
     public HashSet<(int, int)> RoutesOf(string fac) =>
         S.Freighters.Where(f => f.Fac == fac).SelectMany(f => f.Route).Select(k => (k[0], k[1])).ToHashSet();
 
-    /// <summary>The officers on offer at each station (owner, 2026-11-06: "for each crew slot, I should be able to click on it
-    /// and always geta list, even when I hire someone. Always 3 experienced of various levels and 5 cadets"): per station,
-    /// data's experienced count at different levels above cadet, then data's cadet count, each with a name no one else has.</summary>
-    private void RollOfficers()
-    {
-        OfficerDef od = Data.Officers;
-        S.OfficerPool = new List<Officer>();
-        foreach (string st in od.Stations)
-        {
-            var levels = Enumerable.Range(1, od.Skills.Count - 1).Select(i => (R.Next(), i)).OrderBy(x => x.Item1).Select(x => x.i)
-                .Take(od.Experienced).OrderBy(i => i).ToList();
-            while (levels.Count < od.Experienced) levels.Add(1 + R.Below(od.Skills.Count - 1));
-            foreach (int sk in levels) S.OfficerPool.Add(NewOfficer(st, sk));
-            for (int i = 0; i < od.Cadets; i++) S.OfficerPool.Add(NewOfficer(st, 0));
-        }
-    }
-
-    /// <summary>A new officer for a station at a skill level (0 is a cadet), named from data's given and family names so
-    /// no one in the crew or on offer shares the name.</summary>
-    private Officer NewOfficer(string station, int skill)
-    {
-        OfficerDef od = Data.Officers;
-        string name = "";
-        for (int tries = 0; tries < 64; tries++)
-        {
-            name = od.Given[R.Below(od.Given.Count)] + " " + od.Family[R.Below(od.Family.Count)];
-            if (!S.Crew.Concat(S.OfficerPool).Any(o => o.Name == name)) break;
-        }
-        return new Officer { Name = name, Station = station, Skill = od.Skills[skill].Skill, Cost = od.Skills[skill].Cost };
-    }
-
-    /// <summary>Whether an officer is a cadet (the lowest skill level).</summary>
-    public bool IsCadet(Officer o) => o.Skill == Data.Officers.Skills[0].Skill;
-
-    /// <summary>The officers on offer for one station, experienced first by level, then the cadets.</summary>
+    /// <summary>The officers on offer for one station.</summary>
     public List<Officer> OnOffer(string station) => S.OfficerPool.Where(o => o.Station == station).ToList();
-
-    /// <summary>Puts an officer back on offer at their station in place of the last one of the same kind, so each station
-    /// keeps its count of experienced officers and cadets.</summary>
-    private void BackOnOffer(Officer o)
-    {
-        int at = S.OfficerPool.FindLastIndex(x => x.Station == o.Station && IsCadet(x) == IsCadet(o));
-        if (at >= 0) S.OfficerPool[at] = o; else S.OfficerPool.Add(o);
-    }
 
     // ---- Missions on offer -----------------------------------------------------------------------------------------------
 
@@ -977,29 +938,6 @@ public sealed class Campaign
 
     /// <summary>The officer serving at a station, or null.</summary>
     public Officer? AtStation(string station) => S.Crew.FirstOrDefault(o => o.Station == station);
-
-    /// <summary>Hires an officer for their station. One officer serves each station: whoever served there before leaves the
-    /// crew and goes back on offer, and the hired one's place on offer is taken by someone new of the same kind, so a station
-    /// always has its list.</summary>
-    public string? Hire(Officer o)
-    {
-        if (!Allows("officers")) return Refused("officers", "Officers are recruited at your own ports.");
-        int at = S.OfficerPool.IndexOf(o);
-        if (at < 0) return $"{o.Name} is not on offer.";
-        string? err = Pay(o.Cost);
-        if (err != null) return err;
-        S.OfficerPool[at] = NewOfficer(o.Station, Data.Officers.Skills.ToList().FindIndex(s => s.Skill == o.Skill));
-        if (AtStation(o.Station) is { } was) { S.Crew.Remove(was); BackOnOffer(was); }
-        S.Crew.Add(o);
-        return null;
-    }
-
-    /// <summary>Lets an officer go (no refund); they go back on offer.</summary>
-    public void Dismiss(Officer o)
-    {
-        if (!S.Crew.Remove(o)) return;
-        BackOnOffer(o);
-    }
 
     /// <summary>A wingman's standing orders (data behaviours); the flagship has none.</summary>
     public void SetBehaviour(CampShip s, string behaviour)

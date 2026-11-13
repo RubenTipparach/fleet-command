@@ -28,7 +28,7 @@ public sealed partial class Rules
     public TacticalDef Tactical => _tac;
 
     /// <summary>The reactor's output this moment, E: its rating, less what misaligned coils lose (Rules.Reactor).</summary>
-    public double Output(Ship s) => s.Class.ReactorE * Efficiency(s);
+    public double Output(Ship s) => s.Class.ReactorE * Efficiency(s) + s.Skill("reactor_e");
 
     /// <summary>What the allocation draws, E: the systems' boxes, the coolant pumps and the warp coils (Rules.Reactor), and the
     /// cloak while it is on (Rules.Cloak.cs).</summary>
@@ -40,7 +40,7 @@ public sealed partial class Rules
 
     /// <summary>The speed limit, m/s: the engines' boxes, the class's top speed, the engines' health and any brownout.</summary>
     public double MaxSpeed(Ship s) =>
-        Math.Min(s.Class.SpeedMaxMS, s.Power.GetValueOrDefault("engines") * _t.SpeedPerBoxMS) * (0.4 + 0.6 * s.Sys["engines"]) * s.Brown * s.SurgeSpeedX;
+        Math.Min(s.Class.SpeedMaxMS, s.Power.GetValueOrDefault("engines") * _t.SpeedPerBoxMS) * (0.4 + 0.6 * s.Sys["engines"]) * s.Brown * s.SurgeSpeedX * (1 + s.Skill("speed"));
 
     /// <summary>What a hit does to a facing (special-weapons design): pierce of it goes straight to the hull, the shield
     /// takes the rest up to what it holds, and what it cannot take goes to the hull too.</summary>
@@ -121,6 +121,8 @@ public sealed partial class Rules
         // a proximity burst ignores the target's speed and adds its bonus (weapon-arming design)
         if (!w.IgnoreSpeed) p -= _t.HitSpeedPenaltyPer300MS * Math.Abs(t.V) / 300;
         p += w.HitBonus;
+        // the crew's skills: the tactical officer's targeting on the shooter, the helm's evasion on the target
+        p += s.Skill("hit") - t.Skill("evade");
         // aiming at anything but the hull costs the captain's side some of its chance (weapon-targeting design)
         if ((aim ?? s.Aim) != "hull" && s.Side == 0) p -= _tac.AimHitPenalty;
         p *= 0.5 + 0.5 * s.Sys["sensors"];
@@ -160,7 +162,7 @@ public sealed partial class Rules
 
     /// <summary>The chance the next high energy turn succeeds, as the helm shows it and Battle.Het rolls it: less erratic
     /// manoeuvres, plus the helm officer's skill (officers).</summary>
-    public double HetChanceNow(Ship s) => Math.Max(0, s.HetChance - (s.Erratic ? _t.HetErraticPenalty : 0) + OfficerSkill(s, "helm") * SystemsData.Officers.Ability.Het);
+    public double HetChanceNow(Ship s) => Math.Max(0, s.HetChance - (s.Erratic ? _t.HetErraticPenalty : 0) + OfficerSkill(s, "helm") * SystemsData.Officers.Ability.Het + s.Skill("het"));
 
     /// <summary>Range in km an AI captain closes to for its range setting.</summary>
     /// <summary>The range an AI captain fights at, km (the player's manoeuvres use the middle one).</summary>

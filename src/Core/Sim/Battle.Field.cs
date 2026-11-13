@@ -201,7 +201,7 @@ public sealed partial class Battle
         Ship s = Player;
         var sr = Cs.Sensors;
         int free = Math.Max(0, s.Power["sensors"] - s.Ecm - s.Eccm);
-        double rate = (sr.ScanBasePerS + sr.ScanPerES * free) * (s.Passive ? sr.PassiveScanX : 1) * s.Sys["sensors"] * (1 + OfficerSkill(s, "science") * sr.OfficerScan) * Fd.PlanetScanX;
+        double rate = (sr.ScanBasePerS + sr.ScanPerES * free) * (s.Passive ? sr.PassiveScanX : 1) * s.Sys["sensors"] * (1 + OfficerSkill(s, "science") * sr.OfficerScan + s.Skill("scan")) * Fd.PlanetScanX;
         pl.ScanP = Math.Min(1, pl.ScanP + dt * rate);
         if (pl.ScanP < 1) return;
         _planetScan = null;

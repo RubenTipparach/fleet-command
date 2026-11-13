@@ -113,7 +113,7 @@ public sealed partial class Battle
     public bool PadReady(Ship s) => s.Pads.Any(c => c >= 1);
     public int PadsCharging(Ship s) => s.Pads.Count(c => c < 1);
     /// <summary>The energy that recharges the pads: the transporter's boxes by its health.</summary>
-    public double PadPower(Ship s) => s.Power["transport"] * s.Sys["transport"];
+    public double PadPower(Ship s) => s.Power["transport"] * s.Sys["transport"] * (1 + s.Skill("pad_rate"));   // the security chief's Transporters
     /// <summary>Seconds until pad i is charged at today's energy and pads charging (infinite with no energy to it).</summary>
     public double PadEta(Ship s, int i)
     {
