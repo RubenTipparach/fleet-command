@@ -27,7 +27,8 @@ Today an officer's skill is fixed: the campaign hires officers at five skill lev
   opens from either; the keystone needs both crossovers; each lane's tip needs its lane and the crossover beside it; the
   capstone sits on the keystone. Every skill changes abilities a battle rule reads, and has a drawn icon of what it
   changes (`docs/mockups/lib/skill-icons.js`, to the icon standard) and a tooltip with what it does and needs.
-- **Four styles of the same tree** on the mockup to choose from: Branches, Constellation, Radial and Lanes.
+- **Two styles of the same tree** on the mockup, the two the owner kept of four (2026-11-13: "branches are good, lanes are
+  good"): Branches, growing down from the three roots, and Lanes.
 - **Auto level or pick**: an officer on auto level spends points up the centre of their station's tree to its capstone as they are earned; off,
   the player picks skills and specialises. Retraining takes the points back for prestige.
 - **Data**: `data/campaign/crew.json` holds every number (ranks, experience, prestige rates, the trees, the auto paths).

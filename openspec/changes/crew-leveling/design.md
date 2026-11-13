@@ -58,10 +58,11 @@ skills come from the prerequisites: dashed for either, solid for every one, lit 
 
 | Style | Look |
 |---|---|
-| Branches | Grows up the screen from the three roots to the capstone, curved limbs, the themes named under the roots |
-| Constellation | The same skills as stars over a seeded starfield, placed a little off the grid, thin straight lines |
-| Radial | A fan out of the station's hub, rings for depth, the capstone on the outermost ring |
+| Branches | Grows down the screen from the three roots across the top to the capstone at the foot, curved limbs, the themes named over the roots, the lanes 210 px apart (owner, 2026-11-13: "branches should be vertiacally inverted, starting from the top with the 3, squish them so theres not so much space between columns") |
 | Lanes | Left to right in three bands like the console's, every skill a pill key with its icon and name |
+
+Version 3 also drew a Constellation (the skills as stars) and a Radial fan; the owner kept Branches and Lanes ("branches
+are good, lanes are good").
 
 **Icons** (`docs/mockups/lib/skill-icons.js`, the Concord's): one picture for each ability (twenty-five), drawn on the
 icon guide's 48 px grid with a 3 px line, solid for the thing and lines for what it gives off, one ink, read at 20 px; a
@@ -89,6 +90,6 @@ slots take the campaign crew (officers task 2.5); every other ship keeps the ros
 | CL5 | Retraining | 10 prestige, every point back |
 | CL6 | Ten levels, ranks every two (Ensign to Captain) | Yes |
 | CL9 | The tree: crossovers open from either lane, the keystone and the tips need two | Yes, as drawn |
-| CL10 | Which style of tree | Branches, provisionally |
+| CL10 | Branches or Lanes | Branches, provisionally |
 | CL7 | Six campaign stations covering the battle's nine | Yes, as mapped above |
 | CL8 | Wounds and deaths in battle (the reference game's) | Not yet |

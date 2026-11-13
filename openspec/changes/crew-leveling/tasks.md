@@ -7,7 +7,8 @@
 - [x] 1.3 Survey section CL (CL1-CL8)
 - [x] 1.3a Version 2 (2026-11-12): ten levels, and a pyramid of fifteen skills a station with crossovers and two-prerequisite skills
 - [x] 1.3b Version 3 (2026-11-12): one skill tree a station (fourteen skills, crossovers, a keystone and tips with two prerequisites), drawn icons (`docs/mockups/lib/skill-icons.js`), tooltips, four styles
-- [ ] 1.4 The owner's review (and survey CL10, the style): approved for build, then for implementation
+- [x] 1.3c Version 4 (2026-11-13): Branches grows down from the roots, its lanes closer; Constellation and Radial dropped
+- [ ] 1.4 The owner's review (and survey CL10, Branches or Lanes): approved for build, then for implementation
 
 ## 2. Into the game (after approval for implementation)
 

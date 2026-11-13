@@ -24,6 +24,7 @@ officers. Once approved it becomes the Crew tab of the campaign mockup (mockup 1
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { background: var(--bg); color: var(--ink); font: 400 15px/1.45 var(--body); margin: 0; }
 .wrap { padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); max-width: 1440px; margin: 0 auto; display: grid; gap: 16px; }
 h1, h2, h3 { font-family: var(--display); text-transform: uppercase; margin: 0; letter-spacing: 0.04em; text-wrap: balance; }
@@ -84,7 +85,7 @@ select { background: var(--panel-hi); color: var(--ink); box-shadow: inset 0 0 0
 .skill { position: absolute; display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink); min-height: 0; border-radius: 0; font: inherit; text-transform: none; letter-spacing: 0; }
 .skill .orb { position: relative; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--panel-hi); box-shadow: inset 0 0 0 3px var(--rim); transition: box-shadow 0.15s, background 0.15s; }
 .skill .orb canvas { width: 38px; height: 38px; }
-.skill .lbl { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; width: 132px; text-align: center; font: 700 12px/1.15 var(--display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); pointer-events: none; }
+.skill .lbl { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; width: 100px; text-align: center; font: 700 12px/1.15 var(--display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); pointer-events: none; }
 .skill.keystone .orb { box-shadow: inset 0 0 0 3px var(--rim), 0 0 0 5px var(--bg), 0 0 0 7px var(--rim); }
 .skill.capstone .orb { width: 80px; height: 80px; border-radius: 22px; transform: rotate(45deg); }
 .skill.capstone .orb canvas { transform: rotate(-45deg); width: 44px; height: 44px; }
@@ -100,14 +101,6 @@ select { background: var(--panel-hi); color: var(--ink); box-shadow: inset 0 0 0
 .skill:focus-visible .orb { outline: 3px solid var(--ink); outline-offset: 5px; }
 .skill .step { position: absolute; right: -6px; top: -6px; min-width: 22px; height: 22px; border-radius: 11px; display: grid; place-items: center; background: var(--bg); box-shadow: inset 0 0 0 2px var(--learned); color: var(--learned); font: 700 11px/1 var(--display); padding: 0 5px; }
 .skill.capstone .step { transform: rotate(-45deg); }
-/* constellation: smaller stars, glow, the sky behind */
-.v-constellation .skill .orb { width: 50px; height: 50px; }
-.v-constellation .skill:not(.learned) .orb { background: #091321; }
-.v-constellation .skill .orb canvas { width: 30px; height: 30px; }
-.v-constellation .skill.capstone .orb { width: 62px; height: 62px; border-radius: 50%; transform: none; }
-.v-constellation .skill.capstone .orb canvas { transform: none; width: 36px; height: 36px; }
-.v-constellation .skill.capstone .step { transform: none; }
-.v-constellation .edges path { stroke-width: 1.6; }
 /* lanes: the Concord's pill keys in bands */
 .v-lanes .skill .orb { width: 168px; height: 56px; border-radius: 28px; grid-template-columns: 40px 1fr; justify-items: start; gap: 8px; padding: 0 14px 0 10px; }
 .v-lanes .skill .orb canvas { width: 34px; height: 34px; }
@@ -152,7 +145,7 @@ select { background: var(--panel-hi); color: var(--ink); box-shadow: inset 0 0 0
   <header>
     <a href="https://claude.ai/artifact/8VqA9YjhCrgoiY2CGR1Qxu" target="_blank" rel="noopener">All Fleet Command mockups (the tracker)</a>
     <h1>Crew</h1>
-    <p class="sub">Mockup 39, v3. <span class="num">crew-leveling</span>. Officers earn experience in every battle and every turn they serve. Promote them a level for a skill point and spend it on their station's skill tree, or let them auto level; trade them out for prestige and hire better ones. The numbers here are examples to play with.</p>
+    <p class="sub">Mockup 39, v4. <span class="num">crew-leveling</span>. Officers earn experience in every battle and every turn they serve. Promote them a level for a skill point and spend it on their station's skill tree, or let them auto level; trade them out for prestige and hire better ones. The numbers here are examples to play with.</p>
   </header>
 
   <div class="bar" role="group" aria-label="Campaign">
@@ -185,7 +178,8 @@ select { background: var(--panel-hi); color: var(--ink); box-shadow: inset 0 0 0
   <section class="notes card" aria-label="Notes">
     <h2>How it works</h2>
     <p>Version 1 (you: "ensigns provide no bonus but gain xp overtime, and can be traded for prestige so you can get more experienced crew, or just level up your crew member", "need crew skill tree", "skill tree, each level gets a skill point, the player can auto level officers or pick paths on the tree to go down and specialize").</p>
-    <p>Version 3 (you: "it doesnt have to be like an actual pyramid... just a skill tree. mockup a few different versions and make it look nice. use art drawing skills to make skill icons, and show tooltips on hover overs"). Each station has a skill tree of fourteen skills in three lanes, its three themes (for the helm: piloting, emergency turns and evasion). Four styles of the same tree to compare: Branches grows up from the station, Constellation hangs the skills as stars, Radial fans out from the station's hub, and Lanes runs left to right in the console's bands.</p>
+    <p>Version 4 (you: "branches are good, lanes are good, branches should be vertiacally inverted, starting from the top with the 3, squish them so theres not so much space between columns"). Two styles stay: Branches now grows down from its three roots at the top to the capstone at the foot, its lanes closer together, and Lanes runs left to right as before. Constellation and Radial are gone.</p>
+    <p>Version 3 (you: "it doesnt have to be like an actual pyramid... just a skill tree. mockup a few different versions and make it look nice. use art drawing skills to make skill icons, and show tooltips on hover overs"). Each station has a skill tree of fourteen skills in three lanes, its three themes (for the helm: piloting, emergency turns and evasion). Version 3 drew the same tree four ways: Branches growing up from the station, Constellation, Radial, and Lanes.</p>
     <p>Each lane starts at a root. A crossover sits between two lanes and opens from either of them (a dashed line), so a path can change lanes. The keystone at the centre needs both crossovers, each lane's tip needs its own lane and the crossover beside it (solid lines: needs every one), and the capstone sits on the keystone. Every skill has a picture of what it changes, drawn to the icon standard; hover over one for what it does and what it needs, and click or tap it to learn it.</p>
     <p>Officers go from level 1 to level 10, with one skill point for every level after the first, so a level 1 ensign brings nothing to a battle. Ranks come with levels: Ensign at 1, Lieutenant at 2, Lt. Commander at 4, Commander at 6, Captain at 8. The cheapest way to the capstone is six points; a level 10 officer has nine, out of fourteen skills, so every officer has chosen.</p>
     <p>Every officer gains experience from each battle (more for a better result) and a little each turn aboard. Promote an officer once they have the experience for the next level; short of it, the rest can be paid in prestige. Transfer an officer out and the side gains their worth plus their banked experience in prestige, which hires an officer of a higher level from the pool. With Auto level on, points go up the centre to the capstone, then along the left lane. Retrain takes every point back for a little prestige.</p>
@@ -369,14 +363,14 @@ function stationCard(st) { const o = S.crew[st], picked = st === S.pick;
     h('span', { class: 'disc', text: o ? initials(o.name) : '?' }),
     h('span', { style: 'min-width:0;display:grid;gap:2px' }, h('span', { class: 'plate', text: st }), h('span', { class: 'name', text: o ? o.name : 'Vacant' }),
       o ? h('span', { class: 'rank', text: `Level ${o.level} · ${rankOf(o.level)}` }) : null, o ? xpBar(o) : null), h('span', {}, chips)); }
-// The tree, in four styles of one layout (each maps a skill's lane and depth to a place on its own stage, in stage
-// pixels): Branches grows up from the station, Constellation hangs the skills as stars, Radial fans out from the station's
-// hub, Lanes runs left to right in the console's bands. The lines between skills come from the data: dashed where either
+// The tree, in two styles of one layout (each maps a skill's lane and depth to a place on its own stage, in stage pixels):
+// Branches grows down from the three roots, Lanes runs left to right in the console's bands (the two the owner kept,
+// 2026-11-13: "branches are good, lanes are good"). The lines between skills come from the data: dashed where either
 // skill below opens it (any), solid where every one is needed (all), lit once the skill they come from is learned.
 const LAYOUTS = {
-  branches: { name: 'Branches', w: 940, h: 660, at: (n) => [170 + n.lane * 300, 540 - (n.depth - 1) * 114], curve: 'v', themes: 640 },
-  constellation: { name: 'Constellation', w: 940, h: 660, at: (n) => { const r = mulberry(hashId(n.id)); return [170 + n.lane * 300 + (r() - 0.5) * 70, 560 - (n.depth - 1) * 118 + (r() - 0.5) * 44]; }, sky: true },
-  radial: { name: 'Radial', w: 1000, h: 720, at: (n) => { const a = (-90 + (n.lane - 1) * 56) * Math.PI / 180, r = 160 + (n.depth - 1) * 112; return [500 + Math.cos(a) * r, 660 + Math.sin(a) * r]; }, hub: [500, 660], rings: [160, 112] },
+  // the roots across the top, the tree growing down to the capstone (owner, 2026-11-13: "branches should be vertiacally
+  // inverted, starting from the top with the 3, squish them so theres not so much space between columns")
+  branches: { name: 'Branches', w: 660, h: 760, at: (n) => [120 + n.lane * 210, 110 + (n.depth - 1) * 132], curve: 'v', themes: 34 },
   lanes: { name: 'Lanes', w: 1120, h: 520, at: (n) => [150 + (n.depth - 1) * 220, 90 + n.lane * 170], curve: 'h', bands: true },
 };
 function hashId(id) { let h = 2166136261; for (const c of id) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return h >>> 0; }
@@ -386,13 +380,6 @@ function edgePath(L, a, b) { const [x1, y1] = a, [x2, y2] = b;
   if (L.curve === 'v') { const my = (y1 + y2) / 2; return `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`; }
   if (L.curve === 'h') { const mx = (x1 + x2) / 2; return `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`; }
   return `M${x1},${y1} L${x2},${y2}`; }
-// the sky behind the constellation: a seeded generator, stratified, most stars faint (CLAUDE.md 10)
-function skyCanvas(w, h) { const c = document.createElement('canvas'); c.className = 'sky'; c.width = w * 2; c.height = h * 2; c.style.width = w + 'px'; c.style.height = h + 'px';
-  const x = c.getContext('2d'), r = mulberry(4021); x.scale(2, 2); const g = x.createRadialGradient(w * 0.5, h * 0.45, 40, w * 0.5, h * 0.45, w * 0.7);
-  g.addColorStop(0, 'rgba(60, 90, 170, 0.22)'); g.addColorStop(1, 'rgba(4, 7, 11, 0)'); x.fillStyle = g; x.fillRect(0, 0, w, h);
-  const cell = 26; for (let gy = 0; gy < h; gy += cell) for (let gx = 0; gx < w; gx += cell) { if (r() < 0.35) continue; const b = r() ** 3, px = gx + r() * cell, py = gy + r() * cell;
-    x.fillStyle = `rgba(${200 + b * 55}, ${210 + b * 45}, 255, ${0.15 + b * 0.75})`; x.beginPath(); x.arc(px, py, 0.5 + b * 1.4, 0, 2 * Math.PI); x.fill(); }
-  return c; }
 const iconCache = new Map();
 function iconCanvas(key, col) { const k = key + col; if (!iconCache.has(k)) iconCache.set(k, FCSkillIcons.icon(key, col)); const src = iconCache.get(k), c = document.createElement('canvas');
   c.width = src.width; c.height = src.height; c.getContext('2d').drawImage(src, 0, 0); c.setAttribute('aria-hidden', 'true'); return c; }
@@ -400,23 +387,17 @@ const ROLE = { root: 'Root', step: 'Lane skill', crossover: 'Crossover', keyston
 const nameList = (st, ids, joiner) => ids.map((id) => nodeById(st, id).name).join(joiner);
 function tree(o) { const T = CREW.trees[o.station], L = LAYOUTS[S.layout], order = T.auto;
   const stage = h('div', { class: `stage v-${S.layout}`, style: `width:${L.w}px;height:${L.h}px` }), svg = svgEl('svg', { class: 'edges', viewBox: `0 0 ${L.w} ${L.h}`, width: L.w, height: L.h, 'data-fit-over': 'lines' });   // art under the skills
-  if (L.sky) stage.append(skyCanvas(L.w, L.h));
   stage.append(svg);
   const pos = new Map(T.nodes.map((n) => [n.id, L.at(n)]));
-  if (L.rings) for (let d = 1; d <= 5; d++) { const r = L.rings[0] + (d - 1) * L.rings[1]; svg.append(svgEl('path', { class: 'guide', d: `M${L.hub[0] - r},${L.hub[1]} A${r},${r} 0 0 1 ${L.hub[0] + r},${L.hub[1]}` })); }
   if (L.bands) T.themes.forEach((t, i) => { const y = 90 + i * 340 / 2; const tx = svgEl('text', { x: 18, y: y - 38 }); tx.textContent = t; svg.append(tx); });
   else if (L.themes) T.themes.forEach((t, i) => { const tx = svgEl('text', { x: L.at({ lane: i, depth: 1, id: 'x' })[0], y: L.themes, 'text-anchor': 'middle' }); tx.textContent = t; svg.append(tx); });
-  // each line meets the skills' edges, never their names: up out of the top of the one before, into the foot of the next's
-  // name (Branches), from end to end of the pills (Lanes), or rim to rim (Constellation, Radial)
-  const R = (n) => (S.layout === 'constellation' ? (n.role === 'capstone' ? 31 : 25) : n.role === 'capstone' ? 46 : n.role === 'keystone' ? 39 : 32);
+  // each line meets the skills' edges, never their names: down out of the foot of the earlier skill's name into the top of
+  // the next (Branches), or from end to end of the pills (Lanes)
+  const R = (n) => (n.role === 'capstone' ? 46 : n.role === 'keystone' ? 39 : 32);
   const ends = (a, b) => { const [x1, y1] = pos.get(a.id), [x2, y2] = pos.get(b.id);
-    if (L.curve === 'v') return [[x1, y1 - R(a)], [x2, y2 + R(b) + 24]];
+    if (L.curve === 'v') return [[x1, y1 + R(a) + 34], [x2, y2 - R(b)]];
     if (L.curve === 'h') return [[x1 + 84, y1], [x2 - (b.role === 'capstone' ? 90 : 84), y2]];
     const d = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / d, uy = (y2 - y1) / d; return [[x1 + ux * R(a), y1 + uy * R(a)], [x2 - ux * R(b), y2 - uy * R(b)]]; };
-  if (L.hub) { svg.append(svgEl('circle', { cx: L.hub[0], cy: L.hub[1], r: 48, fill: 'var(--panel-hi)', stroke: 'var(--rim)', 'stroke-width': 3 }));
-    const ht = svgEl('text', { x: L.hub[0], y: L.hub[1] + 4, 'text-anchor': 'middle', style: 'font-size:10px;letter-spacing:0.08em;fill:var(--dim)' }); ht.textContent = o.station; svg.append(ht);
-    for (const n of T.nodes.filter((q) => q.depth === 1)) { const [x2, y2] = pos.get(n.id), d = Math.hypot(x2 - L.hub[0], y2 - L.hub[1]), ux = (x2 - L.hub[0]) / d, uy = (y2 - L.hub[1]) / d;
-      svg.append(svgEl('path', { class: `all ${o.taken.includes(n.id) ? 'lit' : ''}`, d: edgePath(L, [L.hub[0] + ux * 48, L.hub[1] + uy * 48], [x2 - ux * R(n), y2 - uy * R(n)]) })); } }
   for (const n of T.nodes) for (const [kind, list] of [['all', n.all || []], ['any', n.any || []]]) for (const id of list) { const [a, b] = ends(nodeById(o.station, id), n);
     svg.append(svgEl('path', { class: `${kind} ${o.taken.includes(id) ? 'lit' : ''}`, d: edgePath(L, a, b) })); }
   for (const n of T.nodes) { const learned = o.taken.includes(n.id), open = !learned && canTake(o, n), k = order.indexOf(n.id), [px, py] = pos.get(n.id);
