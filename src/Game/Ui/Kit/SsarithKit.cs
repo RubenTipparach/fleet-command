@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FleetCommand.Game.Ui;
 using Godot;
 using static FleetCommand.Game.Ui.Kit.IconGeom;
 
@@ -88,7 +89,7 @@ public sealed class SsarithKit : IKit
     public void Icon(CanvasItem c, string icon, Rect2 r, Color ink)
     {
         if (!_icons.TryGetValue(icon, out var d)) throw new KeyNotFoundException($"Ssarith kit has no icon '{icon}'");
-        d(new Pen(c, r.Position, r.Size.X / 48f, ink));
+        IconAtlas.Draw(Name, c, icon, r, ink, d);   // drawn once into the shared atlas, then as one textured rectangle
     }
 
     public PieceSpec Spec(string piece) => _r.Spec(piece);
@@ -100,7 +101,7 @@ public sealed class SsarithKit : IKit
         float X = r.Position.X, Y = r.Position.Y, W = r.Size.X, H = r.Size.Y;
         if (W <= 0 || H <= 0) return;
         Vector2[] pts = CutBox(X, Y, X + W, Y + H, Math.Max(0, Math.Min(radius * 0.7f, Math.Min(W / 2, H / 2))));
-        if (line > 0) ci.DrawPolyline(pts.Append(pts[0]).ToArray(), col, line, true);
+        if (line > 0) Draw2D.Polyline(ci, pts.Append(pts[0]).ToArray(), col, line, true);
         else Pen.FillAbs(ci, pts, col);
     }
 

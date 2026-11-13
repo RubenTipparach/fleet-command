@@ -55,7 +55,8 @@ public sealed class GameActions
 
     public void Station(string id) => S.Station = id;
     public void ShipPage(string id) => S.ShipPage = id;
-    public void Pause() => S.Paused = !S.Paused;
+    /// <summary>Pause: alone, the battle; in co-op only the admiral pauses (the crew's console follows the admiral's).</summary>
+    public void Pause() { if (_ctx().Coop is { IsHost: false }) return; S.Paused = !S.Paused; }
     public void Menu() { S.MenuOpen = !S.MenuOpen; }
 
     /// <summary>Expands a panel, or returns it when it is already expanded.</summary>

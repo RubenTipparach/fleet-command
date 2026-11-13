@@ -76,7 +76,7 @@ public sealed partial class ScriptedCaptain
             Used("ships_taken");
             return;
         }
-        if (B.TargetOf(me) is not { } t || t.Side == me.Side || !t.Alive) return;
+        if (_x.MyTarget() is not { } t || t.Side == me.Side || !t.Alive) return;
         double km = Rules.DistKm(me, t);
         double before = B.T;
         _orderT = B.T;

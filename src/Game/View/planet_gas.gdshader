@@ -43,6 +43,9 @@ varying vec3 v_obj;
 
 void vertex() {
 	v_obj = normalize(VERTEX);
+#ifdef PLANET_BAKE
+	POSITION = pn_bake_position(UV);
+#endif
 }
 
 // a vortex at c of radius r: the point turned about c's axis, most at the centre, nothing past its edge
@@ -73,7 +76,7 @@ void fragment() {
 	// each latitude turns at its own rate: the jets alternate with the bands
 	float lat = p.y;
 	float jet = sin(lat * bands * 3.14159) * flow_speed;
-	p = pn_rot(p, vec3(0.0, 1.0, 0.0), TIME * jet);
+	p = pn_rot(p, vec3(0.0, 1.0, 0.0), PN_TIME * jet);
 	// two passes of warp, sheared along the latitude: eddies on the band edges
 	vec3 q = vec3(p.x * 2.2, p.y * bands * 1.4, p.z * 2.2) + seed;
 	vec3 w1 = vec3(pn_fbm3(q + 1.7), pn_fbm3(q - 4.3), pn_fbm3(q + 8.1)) - 0.5;
@@ -103,14 +106,14 @@ void fragment() {
 	col = mix(col, c1 * 0.75, smoothstep(0.62, 0.95, abs(v_obj.y)) * 0.6);
 
 	vec3 n = normalize(NORMAL);
-	vec3 L = normalize((VIEW_MATRIX * vec4(normalize(sun_dir), 0.0)).xyz);
-	vec3 V = normalize(-VERTEX);
+	vec3 L = pn_sun(normalize((VIEW_MATRIX * vec4(normalize(sun_dir), 0.0)).xyz), n);
+	vec3 V = pn_sun(normalize(-VERTEX), n);
 	float ndl = dot(n, L);
 	float day = pn_day(ndl);
 	// the rings' shadow: along the sun's ray from this point to the ring plane (the planet's own equator)
 	float ring_shade = 1.0;
 	if (ring_outer > 0.0) {
-		vec3 Lm = normalize(inverse(mat3(MODEL_MATRIX)) * normalize(sun_dir));
+		vec3 Lm = pn_sun(normalize(inverse(mat3(MODEL_MATRIX)) * normalize(sun_dir)), v_obj);
 		if (abs(Lm.y) > 1e-3) {
 			float t = -v_obj.y / Lm.y;
 			if (t > 0.0) {

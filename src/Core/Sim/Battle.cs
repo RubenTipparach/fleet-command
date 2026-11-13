@@ -46,7 +46,13 @@ public sealed class Shot
     public double ReachDeg;
 }
 
-public sealed record LogLine(double T, string Who, string Text);
+/// <summary>A line of the battle's log: when, which station or system says it, what, and in co-op the player whose order it
+/// answers (or who wrote it, for chat).</summary>
+public sealed record LogLine(double T, string Who, string Text, string? By = null)
+{
+    /// <summary>Who speaks, as the log shows it: the station, after the player's name in co-op ("Laptop · Tactical").</summary>
+    public string Speaker => By != null ? $"{By} · {Who}" : Who;
+}
 
 /// <summary>A hit as it landed, for the view's explosions and scars (it changes nothing): the ship struck, where the shot
 /// came from (metres), the weapon's kind, what the shields took and what reached the hull, and whether it destroyed the ship.</summary>
@@ -151,6 +157,7 @@ public sealed partial class Battle
     /// <summary>The Withdraw key: a withdrawal ordered, or, pressed again while one is under way, called off.</summary>
     public bool ToggleWithdraw()
     {
+        if (Sent(nameof(ToggleWithdraw))) return false;
         if (Withdrawing) { CancelWithdraw(); return true; }
         return Withdraw();
     }
@@ -160,6 +167,7 @@ public sealed partial class Battle
     /// Returns false when refused.</summary>
     public bool Withdraw()
     {
+        if (Sent(nameof(Withdraw))) return false;
         if (Over != null || Withdrawing || !Player.Alive) return false;
         if (!Scenario.CanWithdraw)
         {
@@ -184,12 +192,13 @@ public sealed partial class Battle
     /// grade a withdrawal, never for the player (who warps out by Withdraw).</summary>
     public void EndWithdrawn()
     {
+        if (Sent(nameof(EndWithdrawn))) return;
         if (Over != null) return;
         Over = "withdrawn";
     }
 
     /// <summary>The mission's objectives are met (a battle that ends on its objectives): it is won where it stands.</summary>
-    public void Win() { if (Over == null) { Over = "won"; Say("Tactical", "Objectives complete."); } }
+    public void Win() { if (Sent(nameof(Win))) return; if (Over == null) { Over = "won"; Say("Tactical", "Objectives complete."); } }
 
     private readonly HashSet<string> _reached = new();
     private double _lastHurtT;
@@ -216,11 +225,14 @@ public sealed partial class Battle
     }
 
     /// <summary>The battle is lost though ships of side 0 still fly (a mission whose own fleet is gone, its wingmen left).</summary>
-    public void Lose() { if (Over == null) Over = "lost"; }
+    public void Lose() { if (Sent(nameof(Lose))) return; if (Over == null) Over = "lost"; }
 
-    public void Say(string who, string text)
+    public void Say(string who, string text) => SayAs(OrderBy, who, text);
+
+    /// <summary>A log line in a player's name (co-op: chat, a crew change, a ping), or none.</summary>
+    public void SayAs(string? by, string who, string text)
     {
-        _log.Add(new LogLine(T, who, text));
+        _log.Add(new LogLine(T, who, text, by));
         if (_log.Count > 80) _log.RemoveAt(0);
     }
 
@@ -264,6 +276,14 @@ public sealed partial class Battle
 
     public void Step()
     {
+        // inside a step every order the AI or a system gives is applied, never relayed (Battle.Crew.cs)
+        _inside++;
+        try { StepOnce(); }
+        finally { _inside--; }
+    }
+
+    private void StepOnce()
+    {
         if (Over != null) return;
         double dt = Tuning.StepS;
         T += dt;
@@ -273,13 +293,19 @@ public sealed partial class Battle
         foreach (Ship s in _ships) if (s.Alive) SystemsStep(s, dt);
         foreach (Ship s in _ships)
         {
-            if (!s.Alive || s.Struck || s == Player) continue;
+            if (!s.Alive || s.Struck || s == Player && !FlagUnmanned || Helmed.Contains(s.Id)) continue;
             s.ThinkT -= dt;
             if (s.ThinkT <= 0) { s.ThinkT = Tuning.AiThinkS; Think(s); }
         }
-        Ship p = Player;
-        if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
-        AutoFireStep();
+        // every ship a player commands steers to its helm's order and fires by its own auto-fire (Battle.Crew.cs)
+        Ship admiral = Player;
+        foreach (Ship p in Commanded().ToList())
+        {
+            Player = p;
+            if (p.Alive && p.Engaged && p.Het == null && p.Broke <= 0 && NavTarget(p) is { } nt) Steer(p, p.Manoeuvre, nt, Rules.AiRangeKm());
+            AutoFireStep();
+        }
+        Player = admiral;
         FieldPreMove(dt);
         foreach (Ship s in _ships) if (s.Alive && !s.Absent && !s.Fixed) Move(s, dt);
         ChargeStep(dt);
@@ -303,7 +329,7 @@ public sealed partial class Battle
                 s.Engaged = false;
                 Say("Security", $"The {s.Name} has struck. Boarding party away: she is ours.");
                 // she is ours: every lock on her is dropped, so no one fires into the boarding party
-                foreach (Ship o in _ships) if (o.Target == s.Id) o.Target = null;
+                DropLocksOn(s.Id);
             }
         // a scene's own end, registered by the system whose objective it is (a ship disabled, not destroyed): checked first
         foreach (Func<bool> end in _ends) if (end()) return;
@@ -480,7 +506,7 @@ public sealed partial class Battle
         double range = Rules.AiRangeKm(s.Range);
         // a captain whose fire has not landed for a while closes in, half its range for every ai_close_after_s without a
         // hit (to an eighth): no ship kites at a range where its shots are all decoyed, missed or out of reach
-        range *= Math.Pow(0.5, Math.Min(3, Math.Floor((T - s.LastLandedT) / Tuning.AiCloseAfterS)));
+        range *= DMath.Pow(0.5, Math.Min(3, Math.Floor((T - s.LastLandedT) / Tuning.AiCloseAfterS)));
         if (Retreating(s)) Steer(s, "evade", near, range);
         else if (s.Stance == Stance.Hold) Steer(s, "hold", t, range);
         // a lane run (test scenes): straight on at full speed, turning back for another pass once lane_turn_km out
@@ -550,7 +576,8 @@ public sealed partial class Battle
         t.Shields[f] -= absorb / bowX;
         t.Flash[f] = 1;
         double rest = dmg - absorb;
-        if (rest <= 0) { Record(t, sx, sz, kind, absorb, 0); return; }
+        // a training round stops at the shield: what gets past it hurts nothing (a shakedown's target drones)
+        if (rest <= 0 || src is { Training: true }) { Record(t, sx, sz, kind, absorb, 0); return; }
         t.Hull -= rest;
         StrikeDef st = Rules.Tactical.Strike;
         string aim = by?.Aim ?? "hull";
@@ -575,7 +602,7 @@ public sealed partial class Battle
             t.Hull = 0; t.Alive = false; t.V = 0;
             _hits[^1] = _hits[^1] with { Destroyed = true };
             Say("Tactical", $"{t.Name} destroyed.");
-            foreach (Ship o in _ships) if (o.Target == t.Id) o.Target = null;
+            DropLocksOn(t.Id);
             if (t == Player) PromoteNextCommand();
         }
     }

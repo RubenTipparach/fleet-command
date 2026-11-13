@@ -124,7 +124,7 @@ public sealed partial class StationPanel
         y += rs + gap;
         y += QueueGrid($"tr.qg.{mode}", x, y, w, s, mode) + gap + (Big ? 10 : 4);
         // the line between the halves
-        DrawRect(new Rect2(x, y - gap / 2 - (Big ? 5 : 2), w, 2), C.Deep);
+        Draw2D.Rect(this, new Rect2(x, y - gap / 2 - (Big ? 5 : 2), w, 2), C.Deep);
         y += PadRow($"tr.pad.{mode}", x, y, w, s, mode) + gap;
         y += ControlRow($"tr.ctl.{mode}", x, y, w, b.End.Y - y, s, mode == "capture" ? B.CaptureDest(s) : t, mode) + gap;
         // expanded Capture: the party's marines' health and the boarding log
@@ -311,7 +311,7 @@ public sealed partial class StationPanel
             if (t != null) Lbl(ReachText(s, t).Text, x, y + 14, w, ReachText(s, t).Col, HorizontalAlignment.Left, ls);
             return 20;
         }
-        DrawRect(new Rect2(x + 2, y + 2, pp - 4, pp - 4), Colors.Black);
+        Draw2D.Rect(this, new Rect2(x + 2, y + 2, pp - 4, pp - 4), Colors.Black);
         Kit.Piece(this, "frame.inset", new Rect2(x, y, pp, pp));
         if (t != null)
         {
@@ -357,8 +357,8 @@ public sealed partial class StationPanel
         // the round's clock, filling toward the next volley
         if (pt != null && theirs > 0)
         {
-            DrawRect(new Rect2(bx, yy, bw, 3), C.Deep);
-            DrawRect(new Rect2(bx, yy, bw * (float)Math.Clamp(1 - pt.VolleyT / B.Comms.Board.VolleyS, 0, 1), 3), C.Lilac);
+            Draw2D.Rect(this, new Rect2(bx, yy, bw, 3), C.Deep);
+            Draw2D.Rect(this, new Rect2(bx, yy, bw * (float)Math.Clamp(1 - pt.VolleyT / B.Comms.Board.VolleyS, 0, 1), 3), C.Lilac);
         }
         yy += 6;
         // expanded: who is aboard on each side, as chips
@@ -413,7 +413,7 @@ public sealed partial class StationPanel
         Shapes.RoundRect(this, new Rect2(x, y, w, h), C.Deep, r);
         if (ours > 0) Shapes.RoundRect(this, new Rect2(x, y, w * f, h), C.Sky, r, Math.Min(r, w * f / 2), Math.Min(r, w * f / 2), r);
         if (theirs > 0) Shapes.RoundRect(this, new Rect2(x + w * f, y, w * (1 - f), h), C.Alert, Math.Min(r, w * (1 - f) / 2), r, r, Math.Min(r, w * (1 - f) / 2));
-        DrawRect(new Rect2(x + w * f - 1.5f, y, 3, h), Colors.White);
+        Draw2D.Rect(this, new Rect2(x + w * f - 1.5f, y, 3, h), Colors.White);
     }
 
     // A team drawn as role chips: a lit square with the pictogram, the count beside it. Returns the height used.
@@ -441,7 +441,7 @@ public sealed partial class StationPanel
         if (tex == null) { Text(faction[..1].ToUpperInvariant(), r.GetCenter().X, r.GetCenter().Y + r.Size.Y * 0.2f, (int)(r.Size.Y * 0.55f), C.Alert, HorizontalAlignment.Center, 0, 700); return; }
         float k = Math.Min(r.Size.X / tex.GetWidth(), r.Size.Y / tex.GetHeight());
         var sz = new Vector2(tex.GetWidth(), tex.GetHeight()) * k;
-        DrawTextureRect(tex, new Rect2(r.GetCenter() - sz / 2, sz), false);
+        Draw2D.TextureRect(this, tex, new Rect2(r.GetCenter() - sz / 2, sz), false);
     }
 
     // The boarding party aboard (expanded Capture; owner, 2026-11-04: "int he expanded view show marine health and battle

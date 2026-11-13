@@ -178,3 +178,4 @@
 - Version 184 published 2026-11-12, cloud session, version id `1794446665-b46d`: M39 Crew leveling added; the survey at v48.
 - Version 185 published 2026-11-12, cloud session, version id `1794497548-f543`: M39 at v2 (the skill pyramid); the survey at v49.
 - Version 187 published 2026-11-12, cloud session, version id `1794499130-2942`: merged onto another session's version 186 (M40 Nebula shells); M39 at v3; the survey at v50.
+- Version 186, 2026-11-12: mockup 40 (Nebula shells) added; mockup 39 at v2, from the Pi's desktop session.

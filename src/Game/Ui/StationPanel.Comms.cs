@@ -57,7 +57,7 @@ public sealed partial class StationPanel
         {
             if (y + 24 > b.End.Y) break;
             bool warn = Battle.IsWarning(l);
-            X.Fonts.DrawRich(this, new[] { ($"{Clock(l.T)} {l.Who}: ", warn ? C.Caution : C.Lilac), (l.Text, warn ? C.Caution : C.Text) }, x, y + 16, 17, w);
+            X.Fonts.DrawRich(this, new[] { ($"{Clock(l.T)} {l.Speaker}: ", warn ? C.Caution : C.Lilac), (l.Text, warn ? C.Caution : C.Text) }, x, y + 16, 17, w);
             y += 24;
         }
     }

@@ -22,13 +22,20 @@ public sealed record DeckLook(float UndersideKm, float ThicknessKm, float HangKm
     float FogKm, float FogLit, float FogSky,
     string Style, float DeckPuffKm)
 {
+    /// <summary>The shells style's numbers (NebulaShells): each shell's density, cells across a column, the thinnest
+    /// shell's opacity and how fast a shell fades edge-on.</summary>
+    public float[] ShellLevels { get; init; } = { 0.3f, 0.55f, 0.8f };
+    public int ShellGrid { get; init; } = 32;
+    public float ShellAlpha { get; init; } = 0.16f;
+    public float ShellSoft { get; init; } = 1f;
+    public float ShellNearKm { get; init; } = 3f;
     private const string File = "data/space/nebula_decks.json";
     private static DeckLook? _look;
 
     /// <summary>How a nebula is drawn (owner, 2026-11-10: "lets see how all one or the other looks"): marched cloud, puffs
     /// of displaced mesh, or Crab Breeze's lit billboards; "none" draws no cloud at all (the fog stays), a measurement
     /// instrument only: the frame time of a battle without its cloud, against which each style's cost is read.</summary>
-    public static readonly string[] Styles = { "volume", "meshes", "billboards", "none" };
+    public static readonly string[] Styles = { "volume", "meshes", "billboards", "shells", "none" };
 
     /// <summary>Where a column flares into a deck, km off the plane: the deck's face where it reaches down round a column's
     /// root.</summary>
@@ -49,8 +56,24 @@ public sealed record DeckLook(float UndersideKm, float ThicknessKm, float HangKm
             PlanetLooks.Range(o, "column_shade", 0, 1), PlanetLooks.Range(o, "variety", 0, 1), PlanetLooks.Range(o, "far_from_km", 0, 2000),
             PlanetLooks.Range(o, "far_to_km", 1, 3000), PlanetLooks.Range(o, "contrast", 0, 1),
             PlanetLooks.Range(o, "fog_km", 5, 5000), PlanetLooks.Range(o, "fog_lit", 0, 1), PlanetLooks.Range(o, "fog_sky", 0, 1),
-            o.Str("style"), PlanetLooks.Range(o, "deck_puff_km", 2, 100));
-        // the stills tool and a comparison run may name another style (--nebula-style=volume|meshes|billboards)
+            o.Str("style"), PlanetLooks.Range(o, "deck_puff_km", 2, 100))
+        {
+            ShellLevels = o.NumList("shell_levels").Select(v => (float)v).ToArray(),
+            ShellGrid = (int)PlanetLooks.Range(o, "shell_grid", 8, 96), ShellAlpha = PlanetLooks.Range(o, "shell_alpha", 0.01, 1),
+            ShellSoft = PlanetLooks.Range(o, "shell_soft", 0, 4), ShellNearKm = PlanetLooks.Range(o, "shell_near_km", 0, 100),
+        };
+        // the low-spec mode's fewer, coarser shells
+        float[] lowLevels = o.NumList("shell_levels_lowspec").Select(v => (float)v).ToArray();
+        int lowGrid = (int)PlanetLooks.Range(o, "shell_grid_lowspec", 8, 96);
+        if (lowLevels.Length is < 1 or > 6 || lowLevels.Any(v => v <= 0 || v >= 1))
+            throw new DataError($"{File}.shell_levels_lowspec: 1 to 6 densities, each between 0 and 1");
+        if (LowSpec.On) look = look with { ShellLevels = lowLevels, ShellGrid = lowGrid };
+        if (look.ShellLevels.Length is < 1 or > 6 || look.ShellLevels.Any(v => v <= 0 || v >= 1))
+            throw new DataError($"{File}.shell_levels: 1 to 6 densities, each between 0 and 1");
+        // the low-spec mode draws the nebula as shells built once (LowSpec; the owner, 2026-11-12: "Nebula shells. The cube
+        // marched, generate once static mesh"), its billboards having filled a small GPU's screen many times over
+        if (LowSpec.On) look = look with { Style = "shells" };
+        // the stills tool and a comparison run may name another style (--nebula-style=volume|meshes|billboards|shells)
         foreach (string a in OS.GetCmdlineUserArgs())
             if (a.StartsWith("--nebula-style=")) look = look with { Style = a["--nebula-style=".Length..] };
         if (Array.IndexOf(Styles, look.Style) < 0) throw new DataError($"{File}.style: one of {string.Join(", ", Styles)}, not '{look.Style}'");

@@ -31,6 +31,11 @@ public sealed partial class StationPanel
         y += 46;
         double hull = f.Hull / f.Class.HullHp;
         y += Bar(x, y, b.Size.X, $"{f.Name} · {f.Class.Name} · hull", hull, hull < 0.35) + 12;
+        // co-op: its captain, its bridge's crew and the admiral's directives (StationPanel.Crew.cs); a crew member's ship takes
+        // no AI orders
+        var (ch, crewed) = FleetCrew(f, x, y, b.Size.X);
+        y += ch;
+        if (crewed) return;
         if (f == Me)
         {
             Text("UNDER YOUR COMMAND", x, y + 18, 20, C.Text, HorizontalAlignment.Left, b.Size.X, 600, 1);

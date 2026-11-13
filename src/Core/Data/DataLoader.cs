@@ -58,7 +58,8 @@ public static partial class DataLoader
         systems.CheckComms(classes);
         AudioCues audio = AudioCues.Load(J("audio/cues.json"));
         SoundMap sounds = SoundMap.Load(J("audio/events.json"), audio);
-        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems, Audio = audio, Sounds = sounds };
+        return new GameData(weapons, classes, factions, scenarios, tuning, layout, missiles, specials, range) { Systems = systems, Audio = audio, Sounds = sounds,
+            CoopRoles = Coop.Roles.Load(J("coop/roles.json"), Sim.Battle.RelayedOrders) };
     }
 
     /// <summary>The damage range (data/battle/range.json): every program's weapons exist, and its numbers are in range.</summary>
@@ -367,7 +368,8 @@ public static partial class DataLoader
         }
         var l = new LayoutDef(Positive(o, "reference_w_px"), Positive(o, "reference_h_px"), Positive(o, "min_w_px"), Positive(o, "column_w_px"), Positive(o, "strip_h_px"),
             R("plate"), R("station"), R("ship"), R("weapons"), R("radar"),
-            NonNeg(o, "expanded_x_px"), NonNeg(o, "expanded_y_px"), Frac(o, "expanded_share"), Frac(o, "ship_screen_y"), Positive(o, "view_fov_deg"));
+            NonNeg(o, "expanded_x_px"), NonNeg(o, "expanded_y_px"), Frac(o, "expanded_share"), Frac(o, "ship_screen_y"), Positive(o, "view_fov_deg"))
+            { PanelRedrawHz = Positive(o, "panel_redraw_hz"), PanelRedrawHzLowSpec = Positive(o, "panel_redraw_hz_lowspec") };
         o.Done();
         return l;
     }

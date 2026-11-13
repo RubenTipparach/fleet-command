@@ -22,7 +22,13 @@ public sealed partial class ShipPanel : ConsolePanel
 
     protected override void DrawPanel()
     {
-        string cur = X.State.ShipPage;
+        if (OpenOr("sh", Pages, X.State.ShipPage) is not { } cur)
+        {
+            Rect2 none = Frame("No page");
+            Rail("sh", none.Position.X, none.Position.Y, Pages, "", X.Act.ShipPage);
+            Lbl("No ship page is yours", none.Position.X + 64, none.Position.Y + 30, none.Size.X - 70);
+            return;
+        }
         var pg = Array.Find(Pages, p => p.Id == cur);
         Rect2 p = Frame(cur is "systems" or "shields" ? $"{pg.Label} · {Me.Name}" : pg.Label);
         Rail("sh", p.Position.X, p.Position.Y, Pages, cur, X.Act.ShipPage);
@@ -70,8 +76,8 @@ public sealed partial class ShipPanel : ConsolePanel
             Pen.FillAbs(this, key, st.Hot ? C.Deep.Lightened(0.2f) : C.Deep);
             float rf = ri + (ro - ri) * (float)Math.Clamp(frac, 0, 1);
             if (frac > 0.01) Pen.FillAbs(this, new[] { Pt(a - h, ri), Pt(a - h, rf), Pt(a + h, rf), Pt(a + h, ri) }, ShieldColor(frac));
-            if (s.Reinforce == i) DrawPolyline(new[] { key[0], key[1], key[2], key[3], key[0] }, C.Lilac, 3, true);
-            if (i == toward) DrawLine(Pt(a - h, ro + 4), Pt(a + h, ro + 4), Colors.White, 3, true);
+            if (s.Reinforce == i) Draw2D.Polyline(this, new[] { key[0], key[1], key[2], key[3], key[0] }, C.Lilac, 3, true);
+            if (i == toward) Draw2D.Line(this, Pt(a - h, ro + 4), Pt(a + h, ro + 4), Colors.White, 3, true);
             Vector2 lp = Pt(a, (ri + ro) / 2);
             Text(Rules.Facings[i], lp.X, lp.Y + 6, Big ? 22 : 15, frac > 0.4 ? Sk.InkOn(ShieldColor(frac)) : C.Text, HorizontalAlignment.Center, 0, 700);
         }
@@ -130,13 +136,13 @@ public static class SystemsDisplay
         float tk = big ? 7 : 5, bw = big ? 2.5f : 1.6f;
 
         // a dark disk inside the shield ring, and the grid faintly on it, clipped to the ring
-        ci.DrawCircle(centre, R - 4, new Color(c.Deep, 0.35f), true, -1, true);
+        Draw2D.Circle(ci, centre, R - 4, new Color(c.Deep, 0.35f), true, -1, true);
         float g = big ? 34 : 26;
         for (float gv = -MathF.Floor((R - 6) / g) * g; gv <= R - 6; gv += g)
         {
             float half = MathF.Sqrt(Math.Max(0, (R - 6) * (R - 6) - gv * gv));
-            ci.DrawLine(centre + new Vector2(gv, -half), centre + new Vector2(gv, half), new Color(c.Sky, 0.12f), 1);
-            ci.DrawLine(centre + new Vector2(-half, gv), centre + new Vector2(half, gv), new Color(c.Sky, 0.12f), 1);
+            Draw2D.Line(ci, centre + new Vector2(gv, -half), centre + new Vector2(gv, half), new Color(c.Sky, 0.12f), 1);
+            Draw2D.Line(ci, centre + new Vector2(-half, gv), centre + new Vector2(half, gv), new Color(c.Sky, 0.12f), 1);
         }
 
         // the six facings: one band each in its strength's colour; a white arc over the facing toward the enemy
@@ -146,8 +152,8 @@ public static class SystemsDisplay
             double frac = s.ShieldsUp ? s.Shields[i] / s.Class.ShieldsHp[i] : 0;
             Color sc = frac > 0.01 ? ShieldColorOf(c, frac) : c.Deep;
             if (s.Flash[i] > 0) sc = sc.Lerp(Colors.White, (float)s.Flash[i] * 0.6f);
-            ci.DrawArc(centre, R, a - Mathf.Pi / 6 + 0.08f, a + Mathf.Pi / 6 - 0.08f, 18, sc, frac > 0.01 ? 7 : 2, true);
-            if (i == toward) ci.DrawArc(centre, R + 8, a - Mathf.Pi / 6 + 0.16f, a + Mathf.Pi / 6 - 0.16f, 14, Colors.White, 2.5f, true);
+            Draw2D.Arc(ci, centre, R, a - Mathf.Pi / 6 + 0.08f, a + Mathf.Pi / 6 - 0.08f, 18, sc, frac > 0.01 ? 7 : 2, true);
+            if (i == toward) Draw2D.Arc(ci, centre, R + 8, a - Mathf.Pi / 6 + 0.16f, a + Mathf.Pi / 6 - 0.16f, 14, Colors.White, 2.5f, true);
             // each facing's strength beside it
             Vector2 np = centre + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * (R + (big ? 26 : 15));
             x.Fonts.Draw(ci, Math.Round(s.ShieldsUp ? s.Shields[i] : 0).ToString(), np.X, np.Y + (big ? 7 : 5), big ? 20 : 13, c.Text, HorizontalAlignment.Center, 0, 600);
@@ -209,7 +215,7 @@ public static class SystemsDisplay
                 : own ? (m.Weapon.IsPointDefence ? null : _ => { if (ui.Shift) x.State.OpenHitInfo(new HitInfo(null, idx)); else bt.ToggleMount(idx); })
                 : mountAims ? _ => Aiming.Click(x, ui, mAim) : null;
             HitState hs = ui.Reg($"{idp}.m{m.Index}", r.Grow(2), click, null, new Tip($"{m.Label} {m.Weapon.Name}", rows));
-            if (mountAims && bt.Player.Aim == mAim) ci.DrawArc(r.GetCenter(), mb / 2 + 6, 0, Mathf.Tau, 24, c.Sky, 2.5f, true);
+            if (mountAims && bt.Player.Aim == mAim) Draw2D.Arc(ci, r.GetCenter(), mb / 2 + 6, 0, Mathf.Tau, 24, c.Sky, 2.5f, true);
             boxes.Add((m, r));
             if (big) x.Fonts.Draw(ci, m.Label, r.End.X + 5, r.Position.Y + 9, 12, c.Lilac, HorizontalAlignment.Left, 0, 600);
             if (hs.Hot) x.Kit.Shape(ci, r.Grow(5), 7, mark.Hover, 2);
@@ -239,7 +245,7 @@ public static class SystemsDisplay
             if (pinned != null)
             {
                 float fs = big ? 12 : 8;
-                ci.DrawColoredPolygon(new[] { new Vector2(r.End.X - fs, r.Position.Y - 2), new Vector2(r.End.X + 3, r.Position.Y - 2), new Vector2(r.End.X + 3, r.Position.Y + fs) }, c.Alert);
+                Draw2D.ColoredPolygon(ci, new[] { new Vector2(r.End.X - fs, r.Position.Y - 2), new Vector2(r.End.X + 3, r.Position.Y - 2), new Vector2(r.End.X + 3, r.Position.Y + fs) }, c.Alert);
             }
             if (block != null && block.Mounts.Contains(m.Index)) Aiming.Bracket(ci, c, r, big ? 6 : 4, tk, bw);
         }
@@ -259,36 +265,41 @@ public static class SystemsDisplay
     }
 
     /// <summary>A weapon type's glyph (battle-console design): lance, torpedo, disruptor, missile, point defence.</summary>
-    public static void Glyph(CanvasItem ci, string kind, Vector2 c, float r, Color ink)
+    public static void Glyph(CanvasItem ci, string kind, Vector2 c, float r, Color ink) =>
+        // drawn once into the icon atlas and from there as one textured rectangle (console-draw-cost D4)
+        Kit.IconAtlas.Draw("glyph", ci, kind, new Rect2(c - new Vector2(r, r), new Vector2(2 * r, 2 * r)), ink,
+            (cv, sq, col) => DrawGlyph(cv, kind, sq.GetCenter(), sq.Size.X / 2, col));
+
+    private static void DrawGlyph(CanvasItem ci, string kind, Vector2 c, float r, Color ink)
     {
         switch (kind)
         {
-            case "beam": ci.DrawCircle(c, r * 0.32f, ink, true, -1, true); ci.DrawLine(c - new Vector2(r, 0), c - new Vector2(r * 0.5f, 0), ink, 2, true); ci.DrawLine(c + new Vector2(r * 0.5f, 0), c + new Vector2(r, 0), ink, 2, true); break;
-            case "torpedo": ci.DrawCircle(c, r * 0.3f, ink, true, -1, true); ci.DrawArc(c, r * 0.8f, 0, Mathf.Tau, 20, ink, 2, true); break;
-            case "bolt": ci.DrawCircle(c - new Vector2(r * 0.42f, 0), r * 0.3f, ink, true, -1, true); ci.DrawCircle(c + new Vector2(r * 0.42f, 0), r * 0.3f, ink, true, -1, true); break;
+            case "beam": Draw2D.Circle(ci, c, r * 0.32f, ink, true, -1, true); Draw2D.Line(ci, c - new Vector2(r, 0), c - new Vector2(r * 0.5f, 0), ink, 2, true); Draw2D.Line(ci, c + new Vector2(r * 0.5f, 0), c + new Vector2(r, 0), ink, 2, true); break;
+            case "torpedo": Draw2D.Circle(ci, c, r * 0.3f, ink, true, -1, true); Draw2D.Arc(ci, c, r * 0.8f, 0, Mathf.Tau, 20, ink, 2, true); break;
+            case "bolt": Draw2D.Circle(ci, c - new Vector2(r * 0.42f, 0), r * 0.3f, ink, true, -1, true); Draw2D.Circle(ci, c + new Vector2(r * 0.42f, 0), r * 0.3f, ink, true, -1, true); break;
             case "missile": Shapes.RoundRect(ci, new Rect2(c - new Vector2(r * 0.3f, r * 0.85f), new Vector2(r * 0.6f, r * 1.7f)), ink, r * 0.3f); break;
             // the special weapons (special-weapons design: a beam with strands, a lattice ball, a spike)
             case "chorus":
-                ci.DrawLine(c - new Vector2(r, 0), c + new Vector2(r, 0), ink, 2, true);
+                Draw2D.Line(ci, c - new Vector2(r, 0), c + new Vector2(r, 0), ink, 2, true);
                 for (int s = -1; s <= 1; s += 2)
                 {
                     var pts = new Vector2[9];
                     for (int i = 0; i < 9; i++) { float u = i / 8f; pts[i] = c + new Vector2(-r + 2 * r * u, s * r * 0.45f * Mathf.Sin(u * Mathf.Tau)); }
-                    ci.DrawPolyline(pts, ink, 1.5f, true);
+                    Draw2D.Polyline(ci, pts, ink, 1.5f, true);
                 }
                 break;
             case "quell":
             {
                 var hex = new Vector2[7];
                 for (int i = 0; i < 7; i++) { float a = i * Mathf.Tau / 6; hex[i] = c + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r * 0.8f; }
-                ci.DrawPolyline(hex, ink, 2, true);
-                ci.DrawCircle(c, r * 0.25f, ink, true, -1, true);
+                Draw2D.Polyline(ci, hex, ink, 2, true);
+                Draw2D.Circle(ci, c, r * 0.25f, ink, true, -1, true);
                 break;
             }
-            case "slug": ci.DrawColoredPolygon(new[] { c + new Vector2(r, 0), c + new Vector2(-r * 0.7f, -r * 0.45f), c + new Vector2(-r * 0.7f, r * 0.45f) }, ink); break;
+            case "slug": Draw2D.ColoredPolygon(ci, new[] { c + new Vector2(r, 0), c + new Vector2(-r * 0.7f, -r * 0.45f), c + new Vector2(-r * 0.7f, r * 0.45f) }, ink); break;
             default:
-                ci.DrawCircle(c, r * 0.25f, ink, true, -1, true);
-                for (int i = 0; i < 3; i++) { float a = -Mathf.Pi / 2 + i * Mathf.Tau / 3; ci.DrawArc(c, r * 0.75f, a - 0.6f, a + 0.6f, 8, ink, 2, true); }
+                Draw2D.Circle(ci, c, r * 0.25f, ink, true, -1, true);
+                for (int i = 0; i < 3; i++) { float a = -Mathf.Pi / 2 + i * Mathf.Tau / 3; Draw2D.Arc(ci, c, r * 0.75f, a - 0.6f, a + 0.6f, 8, ink, 2, true); }
                 break;
         }
     }
@@ -300,18 +311,18 @@ public static class SystemsDisplay
         switch (shape)
         {
             case "wedge":
-                ci.DrawPolyline(new[] { c + new Vector2(0, -L), c + new Vector2(L * 0.55f, L * 0.8f), c + new Vector2(0, L * 0.55f), c + new Vector2(-L * 0.55f, L * 0.8f), c + new Vector2(0, -L) }, ink, 2.5f, true);
+                Draw2D.Polyline(ci, new[] { c + new Vector2(0, -L), c + new Vector2(L * 0.55f, L * 0.8f), c + new Vector2(0, L * 0.55f), c + new Vector2(-L * 0.55f, L * 0.8f), c + new Vector2(0, -L) }, ink, 2.5f, true);
                 break;
             case "claw":
-                ci.DrawPolyline(new[] { c + new Vector2(-L * 0.25f, -L), c + new Vector2(-L * 0.5f, 0), c + new Vector2(-L * 0.2f, L * 0.8f), c + new Vector2(L * 0.2f, L * 0.8f), c + new Vector2(L * 0.5f, 0), c + new Vector2(L * 0.25f, -L) }, ink, 2.5f, true);
+                Draw2D.Polyline(ci, new[] { c + new Vector2(-L * 0.25f, -L), c + new Vector2(-L * 0.5f, 0), c + new Vector2(-L * 0.2f, L * 0.8f), c + new Vector2(L * 0.2f, L * 0.8f), c + new Vector2(L * 0.5f, 0), c + new Vector2(L * 0.25f, -L) }, ink, 2.5f, true);
                 break;
             default:
-                ci.DrawArc(c + new Vector2(0, -L * 0.45f), L * 0.5f, 0, Mathf.Tau, 40, ink, 2.5f, true);
+                Draw2D.Arc(ci, c + new Vector2(0, -L * 0.45f), L * 0.5f, 0, Mathf.Tau, 40, ink, 2.5f, true);
                 Shapes.RoundRectLine(ci, new Rect2(c + new Vector2(-L * 0.1f, -L * 0.05f), new Vector2(L * 0.2f, L * 0.6f)), ink, L * 0.1f, 2.5f);
                 Shapes.RoundRectLine(ci, new Rect2(c + new Vector2(-L * 0.62f, L * 0.05f), new Vector2(L * 0.16f, L * 0.8f)), ink, L * 0.08f, 2.5f);
                 Shapes.RoundRectLine(ci, new Rect2(c + new Vector2(L * 0.46f, L * 0.05f), new Vector2(L * 0.16f, L * 0.8f)), ink, L * 0.08f, 2.5f);
-                ci.DrawLine(c + new Vector2(-L * 0.1f, L * 0.3f), c + new Vector2(-L * 0.46f, L * 0.36f), ink, 2.5f, true);
-                ci.DrawLine(c + new Vector2(L * 0.1f, L * 0.3f), c + new Vector2(L * 0.46f, L * 0.36f), ink, 2.5f, true);
+                Draw2D.Line(ci, c + new Vector2(-L * 0.1f, L * 0.3f), c + new Vector2(-L * 0.46f, L * 0.36f), ink, 2.5f, true);
+                Draw2D.Line(ci, c + new Vector2(L * 0.1f, L * 0.3f), c + new Vector2(L * 0.46f, L * 0.36f), ink, 2.5f, true);
                 break;
         }
     }

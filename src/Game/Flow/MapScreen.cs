@@ -32,7 +32,7 @@ public sealed partial class MapScreen : Control
         _box = new SubViewportContainer { Stretch = true, MouseFilter = MouseFilterEnum.Ignore, Name = "View" };
         _box.SetAnchorsPreset(LayoutPreset.FullRect);
         AddChild(_box);
-        _vp = new SubViewport { OwnWorld3D = true, Msaa3D = Viewport.Msaa.Msaa4X, HandleInputLocally = false, Name = "MapWorld" };
+        _vp = new SubViewport { OwnWorld3D = true, Msaa3D = LowSpec.Msaa(Viewport.Msaa.Msaa4X), HandleInputLocally = false, Name = "MapWorld" };
         _box.AddChild(_vp);
         _hud = new MapHud();
         _hud.Bind(f);

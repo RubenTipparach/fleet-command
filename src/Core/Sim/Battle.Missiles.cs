@@ -92,7 +92,7 @@ public sealed partial class Battle
                 for (int k = 0; k < md.Flare.Count; k++)
                 {
                     double a = s.H + Math.PI / 2 + k * 2 * Math.PI / md.Flare.Count;   // thrown out round the hull
-                    var f = new Lure { Kind = "flare", Owner = s.Id, X = s.X, Z = s.Z, VX = Math.Sin(a) * md.Flare.EjectMS, VZ = -Math.Cos(a) * md.Flare.EjectMS, LifeS = md.Flare.BurnS };
+                    var f = new Lure { Kind = "flare", Owner = s.Id, X = s.X, Z = s.Z, VX = DMath.Sin(a) * md.Flare.EjectMS, VZ = -DMath.Cos(a) * md.Flare.EjectMS, LifeS = md.Flare.BurnS };
                     flares.Add(f); _lures.Add(f);
                 }
                 foreach (Shot sh in closing) if (_cm.Next() < sh.Grade!.FooledByFlareX) sh.Lure = flares[_cm.Below(flares.Count)];
@@ -112,7 +112,7 @@ public sealed partial class Battle
         foreach (Lure l in _lures)
         {
             if (!l.Alive) continue;
-            double k = l.Kind == "flare" ? Math.Exp(-0.6 * dt) : 1;   // flares slow as they burn; a decoy flies on
+            double k = l.Kind == "flare" ? DMath.Exp(-0.6 * dt) : 1;   // flares slow as they burn; a decoy flies on
             l.VX *= k; l.VZ *= k; l.X += l.VX * dt; l.Z += l.VZ * dt;
             l.LifeS -= dt;
             if (l.LifeS <= 0) { if (l.Kind == "decoy") EndDecoy(l); else l.Alive = false; }

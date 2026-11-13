@@ -12,6 +12,7 @@ public sealed partial class Battle
     /// <summary>Turns the ordered heading by <paramref name="deg"/> degrees (positive to starboard).</summary>
     public void Turn(double deg)
     {
+        if (Sent(nameof(Turn), deg)) return;
         if (!double.IsFinite(deg) || !Player.Alive) return;
         Player.Engaged = false;
         Player.HOrder = Geometry.Wrap(Player.HOrder + deg * Geometry.Deg);
@@ -20,6 +21,7 @@ public sealed partial class Battle
     /// <summary>The helm by pointing: the ship comes onto the bearing of a point on the plane (metres).</summary>
     public void HelmTo(double x, double z)
     {
+        if (Sent(nameof(HelmTo), x, z)) return;
         if (!double.IsFinite(x) || !double.IsFinite(z) || !Player.Alive) return;
         if (Geometry.Dist(Player.X, Player.Z, x, z) < 1) return;
         Player.Engaged = false;
@@ -29,24 +31,26 @@ public sealed partial class Battle
     /// <summary>Orders a speed in m/s, held within reverse and the engines' limit.</summary>
     public void SetSpeed(double mS)
     {
+        if (Sent(nameof(SetSpeed), mS)) return;
         if (!double.IsFinite(mS) || !Player.Alive) return;
         if (Player.Engaged && Player.Manoeuvre == "trail") Player.Engaged = false;
         Player.VOrder = Math.Clamp(mS, -Tuning.ReverseMaxMS, Rules.MaxSpeed(Player));
     }
 
     /// <summary>Steps the ordered speed by whole engine boxes.</summary>
-    public void SpeedStep(int boxes) => SetSpeed((Math.Round(Player.VOrder / Tuning.SpeedPerBoxMS) + boxes) * Tuning.SpeedPerBoxMS);
+    public void SpeedStep(int boxes) { if (Sent(nameof(SpeedStep), boxes)) return; SetSpeed((Math.Round(Player.VOrder / Tuning.SpeedPerBoxMS) + boxes) * Tuning.SpeedPerBoxMS); }
 
-    public void AllStop() { if (Player.Alive) { Player.Engaged = false; Player.VOrder = 0; Say("Helm", "All stop."); } }
+    public void AllStop() { if (Sent(nameof(AllStop))) return; if (Player.Alive) { Player.Engaged = false; Player.VOrder = 0; Say("Helm", "All stop."); } }
 
     /// <summary>What the helm's manoeuvres steer toward (owner, 2026-11-03: "nav buttons not working when targeting
     /// friendly"): the locked ship, enemy or friendly, or else the planet selected for transport, as a still point.</summary>
-    public Ship? NavTarget(Ship s) => TargetOf(s) ?? (s == Player ? PlanetNav() : null);
+    public Ship? NavTarget(Ship s) => TargetOf(s, "helm") ?? (s == Player ? PlanetNav() : null);
 
     /// <summary>An order toward the target: intercept, trail, hold_range, orbit or hit_run. The lit order again, or
     /// "free", returns to free heading.</summary>
     public void HelmOrder(string order)
     {
+        if (Sent(nameof(HelmOrder), order)) return;
         Ship s = Player;
         if (order == "free" || (s.Engaged && s.Manoeuvre == order)) { s.Engaged = false; Say("Helm", "Free heading."); return; }
         if (order is not ("intercept" or "trail" or "hold_range" or "orbit" or "hit_run")) return;
@@ -63,15 +67,16 @@ public sealed partial class Battle
         Say("Helm", $"{what} {t.Name}.");
     }
 
-    public void ToggleOrbitDir() => Player.OrbitDir = -Player.OrbitDir;
+    public void ToggleOrbitDir() { if (Sent(nameof(ToggleOrbitDir))) return; Player.OrbitDir = -Player.OrbitDir; }
 
     /// <summary>The distance hold range keeps, snapped to the helm's range scale (HelmRange: 1 km steps up to 15 km, 5 km
     /// above).</summary>
-    public void SetHoldKm(double km) { if (double.IsFinite(km)) Player.HoldKm = HelmRange.Snap(km, Tuning); }
+    public void SetHoldKm(double km) { if (Sent(nameof(SetHoldKm), km)) return; if (double.IsFinite(km)) Player.HoldKm = HelmRange.Snap(km, Tuning); }
 
     /// <summary>Hit and run's nearest and farthest range, on the helm's range scale, at least one step apart.</summary>
     public void SetRunRange(double lo, double hi)
     {
+        if (Sent(nameof(SetRunRange), lo, hi)) return;
         if (!double.IsFinite(lo) || !double.IsFinite(hi)) return;
         double h = HelmRange.Snap(hi, Tuning);
         Player.RunMinKm = HelmRange.Snap(Math.Min(HelmRange.Snap(lo, Tuning), h - HelmRange.StepAt(h, Tuning)), Tuning);
@@ -85,6 +90,7 @@ public sealed partial class Battle
     /// impulse engines damaged and the ship dead in space for het_breakdown_s.</summary>
     public void Het(double deg)
     {
+        if (Sent(nameof(Het), deg)) return;
         Ship s = Player;
         if (!double.IsFinite(deg) || s.Het != null || s.Broke > 0 || !s.Alive) return;
         if (s.Battery < Tuning.HetCostE) { Say("Helm", "Not enough power for a high energy turn."); return; }
@@ -109,12 +115,14 @@ public sealed partial class Battle
     /// <summary>A high energy turn onto the bearing of a point on the plane (the free-angle key, then a click in the view).</summary>
     public void HetTo(double x, double z)
     {
+        if (Sent(nameof(HetTo), x, z)) return;
         if (!double.IsFinite(x) || !double.IsFinite(z)) return;
         Het(Math.Round(Geometry.Wrap(Geometry.HeadingTo(Player.X, Player.Z, x, z) - Player.H) / Geometry.Deg));
     }
 
     public void ToggleErratic()
     {
+        if (Sent(nameof(ToggleErratic))) return;
         Player.Erratic = !Player.Erratic;
         Say("Helm", Player.Erratic ? "Erratic manoeuvres." : "Erratic manoeuvres off.");
     }
@@ -122,6 +130,7 @@ public sealed partial class Battle
     /// <summary>Emergency deceleration: stops as fast as the engines can, then holds them for estop_hold_s.</summary>
     public void EmergencyStop()
     {
+        if (Sent(nameof(EmergencyStop))) return;
         if (Player.EstopT > 0 || !Player.Alive) return;
         Player.Engaged = false;
         Player.Estop = true;
@@ -132,6 +141,7 @@ public sealed partial class Battle
     /// always allowed, even while the output is short (the mockup's power). Warp is set here too (Battle.Warp).</summary>
     public void SetPower(string system, int boxes)
     {
+        if (Sent(nameof(SetPower), system, boxes)) return;
         if (system == "warp") { SetWarpPower(boxes); return; }
         if (!Rules.Systems.Contains(system)) return;
         int cur = Player.Power[system];
@@ -144,6 +154,7 @@ public sealed partial class Battle
     /// <summary>Sets the arming state of every selected mount that has that mode (point defence is never armed here).</summary>
     public void SetArming(Arming state)
     {
+        if (Sent(nameof(SetArming), state)) return;
         foreach (Mount m in Player.Mounts) if (m.Selected) Arm(m, state);
     }
 
@@ -158,16 +169,18 @@ public sealed partial class Battle
 
     public void ToggleMount(int index)
     {
+        if (Sent(nameof(ToggleMount), index)) return;
         if (index < 0 || index >= Player.Mounts.Count) return;
         Player.Mounts[index].Selected = !Player.Mounts[index].Selected;
     }
 
-    public void ToggleVolley() => Player.Volley = !Player.Volley;
+    public void ToggleVolley() { if (Sent(nameof(ToggleVolley))) return; Player.Volley = !Player.Volley; }
 
     /// <summary>Auto fire on or off for the ship you command (owner, 2026-11-08: "Fire button should be divided into two
     /// sections. Auto and Fire. Auto is a toggle that will enable the ship to fire all currently active weapons").</summary>
     public void ToggleAutoFire()
     {
+        if (Sent(nameof(ToggleAutoFire))) return;
         Player.AutoFire = !Player.AutoFire;
         Say("Tactical", Player.AutoFire ? "Auto fire: every selected weapon fires as it bears." : "Auto fire off.");
     }
@@ -185,23 +198,26 @@ public sealed partial class Battle
     /// <summary>Selects the mounts of one weapon type for the volley (null: every weapon but point defence).</summary>
     public void SelectGroup(string? weapon)
     {
+        if (Sent(nameof(SelectGroup), weapon)) return;
         foreach (Mount m in Player.Mounts) if (!m.Weapon.IsPointDefence) m.Selected = weapon == null || m.Weapon.Id == weapon;
     }
 
     /// <summary>Sets one mount's arming state.</summary>
     public void ArmOne(int index, Arming state)
     {
+        if (Sent(nameof(ArmOne), index, state)) return;
         if (index < 0 || index >= Player.Mounts.Count) return;
         Arm(Player.Mounts[index], state);
     }
 
     /// <summary>True when one mount could fire at the locked target now.</summary>
-    public bool CanFire(Mount m) => TargetOf(Player) is { } t && t.Side != Player.Side && !Player.HoldsFire && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
+    public bool CanFire(Mount m) => TargetOf(Player, "weapons") is { } t && t.Side != Player.Side && !Player.HoldsFire && !m.Weapon.IsPointDefence && Rules.Ready(m) && Rules.InArc(Player, m, t) && Rules.InRange(Player, m, t);
 
     /// <summary>Fires one mount at the locked target.</summary>
     public bool FireOne(int index)
     {
-        if (index < 0 || index >= Player.Mounts.Count || TargetOf(Player) is not { } t || t.Side == Player.Side) return false;
+        if (Sent(nameof(FireOne), index)) return false;
+        if (index < 0 || index >= Player.Mounts.Count || TargetOf(Player, "weapons") is not { } t || t.Side == Player.Side) return false;
         Mount m = Player.Mounts[index];
         return !m.Weapon.IsPointDefence && FireMount(Player, m, t);
     }
@@ -219,9 +235,10 @@ public sealed partial class Battle
     /// captain's aim (pinned fire, weapon-targeting design).</summary>
     public int Fire()
     {
+        if (Sent(nameof(Fire))) return 0;
         if (Player.Cloaking) { Say("Tactical", "Cannot fire while cloaked."); return 0; }
         if (Player.CoreDown) { Say("Tactical", "Cannot fire: the core is down."); return 0; }
-        Ship? t = TargetOf(Player);
+        Ship? t = TargetOf(Player, "weapons");
         bool pins = Player.Mounts.Any(m => m.Selected && PinTarget(m) != null);
         if (t == null && !pins) { Say("Tactical", "No target locked."); return 0; }
         if (t != null && t.Side == Player.Side && !pins) { Say("Tactical", $"The {t.Name} is friendly: weapons hold."); return 0; }
@@ -236,32 +253,35 @@ public sealed partial class Battle
     /// 2026-11-06: "I also cant target friendly units"); the weapons never fire on a friendly one. Not the ship you command.</summary>
     public void Lock(string id)
     {
+        if (Sent(nameof(Lock), id)) return;
         Ship? t = ShipById(id);
         if (t is not { Alive: true } || t == Player) return;
         // an aim at the old target's weapon becomes an aim at the new one's weapons control
-        if (Player.Target != t.Id && Strike.AimMount(Player.Aim) >= 0) Player.Aim = "weapons";
+        if (LockedNow(Player) != t.Id && Strike.AimMount(Player.Aim) >= 0) Player.Aim = "weapons";
         // a cloaked enemy cannot be locked until it is seen, nor one a nebula hides (Battle.Cloak.cs)
         if (t.Side != Player.Side && !Detected(Player, t)) { SayOnce("Science", "No lock: it is cloaked. Sweep to find it."); return; }
         if (t.Side != Player.Side && !CanLock(Player, t)) { SayOnce("Science", $"No lock: the nebula is between us. Raise ECCM above its ECM, or close to {Cs.Nebula.LockKm:0} km."); return; }
-        Player.Target = t.Id;
+        SetLock(Player, t.Id);
         Say("Tactical", t.Side == Player.Side ? $"Selected: {t.Name}, {t.Class.Name} (friendly)." : $"Target locked: {t.Name}, {t.Class.Name}.");
     }
 
     /// <summary>Releases the locked target.</summary>
-    public void Unlock() { if (Player.Target != null) { Player.Target = null; if (Player.Engaged) Player.Engaged = false; } }
+    public void Unlock() { if (Sent(nameof(Unlock))) return; if (LockedNow(Player) != null) { SetLock(Player, null); if (Player.Engaged && (Player.RoleTargets == null || OrderRoles?.Contains("helm") == true)) Player.Engaged = false; } }
 
     /// <summary>Locks the next enemy by range, nearest first, after the one locked now.</summary>
     public void NextTarget()
     {
+        if (Sent(nameof(NextTarget))) return;
         Ship[] foes = SeenFoes(Player).OrderBy(o => Rules.DistKm(Player, o)).ThenBy(o => o.Order).ToArray();
         if (foes.Length == 0) return;
-        int i = Array.FindIndex(foes, o => o.Id == Player.Target);
+        int i = Array.FindIndex(foes, o => o.Id == LockedNow(Player));
         Lock(foes[(i + 1) % foes.Length].Id);
     }
 
     /// <summary>Takes command of another living ship of the fleet; the ship left behind follows its own orders.</summary>
     public void TakeCommand(string id)
     {
+        if (Sent(nameof(TakeCommand), id)) return;
         Ship? s = ShipById(id);
         if (s is not { Alive: true } || s.Side != 0 || s == Player) return;
         if (PilotNeeded(s)) { Say("Helm", $"Cannot take command of the {s.Name}: pilot needed."); return; }
@@ -277,16 +297,18 @@ public sealed partial class Battle
     /// <summary>Sets the alert condition. Yellow raises shields; red also arms every offline weapon.</summary>
     public void SetAlert(AlertLevel level)
     {
+        if (Sent(nameof(SetAlert), level)) return;
         Player.Alert = level;
         if (level != AlertLevel.Green) Player.ShieldsUp = true;
         if (level == AlertLevel.Red) foreach (Mount m in Player.Mounts) if (m.State == Arming.Offline && m.Hp > 0) m.State = Arming.Normal;
     }
 
-    public void ToggleShields() => Player.ShieldsUp = !Player.ShieldsUp;
+    public void ToggleShields() { if (Sent(nameof(ToggleShields))) return; Player.ShieldsUp = !Player.ShieldsUp; }
 
     /// <summary>Reinforces a shield facing (0 F to 5 FL); the same facing again clears it.</summary>
     public void Reinforce(int facing)
     {
+        if (Sent(nameof(Reinforce), facing)) return;
         if (facing < 0 || facing > 5) return;
         Player.Reinforce = Player.Reinforce == facing ? -1 : facing;
     }

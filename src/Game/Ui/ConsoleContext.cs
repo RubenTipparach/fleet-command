@@ -1,6 +1,7 @@
 // ConsoleContext: what every console panel shares, wired once by the composition root (Main): the battle, the skin,
 // the fonts (in the skin's type), the actions, the hover card and the console's own state (the open station and ship
 // page, the expanded panel, pause and the menu). Panels read it and call its actions; they hold no rules of their own.
+using System.Linq;
 using FleetCommand.ConsoleModel;
 using FleetCommand.Data;
 using FleetCommand.Game.Ui.Kit;
@@ -21,6 +22,14 @@ public sealed partial class ConsoleState
     public bool OptionsOpen;
     /// <summary>The helm's free-angle high energy turn is waiting for a click in the view.</summary>
     public bool PlacingHet;
+    /// <summary>Co-op: the Comms station shows the bridge's roles grid (its Crew key) in place of the latest log lines.</summary>
+    public bool CrewShown;
+    /// <summary>Co-op: the bridge whose roles the Fleet station's Crew view shows (null: this player's own).</summary>
+    public string? CrewBridge;
+    /// <summary>Co-op: the targeting stations this player's locks go to (the Lock for keys); none, every one they hold.</summary>
+    public readonly System.Collections.Generic.HashSet<string> LockFor = new();
+    /// <summary>Co-op: the view's Ping key is waiting for a click on a ship or a point.</summary>
+    public bool PlacingPing;
     /// <summary>The view's Target key: shows or hides the Target box (the locked target's systems display).</summary>
     public bool ShowTarget = true;
     /// <summary>The view's scene selector is open.</summary>
@@ -56,6 +65,25 @@ public sealed class ConsoleContext
     public required ConsoleSounds Sounds { get; init; }
     /// <summary>The battle being fought; replaced on a restart.</summary>
     public required Battle Battle { get; set; }
+    /// <summary>A co-op game's lockstep and crew (openspec/changes/bridge-crew-coop), or null playing alone.</summary>
+    public FleetCommand.Coop.Lockstep? Coop { get; set; }
+    /// <summary>The captain's menu (the bridge crew sheet) is open, over the console.</summary>
+    public bool CrewOpen;
+
+    /// <summary>Whether this player's console opens a tab ("st.helm" a station, "sh.tractor" a ship page): every tab alone,
+    /// only their roles' in co-op (owner, 2026-11-11: "The different tabs become disabled if your role doesnt have access to
+    /// that system").</summary>
+    public bool Opens(string tab) => Coop == null || Coop.Crew.OpensTab(Coop.Me, tab);
+
+    /// <summary>The ship this player's lock shows as their target: in co-op the first targeting role they hold (or the tab's
+    /// they stepped into), else the ship's one target.</summary>
+    public Ship? MyTarget()
+    {
+        Ship me = Battle.Player;
+        if (Coop == null || me.RoleTargets == null) return Battle.TargetOf(me);
+        var roles = Coop.Crew.LockRoles(Coop.Me, "st." + State.Station, State.LockFor.OrderBy(r => r, System.StringComparer.Ordinal).ToList());
+        return roles.Count > 0 ? Battle.TargetOf(me, roles[0]) : Battle.TargetOf(me);
+    }
 
     // The skin's type is the console's type: every panel's text is drawn in the skin's faces.
     private void UseSkinType()

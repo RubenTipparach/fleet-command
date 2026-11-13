@@ -69,7 +69,7 @@ public sealed partial class Battle
         int stunned = 0;
         foreach (Mount m in t.Mounts)
         {
-            double b = Math.Atan2(m.Def.X, m.Def.Y) / Geometry.Deg;   // the mount's bearing from the centre, + to starboard
+            double b = DMath.Atan2(m.Def.X, m.Def.Y) / Geometry.Deg;   // the mount's bearing from the centre, + to starboard
             if (Math.Abs(Geometry.Wrap((b - f * 60) * Geometry.Deg)) / Geometry.Deg <= q.ReachDeg) { m.StunS = q.StunS; stunned++; }
         }
         Record(t, sx, sz, "quell", 0, 0);

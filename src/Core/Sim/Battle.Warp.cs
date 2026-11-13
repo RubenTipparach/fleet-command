@@ -69,7 +69,7 @@ public sealed partial class Battle
                     w.Out = 0;
                     s.Alive = false; s.Jumped = true; s.V = 0;
                     Say("Helm", $"{s.Name} jumped to warp.");
-                    foreach (Ship o in _ships) if (o.Target == s.Id) o.Target = null;
+                    DropLocksOn(s.Id);
                     if (s == Player && Over == null) Over = "jumped";
                 }
                 continue;
@@ -154,6 +154,7 @@ public sealed partial class Battle
     /// stays armed and charging, but the ship no longer jumps by itself, and the weapons may be powered again.</summary>
     public void CancelWithdraw(string? why = null)
     {
+        if (Sent(nameof(CancelWithdraw), why)) return;
         if (!Withdrawing || Over != null) return;
         Withdrawing = false;
         _withdrawHeld = false;
@@ -165,6 +166,7 @@ public sealed partial class Battle
     /// <summary>Plots a warp course: navigation calculating the jump, whatever the ship does meanwhile.</summary>
     public void PlotCourse()
     {
+        if (Sent(nameof(PlotCourse))) return;
         WarpState w = Player.Warp;
         if (!Player.Alive || (w.Plotting && w.Plot < 1)) return;
         w.Plotting = true; w.Plot = 0;
@@ -174,19 +176,21 @@ public sealed partial class Battle
     /// <summary>The safety override, needed to jump in a strong quantum-gravitational field.</summary>
     public void ToggleOverride()
     {
+        if (Sent(nameof(ToggleOverride))) return;
         WarpState w = Player.Warp;
         w.Override = !w.Override;
         Say("Helm", w.Override ? "Safety override on." : "Safety override off.");
     }
 
     /// <summary>The Warp page's Jump key: the jump now, or the reason it is refused.</summary>
-    public void JumpNow() { if (Player.Alive) Jump(Player); }
+    public void JumpNow() { if (Sent(nameof(JumpNow))) return; if (Player.Alive) Jump(Player); }
 
     /// <summary>The warp key at the end of the speed slider. Offline, a click arms the coils (they take free energy) and
     /// plots a course; charging, a click reports the charge and the plot and changes nothing (it never cuts power: Warp 0
     /// in Allocation powers the coils down); ready, a click jumps.</summary>
     public void WarpKey()
     {
+        if (Sent(nameof(WarpKey))) return;
         Ship s = Player;
         WarpState w = s.Warp;
         WarpDef W = Data.Systems.Warp;

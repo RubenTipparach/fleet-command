@@ -108,6 +108,10 @@ public sealed record ShipStart(string Id, string Name, string Captain, string Cl
     public bool Runs { get; init; }
     /// <summary>Under a truce: it holds its fire and its place until the player's side fires first, then fights.</summary>
     public bool Truce { get; init; }
+    /// <summary>Fires training rounds: its hits drain shields but never reach the hull, a subsystem, a mount or the reactor
+    /// (a shakedown's target drones; owner, 2026-11-11: "shake down cruise they should fire, take down shields but cant
+    /// damage hull", "or subsystems").</summary>
+    public bool Training { get; init; }
     /// <summary>The weapon ids it starts with armed (a weapons test scene's one weapon); its other mounts start Offline.
     /// Null: every mount armed.</summary>
     public IReadOnlyList<string>? ArmOnly { get; init; }
@@ -210,7 +214,13 @@ public sealed record Tuning(
 public sealed record LayoutDef(
     double ReferenceW, double ReferenceH, double MinW, double ColumnW, double StripH,
     Rect Plate, Rect Station, Rect Ship, Rect Weapons, Rect Radar,
-    double ExpandedX, double ExpandedY, double ExpandedShare, double ShipScreenY, double ViewFovDeg);
+    double ExpandedX, double ExpandedY, double ExpandedShare, double ShipScreenY, double ViewFovDeg)
+{
+    /// <summary>How many times a second an untouched console panel redraws from the battle's state (panel_redraw_hz).</summary>
+    public double PanelRedrawHz { get; init; } = 30;
+    /// <summary>The same in the low-spec mode (panel_redraw_hz_lowspec).</summary>
+    public double PanelRedrawHzLowSpec { get; init; } = 15;
+}
 
 /// <summary>Everything the battle needs, loaded once at startup. Scenarios are in menu order; the first is the one the
 /// game starts in.</summary>
@@ -229,6 +239,8 @@ public sealed record GameData(
     public AudioCues Audio { get; init; } = AudioCues.Empty;
     /// <summary>Which sound each thing the battle does plays (data/audio/events.json).</summary>
     public SoundMap Sounds { get; init; } = SoundMap.Empty;
+    /// <summary>The bridge roles of a co-op crew (data/coop/roles.json; Coop.Roles).</summary>
+    public Coop.Roles? CoopRoles { get; init; }
 
     /// <summary>A scenario by id; throws naming the id when there is none.</summary>
     public Scenario ScenarioById(string id) =>

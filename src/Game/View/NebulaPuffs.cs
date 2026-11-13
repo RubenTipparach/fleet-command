@@ -96,7 +96,7 @@ public sealed class NebulaPuffs
         }
 
         // the decks: a jittered field of puffs, where the marched deck's cloud would be, from the same field (DeckField)
-        var cover = new FastNoiseLite { NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex, Seed = (int)(seed % int.MaxValue), Frequency = 1f / (k.BaseKm * u) };
+        FastNoiseLite cover = DeckField.CoverNoise(seed, k, u);
         Rng rd = Rng.Fork(seed, "puffs-decks");
         float step = k.DeckPuffKm * u;
         int cells = (int)Math.Ceiling(f.FadeR / step);
@@ -111,7 +111,7 @@ public sealed class NebulaPuffs
                 for (int s = 0; s < 2; s++)
                 {
                     float side = s == 0 ? 1 : -1;
-                    float face = (k.UndersideKm - k.HangKm * (2 * v - 0.7f)) * u - k.JoinKm * u * f.Pull(q, side);
+                    float face = f.Face(q, side, v);
                     // one big puff at the face and one deeper behind it
                     for (int layer = 0; layer < 2; layer++)
                     {

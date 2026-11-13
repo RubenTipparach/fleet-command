@@ -23,6 +23,9 @@ varying vec3 mpos;
 
 void vertex() {
 	mpos = VERTEX;
+#ifdef PLANET_BAKE
+	POSITION = pn_bake_position(UV);
+#endif
 }
 
 void fragment() {
@@ -32,9 +35,9 @@ void fragment() {
 	float t = (r - ring_inner) / (ring_outer - ring_inner);
 	vec3 col = mix(color_in, color_out, smoothstep(0.0, 1.0, t));
 	col *= 0.85 + 0.3 * pn_vnoise3(vec3(t * 220.0, ring_seed, 1.0));
-	vec3 Lm = normalize(inverse(mat3(MODEL_MATRIX)) * normalize(sun_dir));
+	vec3 Lm = pn_sun(normalize(inverse(mat3(MODEL_MATRIX)) * normalize(sun_dir)), vec3(0.0, 1.0, 0.0));
 	// the face toward the sun is lit; seen from the far face, light comes through
-	vec3 Vm = normalize(inverse(mat3(MODEL_MATRIX)) * (INV_VIEW_MATRIX * vec4(-VERTEX, 0.0)).xyz);
+	vec3 Vm = pn_sun(normalize(inverse(mat3(MODEL_MATRIX)) * (INV_VIEW_MATRIX * vec4(-VERTEX, 0.0)).xyz), vec3(0.0, 1.0, 0.0));
 	bool same_side = sign(Lm.y) == sign(Vm.y);
 	float light = (same_side ? 0.35 + 0.65 * abs(Lm.y) : 0.25 * (1.0 - d * 0.6)) + 0.08;
 	// the planet's shadow: the sun's ray from here meets the unit sphere

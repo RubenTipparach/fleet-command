@@ -1,0 +1,147 @@
+{
+ "_doc": "Ships rolling into their turns, for the owner to watch (owner, 2026-11-12: \"get some videos for recording to show me angle turning\"; the roll is BattleView.Bank.cs, data/battle/bank.json). Played on concord_battle: the Resolute (a cruiser, a medium ship, 20 deg) turns hard to starboard 180 deg, back to port 180 deg and 90 deg to starboard, holding between so the roll eases out; then the captain takes command of the Tallis (a frigate, a small ship, 30 deg) and turns her the same way.",
+ "beats": [
+  {
+   "do": "wait_ready"
+  },
+  {
+   "do": "pick_scene"
+  },
+  {
+   "do": "station",
+   "arg": "helm"
+  },
+  {
+   "do": "hold",
+   "s": 2
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "hold",
+   "s": 9
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "hold",
+   "s": 9
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "hold",
+   "s": 8
+  },
+  {
+   "do": "station",
+   "arg": "fleet"
+  },
+  {
+   "do": "click",
+   "arg": "fl.tallis"
+  },
+  {
+   "do": "click",
+   "arg": "fl.cmd"
+  },
+  {
+   "do": "hold",
+   "s": 4
+  },
+  {
+   "do": "station",
+   "arg": "helm"
+  },
+  {
+   "do": "hold",
+   "s": 2
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "hold",
+   "s": 9
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "hold",
+   "s": 9
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "hold",
+   "s": 8
+  }
+ ]
+}

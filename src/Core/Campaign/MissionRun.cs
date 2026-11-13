@@ -58,7 +58,7 @@ public static class MissionRun
         var planets = b.Planets.Select(p =>
         {
             double rad = p.BearingDeg * Math.PI / 180, r = p.RangeKm * 1000;
-            return new PlanetDef(p.Id, p.Name.Eval(sc), Math.Sin(rad) * r, -Math.Cos(rad) * r, p.RadiusKm * 1000, p.Color, p.Needs)
+            return new PlanetDef(p.Id, p.Name.Eval(sc), DMath.Sin(rad) * r, -DMath.Cos(rad) * r, p.RadiusKm * 1000, p.Color, p.Needs)
                 { Kind = p.Kind, Installations = p.Sites, TakesEnvoy = p.TakesEnvoy, Waiting = p.Waiting?.Eval(sc) };
         }).ToList();
 
@@ -105,32 +105,33 @@ public static class MissionRun
                 {
                     double rad = bearing * Math.PI / 180, lat = (i - (count - 1) / 2.0) * GroupSpreadM;
                     // ahead is -z; the group's line runs across its bearing
-                    x = Math.Sin(rad) * rangeM + Math.Cos(rad) * lat;
-                    z = -Math.Cos(rad) * rangeM + Math.Sin(rad) * lat;
-                    heading = grp.Role == GroupRole.Neutral ? 180 : Geometry.Wrap(Math.Atan2(-x, z)) * 180 / Math.PI;
+                    x = DMath.Sin(rad) * rangeM + DMath.Cos(rad) * lat;
+                    z = -DMath.Cos(rad) * rangeM + DMath.Sin(rad) * lat;
+                    heading = grp.Role == GroupRole.Neutral ? 180 : Geometry.Wrap(DMath.Atan2(-x, z)) * 180 / Math.PI;
                 }
                 if (orbit != null)
                 {
                     // in orbit: round the planet, spread about its near side
-                    double a0 = Math.Atan2(-orbit.XM, orbit.ZM) + (i - (count - 1) / 2.0) * 0.5, rr = orbit.RadiusM + OrbitM;
-                    x = orbit.XM + Math.Sin(a0) * rr;
-                    z = orbit.ZM - Math.Cos(a0) * rr;
+                    double a0 = DMath.Atan2(-orbit.XM, orbit.ZM) + (i - (count - 1) / 2.0) * 0.5, rr = orbit.RadiusM + OrbitM;
+                    x = orbit.XM + DMath.Sin(a0) * rr;
+                    z = orbit.ZM - DMath.Cos(a0) * rr;
                 }
                 // a freighter keeps her course, slow, whichever side she is on: she never closes to fight
                 bool neutral = grp.Role == GroupRole.Neutral, drone = grp.Tag == "drone", freighter = grp.Hull == "freighter", still = grp.Fixed;
                 // a scout runs: it keeps its course away from the fleet at full speed and never turns to fight
                 bool scout = grp.Tag == "scout";
-                if (scout) heading = Geometry.Wrap(Math.Atan2(x, -z)) * 180 / Math.PI;
+                if (scout) heading = Geometry.Wrap(DMath.Atan2(x, -z)) * 180 / Math.PI;
                 ShipSetup? load = grp.Hold.Count > 0
                     ? new ShipSetup(null, new Dictionary<string, int>(), grp.Hold, null, null, null, 0, false, false, new Dictionary<string, int>(), new Dictionary<string, double>(), Array.Empty<double>())
                     : null;
-                // a drone (a shakedown's target) stands where it is put, never fires, and is a light hulk with no shields
+                // a drone (a shakedown's target) stands where it is put and is a light hulk with no shields; it fires training rounds,
+                // which drop shields and hurt nothing past them
                 ships.Add(new ShipStart(id, name, label, cls, fac, grp.Role == GroupRole.Enemy ? 1 : 0, x, z, heading,
                     drone || still ? 0 : scout ? 2600 : neutral || freighter ? 600 : 1400,
                     grp.Role == GroupRole.Ally && !freighter && !still ? Stance.Escort : neutral || drone || freighter || still || scout ? Stance.Hold : Stance.Attack,
-                    HoldFire: neutral || drone || scout || grp.Hull == "pod",
+                    HoldFire: neutral || scout || grp.Hull == "pod",
                     HullFrac: drone ? DroneHullFrac : 1, ShieldsFrac: drone || grp.Hull == "pod" ? 0 : 1, Prize: grp.Tag == "prize" && i == 0, Setup: load)
-                    { ArriveS = grp.ArriveS, WakeS = grp.WakeS, Fixed = still, Runs = scout, Truce = grp.Tag == "truce" });
+                    { ArriveS = grp.ArriveS, WakeS = grp.WakeS, Fixed = still, Runs = scout, Truce = grp.Tag == "truce", Training = drone });
                 list.Add(id);
                 groups[grp.Role == GroupRole.Enemy ? "enemies" : "allies"].Add(id);
                 labels[id] = (label, i == 0 ? grp.Tag : null, grp.Role);
@@ -144,7 +145,7 @@ public static class MissionRun
         var markers = b.Markers.Select(k =>
         {
             double rad = k.BearingDeg * Math.PI / 180, r = k.AtStart ? 0 : k.RangeKm * 1000;
-            return new MarkerDef(k.Id, k.Label.Eval(sc), Math.Sin(rad) * r, -Math.Cos(rad) * r, k.RadiusM, k.After);
+            return new MarkerDef(k.Id, k.Label.Eval(sc), DMath.Sin(rad) * r, -DMath.Cos(rad) * r, k.RadiusM, k.After);
         }).ToList();
         var scen = new Scenario($"mission_{def.Id}_{m.Id}", b.Name?.Eval(sc) ?? def.Name, side, seed, obj, "Comms",
             intel != "" ? $"Contacts ahead. {obj}" : obj, ships, SkyFor(c.Hex(m.C, m.R)), Markers: markers.Count > 0 ? markers : null)

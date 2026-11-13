@@ -176,7 +176,7 @@ public sealed partial class Battle
 
     /// <summary>The ship a Capture beam goes to: the locked ship, an enemy to board or a friendly one to send troops to
     /// (owner, 2026-11-03: "supply troops for an assault (combat transport tab)").</summary>
-    public Ship? CaptureDest(Ship s) => TargetOf(s);
+    public Ship? CaptureDest(Ship s) => TargetOf(s, "transport");
 
     /// <summary>With nothing queued the pads beam marines, one a pad, from those aboard (owner, 2026-11-04: "by default
     /// marines get transported").</summary>
@@ -188,6 +188,7 @@ public sealed partial class Battle
     /// the roster into the mode's queue.</summary>
     public void QueueRole(string mode, string role)
     {
+        if (Sent(nameof(QueueRole), mode, role)) return;
         if (!QueueRoles.TryGetValue(mode, out string[]? roles) || !roles.Contains(role)) return;
         Ship s = Player;
         List<string> q = s.Queue[mode];
@@ -199,19 +200,21 @@ public sealed partial class Battle
     /// <summary>Puts queued member i back on the roster.</summary>
     public void Unqueue(string mode, int i)
     {
+        if (Sent(nameof(Unqueue), mode, i)) return;
         if (!Player.Queue.TryGetValue(mode, out List<string>? q) || i < 0 || i >= q.Count) return;
         AddRole(Player, q[i], 1);
         q.RemoveAt(i);
     }
 
     /// <summary>Pad i energized beams the head of the queue (owner: "I can click on pads individually").</summary>
-    public int Energize(int pad, string mode) => pad >= 0 && pad < Player.Pads.Length && QueueRoles.ContainsKey(mode) ? BeamQueued(Player, mode, new[] { pad }) : 0;
+    public int Energize(int pad, string mode) { if (Sent(nameof(Energize), pad, mode)) return 0; return pad >= 0 && pad < Player.Pads.Length && QueueRoles.ContainsKey(mode) ? BeamQueued(Player, mode, new[] { pad }) : 0; }
     /// <summary>Every charged pad fires, one person each, in pad order.</summary>
-    public int EnergizeAll(string mode) => QueueRoles.ContainsKey(mode) ? BeamQueued(Player, mode, Enumerable.Range(0, Player.Pads.Length).ToArray()) : 0;
+    public int EnergizeAll(string mode) { if (Sent(nameof(EnergizeAll), mode)) return 0; return QueueRoles.ContainsKey(mode) ? BeamQueued(Player, mode, Enumerable.Range(0, Player.Pads.Length).ToArray()) : 0; }
 
     /// <summary>The party beamed back aboard, every role and the envoy.</summary>
     public void RecallParty()
     {
+        if (Sent(nameof(RecallParty))) return;
         Ship s = Player;
         if (s.Party is not { } p) return;
         foreach (string r in CommsDef.Roles) AddRole(s, r, p.Of(r));
@@ -223,13 +226,14 @@ public sealed partial class Battle
     /// <summary>What the next raid aims at: a subsystem; for weapons, one mount (null: weapons control).</summary>
     public void AimRaid(string sys, int? mount = null)
     {
+        if (Sent(nameof(AimRaid), sys, mount)) return;
         if (!SubsystemNames.ContainsKey(sys)) return;
         Player.RaidSys = sys;
         Player.RaidMount = sys == "weapons" ? mount : null;
     }
 
     /// <summary>Shoot it up, or bomb it.</summary>
-    public void RaidKind(string kind) { if (kind is "shoot" or "bomb") Player.RaidKind = kind; }
+    public void RaidKind(string kind) { if (Sent(nameof(RaidKind), kind)) return; if (kind is "shoot" or "bomb") Player.RaidKind = kind; }
 
     /// <summary>What a raid is aimed at, in words: a weapon by its id and name, or the subsystem.</summary>
     public static string RaidName(Raid r, Ship? t) =>
@@ -242,7 +246,7 @@ public sealed partial class Battle
     // picked. Says what went, or why nothing did.
     private int BeamQueued(Ship s, string mode, IReadOnlyList<int> pads)
     {
-        Ship? t = mode == "capture" ? CaptureDest(s) : TargetOf(s);
+        Ship? t = mode == "capture" ? CaptureDest(s) : TargetOf(s, "transport");
         bool byDefault = s.Queue[mode].Count == 0;
         List<string> q = byDefault ? DefaultLoad(s).ToList() : s.Queue[mode];
         var sent = new List<(string Role, int N)>();
@@ -351,7 +355,7 @@ public sealed partial class Battle
         foreach (string r in CommsDef.Specialists) t.Team[r] = p.Of(r);
         t.Vip = p.Of("vip") > 0 ? p.VipName : null;
         s.Party = null;
-        foreach (Ship o in _ships) if (o.Target == t.Id && o.Side != t.Side) o.Target = null;
+        DropLocksOn(t.Id, o => o.Side != t.Side);
         Say("Transport", $"{t.Name} strikes its colours. {p.Of("marines")} marines hold it{(p.Of("vip") > 0 ? ", the envoy aboard" : "")}.");
         if (PilotNeeded(t)) { t.AwaitPilot = true; Say("Transport", $"{t.Name} is ours but dead in space: pilot needed. Beam a pilot over (Capture, {t.Name} selected)."); }
     }
@@ -478,7 +482,7 @@ public sealed partial class Battle
     public TransportDest? InvPick()
     {
         Ship s = Player;
-        if (TargetOf(s) is { } t && t.Side == s.Side) return new TransportDest(t.Id, t.Name, Rules.DistKm(s, t), t, null);
+        if (TargetOf(s, "transport") is { } t && t.Side == s.Side) return new TransportDest(t.Id, t.Name, Rules.DistKm(s, t), t, null);
         return _planets.FirstOrDefault(p => p.Id == PlanetDest) is { } pl ? new TransportDest(pl.Id, pl.Name, PlanetKm(s, pl), null, pl) : null;
     }
 
@@ -488,8 +492,9 @@ public sealed partial class Battle
     /// so a friendly lock is released for the planet).</summary>
     public void SelectPlanet(string id)
     {
+        if (Sent(nameof(SelectPlanet), id)) return;
         if (_planets.FirstOrDefault(p => p.Id == id) is not { } pl) return;
-        if (TargetOf(Player) is { } t && t.Side == Player.Side) Unlock();
+        if (TargetOf(Player, "transport") is { } t && t.Side == Player.Side) Unlock();
         PlanetDest = id;
         double km = PlanetKm(Player, pl), reach = Comms.Transport.RangeKm;
         _reachDest = id; _inReach = km <= reach;
@@ -500,6 +505,7 @@ public sealed partial class Battle
     /// to (dir above 0) or from the destination picked, a beam at a time.</summary>
     public void Transfer(string what, int dir)
     {
+        if (Sent(nameof(Transfer), what, dir)) return;
         Ship s = Player;
         if (what != "vip" && !ItemNames.ContainsKey(what)) return;
         if (InvPick() is not { } d) { Say("Transport", "No destination: click a friendly ship, station or planet."); return; }

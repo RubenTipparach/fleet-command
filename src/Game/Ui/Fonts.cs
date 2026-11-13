@@ -83,6 +83,27 @@ public sealed class Fonts
         return line;
     }
 
+    // A console panel's text goes into a canvas item of its own, a child of the panel's drawn after it (UseLayer), so a
+    // panel's labels are one batch of glyphs over its shapes and never break the batch of its untextured shapes
+    // (Draw2D; openspec/changes/console-draw-cost D4).
+    private static readonly Dictionary<ulong, Rid> Layers = new();
+
+    /// <summary>Draws c's text into <paramref name="layer"/> (a child canvas item of c, cleared when c redraws) from now
+    /// on; Rid.Empty stops it.</summary>
+    public static void UseLayer(CanvasItem c, Rid layer)
+    {
+        if (layer.IsValid) Layers[c.GetInstanceId()] = layer;
+        else Layers.Remove(c.GetInstanceId());
+    }
+
+    // where c's text is drawn: its text layer, or the item itself after the shapes before it
+    private static Rid Target(CanvasItem c)
+    {
+        if (Layers.TryGetValue(c.GetInstanceId(), out Rid layer)) return layer;
+        Draw2D.Flush(c);   // text over the untextured shapes drawn before it
+        return c.GetCanvasItem();
+    }
+
     /// <summary>The width of a string as drawn, untrimmed.</summary>
     public float Width(string s, int size, int weight = 600, int spacing = 0) => Line(s, size, weight, spacing, 0).GetLineWidth();
 
@@ -95,10 +116,11 @@ public sealed class Fonts
         float max = 0, int spacing = 0)
     {
         if (string.IsNullOrEmpty(s)) return;
+        Rid target = Target(c);
         TextLine line = Line(s, face, spacing, max);
         float w = max > 0 ? System.Math.Min(line.GetLineWidth(), max) : line.GetLineWidth();
         float left = align switch { HorizontalAlignment.Center => x - w / 2, HorizontalAlignment.Right => x - w, _ => x };
-        line.Draw(c.GetCanvasItem(), new Vector2(left, y - line.GetLineAscent()), col);
+        line.Draw(target, new Vector2(left, y - line.GetLineAscent()), col);
     }
 
     /// <summary>A line in several colours, upper case, left to right from x, cut off at max pixels.</summary>
@@ -118,11 +140,12 @@ public sealed class Fonts
     /// <summary>Draws a line with a dark outline, so it reads over both a bright and a dark fill.</summary>
     public void DrawOutlined(CanvasItem c, string s, float x, float y, int size, Color col, Color outline, int outlinePx, HorizontalAlignment align = HorizontalAlignment.Center)
     {
+        Rid target = Target(c);
         TextLine line = Line(s, size, 700, 0, 0);
         float w = line.GetLineWidth();
         float left = align switch { HorizontalAlignment.Center => x - w / 2, HorizontalAlignment.Right => x - w, _ => x };
         var pos = new Vector2(left, y - line.GetLineAscent());
-        line.DrawOutline(c.GetCanvasItem(), pos, outlinePx, outline);
-        line.Draw(c.GetCanvasItem(), pos, col);
+        line.DrawOutline(target, pos, outlinePx, outline);
+        line.Draw(target, pos, col);
     }
 }

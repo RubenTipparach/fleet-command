@@ -75,3 +75,4 @@
 - 2026-11-12, cloud session: version 48, version id `1794446664-9c8c`: section CL, crew leveling (CL1-CL8), for mockup 39.
 - 2026-11-12, cloud session: version 49, version id `1794497547-c98e`: CL6 rewritten for ten levels, CL9 added (the pyramid), for mockup 39 v2.
 - 2026-11-12, cloud session: version 50, version id `1794499117-82a4`: CL9 rewritten for the tree, CL10 added (which style), for mockup 39 v3.
+- 2026-11-11, desktop session (PR #81): section ST added (the Concord story, ST1-ST5, from docs/design/story-missions.md); committed, not yet published (the artifact tools stopped answering in this session); the next desktop session publishes it.

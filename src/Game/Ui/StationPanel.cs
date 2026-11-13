@@ -22,13 +22,30 @@ public sealed partial class StationPanel : ConsolePanel
 
     protected override void DrawPanel()
     {
-        string cur = X.State.Station;
+        // in co-op a station this player does not hold is shut: the console opens the first they do (ConsoleContext.Opens)
+        if (OpenOr("st", Stations, X.State.Station) is not { } cur)
+        {
+            Rect2 none = Frame("No station");
+            Rail("st", none.Position.X, none.Position.Y, Stations, "", X.Act.Station);
+            Lbl("The captain assigns your stations (Crew)", none.Position.X + 64, none.Position.Y + 30, none.Size.X - 70);
+            return;
+        }
         var st = Array.Find(Stations, s => s.Id == cur);
         Rect2 p = Frame(st.Label);
         Rail("st", p.Position.X, p.Position.Y, Stations, cur, X.Act.Station);
         // the station's officer slot, on the frame's top edge left of its title (StationPanel.Reactor.cs)
         OfficerSlot(p.Position.X + 56, 0, Math.Min(Big ? 340 : 230, TitleLeft - 14 - (p.Position.X + 56)), cur);
         var b = new Rect2(p.Position.X + 56, p.Position.Y, p.Size.X - 56, p.Size.Y);
+        // co-op: the Fleet station toggles between the fleet and the crew (owner, 2026-11-11: "I would opt for crew manager to be
+        // in the fleet panel", "You can toggle between fleet and crew panels there"); the crew view and the Tactical station
+        // carry the Bridge and Lock for rows (StationPanel.Crew.cs)
+        if (X.Coop != null && cur == "fleet")
+        {
+            Tabs("fl.view", new Rect2(b.Position.X, b.Position.Y, b.Size.X, 36), new[] { ("fleet", "Fleet"), ("crew", "Crew") }, X.State.CrewShown ? "crew" : "fleet", v => X.State.CrewShown = v == "crew");
+            b = new Rect2(b.Position.X, b.Position.Y + 44, b.Size.X, b.Size.Y - 44);
+            if (X.State.CrewShown) { CrewPage(b); return; }
+        }
+        else if (X.Coop != null && cur == "tactical") b = CrewStrip(b);
         bool drawn = false;
         switch (cur)
         {

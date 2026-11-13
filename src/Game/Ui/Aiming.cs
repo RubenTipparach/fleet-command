@@ -42,6 +42,6 @@ public static class Aiming
     public static void Bracket(CanvasItem ci, Palette c, Rect2 r, float lift, float tick, float width)
     {
         float y = r.Position.Y - lift, x0 = r.Position.X + 2, x1 = r.End.X - 2;
-        ci.DrawPolyline(new[] { new Vector2(x0, y + tick), new Vector2(x0, y), new Vector2(x1, y), new Vector2(x1, y + tick) }, c.Alert, width, true);
+        Draw2D.Polyline(ci, new[] { new Vector2(x0, y + tick), new Vector2(x0, y), new Vector2(x1, y), new Vector2(x1, y + tick) }, c.Alert, width, true);
     }
 }

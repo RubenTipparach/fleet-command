@@ -93,7 +93,7 @@ public sealed partial class Battle
     }
 
     /// <summary>The Science station's Cloak key: the commanded ship's cloak on, or off again.</summary>
-    public void ToggleCloak() => SetCloak(Player, !Player.CloakOn);
+    public void ToggleCloak() { if (Sent(nameof(ToggleCloak))) return; SetCloak(Player, !Player.CloakOn); }
 
     /// <summary>A ship's sweep reach now, km (Rules.SweepKm with its science officer).</summary>
     public double SweepKm(Ship s) => Rules.SweepKm(s, OfficerSkill(s, "science"));
@@ -102,7 +102,7 @@ public sealed partial class Battle
     public bool CanSweep(Ship s) => s.Alive && s.SweepT <= 0 && s.Battery >= Cs.Cloak.SweepE;
 
     /// <summary>A sweep by the commanded ship (the Science station's Sweep key).</summary>
-    public void Sweep() => Sweep(Player);
+    public void Sweep() { if (Sent(nameof(Sweep))) return; Sweep(Player); }
 
     /// <summary>A sweep: spends the battery and reveals, to s's side, every cloaked ship of the other side within reach.</summary>
     public void Sweep(Ship s)

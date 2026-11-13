@@ -62,6 +62,13 @@ A beat with no progress for 10 s of game time is `stuck`, and the line names the
 4. **One game per device.** Look for a running game process first; no build or benchmark beside a
    recorded take.
 
+## Keep the machine awake
+
+Before any windowed run, recording or co-op game, hold the display awake for the whole session (owner, 2026-11-11: "there
+should be wake scripts", "Same on windows"): `scripts/keep-awake.sh 6` on the Mac, `powershell -File scripts/keep-awake.ps1
+-Hours 6` on Windows, or wrap the command (`scripts/keep-awake.sh -- <cmd>`). Neither can unlock a screen that is already
+locked; a recorder that reports "the captured window reports no size" behind a locked screen needs the owner to unlock it.
+
 ## Run and record
 
 ```bash

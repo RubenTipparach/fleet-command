@@ -23,6 +23,7 @@ public sealed partial class Battle
     /// ship answers, saying what it still needs, or that it needs a pilot.</summary>
     public void Hail()
     {
+        if (Sent(nameof(Hail))) return;
         Ship me = Player;
         if (TargetOf(me) is not { } t) { Say("Comms", "No target: click a ship to hail it."); return; }
         var h = Comms.Hail;

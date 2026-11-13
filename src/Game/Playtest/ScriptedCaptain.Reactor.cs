@@ -4,6 +4,7 @@
 // drive: arm it with the warp key, keep the course plotted, turn on the safety override when it must, and jump once the
 // Warp page's risk is low enough (or the enemy is close). One captain: these are its beats, never a second bot.
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FleetCommand.Sim;
@@ -69,6 +70,29 @@ public sealed partial class ScriptedCaptain
         for (int i = 0; i < c.Length; i++)
             for (int k = 0; k < 40 && Math.Abs(c[i]) > nudge / 2; k++)
                 if (await Click(c[i] > 0 ? $"rx.m.{i}" : $"rx.p.{i}") is { } s4) return s4;
+        // a hot core: the coolant flow on every loop still working turned up to its most (the flow boxes), as the AI's crew
+        // moves flow onto the loops that carry heat (Battle.Reactor's Tend)
+        var R = B.Data.Systems.Reactor;
+        if (B.Player.Reactor.Temp >= R.CriticalPct * 0.8)
+            for (int j = 0; j < B.Player.Reactor.Loops.Length; j++)
+                if (B.Player.Reactor.Loops[j].Hp > 0.2 && B.Player.Reactor.Loops[j].Flow < R.FlowMax)
+                {
+                    int before = B.Player.Reactor.Loops[j].Flow;
+                    // every point of output spoken for: a box taken from a lesser system first (the engines last, never below one box: a slower
+                    // ship rather than a melted one) (the Power page's
+                    // allocation), as a player frees power for the pumps, then back to the Reactor page
+                    if (B.Rules.PowerRoom(B.Player, before) <= before
+                        && new[] { "tractor", "transport", "sensors", "engines" }.FirstOrDefault(k => B.Player.Power.GetValueOrDefault(k) > (k == "engines" ? 1 : 0)) is { } spare)
+                    {
+                        int had = B.Player.Power[spare];
+                        await SetBoxes($"{spare}={had - 1}");
+                        GD.Print($"PLAYTEST_REACTOR {spare} {had} -> {B.Player.Power[spare]} boxes for the coolant");
+                        await Click("pw.mode.reactor");
+                    }
+                    int cap = Math.Min(R.FlowMax, B.Rules.PowerRoom(B.Player, before));
+                    if (cap > before) await Click($"rx.f.{j}.{cap - 1}");
+                    GD.Print($"PLAYTEST_REACTOR loop {j + 1} flow {before} -> {B.Player.Reactor.Loops[j].Flow} (hp {B.Player.Reactor.Loops[j].Hp:0.00})");
+                }
         Press("back");
         await Frames(3);
         return null;

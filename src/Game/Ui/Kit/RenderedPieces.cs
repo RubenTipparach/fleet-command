@@ -6,7 +6,9 @@
 // One implementation for every rendered skin; a skin's kit class adds what is its own (palette, icons, style).
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
+using FleetCommand.Game.Ui;
 using Godot;
 
 namespace FleetCommand.Game.Ui.Kit;
@@ -50,6 +52,52 @@ public sealed class RenderedPieces
             float gap = e.TryGetProperty("gap", out JsonElement g) ? g.GetSingle() : 2;
             _pieces[p.Name] = new Entry(kind, tex, new PieceSpec(size, m, inset, gap));
         }
+        Pack();
+    }
+
+    private const int PagePx = 2048, PackMaxPx = 1024, Bleed = 2;
+
+    // Every piece but the largest (the column and backing plates) packed into shared pages and drawn from there, so a
+    // panel's pieces are one texture and Godot draws a run of them as one batch: each piece its own texture was a draw
+    // call each (openspec/changes/console-draw-cost D4). Each piece keeps a border of its own edge pixels round it, so
+    // a stretched edge never samples its neighbour. The pieces' own sizes and margins are unchanged (an AtlasTexture
+    // reports its region's size).
+    private void Pack()
+    {
+        var pages = new List<Image>();
+        var placed = new List<(string Id, int Page, Rect2I Src)>();
+        int cx = 0, cy = 0, rowH = 0;
+        foreach (var (id, e) in _pieces.OrderByDescending(kv => kv.Value.Tex.GetHeight()))
+        {
+            int w = e.Tex.GetWidth(), h = e.Tex.GetHeight();
+            if (w > PackMaxPx || h > PackMaxPx) continue;
+            Image img = e.Tex.GetImage();
+            if (img == null) continue;
+            if (img.IsCompressed()) img.Decompress();
+            img.Convert(Image.Format.Rgba8);
+            int cw = w + 2 * Bleed, ch = h + 2 * Bleed;
+            if (pages.Count == 0 || cx + cw > PagePx) { cx = 0; cy += rowH; rowH = 0; }
+            if (pages.Count == 0 || cy + ch > PagePx) { pages.Add(Image.CreateEmpty(PagePx, PagePx, false, Image.Format.Rgba8)); cx = cy = rowH = 0; }
+            Image page = pages[^1];
+            page.BlitRect(img, new Rect2I(0, 0, w, h), new Vector2I(cx + Bleed, cy + Bleed));
+            // the bleed: the piece's edge rows and columns copied outward
+            for (int b = 1; b <= Bleed; b++)
+            {
+                page.BlitRect(img, new Rect2I(0, 0, w, 1), new Vector2I(cx + Bleed, cy + Bleed - b));
+                page.BlitRect(img, new Rect2I(0, h - 1, w, 1), new Vector2I(cx + Bleed, cy + Bleed + h - 1 + b));
+                page.BlitRect(page, new Rect2I(cx + Bleed, cy, 1, ch), new Vector2I(cx + Bleed - b, cy));
+                page.BlitRect(page, new Rect2I(cx + Bleed + w - 1, cy, 1, ch), new Vector2I(cx + Bleed + w - 1 + b, cy));
+            }
+            placed.Add((id, pages.Count - 1, new Rect2I(cx + Bleed, cy + Bleed, w, h)));
+            cx += cw;
+            rowH = Math.Max(rowH, ch);
+        }
+        var textures = pages.Select(ImageTexture.CreateFromImage).ToArray();
+        foreach (var (id, page, src) in placed)
+        {
+            Entry e = _pieces[id];
+            _pieces[id] = e with { Tex = new AtlasTexture { Atlas = textures[page], Region = new Rect2(src.Position, src.Size) } };
+        }
     }
 
     private static Vector2 Vec(JsonElement a) => new(a[0].GetSingle(), a[1].GetSingle());
@@ -72,7 +120,7 @@ public sealed class RenderedPieces
         Entry e = Get(id);
         if (r.Size.X <= 0 || r.Size.Y <= 0) return;
         var mod = new Color(1, 1, 1, alpha);
-        if (e.Kind != Kind.Nine) { c.DrawTextureRect(e.Tex, r, false, mod); return; }
+        if (e.Kind != Kind.Nine) { Draw2D.TextureRect(c, e.Tex, r, false, mod); return; }
         PieceSpec s = e.Spec;
         float w = r.Size.X, h = r.Size.Y;
         float k = ShrinksWithHeight(id) ? Math.Min(1, h / s.Size.Y) : 1;
@@ -86,7 +134,7 @@ public sealed class RenderedPieces
             {
                 float sw = sx[j + 1] - sx[j], sh = sy[i + 1] - sy[i], dw = dx[j + 1] - dx[j], dh = dy[i + 1] - dy[i];
                 if (sw <= 0 || sh <= 0 || dw <= 0 || dh <= 0) continue;
-                c.DrawTextureRectRegion(e.Tex, new Rect2(r.Position.X + dx[j], r.Position.Y + dy[i], dw, dh), new Rect2(sx[j], sy[i], sw, sh), mod);
+                Draw2D.TextureRectRegion(c, e.Tex, new Rect2(r.Position.X + dx[j], r.Position.Y + dy[i], dw, dh), new Rect2(sx[j], sy[i], sw, sh), mod);
             }
     }
 
@@ -97,7 +145,7 @@ public sealed class RenderedPieces
         float f = Math.Clamp(frac, 0, 1);
         if (f <= 0) return;
         Vector2 ts = e.Tex.GetSize();
-        c.DrawTextureRectRegion(e.Tex, new Rect2(r.Position.X, r.End.Y - r.Size.Y * f, r.Size.X, r.Size.Y * f), new Rect2(0, ts.Y * (1 - f), ts.X, ts.Y * f), new Color(1, 1, 1, alpha));
+        Draw2D.TextureRectRegion(c, e.Tex, new Rect2(r.Position.X, r.End.Y - r.Size.Y * f, r.Size.X, r.Size.Y * f), new Rect2(0, ts.Y * (1 - f), ts.X, ts.Y * f), new Color(1, 1, 1, alpha));
     }
 
     /// <summary>Draws part of a whole piece, <paramref name="src"/> in its reference pixels, into a rectangle; mirrored left
@@ -108,11 +156,11 @@ public sealed class RenderedPieces
         if (dest.Size.X <= 0 || dest.Size.Y <= 0) return;
         float k = e.Tex.GetSize().X / e.Spec.Size.X;
         var from = new Rect2(src.Position * k, src.Size * k);
-        if (!mirror) { c.DrawTextureRectRegion(e.Tex, dest, from); return; }
+        if (!mirror) { Draw2D.TextureRectRegion(c, e.Tex, dest, from); return; }
         // mirrored about the band's own middle: drawn under a transform that flips x there
-        c.DrawSetTransform(new Vector2(2 * dest.Position.X + dest.Size.X, 0), 0, new Vector2(-1, 1));
-        c.DrawTextureRectRegion(e.Tex, dest, from);
-        c.DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+        Draw2D.SetTransform(c, new Vector2(2 * dest.Position.X + dest.Size.X, 0), 0, new Vector2(-1, 1));
+        Draw2D.TextureRectRegion(c, e.Tex, dest, from);
+        Draw2D.SetTransform(c, Vector2.Zero, 0, Vector2.One);
     }
 
     /// <summary>Gives a piece a second name (the Kelvane's screened console pieces standing in under the kit's names, the

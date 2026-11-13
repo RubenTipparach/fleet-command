@@ -1,0 +1,71 @@
+{
+ "_doc": "Ships rolling into their turns, the large ship (owner, 2026-11-12: \"get some videos for recording to show me angle turning\"). Played on krai_heavy: the Krai dreadnought (a large ship, 10 deg) turns hard to starboard 180 deg, back to port 180 deg and 90 deg to starboard, holding between so the roll eases out.",
+ "beats": [
+  {
+   "do": "wait_ready"
+  },
+  {
+   "do": "pick_scene"
+  },
+  {
+   "do": "station",
+   "arg": "helm"
+  },
+  {
+   "do": "hold",
+   "s": 2
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "hold",
+   "s": 9
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_port_45"
+  },
+  {
+   "do": "hold",
+   "s": 9
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "press",
+   "arg": "helm_starboard_45"
+  },
+  {
+   "do": "hold",
+   "s": 8
+  }
+ ]
+}

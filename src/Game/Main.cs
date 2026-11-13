@@ -28,6 +28,11 @@ public sealed partial class Main : Node
     private BattleView _view = null!;
     private ViewOverlay _overlay = null!;
     private Control _root = null!;
+    /// <summary>The console's panels and column, drawn into a viewport that renders only on a frame where something in it
+    /// redrew (ConsoleCache), so a quiet frame costs one draw call (openspec/changes/console-draw-cost D3).</summary>
+    private ConsoleCache _cache = null!;
+    /// <summary>The hover cards, above the cached panels and drawn every frame.</summary>
+    private Control _tipsRoot = null!;
     private ColumnBacking _column = null!;
     private MenuCard _menu = null!;
     private OptionsCard _options = null!;
@@ -43,6 +48,15 @@ public sealed partial class Main : Node
     public override void _Ready()
     {
         ParseArgs();
+        LowSpec.Apply(GetViewport());
+        // the planet bake (tools/space/bake_planets.sh): every planet kind's maps for the low-spec mode, then quit
+        if (_args.TryGetValue("planet-bake", out string? bake))
+        {
+            AddChild(new PlanetBaker { Out = bake.Length > 0 ? bake : "assets/space/planets_baked", Commit = _args.GetValueOrDefault("planet-bake-commit", ""),
+                Only = _args.GetValueOrDefault("planet-bake-only", "").Split(',', StringSplitOptions.RemoveEmptyEntries),
+                CheckDir = _args.GetValueOrDefault("planet-bake-check", "") });
+            return;
+        }
         // the planet gallery (the planet-shaders skill's stills): every planet and rock kind alone, then quit
         if (_args.TryGetValue("planet-gallery", out string? gallery))
         {
@@ -90,10 +104,16 @@ public sealed partial class Main : Node
 
         var layer = _console = new CanvasLayer { Name = "Console" };
         AddChild(layer);
+        // under the panels the 3D view's overlay (brackets and labels that follow the ships, drawn every frame), then the
+        // cached panels and column, then the hover cards
         _root = new Control { Name = "Root", MouseFilter = Control.MouseFilterEnum.Ignore };
         layer.AddChild(_root);
+        _cache = new ConsoleCache();
+        layer.AddChild(_cache);
+        _tipsRoot = new Control { Name = "TipsRoot", MouseFilter = Control.MouseFilterEnum.Ignore };
+        layer.AddChild(_tipsRoot);
         _column = new ColumnBacking { Kit = kit };
-        _root.AddChild(_column);
+        _cache.Panels.AddChild(_column);
         _overlay = new ViewOverlay();
         _overlay.Init(_x, _view);
         _root.AddChild(_overlay);
@@ -113,7 +133,7 @@ public sealed partial class Main : Node
         menuLayer.AddChild(_menu);
         var tips = new TooltipLayer();
         tips.Init(_x);
-        _root.AddChild(tips);
+        _tipsRoot.AddChild(tips);
         // the Options sheet over every screen (the menus and the battle), under the loading screen's fade
         var optLayer = new CanvasLayer { Name = "Options", Layer = 12 };
         AddChild(optLayer);
@@ -128,7 +148,7 @@ public sealed partial class Main : Node
         // a playtest whose script plays the campaign ("flow": true) runs the flow too, saving apart from the player's campaign
         bool flowTest = _args.TryGetValue("playtest", out string? pt) && StrictJson.Parse(ReadData($"playtests/{pt}.json"), pt).Bool("flow", false);
         if (flowTest) GameFlow.SaveTag = "playtest-";
-        bool battleOnly = new[] { "scenario", "playtest", "still", "layout-test", "parity-test" }.Any(_args.ContainsKey) && !_args.ContainsKey("flow") && !flowTest;
+        bool battleOnly = IsCrew || new[] { "scenario", "playtest", "still", "layout-test", "parity-test", "checksum" }.Any(_args.ContainsKey) && !_args.ContainsKey("flow") && !flowTest;
         if (!battleOnly)
         {
             _flow = new GameFlow();
@@ -138,6 +158,7 @@ public sealed partial class Main : Node
             act.OnQuit = () => { if (_flow.Screen == FlowScreen.Battle) { _x.State.MenuOpen = false; _flow.ToMenu(); } else GetTree().Quit(); };
         }
 
+        SetupCoop(camp);
         GetViewport().SizeChanged += Relayout;
         Relayout();
         GD.Print("GAME_READY");
@@ -145,6 +166,12 @@ public sealed partial class Main : Node
         if (_args.ContainsKey("layout-test")) CallDeferred(nameof(RunLayoutTest));
         else if (_args.ContainsKey("parity-test")) _ = RunParityTest();
         else if (_args.TryGetValue("still", out string? still)) _ = Still(still);
+        else if (_args.TryGetValue("checksum", out string? sumOf))
+        {
+            foreach (string line in sumOf.Length > 0 ? Coop.Determinism.Detail(_x.Data, sumOf) : Coop.Determinism.Probe(_x.Data)) GD.Print($"CHECKSUM {line}");
+            _x = null!;   // nothing else runs: the frame loop sees no console
+            GetTree().Quit();
+        }
         else if (_args.TryGetValue("playtest", out string? script)) StartPlaytest(script);
     }
 
@@ -155,7 +182,7 @@ public sealed partial class Main : Node
     private void Add(ConsolePanel p, Region r)
     {
         p.Init(_x, r);
-        _root.AddChild(p);
+        _cache.Panels.AddChild(p);
         _panels[r] = p;
     }
 
@@ -184,6 +211,7 @@ public sealed partial class Main : Node
         _view.Visible = on;
         _console.Visible = on;
         if (on) { _x.State.MenuOpen = false; _x.State.Paused = false; Relayout(); }
+        else CoopStopped();
     }
 
     /// <summary>The console skin of a faction (the side a campaign is played from).</summary>
@@ -201,6 +229,7 @@ public sealed partial class Main : Node
         _view.Rebuild();
         _acc = 0;
         Relayout();
+        CoopStarted(sc);
     }
 
     private readonly Dictionary<string, IKit> _kits = new();
@@ -244,6 +273,8 @@ public sealed partial class Main : Node
     {
         if (_x == null) return;
         _menu.Visible = _x.State.MenuOpen;
+        _crew.Visible = _crew.Lobby || _x.CrewOpen;
+        PlaceChat(new Rect2(_overlay.Position, _overlay.Size), GetViewport().GetVisibleRect().Size);
         _options.Visible = _x.State.OptionsOpen;
         // the bridge bed under a battle, silent on the menus and the map
         _x.Sounds.Bed(_flow == null || _flow.Screen == FlowScreen.Battle ? "amb_bridge" : null);
@@ -255,6 +286,7 @@ public sealed partial class Main : Node
             _x.Sounds.Key(_pausedHeard ? _x.Data.Sounds.PauseOn : _x.Data.Sounds.PauseOff);
         }
         FollowCommand();
+        if (CoopStep(delta)) return;
         if (_x.State.Paused || _x.State.MenuOpen || _args.ContainsKey("still")) return;
         double step = _x.Data.Tuning.StepS;
         _acc = Math.Min(_acc + delta, step * 6);
@@ -264,7 +296,9 @@ public sealed partial class Main : Node
 
     public override void _UnhandledInput(InputEvent e)
     {
-        if (_x == null || e.IsEcho() || (_flow != null && _flow.Screen != FlowScreen.Battle)) return;
+        if (_x == null || e.IsEcho()) return;
+        if (ChatKey(e)) return;
+        if ((_flow != null && _flow.Screen != FlowScreen.Battle) || _crew.Lobby) return;
         foreach (var (name, run) in _bindings)
         {
             if (!e.IsActionPressed(name)) continue;
@@ -284,6 +318,9 @@ public sealed partial class Main : Node
         _x.State.Expanded = f.Expanded;
         _root.Position = Vector2.Zero;
         _root.Size = size;
+        _tipsRoot.Position = Vector2.Zero;
+        _tipsRoot.Size = size;
+        _cache.Place(size);
         foreach (var (r, p) in _panels)
         {
             if (f.Regions.TryGetValue(r, out Rect rect)) { p.Visible = true; p.Position = V(rect.X, rect.Y); p.Size = V(rect.W, rect.H); }
@@ -319,7 +356,7 @@ public sealed partial class Main : Node
 
     /// <summary>Everything on the console that registers controls: the panels, the strips, the view and the menu.</summary>
     private IEnumerable<IControlSource> Sources() =>
-        _panels.Values.Cast<IControlSource>().Append(_overlay).Append(_menu).Concat(_options.Visible ? new IControlSource[] { _options } : Array.Empty<IControlSource>()).Concat(_flow?.Sources() ?? Enumerable.Empty<IControlSource>());
+        _panels.Values.Cast<IControlSource>().Append(_overlay).Append(_menu).Concat(_crew.Visible ? new IControlSource[] { _crew } : Array.Empty<IControlSource>()).Concat(_chat.Visible ? new IControlSource[] { _chat } : Array.Empty<IControlSource>()).Concat(_options.Visible ? new IControlSource[] { _options } : Array.Empty<IControlSource>()).Concat(_flow?.Sources() ?? Enumerable.Empty<IControlSource>());
 
     /// <summary>Starts the scripted captain on data/playtests/&lt;name&gt;.json; --play=&lt;scenario id&gt; is the scenario it picks
     /// from the scene selector (the playtest skill).</summary>

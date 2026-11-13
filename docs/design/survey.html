@@ -601,6 +601,20 @@ const SECTIONS = [
       { id: 'FV5', q: 'How does the game work out hits on a vessel with no mesh?', options: ['The same distance formula in C# for the simulation, tied to the shader\'s by a test that samples both', 'A simple stand-in shape (a capsule per form) for hits only'], rec: 0,
         why: 'Shots then hit what you see, holes included; the test keeps the two copies from drifting (CLAUDE.md 6.1).' },
     ] },
+  { tag: 'ST', name: 'Concord story (docs/design/story-missions.md)',
+    lead: 'You asked (2026-11-11) for ideas for more story missions and an overarching plot for the Concord. The draft is docs/design/story-missions.md: "The Quiet Line", four acts gated by prestige, a broker selling the war to both sides, an assimilating reef growing on the wrecks, and a sleeping fleet beyond the border. Nothing is built; these pick what goes forward.',
+    qs: [
+      { id: 'ST1', q: 'Keep "The Quiet Line" as the Concord campaign\'s plot?', options: ['Yes, as drafted', 'Yes, but change parts (say which in the notes)', 'No: a different plot (describe it in the notes)'], rec: 0,
+        why: 'It ties together what the campaign already has (First blood\'s raider, the Krai rivalry, the sleeping giants contract) and leaves both truce and war open.' },
+      { id: 'ST2', q: 'Who grows on the wrecks (the Act 3 threat)?', options: ['The Exponent, its draft culture (N2): a collective that takes ships in', 'The Vhorr Brood', 'Someone else (say in the notes)'], rec: 0,
+        why: 'The Exponent was drafted as exactly this: what it takes in keeps growing on it. Using it gives its ships a place in the story.' },
+      { id: 'ST3', q: 'Whose is the sleeping fleet beyond the Line?', options: ['The Tarsine Remnant\'s ancestors (its culture is still open)', 'The Aelith Conclave\'s', 'Nobody we know yet: a new mystery', 'Someone else (say in the notes)'], rec: 0,
+        why: 'The Tarsine ship names (Elder Lamp, Long Watch, Remembrance, Old Throne) already read as an old power keeping watch.' },
+      { id: 'ST4', q: 'Can the captain take the war path all the way to the end?', options: ['Yes: both paths reach the finale, with different allies', 'No: the war path always turns back toward a truce by Act 4'], rec: 0,
+        why: 'A choice that cannot be kept is not a choice; the finale still works with the Forward Council\'s fleet alone.' },
+      { id: 'ST5', q: 'What to build first?', options: ['Act 1 (1.3-1.5) and comms choices (7.6), playable with the ships and features we have', 'The side stories first, as optional one-offs like the shakedown', 'The whole outline as an OpenSpec change before any mission is built'], rec: 0,
+        why: 'Act 1 needs only one new feature (comms choices), which co-op wants anyway.' },
+    ] },
 ];
 
 const DECIDED = [

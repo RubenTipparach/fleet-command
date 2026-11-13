@@ -33,7 +33,8 @@ The editor is an Avalonia app, so the same code runs on Windows and macOS. Its w
 |---|---|
 | `id` | lower case, digits and `_`; unique across files |
 | `name`, `glyph` | the mission's name, and the one letter on its banner on the map |
-| `kind` | `contract` (offered for `turns`, default 3, then gone; may be withdrawn from), `story` (waits until done; no withdrawal), `special` (offered as a contract, no withdrawal), `event` (never offered at random: the campaign offers it itself, as when hostile hunters catch the fleet (`pursuit.json`, handed `hunters`, `hunter_fac` and `hunter_size`); may be withdrawn from; gone at the end of the turn) or `encounter` (never offered at random: offered when the fleet shares a sector with a freighter, handed her name as `ship` and her faction as `freighter_fac`, and gone at the end of the turn; `escort.json` for a friendly freighter, `raid.json` for anyone else's; owner, 2026-11-07: "no mision flag needed. Just whenever you are on the same tile as freighter, you get a mission option") |
+| `kind` | `contract` (offered for `turns`, default 3, then gone; may be withdrawn from), `story` (waits until done, unless it gives `turns`; no withdrawal), `special` (offered as a contract, no withdrawal), `event` (never offered at random: the campaign offers it itself, as when hostile hunters catch the fleet (`pursuit.json`, handed `hunters`, `hunter_fac` and `hunter_size`); may be withdrawn from; gone at the end of the turn) or `encounter` (never offered at random: offered when the fleet shares a sector with a freighter, handed her name as `ship` and her faction as `freighter_fac`, and gone at the end of the turn; `escort.json` for a friendly freighter, `raid.json` for anyone else's; owner, 2026-11-07: "no mision flag needed. Just whenever you are on the same tile as freighter, you get a mission option") |
+| `lapse_next` | missions offered when this one's offer lapses unflown (the shakedown: offered for 5 turns, then First blood is offered anyway) |
 | `weight` | how often a contract is offered against the others, default 1 (Patrol 4; the nebula, belt and orbital patrols 2) |
 | `type` | the Missions guide's mission type it plays (shown in the briefing) |
 | `reward_cr` | base reward in credits; a contract adds 0 to 200 cr when offered |
@@ -64,7 +65,7 @@ A battle is `{ when?, name?, intel?, groups, markers?, planets?, time_limit_s?, 
   - `tag` is `flagship`, `prize`, `rescue`, `decoy`, `drone`, `quarry` (the ship a search is for), `scout` (a runner: it
     holds its course away from the fleet at full speed and never fights) or `truce` (holds its fire and its place until
     someone fires). A **drone** (an enemy group, a shakedown's targets)
-    stands where it is put, never fires, and is a light hulk: no shields, 30 % of its hull. A **prize** is taken, not destroyed: beaten down to a quarter of
+    stands where it is put, fires training rounds (they drop shields and hurt nothing past them: no hull, no system), and is a light hulk: no shields, 30 % of its hull. A **prize** is taken, not destroyed: beaten down to a quarter of
     its hull (`capture_hull_frac` in `data/battle/tuning.json`), it strikes and is boarded. A ship boarded and captured by
     your marines counts as taken too.
   - Enemy groups spread ahead at 100 km unless `bearing_deg` (clockwise from ahead) and `range_km` place them.

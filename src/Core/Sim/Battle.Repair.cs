@@ -114,6 +114,7 @@ public sealed partial class Battle
     /// <summary>Moves a job to place <paramref name="index"/> of the queue (the drag); quiet while dragging.</summary>
     public void RepairMove(string job, int index, bool quiet = false)
     {
+        if (Sent(nameof(RepairMove), job, index, quiet)) return;
         List<string> q = Player.RepairQueue;
         int j = q.IndexOf(job);
         if (j < 0 || index == j || index < 0 || index >= q.Count) return;
@@ -125,6 +126,7 @@ public sealed partial class Battle
     /// <summary>A drag of a job ends (the drop): says where it landed when it moved from place <paramref name="from"/>.</summary>
     public void RepairDropped(string job, int from)
     {
+        if (Sent(nameof(RepairDropped), job, from)) return;
         int i = Player.RepairQueue.IndexOf(job);
         if (i < 0 || i == from) return;
         Say("Engineering", $"{Data.Systems.Repair.Job(job).Name}: {Ordinals[Math.Min(i, Ordinals.Length - 1)]} in the repair queue.");
@@ -133,6 +135,7 @@ public sealed partial class Battle
     /// <summary>A job to the top of the queue.</summary>
     public void RepairFirst(string job)
     {
+        if (Sent(nameof(RepairFirst), job)) return;
         int i = Player.RepairQueue.IndexOf(job);
         if (i <= 0) return;
         RepairMove(job, 0, true);

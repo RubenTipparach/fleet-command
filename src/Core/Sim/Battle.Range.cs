@@ -39,6 +39,7 @@ public sealed partial class Battle
     /// nothing outside a range scenario, at a dead ship, or with a point defence weapon.</summary>
     public void RangeFire(string shipId, double bearingDeg, string weaponId, bool overload = false)
     {
+        if (Sent(nameof(RangeFire), shipId, bearingDeg, weaponId, overload)) return;
         if (!Scenario.DamageRange || ShipById(shipId) is not { Alive: true } t) return;
         if (!Data.Weapons.TryGetValue(weaponId, out WeaponDef? w) || w.IsPointDefence || !double.IsFinite(bearingDeg)) return;
         WeaponMode mode = overload && w.Overload != null ? w.Overload : w.Normal;
@@ -56,6 +57,7 @@ public sealed partial class Battle
     /// <summary>Starts a range program at a ship (replacing any running); an unknown program or a dead ship starts nothing.</summary>
     public void RangeRun(string shipId, string programId)
     {
+        if (Sent(nameof(RangeRun), shipId, programId)) return;
         if (!Scenario.DamageRange || ShipById(shipId) is not { Alive: true } t) return;
         RangeProgram? p = Data.Range.Programs.FirstOrDefault(q => q.Id == programId);
         if (p == null) return;
@@ -64,11 +66,12 @@ public sealed partial class Battle
     }
 
     /// <summary>Stops the program running, if any.</summary>
-    public void RangeStop() { _prog = null; _progShip = null; }
+    public void RangeStop() { if (Sent(nameof(RangeStop))) return; _prog = null; _progShip = null; }
 
     /// <summary>Raises a range ship's shields at full strength, or drops them.</summary>
     public void RangeShields(string shipId, bool up)
     {
+        if (Sent(nameof(RangeShields), shipId, up)) return;
         if (!Scenario.DamageRange || ShipById(shipId) is not { Alive: true } t) return;
         t.ShieldsUp = up;
         for (int i = 0; i < 6; i++) t.Shields[i] = up ? t.Class.ShieldsHp[i] : 0;

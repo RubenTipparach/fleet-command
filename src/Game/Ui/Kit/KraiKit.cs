@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FleetCommand.Game.Ui;
 using Godot;
 using static FleetCommand.Game.Ui.Kit.IconGeom;
 
@@ -88,7 +89,7 @@ public sealed class KraiKit : IKit
     public void Icon(CanvasItem c, string icon, Rect2 r, Color ink)
     {
         if (!_icons.TryGetValue(icon, out var d)) throw new KeyNotFoundException($"Krai kit has no icon '{icon}'");
-        d(new Pen(c, r.Position, r.Size.X / 48f, ink));
+        IconAtlas.Draw(Name, c, icon, r, ink, d);   // drawn once into the shared atlas, then as one textured rectangle
     }
 
     public PieceSpec Spec(string piece) => _r.Spec(piece);
@@ -105,7 +106,7 @@ public sealed class KraiKit : IKit
             new(X + cut, Y), new(X + W - s, Y), new(X + W, Y + s), new(X + W, Y + H - cut),
             new(X + W - cut, Y + H), new(X + s, Y + H), new(X, Y + H - s), new(X, Y + cut),
         };
-        if (line > 0) ci.DrawPolyline(pts.Append(pts[0]).ToArray(), col, line, true);
+        if (line > 0) Draw2D.Polyline(ci, pts.Append(pts[0]).ToArray(), col, line, true);
         else Pen.FillAbs(ci, pts, col);
     }
 

@@ -121,6 +121,12 @@ public sealed record MissionScript(
     /// <summary>An event: never offered at random, only by the campaign itself (hunters catching the fleet, Campaign.Caught),
     /// and gone at the end of the turn; it may be withdrawn from.</summary>
     public bool Event { get; init; }
+    /// <summary>Whether its offer lapses after <see cref="Turns"/>: a contract always, a story mission only when its file gives
+    /// turns (owner, 2026-11-11, of the shakedown: "there should only be one mission of that type, and it is optional, should
+    /// go away after 5 turns or so").</summary>
+    public bool Expires { get; init; } = true;
+    /// <summary>Missions offered when its offer lapses unflown, so a story goes on past a mission the captain passed by.</summary>
+    public IReadOnlyList<string> Lapse { get; init; } = Array.Empty<string>();
 }
 
 /// <summary>Reads mission files. Each is checked against the names its scopes provide (Scopes below).</summary>
@@ -146,6 +152,9 @@ public static class MissionLoader
             foreach (MissionOutcome o in m.Results)
                 foreach (NextMission n in o.Next)
                     if (!all.ContainsKey(n.Mission)) throw new DataError($"{m.File}.result: next mission '{n.Mission}' is no mission file");
+        foreach (MissionScript m in all.Values)
+            foreach (string n in m.Lapse)
+                if (!all.ContainsKey(n)) throw new DataError($"{m.File}.lapse_next: '{n}' is no mission file");
         return all;
     }
 
@@ -162,7 +171,10 @@ public static class MissionLoader
         if (glyph.Length != 1) throw new DataError($"{file}.glyph: one character");
         double reward = o.Num("reward_cr");
         if (reward < 0) throw new DataError($"{file}.reward_cr: not below 0");
+        bool expires = kind != "story" || o.Has("turns");
         int turns = (int)o.Num("turns", 3);
+        string[] lapse = o.Has("lapse_next") ? o.StrList("lapse_next") : Array.Empty<string>();
+        if (lapse.Length > 0 && !expires) throw new DataError($"{file}.lapse_next: a story mission lapses only when it gives turns");
         // how often a contract is offered against the others (owner, 2026-11-07: "provide a healthy supply of patrol missions")
         double weight = o.Num("weight", 1);
         if (weight <= 0) throw new DataError($"{file}.weight: above 0");
@@ -225,7 +237,7 @@ public static class MissionLoader
             foreach (StrictJson r in o.ObjList("result")) results.Add(Outcome(r, offerVars.Concat(Scopes.Grade).Concat(Scopes.Result)));
 
         var m = new MissionScript(id, o.Str("name"), glyph, kind == "story", o.Str("type", ""), reward, turns, where, setup, brief, objective,
-            needs, battles, grades, results, follow, file) { CanWithdraw = kind is "contract" or "encounter" or "event", Weight = weight, Encounter = kind == "encounter", Event = kind == "event" };
+            needs, battles, grades, results, follow, file) { CanWithdraw = kind is "contract" or "encounter" or "event", Weight = weight, Encounter = kind == "encounter", Event = kind == "event", Expires = expires, Lapse = lapse };
         if (m.Encounter && !battles.Any(b => b.Groups.Any(g => g.Hull == "freighter")))
             throw new DataError($"{file}.battle: an encounter is fought round the freighter met, so a group needs hull 'freighter'");
         o.Done();

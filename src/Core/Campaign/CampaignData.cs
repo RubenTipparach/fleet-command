@@ -16,7 +16,9 @@ public sealed record CampFaction(string Id, string Name, string Short, string Co
 /// <summary>A sector's terrain: what it costs to enter in move points; a star is never entered.</summary>
 public sealed record Terrain(string Id, string Name, int Cost, bool Impassable);
 
-public sealed record Tier(int Cost, IReadOnlyDictionary<string, int> Slots, int Hp);
+/// <summary>A hull tier: its points cost, its hardpoints, its hull points, and the prestige the shipyard asks before it
+/// sells a hull of the tier (owner, 2026-11-11: "tune it so that 10 missions gets you up to a cruiser ship in prestige").</summary>
+public sealed record Tier(int Cost, IReadOnlyDictionary<string, int> Slots, int Hp, int Prestige = 0);
 
 /// <summary>A hull the shipyard builds: its faction, tier, name, class name, the battle class it fights as, and its
 /// top-down schematic (faction/id under assets/ships/schematics/, empty for a stand-in).</summary>
@@ -199,7 +201,7 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
             StrictJson s = t.Obj("slots");
             var slots = groupIds.ToDictionary(g => g, g => s.Int(g));
             s.Done();
-            tiers.Add(new Tier(t.Int("cost"), slots, t.Int("hp")));
+            tiers.Add(new Tier(t.Int("cost"), slots, t.Int("hp"), (int)t.Num("prestige", 0)));
             t.Done();
         }
 

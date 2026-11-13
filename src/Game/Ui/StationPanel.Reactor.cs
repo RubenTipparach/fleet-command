@@ -37,8 +37,8 @@ public sealed partial class StationPanel
             : new Tip("Vacant", new (string, string, Color?)[] { ("Station", name, null), ("Click", "Assign an officer", null) });
         HitState h = Ui.Reg($"off.{st}", new Rect2(x, y, w, 22), _ => B.OfficerNext(st), null, tip);
         if (Sk.TitlePlacard) Kit.Piece(this, "plate.title", new Rect2(x - 6, y - 1, w + 12, 24));
-        else DrawRect(new Rect2(x, y, w, 22), Sk.R.Plate);
-        if (h.Hot) DrawRect(new Rect2(x, y, w, 22), new Color(C.Sky, 0.18f));
+        else Draw2D.Rect(this, new Rect2(x, y, w, 22), Sk.R.Plate);
+        if (h.Hot) Draw2D.Rect(this, new Rect2(x, y, w, 22), new Color(C.Sky, 0.18f));
         // on a rendered placard the contents start past the light at its head
         float x0 = Sk.TitlePlacard ? x + 12 : x;
         if (o == null) { Lbl("Officer vacant", x0 + 8, y + 16, w - (x0 - x) - 16, Sk.R.Ghost, HorizontalAlignment.Left, 14); return; }
@@ -46,7 +46,7 @@ public sealed partial class StationPanel
         for (int i = 0; i <= o.Rank; i++)
         {
             float px0 = x0 + 10 + i * 10;
-            DrawColoredPolygon(new[] { new Vector2(px0, y + 6), new Vector2(px0 + 4, y + 11), new Vector2(px0, y + 16), new Vector2(px0 - 4, y + 11) }, C.Caution);
+            Draw2D.ColoredPolygon(this, new[] { new Vector2(px0, y + 6), new Vector2(px0 + 4, y + 11), new Vector2(px0, y + 16), new Vector2(px0 - 4, y + 11) }, C.Caution);
         }
         float px = x0 + 14 + (o.Rank + 1) * 10;
         Text($"{B.RankOf(o, true)} {o.Name}".ToUpperInvariant(), px, y + 17, 16, o.Spec == st ? C.Text : C.Caution, HorizontalAlignment.Left, w - (px - x) - 8, 600, 1);
@@ -132,10 +132,10 @@ public sealed partial class StationPanel
     {
         float cx = x + w / 2, half = w / 2 - 10, yy = y + h / 2;
         const float safe = 0.1f;
-        DrawRect(new Rect2(cx - half * safe, y + 2, half * safe * 2, h - 4), new Color(C.Accord, 0.18f));
-        DrawLine(new Vector2(cx - half, yy), new Vector2(cx + half, yy), C.Deep, 4);
-        DrawLine(new Vector2(cx, y + 3), new Vector2(cx, y + h - 3), C.Sky, 2);
-        DrawCircle(new Vector2(cx + (float)o * half, yy), h / 2 - 3, CoilCol(o), true, -1, true);
+        Draw2D.Rect(this, new Rect2(cx - half * safe, y + 2, half * safe * 2, h - 4), new Color(C.Accord, 0.18f));
+        Draw2D.Line(this, new Vector2(cx - half, yy), new Vector2(cx + half, yy), C.Deep, 4);
+        Draw2D.Line(this, new Vector2(cx, y + 3), new Vector2(cx, y + h - 3), C.Sky, 2);
+        Draw2D.Circle(this, new Vector2(cx + (float)o * half, yy), h / 2 - 3, CoilCol(o), true, -1, true);
     }
 
     private Color CoilCol(double o) => Math.Abs(o) < 0.1 ? C.Accord : Math.Abs(o) < 0.3 ? C.Caution : C.Alert;
@@ -169,24 +169,24 @@ public sealed partial class StationPanel
             CoolantLoop l = rx.Loops[j];
             float sg = j == 0 ? -1 : 1, x0 = cx + Rr * 0.45f, x1 = ox + w - 20 * k, yO = cy + sg * h * 0.4f, yI = cy + sg * h * 0.12f, rad = 14 * k;
             Vector2[] loop = RoundLoop(x0, x1, Math.Min(yO, yI), Math.Max(yO, yI), rad);
-            DrawPolyline(loop, C.Deep, 10 * k, true);
-            if (l.Hp <= 0) DrawPolyline(loop, C.Alert, 2 * k, true);
+            Draw2D.Polyline(this, loop, C.Deep, 10 * k, true);
+            if (l.Hp <= 0) Draw2D.Polyline(this, loop, C.Alert, 2 * k, true);
             else
             {
                 Color lc = new(tc, l.Hp < 0.5 ? 0.55f : 0.85f);
-                DrawPolyline(loop, lc, 3 * k, true);
+                Draw2D.Polyline(this, loop, lc, 3 * k, true);
                 int n = 2 + l.Flow * 2;
-                for (int m = 0; m < n; m++) DrawCircle(Along(loop, (m / (float)n + t * l.Flow * 0.045f) % 1f), 2.6f * k, tc, true, -1, true);
+                for (int m = 0; m < n; m++) Draw2D.Circle(this, Along(loop, (m / (float)n + t * l.Flow * 0.045f) % 1f), 2.6f * k, tc, true, -1, true);
             }
             // the radiator at the far end
             float qx = x1, qy = (yO + yI) / 2, rh = Math.Abs(yO - yI) * 0.62f;
             Kit.Shape(this, new Rect2(qx - 13 * k, qy - rh / 2, 26 * k, rh), 9 * k, C.Deep);
-            for (int f = 0; f < 4; f++) { float fy = qy - rh / 2 + 7 * k + f * (rh - 14 * k) / 3; DrawLine(new Vector2(qx - 8 * k, fy), new Vector2(qx + 8 * k, fy), l.Hp <= 0 ? C.Alert : C.Signal, 2 * k); }
+            for (int f = 0; f < 4; f++) { float fy = qy - rh / 2 + 7 * k + f * (rh - 14 * k) / 3; Draw2D.Line(this, new Vector2(qx - 8 * k, fy), new Vector2(qx + 8 * k, fy), l.Hp <= 0 ? C.Alert : C.Signal, 2 * k); }
             if (big) Lbl("Radiator", qx - 18 * k, qy + 4 * k, 0, null, HorizontalAlignment.Right, 11);
             // the pump, its flow on it, and its keys
             var pump = new Vector2(ox + w * 0.62f, yO);
-            DrawCircle(pump, 16 * k, Colors.Black, true, -1, true);
-            DrawArc(pump, 16 * k, 0, Mathf.Tau, 32, LoopCol(l.Hp, C.Signal), 4 * k, true);
+            Draw2D.Circle(this, pump, 16 * k, Colors.Black, true, -1, true);
+            Draw2D.Arc(this, pump, 16 * k, 0, Mathf.Tau, 32, LoopCol(l.Hp, C.Signal), 4 * k, true);
             Text(l.Flow.ToString(), pump.X, pump.Y + 5 * k, (int)(15 * k), C.Text, HorizontalAlignment.Center, 0, 700);
             Lbl($"Loop {Battle.LoopName(j)} · {(l.Hp <= 0 ? "offline" : Pct(l.Hp))}", (pump.X + qx) / 2 + 6 * k, yI + sg * 12 * k + 4 * k, 0, LoopCol(l.Hp, C.Lilac), HorizontalAlignment.Center, 11);
             float ky = yO - sg * 27 * k;
@@ -203,26 +203,26 @@ public sealed partial class StationPanel
         }
         // the core between its confinement rings, its plasma ring pushed off centre by the coils
         var core = new Vector2(cx, cy);
-        DrawArc(core, Rr, 0, Mathf.Tau, 64, C.Signal, 3 * k, true);
-        DrawArc(core, Ri, 0, Mathf.Tau, 64, C.Signal, 3 * k, true);
+        Draw2D.Arc(this, core, Rr, 0, Mathf.Tau, 64, C.Signal, 3 * k, true);
+        Draw2D.Arc(this, core, Ri, 0, Mathf.Tau, 64, C.Signal, 3 * k, true);
         Vector2 off = Vector2.Zero;
         for (int i = 0; i < nc; i++) off += new Vector2(Mathf.Cos(Dir(i)), Mathf.Sin(Dir(i))) * (float)rx.Coils[i];
         float pulse = rx.Melt > 0 ? 0.55f + 0.45f * Mathf.Sin(t * 9) : 0.85f + 0.15f * Mathf.Sin(t * 2.3f);
-        DrawArc(core + off * chan * 0.42f, mid, 0, Mathf.Tau, 64, new Color(tc, 0.95f * pulse), chan * 0.22f, true);
+        Draw2D.Arc(this, core + off * chan * 0.42f, mid, 0, Mathf.Tau, 64, new Color(tc, 0.95f * pulse), chan * 0.22f, true);
         Text($"{Math.Round(rx.Temp)}%", cx, cy + 6 * k, (int)((big ? 26 : 20) * k / (big ? 1.25f : 1)), rx.Temp >= 85 ? C.Alert : C.Text, HorizontalAlignment.Center, 0, 700);
         Lbl("Core", cx, cy - 18 * k, 0, null, HorizontalAlignment.Center, 11);
         for (int i = 0; i < nc; i++)
         {
             float a = Dir(i);
             Vector2 home = core + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * mid, q = CoilAt(i), tan = new Vector2(-Mathf.Sin(a), Mathf.Cos(a));
-            DrawArc(home, 13 * k, 0, Mathf.Tau, 24, C.Accord, 2 * k, true);
+            Draw2D.Arc(this, home, 13 * k, 0, Mathf.Tau, 24, C.Accord, 2 * k, true);
             Color col = CoilCol(rx.Coils[i]);
-            DrawLine(q - tan * 9 * k, q + tan * 9 * k, col, 16 * k);
-            DrawCircle(q - tan * 9 * k, 8 * k, col, true, -1, true);
-            DrawCircle(q + tan * 9 * k, 8 * k, col, true, -1, true);
+            Draw2D.Line(this, q - tan * 9 * k, q + tan * 9 * k, col, 16 * k);
+            Draw2D.Circle(this, q - tan * 9 * k, 8 * k, col, true, -1, true);
+            Draw2D.Circle(this, q + tan * 9 * k, 8 * k, col, true, -1, true);
             if (coilHot[i])
             {
-                DrawArc(q, 19 * k, 0, Mathf.Tau, 24, C.Text, 2 * k, true);
+                Draw2D.Arc(this, q, 19 * k, 0, Mathf.Tau, 24, C.Text, 2 * k, true);
                 Lbl($"{(rx.Coils[i] >= 0 ? "+" : "")}{rx.Coils[i]:0.00}", cx + Mathf.Cos(a) * (Rr + 22 * k), cy + Mathf.Sin(a) * (Rr + 22 * k) + 4 * k, 0, col, HorizontalAlignment.Center, 12);
             }
             Text((i + 1).ToString(), q.X, q.Y + 4.5f * k, (int)(12 * k), KeyFace.Ink(Kit, col), HorizontalAlignment.Center, 0, 700);
@@ -289,10 +289,10 @@ public sealed partial class StationPanel
         }
         // the banks between them, with the jump threshold
         float bx = cx + nw + 22, bw = 26, by = cy + 4, fill = (float)(w.Banks / W.BankE);
-        DrawRect(new Rect2(bx, by, bw, dh), C.Deep);
-        DrawRect(new Rect2(bx, by + dh * (1 - fill), bw, dh * fill), w.Banks >= W.JumpE ? C.Accord : C.Sky);
+        Draw2D.Rect(this, new Rect2(bx, by, bw, dh), C.Deep);
+        Draw2D.Rect(this, new Rect2(bx, by + dh * (1 - fill), bw, dh * fill), w.Banks >= W.JumpE ? C.Accord : C.Sky);
         float ty = by + dh * (1 - (float)(W.JumpE / W.BankE));
-        DrawLine(new Vector2(bx - 4, ty), new Vector2(bx + bw + 4, ty), C.Text, 2);
+        Draw2D.Line(this, new Vector2(bx - 4, ty), new Vector2(bx + bw + 4, ty), C.Text, 2);
         Lbl("Banks", bx + bw / 2, by + dh + 16, 0, null, HorizontalAlignment.Center, 13);
         Num($"{Math.Floor(w.Banks)}/{W.BankE:0}", bx + bw / 2, by + dh + 34, 0, w.Banks >= W.JumpE ? C.Accord : null, HorizontalAlignment.Center, 15);
         // the risk factors, each a thin bar of its risk, and the total
@@ -303,8 +303,8 @@ public sealed partial class StationPanel
             float y = cy + 2 + i * rh;
             Color rc = RiskCol(f.Risk);
             Lbl(f.Label, rx, y + rh - 5, rw * 0.5f, null, HorizontalAlignment.Left, Big ? 15 : 12);
-            DrawRect(new Rect2(rx + rw * 0.52f, y + rh / 2 - 3, rw * 0.3f, 6), C.Deep);
-            DrawRect(new Rect2(rx + rw * 0.52f, y + rh / 2 - 3, rw * 0.3f * (float)Math.Clamp(f.Risk, 0, 1), 6), rc);
+            Draw2D.Rect(this, new Rect2(rx + rw * 0.52f, y + rh / 2 - 3, rw * 0.3f, 6), C.Deep);
+            Draw2D.Rect(this, new Rect2(rx + rw * 0.52f, y + rh / 2 - 3, rw * 0.3f * (float)Math.Clamp(f.Risk, 0, 1), 6), rc);
             Num(Pct(f.Risk), rx + rw, y + rh - 4, 0, rc, HorizontalAlignment.Right, Big ? 16 : 13);
         }
         float ry = cy + 10 + 6 * rh;

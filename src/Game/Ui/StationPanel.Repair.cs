@@ -73,7 +73,7 @@ public sealed partial class StationPanel
         if (lifted) { Kit.Shape(this, new Rect2(x, y, rw, rh - 4), (rh - 4) / 2, new Color(C.Sky, 0.25f)); Kit.Shape(this, new Rect2(x, y, rw, rh - 4), (rh - 4) / 2, C.Sky, 2); }
         else if (crews > 0 || hot) Kit.Shape(this, new Rect2(x, y, rw, rh - 4), (rh - 4) / 2, new Color(C.Deep, crews > 0 ? 0.7f : 0.4f));
         // the grip: three short rules
-        for (int r2 = -1; r2 <= 1; r2++) DrawLine(new Vector2(x + 8, mid + r2 * 5), new Vector2(x + 18, mid + r2 * 5), lifted || hot ? C.Sky : C.Lilac, 2);
+        for (int r2 = -1; r2 <= 1; r2++) Draw2D.Line(this, new Vector2(x + 8, mid + r2 * 5), new Vector2(x + 18, mid + r2 * 5), lifted || hot ? C.Sky : C.Lilac, 2);
         Num((i + 1).ToString(), x + 32, y + rh * 0.62f, 0, C.Lilac, HorizontalAlignment.Center, Big ? 20 : 16);
         float isz = Big ? 30 : 22;
         Kit.Icon(this, job.Icon, new Rect2(x + 44, y + (rh - 4 - isz) / 2, isz, isz), C.Sky);

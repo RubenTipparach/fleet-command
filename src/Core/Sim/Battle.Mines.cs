@@ -46,6 +46,7 @@ public sealed partial class Battle
     /// <summary>Drops a mine astern of the commanded ship.</summary>
     public void DropMine()
     {
+        if (Sent(nameof(DropMine))) return;
         Ship s = Player;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
         if (!MineReady(s)) return;
@@ -58,6 +59,7 @@ public sealed partial class Battle
     /// <summary>Beams a mine to a point on the plane (m) inside the transporter's reach.</summary>
     public void PlaceMine(double x, double z)
     {
+        if (Sent(nameof(PlaceMine), x, z)) return;
         Ship s = Player;
         if (!double.IsFinite(x) || !double.IsFinite(z)) return;
         if (s.Erratic) { Say("Helm", "Not during erratic manoeuvres."); return; }
