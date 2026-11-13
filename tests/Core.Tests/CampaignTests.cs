@@ -764,8 +764,8 @@ public sealed class ShopTests
         foreach (string st in c.Data.Officers.Stations)
         {
             var offer = c.OnOffer(st);
-            Assert.Equal(5, offer.Count(c.IsCadet));
-            var exp = offer.Where(o => !c.IsCadet(o)).ToList();
+            Assert.Equal(5, offer.Count(o => o.Level == 1));
+            var exp = offer.Where(o => o.Level > 1).ToList();
             Assert.Equal(3, exp.Count);
             Assert.Equal(3, exp.Select(o => o.Level).Distinct().Count());
             Assert.All(offer, o => Assert.Empty(o.Skills));   // their points are the player's to place
@@ -780,15 +780,15 @@ public sealed class ShopTests
         Campaign.Campaign c = New();
         c.S.Prestige = 1000;
         string st = c.Data.Officers.Stations[0];
-        Officer a = c.OnOffer(st).First(o => !c.IsCadet(o));
+        Officer a = c.OnOffer(st).First(o => o.Level > 1);
         int cost = c.HireCost(a);
         Assert.Null(c.Hire(a));
         Assert.Equal(1000 - cost, c.S.Prestige);
         Assert.Same(a, c.AtStation(st));
         Assert.DoesNotContain(a, c.S.OfficerPool);
-        Assert.Equal(3, c.OnOffer(st).Count(o => !c.IsCadet(o)));
-        Assert.Equal(5, c.OnOffer(st).Count(c.IsCadet));
-        Officer b = c.OnOffer(st).First(c.IsCadet);
+        Assert.Equal(3, c.OnOffer(st).Count(o => o.Level > 1));
+        Assert.Equal(5, c.OnOffer(st).Count(o => o.Level == 1));
+        Officer b = c.OnOffer(st).First(o => o.Level == 1);
         int before = c.S.Prestige;
         Assert.Null(c.Hire(b));   // an ensign is free; the officer it replaces leaves for their worth
         Assert.Equal(before + c.Worth(a), c.S.Prestige);
