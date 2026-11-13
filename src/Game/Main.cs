@@ -210,6 +210,9 @@ public sealed partial class Main : Node
     {
         _view.Visible = on;
         _console.Visible = on;
+        // low-spec: with the battle hidden under the flow's screens, its viewport draws no 3D (its sky would still fill the
+        // window every frame under the campaign map)
+        if (LowSpec.On) GetViewport().Disable3D = !on;
         if (on) { _x.State.MenuOpen = false; _x.State.Paused = false; Relayout(); }
         else CoopStopped();
     }

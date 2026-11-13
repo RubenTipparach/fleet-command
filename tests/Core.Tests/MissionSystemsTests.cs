@@ -30,6 +30,17 @@ public sealed class MissionSystemsTests
         return (c, m!, plan, new Battle(TestData.Data, plan.Scenario));
     }
 
+    [Fact]
+    public void Objectives_asked_of_a_battle_that_is_not_the_missions_are_all_unmet()
+    {
+        // the goals readout asks while the mission's battle loads, with the last battle still standing (it threw before)
+        var (c, _, plan, _) = Fly("away_team");
+        var before = new Battle(TestData.Data, TestData.Data.ScenarioById("concord_battle"));
+        var met = MissionRun.MetNow(c, plan, before);
+        Assert.Equal(plan.Battle.Objectives.Select(o => o.Id).OrderBy(x => x), met.Keys.OrderBy(x => x));
+        Assert.All(met.Values, Assert.False);
+    }
+
     // the commanded ship parked beside a planet, inside the transporter's reach of its surface
     private static void Beside(Battle b, Planet p)
     {

@@ -593,7 +593,14 @@ public sealed partial class CampaignMap : Node3D
                 model.Scale = Vector3.One * (length / len);
                 // the glb's bow is -z; a standee's bow is +z (the map's headings)
                 model.RotationDegrees = new Vector3(0, 180, 0);
-                try { ShipSkin.Apply(model, path["res://assets/ships/".Length..], model.Scale.X); Cargo.Load(model, path["res://assets/ships/".Length..]); }
+                try
+                {
+                    string file = path["res://assets/ships/".Length..];
+                    ShipSkin.Apply(model, file, model.Scale.X);
+                    // the low-spec mode: the battle's baked ship, one mesh a part and no lamps' lights (LowShips)
+                    if (LowSpec.On) LowShips.Convert(model, file);
+                    Cargo.Load(model, file);
+                }
                 catch (InvalidOperationException) { /* a ship the export manifest does not dress keeps its own materials */ }
                 holder.AddChild(model);
                 return holder;
