@@ -90,7 +90,12 @@ public sealed partial class BattleView : Node3D
         // ambient light (owner, 2026-11-04: "reflection probes for all those spacey backgrounds ... but dont crank it up
         // super high"): a 128 radiance map, made once per scenario, not every frame
         _skyMat = new ShaderMaterial { Shader = GD.Load<Shader>("res://src/Game/View/nebula_sky.gdshader") };
-        var sky = new Sky { SkyMaterial = _skyMat, RadianceSize = Sky.RadianceSizeEnum.Size128, ProcessMode = Sky.ProcessModeEnum.Quality };
+        // the low-spec mode: a smaller map, built a little each frame, never all at once
+        var sky = new Sky
+        {
+            SkyMaterial = _skyMat, RadianceSize = LowSpec.On ? Sky.RadianceSizeEnum.Size32 : Sky.RadianceSizeEnum.Size128,
+            ProcessMode = LowSpec.On ? Sky.ProcessModeEnum.Incremental : Sky.ProcessModeEnum.Quality,
+        };
         var env = new Godot.Environment
         {
             BackgroundMode = Godot.Environment.BGMode.Sky, Sky = sky,
@@ -98,7 +103,8 @@ public sealed partial class BattleView : Node3D
             AmbientLightSkyContribution = AmbientSkyShare, ReflectedLightSource = Godot.Environment.ReflectionSource.Sky,
             TonemapMode = Godot.Environment.ToneMapper.Filmic,
             // glow, for the weapons' light (change weapon-fx: the weapons range's bloom): only what is brighter than 1
-            GlowEnabled = true, GlowIntensity = 0.7f, GlowBloom = 0f, GlowHdrThreshold = 1.0f, GlowBlendMode = Godot.Environment.GlowBlendModeEnum.Additive,
+            // (none in the low-spec mode: on a Raspberry Pi 5 the glow's full-screen blur was a third of the GPU's frame)
+            GlowEnabled = !LowSpec.On, GlowIntensity = 0.7f, GlowBloom = 0f, GlowHdrThreshold = 1.0f, GlowBlendMode = Godot.Environment.GlowBlendModeEnum.Additive,
         };
         _env = env;
         AddChild(new WorldEnvironment { Environment = env, Name = "Environment" });
@@ -177,7 +183,10 @@ public sealed partial class BattleView : Node3D
         var holder = new Node3D();
         holder.AddChild(ship);
         ship.Scale = Vector3.One * (float)(lengthM / MPerU) / len;
-        strobes.AddRange(ShipSkin.Apply(ship, path["assets/ships/".Length..], ship.Scale.X));
+        List<OmniLight3D> lamps = ShipSkin.Apply(ship, path["assets/ships/".Length..], ship.Scale.X);
+        // the low-spec mode: one mesh a part, base and emission, its lamps' lights gone (LowShips)
+        if (LowSpec.On) LowShips.Convert(ship, path["assets/ships/".Length..]);
+        else strobes.AddRange(lamps);
         return holder;
     }
 

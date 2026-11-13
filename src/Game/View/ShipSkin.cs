@@ -31,7 +31,7 @@ public static class ShipSkin
     /// <summary>The shader of a hull that carries its own baked maps (the Ssarith Hunt's).</summary>
     public static Shader BakedHullShader => _baked ??= GD.Load<Shader>("res://src/Game/View/baked_hull.gdshader");
     /// <summary>Whether a shader is one of the hull shaders (ShipDamage finds the hull surfaces by it).</summary>
-    public static bool IsHull(Shader? s) => s != null && (s == HullShader || s == BakedHullShader);
+    public static bool IsHull(Shader? s) => s != null && (s == HullShader || s == BakedHullShader || s == LowShips.LowShader);
     private static Shader? _pane;
     /// <summary>The shader of a ship's window and bay quads (ShipDamage gives them the hull's damage).</summary>
     public static Shader PaneShader => _pane ??= GD.Load<Shader>("res://src/Game/View/pane.gdshader");

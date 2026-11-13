@@ -52,6 +52,11 @@ public static class Fx
     }
 
     // One burst of particles, gone when the last one dies; a continuous emitter when burnS is above 0.
+    /// <summary>A particle count for this machine: a third of it in the low-spec mode, whose small GPU draws every particle
+    /// as see-through overdraw, and where the effects' own lights are left out too (the owner, 2026-11-13: "simplify weapon
+    /// fx maybe, limit the amount or resoultion of shaders").</summary>
+    private static int Few(int count) => LowSpec.On ? Math.Max(4, count / 3) : count;
+
     private static CpuParticles3D Burst(Node parent, Vector3 at, int count, float lifeS, float sizeU, float speedU, Gradient ramp, bool additive,
         float growFrom = 0.3f, float growTo = 1f, float damping = 0f, Vector3? dir = null, float spread = 180f, float burnS = 0f)
     {
@@ -62,7 +67,7 @@ public static class Fx
             // it was added put every particle at the battle's origin, not at the hit (owner, 2026-11-06: "missing explosions
             // when weapon impacts")
             Emitting = false,
-            Amount = Math.Max(1, count), Lifetime = lifeS, OneShot = burnS <= 0, Explosiveness = burnS <= 0 ? 1f : 0f, Randomness = 0.5f,
+            Amount = Math.Max(1, Few(count)), Lifetime = lifeS, OneShot = burnS <= 0, Explosiveness = burnS <= 0 ? 1f : 0f, Randomness = 0.5f,
             Mesh = new QuadMesh { Size = Vector2.One * sizeU, Material = ramp == FireRamp || ramp == FlameRamp ? FlameMat : Mat(additive) }, LocalCoords = false,
             Direction = dir ?? Vector3.Up, Spread = spread, Gravity = Vector3.Zero,
             InitialVelocityMin = speedU * 0.3f, InitialVelocityMax = speedU, DampingMin = damping, DampingMax = damping,
@@ -94,7 +99,7 @@ public static class Fx
         {
             CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
             Emitting = false,   // not until it stands at the blast (as Burst)
-            Amount = n, Lifetime = lifeS, OneShot = true, Explosiveness = 0.92f, Randomness = 0.6f, LocalCoords = false,
+            Amount = Few(n), Lifetime = lifeS, OneShot = true, Explosiveness = 0.92f, Randomness = 0.6f, LocalCoords = false,
             Mesh = new QuadMesh { Size = new Vector2(lenU * 0.12f, lenU), Material = mat }, ParticleFlagAlignY = true,
             Direction = dir ?? Vector3.Up, Spread = spread, Gravity = Vector3.Zero, InitialVelocityMin = speedU * 0.25f, InitialVelocityMax = speedU,
             DampingMin = speedU * 0.08f, DampingMax = speedU * 0.2f, ScaleAmountMin = 0.4f, ScaleAmountMax = 1.2f, ScaleAmountCurve = Grow(1f, 0.15f),
@@ -161,6 +166,7 @@ public static class Fx
     {
         Glow(parent, at, r * 0.45f, 0.04f, 0.3f, new Color(1.8f, 2.1f, 2.6f, 1f), new Color(0.15f, 0.45f, 1.4f, 0f));
         Streaks(parent, at, 28, r * 0.9f, r * 4f, 0.5f, outward, 80f, ShieldSparkRamp, ShieldEmberRamp);
+        if (LowSpec.On) return;   // no light of its own on a small GPU (Few)
         var l = new OmniLight3D { OmniRange = r * 5, LightEnergy = 4f, LightColor = new Color(0.45f, 0.7f, 1f), ShadowEnabled = false, OmniAttenuation = 1.5f };
         parent.AddChild(l);
         l.GlobalPosition = at;
@@ -200,6 +206,7 @@ public static class Fx
         Debris(parent, at, 18, r * 0.04f, r * 2.2f, 6.4f);
         Burst(parent, at, 200, 3.2f, r * 0.03f, r * 2.5f, StarSparkRamp, true, 1f, 0.3f, 0.2f);
         Streaks(parent, at, 160, r * 0.14f, r * 1.3f, 3.4f);
+        if (LowSpec.On) return;   // no light of its own on a small GPU (Few)
         var l = new OmniLight3D { OmniRange = r * 8f, LightEnergy = 16f, LightColor = new Color(0.75f, 0.8f, 1f), ShadowEnabled = false, OmniAttenuation = 1.2f };
         parent.AddChild(l);
         l.GlobalPosition = at;
@@ -260,7 +267,7 @@ public static class Fx
             var trail = new CpuParticles3D
             {
                 CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
-                Amount = 90, Lifetime = 1.6f, LocalCoords = false, Mesh = new QuadMesh { Size = Vector2.One * sz * 1.3f, Material = Mat(true) },
+                Amount = Few(90), Lifetime = 1.6f, LocalCoords = false, Mesh = new QuadMesh { Size = Vector2.One * sz * 1.3f, Material = Mat(true) },
                 Gravity = Vector3.Zero, Spread = 180, InitialVelocityMin = 0, InitialVelocityMax = sz * 0.6f, ScaleAmountCurve = Grow(1f, 0.2f),
                 ColorRamp = FlameRamp, AngleMin = 0, AngleMax = 360,
             };
@@ -349,6 +356,7 @@ public static class Fx
     /// <summary>A flash of light: an orange OmniLight3D of this range (scene units) fading over s seconds.</summary>
     public static void Flash(Node parent, Vector3 at, float rangeU, float energy, float s)
     {
+        if (LowSpec.On) return;   // no light of its own on a small GPU (Few)
         var l = new OmniLight3D { OmniRange = rangeU, LightEnergy = energy, LightColor = new Color(1f, 0.62f, 0.3f), ShadowEnabled = false, OmniAttenuation = 1.5f };
         parent.AddChild(l);
         l.GlobalPosition = at;
