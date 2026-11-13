@@ -13,12 +13,20 @@ public static class DisplaySettings
     /// <summary>Whether the game is in borderless fullscreen now.</summary>
     public static bool Fullscreen => DisplayServer.WindowGetMode() is DisplayServer.WindowMode.Fullscreen or DisplayServer.WindowMode.ExclusiveFullscreen;
 
-    /// <summary>Puts the window in the mode the player last chose (borderless fullscreen the first time).</summary>
+    /// <summary>Puts the window in the mode the player last chose (borderless fullscreen the first time; in the low-spec
+    /// mode a 1280 x 720 window the first time, LowSpec.DefaultWindow).</summary>
     public static void ApplySaved()
     {
         var cfg = new ConfigFile();
-        bool full = cfg.Load(Path) != Error.Ok || cfg.GetValue(Section, Key, true).AsBool();
+        bool chosen = cfg.Load(Path) == Error.Ok && cfg.HasSectionKey(Section, Key);
+        bool full = chosen ? cfg.GetValue(Section, Key, true).AsBool() : !LowSpec.On;
         Set(full);
+        if (!full && !chosen && LowSpec.On)
+        {
+            DisplayServer.WindowSetSize(LowSpec.DefaultWindow);
+            Vector2I screen = DisplayServer.ScreenGetSize();
+            DisplayServer.WindowSetPosition((screen - LowSpec.DefaultWindow) / 2);
+        }
     }
 
     /// <summary>Switches between borderless fullscreen and a window, and remembers the choice.</summary>

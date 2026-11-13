@@ -5,6 +5,7 @@
 // of the window's pixels with no MSAA, the sun's shadows off, and the nebula as fog and billboards (NebulaPuffs'
 // "billboards" style, never the marched decks). The textures' 512 px cap is the import's (scripts/lowspec-prep.py on the
 // small machine's checkout), so no texture is loaded large and then shrunk.
+using System;
 using System.Linq;
 using Godot;
 
@@ -15,7 +16,13 @@ public static class LowSpec
     /// <summary>Whether the game runs in the low-spec mode (--lowspec).</summary>
     public static readonly bool On = OS.GetCmdlineUserArgs().Contains("--lowspec");
 
-    /// <summary>The share of the window's width and height the 3D view is drawn at (--lowspec-scale=0.5 by default).</summary>
+    /// <summary>The window the low-spec mode opens in the first time, before the player has chosen (the owner, 2026-11-13:
+    /// "maintain 720p", "you can still change resolution in the settings", "its not a hard rule"): 1280 x 720, where a
+    /// Raspberry Pi 5 runs a battle at about 38 fps; borderless fullscreen on its 2560 x 1080 monitor ran at 22.</summary>
+    public static readonly Vector2I DefaultWindow = new(1280, 720);
+
+    /// <summary>The share of the window's width and height the 3D view is drawn at (--lowspec-scale=1 by default: the owner,
+    /// 2026-11-12, "I want 100% scale renderer too").</summary>
     public static readonly float Scale3D = ReadScale();
 
     /// <summary>The MSAA a 3D viewport uses: its own, or none in the low-spec mode.</summary>
@@ -36,6 +43,6 @@ public static class LowSpec
         foreach (string a in OS.GetCmdlineUserArgs())
             if (a.StartsWith("--lowspec-scale=") && float.TryParse(a["--lowspec-scale=".Length..], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float s) && s is >= 0.25f and <= 1f)
                 return s;
-        return 0.5f;
+        return 1f;
     }
 }
