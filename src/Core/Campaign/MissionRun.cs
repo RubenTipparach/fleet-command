@@ -198,9 +198,12 @@ public static class MissionRun
     public static string HowOf(Battle b) => b.Over switch { "withdrawn" or "jumped" or "stalemate" => "withdraw", "lost" => "lost", _ => "end" };
 
     /// <summary>Each objective's state now, as if the battle ended this moment (the mission strip's ticks, and a battle
-    /// that ends on its objectives: GameFlow wins it once every primary is met).</summary>
+    /// that ends on its objectives: GameFlow wins it once every primary is met). Asked of another battle (the last one,
+    /// still standing while the mission's loads), none is met.</summary>
     public static Dictionary<string, bool> MetNow(Campaign c, MissionPlan plan, Battle battle)
     {
+        // a battle not the plan's (the one before it, while the mission's battle loads) has met none of its objectives
+        if (battle.Scenario != plan.Scenario) return plan.Battle.Objectives.ToDictionary(o => o.Id, _ => false);
         var ends = Ends(plan, battle);
         var sc = new EndScope(c, plan.Mission, ends, "end") { Reached = battle.Reached, Field = FieldOf(plan, battle) };
         return plan.Battle.Objectives.ToDictionary(o => o.Id, o => o.Done.Bool(sc));
