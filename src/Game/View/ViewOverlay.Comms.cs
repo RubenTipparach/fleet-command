@@ -112,9 +112,9 @@ public sealed partial class ViewOverlay
             foreach (var (sx, sy) in new[] { (-1, -1), (1, -1), (1, 1), (-1, 1) })
             {
                 var c0 = p + new Vector2(sx * 40 * k, sy * 30 * k);
-                DrawPolyline(new[] { c0 - new Vector2(sx * 16, 0), c0, c0 - new Vector2(0, sy * 16) }, col, hot ? 4 : 3, true);
+                Draw2D.Polyline(this, new[] { c0 - new Vector2(sx * 16, 0), c0, c0 - new Vector2(0, sy * 16) }, col, hot ? 4 : 3, true);
             }
-        else DrawArc(p, 16 * (hot ? 1.18f : 1), 0, Mathf.Tau, 32, hot ? col : new Color(col, 0.7f), 1.5f + (hot ? 1 : 0), true);
+        else Draw2D.Arc(this, p, 16 * (hot ? 1.18f : 1), 0, Mathf.Tau, 32, hot ? col : new Color(col, 0.7f), 1.5f + (hot ? 1 : 0), true);
         float ny = sel ? 50 : 16 * 1.18f + 6 + 14;
         bool reach = km <= B.Comms.Transport.RangeKm;
         f.Draw(this, (sel ? $"{name} · {km:0.0} km{(reach ? " · in reach" : "")}" : name).ToUpperInvariant(), p.X, p.Y + ny, sel ? 18 : 14, C.Accord, HorizontalAlignment.Center);
@@ -132,7 +132,7 @@ public sealed partial class ViewOverlay
         Vector2? At(float a) => Local(s.X + Math.Sin(a) * rm, s.Z - Math.Cos(a) * rm);
         const int n = 96;
         for (int i = 0; i < n; i += 2)
-            if (At(i * Mathf.Tau / n) is { } p0 && At((i + 1) * Mathf.Tau / n) is { } p1) DrawLine(p0, p1, col, 2, true);
+            if (At(i * Mathf.Tau / n) is { } p0 && At((i + 1) * Mathf.Tau / n) is { } p1) Draw2D.Line(this, p0, p1, col, 2, true);
         float? best = null, by = float.MaxValue;
         for (int i = 0; i < n; i++)
         {
@@ -146,10 +146,10 @@ public sealed partial class ViewOverlay
         float ang = (q1 - q0).Angle();
         if (ang > Mathf.Pi / 2 || ang < -Mathf.Pi / 2) ang += Mathf.Pi;
         float tw = f.Width(label, 15, 700, 2) + 16;
-        DrawSetTransform(top, ang, Vector2.One);
-        DrawRect(new Rect2(-tw / 2, -12, tw, 18), Colors.Black);
+        Draw2D.SetTransform(this, top, ang, Vector2.One);
+        Draw2D.Rect(this, new Rect2(-tw / 2, -12, tw, 18), Colors.Black);
         f.Draw(this, label, 0, 2, 15, col, HorizontalAlignment.Center, 0, 700, 2);
-        DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+        Draw2D.SetTransform(this, Vector2.Zero, 0, Vector2.One);
     }
 
     // The battle log over the view, newest first, refusals in Caution; its X and a click anywhere else close it.

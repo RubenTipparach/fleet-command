@@ -8,6 +8,11 @@
 //            painted clouds are then off, so there is one weather; the deck wears the air's rim, as the ground does)
 //   Rings    planet_rings.gdshader, a flat square in the equator plane cut to the annulus, where the kind has rings
 //   Air      planet_atmosphere.gdshader (godot-sandbox's single scattering shell), 1 + the kind's atmosphere height
+// In the low-spec mode (LowSpec) a planet is its baked maps instead (assets/space/planets_baked, PlanetBaker, the owner,
+// 2026-11-12: "planets should be textures, have the mac render some planets as textures to be cached and used for pi
+// only"): the ground map on a sphere, the cloud map on a sphere at the manifest's cloud radius, the ring strip on the
+// equator square and a rim for the air, each a shader of a few lines, since the full ones stall a Raspberry Pi 5's
+// shader compiler (docs/playtests/pi/README.md).
 // Every layer but the ground is under Body, which leans by the kind's axial tilt (so the rings, the ring shadow and the
 // installations all share the planet's own frame). Root is the planet's place and scale (its radius in scene units),
 // which the caller sets. Each frame Sync gives every layer the battle's sun and the ground its detail by the camera's
@@ -15,6 +20,8 @@
 // fades the rim of air on the ground and the clouds). The look's numbers are data (PlanetLooks), never here. The layers draw in
 // that order, before anything else see-through in the battle (Priority).
 using System.Collections.Generic;
+using System.Linq;
+using System;
 using Godot;
 
 namespace FleetCommand.Game.View;
@@ -38,9 +45,17 @@ public sealed class PlanetBody
     private readonly List<ShaderMaterial> _lit = new();
     private readonly ShaderMaterial? _cloudMat;
 
-    private PlanetBody(string name, PlanetLook look, Vector3 seed)
+    private PlanetBody(string name, string kind, PlanetLook look, Vector3 seed)
     {
         Look = look;
+        if (LowSpec.On)
+        {
+            Root = new Node3D { Name = name };
+            Body = new Node3D { Name = "Body", RotationDegrees = new Vector3(0, 0, look.TiltDeg) };
+            Root.AddChild(Body);
+            Ground = Baked(kind, look, seed, out Air);
+            return;
+        }
         _rocky ??= GD.Load<Shader>(Dir + "planet.gdshader");
         _gas ??= GD.Load<Shader>(Dir + "planet_gas.gdshader");
         _air ??= GD.Load<Shader>(Dir + "planet_atmosphere.gdshader");
@@ -101,7 +116,60 @@ public sealed class PlanetBody
     }
 
     /// <summary>A planet of a kind in its look, with its own seed (PlanetLooks.SeedOf its id).</summary>
-    public static PlanetBody Build(string name, string kind, Vector3 seed) => new(name, PlanetLooks.For(kind), seed);
+    public static PlanetBody Build(string name, string kind, Vector3 seed) => new(name, kind, PlanetLooks.For(kind), seed);
+
+    private const string BakedDir = "res://assets/space/planets_baked/";
+    private static Godot.Collections.Dictionary? _bakedKinds;
+
+    // The low-spec planet from its baked maps; its turn about its axis comes from its seed, so two worlds of one kind do
+    // not show the same face.
+    private ShaderMaterial Baked(string kind, PlanetLook look, Vector3 seed, out ShaderMaterial? air)
+    {
+        if (_bakedKinds == null)
+        {
+            using var f = FileAccess.Open(BakedDir + "manifest.json", FileAccess.ModeFlags.Read)
+                ?? throw new InvalidOperationException($"{BakedDir}manifest.json: cannot be opened ({FileAccess.GetOpenError()})");
+            _bakedKinds = Json.ParseString(f.GetAsText()).AsGodotDictionary()["kinds"].AsGodotDictionary();
+        }
+        var k = _bakedKinds.TryGetValue(kind, out Variant kv) ? kv.AsGodotDictionary()
+            : throw new InvalidOperationException($"{BakedDir}manifest.json: no baked maps for the planet kind '{kind}'");
+        Texture2D Map(string layer) => GD.Load<Texture2D>(BakedDir + $"{kind}_{layer}.png")
+            ?? throw new InvalidOperationException($"{BakedDir}{kind}_{layer}.png: missing");
+        bool Has(string layer) => k["layers"].AsStringArray().Contains(layer);
+        Body.RotationDegrees = new Vector3(0, Mathf.PosMod(seed.X * 37.1f, 360f), look.TiltDeg);
+
+        _groundMesh ??= new SphereMesh { Radius = 1, Height = 2, RadialSegments = 64, Rings = 32 };
+        var ground = new ShaderMaterial { Shader = GD.Load<Shader>(Dir + "planet_baked.gdshader"), RenderPriority = Priority };
+        ground.SetShaderParameter("map", Map("ground"));
+        ground.SetShaderParameter("glow", look.Volcanoes ? new Vector3(look.Glow.R, look.Glow.G, look.Glow.B) : Vector3.Zero);   // only a volcanic world glows
+        Body.AddChild(Mesh("Ground", _groundMesh, ground));
+        if (Has("clouds"))
+        {
+            float r = (float)k["cloud_radius"].AsDouble();
+            var m = Lit(GD.Load<Shader>(Dir + "planet_baked_clouds.gdshader"), 2);
+            m.SetShaderParameter("map", Map("clouds"));
+            Body.AddChild(Mesh("Clouds", new SphereMesh { Radius = r, Height = 2 * r, RadialSegments = 64, Rings = 32 }, m));
+        }
+        if (Has("rings"))
+        {
+            float inner = (float)k["ring_inner"].AsDouble(), outer = (float)k["ring_outer"].AsDouble();
+            var m = Lit(GD.Load<Shader>(Dir + "planet_baked_rings.gdshader"), 3);
+            m.SetShaderParameter("map", Map("rings"));
+            m.SetShaderParameter("ring_inner", inner);
+            m.SetShaderParameter("ring_outer", outer);
+            Body.AddChild(Mesh("Rings", new PlaneMesh { Size = Vector2.One * 2 * outer }, m));
+        }
+        air = null;
+        if (look.AtmosphereStrength > 0)
+        {
+            float top = 1 + look.AtmosphereHeight;
+            air = new ShaderMaterial { Shader = GD.Load<Shader>(Dir + "planet_baked_air.gdshader"), RenderPriority = Priority + 4 };
+            air.SetShaderParameter("color", look.Atmosphere);
+            air.SetShaderParameter("strength", look.AtmosphereStrength);
+            Body.AddChild(Mesh("Air", new SphereMesh { Radius = top, Height = 2 * top, RadialSegments = 48, Rings = 24 }, air));
+        }
+        return ground;
+    }
 
     private ShaderMaterial Lit(Shader sh, int priority)
     {

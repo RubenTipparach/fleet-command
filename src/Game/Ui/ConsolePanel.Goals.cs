@@ -15,10 +15,10 @@ public abstract partial class ConsolePanel
         var c = new Vector2(x + 6, y - 6);
         if (g.Met)
         {
-            DrawLine(c + new Vector2(-4, 0), c + new Vector2(-1, 3), C.Accord, 2.5f, true);
-            DrawLine(c + new Vector2(-1, 3), c + new Vector2(5, -4), C.Accord, 2.5f, true);
+            Draw2D.Line(this, c + new Vector2(-4, 0), c + new Vector2(-1, 3), C.Accord, 2.5f, true);
+            Draw2D.Line(this, c + new Vector2(-1, 3), c + new Vector2(5, -4), C.Accord, 2.5f, true);
         }
-        else DrawCircle(c, 4, g.Primary ? C.Sky : C.Lilac);
+        else Draw2D.Circle(this, c, 4, g.Primary ? C.Sky : C.Lilac);
         string t = g.Text + (g.Primary ? "" : " (bonus)");
         if (shadow) Text(t, x + 19, y + 1, 17, new Color(0, 0, 0, 0.8f), HorizontalAlignment.Left, w - 18, 600);
         Text(t, x + 18, y, 17, ink, HorizontalAlignment.Left, w - 18, 600);

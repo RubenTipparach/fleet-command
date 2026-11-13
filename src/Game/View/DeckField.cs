@@ -71,6 +71,17 @@ public sealed class DeckField
         return pull;
     }
 
+    /// <summary>The height of a deck's face toward the battle at q (scene units off the plane), in the deck above (side +1)
+    /// or below (-1), where its billows (<paramref name="v"/>, 0 to 1, the deck's cover noise there) hang it lower and a
+    /// column's funnel pulls it down: the one rule for the puffs and the shells.</summary>
+    public float Face(Vector2 q, float side, float v) =>
+        (Look.UndersideKm - Look.HangKm * (2 * v - 0.7f)) * U - Look.JoinKm * U * Pull(q, side);
+
+    /// <summary>The deck's cover noise (the billows it hangs in and where it is cloud), 0 to 1 at q: the one noise for the
+    /// puffs and the shells.</summary>
+    public static FastNoiseLite CoverNoise(ulong seed, DeckLook k, float u) =>
+        new() { NoiseType = FastNoiseLite.NoiseTypeEnum.Simplex, Seed = (int)(seed % int.MaxValue), Frequency = 1f / (k.BaseKm * u) };
+
     /// <summary>How whole the deck is at q, 0 to 1: thinning away past the field, clear round every planet.</summary>
     public float Edge(Vector2 q)
     {

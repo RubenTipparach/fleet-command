@@ -90,7 +90,7 @@ public sealed partial class ChatBox : ConsolePanel
         lines.RemoveAll(l => l.Fade < 0.05f);   // a line all but faded leaves the box
         float y = bottom - lines.Count * lh;
         var back = new Rect2(x - 6, y - 6, w + 12, lines.Count * lh + (Typing ? 52 : 8));
-        if (Typing || lines.Count > 0) DrawRect(back, new Color(0, 0, 0, Typing ? 0.6f : 0.35f));
+        if (Typing || lines.Count > 0) Draw2D.Rect(this, back, new Color(0, 0, 0, Typing ? 0.6f : 0.35f));
         _live = Typing ? back : co != null ? new Rect2(x, bottom + 6, 96, 32) : new Rect2();
         foreach (var (who, whoCol, station, text, ink, fade) in lines)
         {

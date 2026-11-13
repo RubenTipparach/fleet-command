@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using FleetCommand.Game.Ui;
 using Godot;
 using static FleetCommand.Game.Ui.Kit.IconGeom;
 
@@ -100,7 +101,7 @@ public sealed class KelvaneKit : IKit
     public void Icon(CanvasItem c, string icon, Rect2 r, Color ink)
     {
         if (!_icons.TryGetValue(icon, out var d)) throw new KeyNotFoundException($"Kelvane kit has no icon '{icon}'");
-        d(new Pen(c, r.Position, r.Size.X / 48f, ink));
+        IconAtlas.Draw(Name, c, icon, r, ink, d);   // drawn once into the shared atlas, then as one textured rectangle
     }
 
     public PieceSpec Spec(string piece) => _r.Spec(piece);
@@ -115,7 +116,7 @@ public sealed class KelvaneKit : IKit
     }
 
     /// <summary>Round knobs stay round (kelvane.js knob).</summary>
-    public void Knob(CanvasItem ci, Vector2 centre, float r, Color col) => ci.DrawCircle(centre, r, col, true, -1, true);
+    public void Knob(CanvasItem ci, Vector2 centre, float r, Color col) => Draw2D.Circle(ci, centre, r, col, true, -1, true);
 
     /// <summary>A strip meter's needle (kelvane.js live.needle): a needle-red pointer from the pivot over the printed scale,
     /// a faint shadow on the film below it, and a dark brass hub on the pivot.</summary>
@@ -123,10 +124,10 @@ public sealed class KelvaneKit : IKit
     {
         var dir = new Vector2(Mathf.Cos(a), Mathf.Sin(a));
         var sh = pivot + new Vector2(0.8f, 1.2f);
-        c.DrawLine(sh, sh + dir * r, new Color(60 / 255f, 36 / 255f, 10 / 255f, 0.35f), 1.6f, true);
-        c.DrawLine(pivot - dir * 3, pivot + dir * r, new Color("#c8302a"), 1.4f, true);
-        c.DrawCircle(pivot, 2.6f, new Color("#5a4520"), true, -1, true);
-        c.DrawCircle(pivot - new Vector2(0.5f, 0.5f), 1.2f, new Color("#b0915a"), true, -1, true);
+        Draw2D.Line(c, sh, sh + dir * r, new Color(60 / 255f, 36 / 255f, 10 / 255f, 0.35f), 1.6f, true);
+        Draw2D.Line(c, pivot - dir * 3, pivot + dir * r, new Color("#c8302a"), 1.4f, true);
+        Draw2D.Circle(c, pivot, 2.6f, new Color("#5a4520"), true, -1, true);
+        Draw2D.Circle(c, pivot - new Vector2(0.5f, 0.5f), 1.2f, new Color("#b0915a"), true, -1, true);
     }
 
     // ---- Icons: one subject list for every skin (docs/design/icon-guide.html) ------------------------------------

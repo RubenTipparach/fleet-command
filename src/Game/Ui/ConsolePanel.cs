@@ -3,6 +3,11 @@
 // with its controls registered as they are drawn (Imm). This class holds the controls every panel shares, each drawn
 // only from the kit's named pieces and its style (the ink, type, padding and shapes that differ by skin): the frame with
 // its title notch or placard and Expand key, keys, tabs, rails of icon tabs, rows of allocation boxes, bars and text.
+// Panels redraw together at a capped rate (data/console/layout.json panel_redraw_hz), and a panel at once when it is touched (a press,
+// the pointer moving over it or leaving it, a resize, shown or hidden), so its keys answer on the next frame: redrawing
+// every panel every frame was half the battle's frame on a Raspberry Pi 5 (docs/playtests/pi/README.md). Godot keeps a
+// canvas item's drawing until the next QueueRedraw, so a panel between redraws costs nothing, and its controls stay
+// those of its last drawing.
 // Docked in a skin's column (the Krai's one plate with the panels formed into it as wells), a panel draws the column's
 // plate under its own rectangle, and a station, ship or weapons panel no frame of its own.
 using System;
@@ -43,9 +48,50 @@ public abstract partial class ConsolePanel : Control, IControlSource
         ClipContents = true;
         MouseFilter = MouseFilterEnum.Stop;
         Ui.Pressed = () => X.Sounds.Key(X.Kit.Style.KeySound);
+        // the panel's text in a canvas item of its own over its shapes, one batch of glyphs (Fonts.UseLayer)
+        _text = RenderingServer.CanvasItemCreate();
+        RenderingServer.CanvasItemSetParent(_text, GetCanvasItem());
+        Fonts.UseLayer(this, _text);
     }
 
-    public override void _Process(double delta) => QueueRedraw();
+    private Rid _text;
+
+    public override void _ExitTree()
+    {
+        if (!_text.IsValid) return;
+        Fonts.UseLayer(this, new Rid());
+        RenderingServer.FreeRid(_text);
+        _text = new Rid();
+    }
+
+    private bool _dirty = true;
+    // One clock for every panel: they redraw on the same tick, so the console's cache (ConsoleCache) renders once a tick
+    // and not on every frame some panel's turn came round.
+    private static ulong _tickFrame;
+    private static double _tickClock;
+    private static bool _tick;
+
+    /// <summary>Seconds between redraws of an untouched panel.</summary>
+    private double RedrawEvery => 1.0 / (LowSpec.On ? X.Data.Layout.PanelRedrawHzLowSpec : X.Data.Layout.PanelRedrawHz);
+
+    public override void _Process(double delta)
+    {
+        ulong frame = Engine.GetProcessFrames();
+        if (frame != _tickFrame)
+        {
+            _tickFrame = frame;
+            _tickClock += delta;
+            _tick = _tickClock >= RedrawEvery;
+            if (_tick) _tickClock %= RedrawEvery;
+        }
+        if (!_dirty && !_tick) return;
+        _dirty = false;
+        QueueRedraw();
+        ConsoleCache.RenderFor(this);
+    }
+
+    /// <summary>Redraws the panel on the next frame (something it shows changed by a touch, not by the battle).</summary>
+    public void Touch() => _dirty = true;
 
     /// <summary>This panel's controls of the last frame, in screen (canvas) coordinates.</summary>
     public IEnumerable<(string Id, Rect2 R, bool Live)> Controls() =>
@@ -55,6 +101,13 @@ public abstract partial class ConsolePanel : Control, IControlSource
     public Rect2 Screen => new(GlobalPosition, Size);
 
     public override void _Draw()
+    {
+        if (_text.IsValid) RenderingServer.CanvasItemClear(_text);
+        DrawItem();
+        Draw2D.Flush(this);   // the untextured shapes collected, sent as one draw
+    }
+
+    private void DrawItem()
     {
         Ui.Begin();
         if (Sk.Column && InColumn) Kit.Hero(this, "console.column", new Rect2(-Position, new Vector2((float)X.Data.Layout.ColumnW, (float)X.Data.Layout.ReferenceH)));
@@ -71,12 +124,14 @@ public abstract partial class ConsolePanel : Control, IControlSource
 
     public override void _GuiInput(InputEvent e)
     {
+        _dirty = true;
         if (Ui.Handle(e)) AcceptEvent();
         else if (e is InputEventMouseButton) AcceptEvent(); // a press on the console never reaches the view
     }
 
     public override void _Notification(int what)
     {
+        if (what is (int)NotificationMouseExit or (int)NotificationResized or (int)NotificationVisibilityChanged or (int)NotificationThemeChanged) _dirty = true;
         if (what == NotificationMouseExit) Ui.Leave();
         // a panel hidden under the pointer (the goals strip shut by its own X) draws no more, so it takes its hover card
         // away now; else the card ("Close") stays on screen with nothing under it (owner, 2026-11-07: "close button stuck
@@ -331,7 +386,7 @@ public abstract partial class ConsolePanel : Control, IControlSource
         float bw = expandable ? 21 : -10, x1 = content.End.X - (expandable ? 6 : 20), total = 8 + tw + 10 + bw + 8, x0 = x1 - total, y0 = at.Position.Y;
         TitleLeft = x0 - (Sk.TitlePlacard ? 18 : 0);
         if (Sk.TitlePlacard) Kit.Piece(this, "plate.title", new Rect2(x0 - 18, y0 - 1, total + 22, 24));
-        else DrawRect(new Rect2(x0, y0, total, 22), Sk.R.Plate);
+        else Draw2D.Rect(this, new Rect2(x0, y0, total, 22), Sk.R.Plate);
         Text(up, x0 + 8, y0 + 19 - Sk.TitleDy, 22, Sk.R.Title, HorizontalAlignment.Left, tw, 700, 1);
         if (expandable) ExpandKey($"{Region}.xp", new Vector2(x1 - 8 - bw / 2, y0 + 11), bw / 2, Big, () => X.Act.Expand(Region));
         return content;
@@ -352,8 +407,8 @@ public abstract partial class ConsolePanel : Control, IControlSource
         {
             Vector2 p0 = c + new Vector2(s * a, -s * a), p1 = c + new Vector2(s * bb, -s * bb), h = inward ? p0 : p1;
             float d = inward ? 1 : -1;
-            DrawLine(p0, p1, ink, w, true);
-            DrawPolyline(new[] { h + new Vector2(s * d * hd, 0), h, h + new Vector2(0, -s * d * hd) }, ink, w, true);
+            Draw2D.Line(this, p0, p1, ink, w, true);
+            Draw2D.Polyline(this, new[] { h + new Vector2(s * d * hd, 0), h, h + new Vector2(0, -s * d * hd) }, ink, w, true);
         }
     }
 

@@ -6,6 +6,7 @@
 // Concord looks as it did.
 using System;
 using System.Collections.Generic;
+using FleetCommand.Game.Ui;
 using Godot;
 
 namespace FleetCommand.Game.Ui.Kit;
@@ -128,22 +129,22 @@ public sealed class ConcordKit : IKit
                 float a0 = -Mathf.Pi / 2 + (i - 0.5f) * Mathf.Pi / 4;
                 Pen.FillAbs(ci, Shapes.ArcSeg(cc, 58 * k, 128 * k, a0 + 0.06f, a0 + Mathf.Pi / 4 - 0.06f), A(i % 2 == 1 ? c.Deep : c.Signal, a));
             }
-            ci.DrawCircle(cc, 46 * k, A(c.Signal, a), true, -1, true);
-            ci.DrawArc(cc, 140 * k, 0, Mathf.Tau, 96, A(c.Deep, a), 3 * k, true);
+            Draw2D.Circle(ci, cc, 46 * k, A(c.Signal, a), true, -1, true);
+            Draw2D.Arc(ci, cc, 140 * k, 0, Mathf.Tau, 96, A(c.Deep, a), 3 * k, true);
             foreach (float ang in new[] { 0f, Mathf.Pi / 2, Mathf.Pi, 1.5f * Mathf.Pi })
             {
-                ci.DrawSetTransform(cc, ang, Vector2.One);
-                ci.DrawRect(new Rect2(136 * k, -6 * k, 10 * k, 12 * k), A(Colors.Black, a));
+                Draw2D.SetTransform(ci, cc, ang, Vector2.One);
+                Draw2D.Rect(ci, new Rect2(136 * k, -6 * k, 10 * k, 12 * k), A(Colors.Black, a));
             }
-            ci.DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+            Draw2D.SetTransform(ci, Vector2.Zero, 0, Vector2.One);
         };
         _heroes["dial"] = (ci, r, a) =>
         {
             float k = r.Size.X / 120f; Vector2 cc = r.Position + r.Size / 2;
-            ci.DrawArc(cc, 54 * k, 0, Mathf.Tau, 72, A(c.Deep, a), 6 * k, true);
-            ci.DrawArc(cc, 36 * k, 0, Mathf.Tau, 64, A(c.Deep, a), 2 * k, true);
-            ci.DrawArc(cc, 18 * k, 0, Mathf.Tau, 48, A(c.Deep, a), 2 * k, true);
-            for (int i = 0; i < 4; i++) ci.DrawArc(cc, 54 * k, i * Mathf.Pi / 2 - 0.12f, i * Mathf.Pi / 2 + 0.12f, 8, A(c.Signal, a), 6 * k, true);
+            Draw2D.Arc(ci, cc, 54 * k, 0, Mathf.Tau, 72, A(c.Deep, a), 6 * k, true);
+            Draw2D.Arc(ci, cc, 36 * k, 0, Mathf.Tau, 64, A(c.Deep, a), 2 * k, true);
+            Draw2D.Arc(ci, cc, 18 * k, 0, Mathf.Tau, 48, A(c.Deep, a), 2 * k, true);
+            for (int i = 0; i < 4; i++) Draw2D.Arc(ci, cc, 54 * k, i * Mathf.Pi / 2 - 0.12f, i * Mathf.Pi / 2 + 0.12f, 8, A(c.Signal, a), 6 * k, true);
         };
         _heroes["lamp.alert.green"] = (ci, r, a) => Lamp(ci, r, c.Accord, a);
         _heroes["lamp.alert.yellow"] = (ci, r, a) => Lamp(ci, r, c.Caution, a);
@@ -184,7 +185,7 @@ public sealed class ConcordKit : IKit
     public void Icon(CanvasItem c, string icon, Rect2 r, Color ink)
     {
         if (!_icons.TryGetValue(icon, out var d)) throw new KeyNotFoundException($"Concord kit has no icon '{icon}'");
-        d(new Pen(c, r.Position, r.Size.X / 48f, ink));
+        IconAtlas.Draw(Name, c, icon, r, ink, d);   // drawn once into the shared atlas, then as one textured rectangle
     }
 
     public PieceSpec Spec(string piece) =>
@@ -198,7 +199,7 @@ public sealed class ConcordKit : IKit
     }
 
     /// <summary>The Concord's knobs are circles.</summary>
-    public void Knob(CanvasItem c, Vector2 centre, float r, Color col) => c.DrawCircle(centre, r, col, true, -1, true);
+    public void Knob(CanvasItem c, Vector2 centre, float r, Color col) => Draw2D.Circle(c, centre, r, col, true, -1, true);
 
     private static Color A(Color c, float a) => new(c.R, c.G, c.B, c.A * a);
 
@@ -245,9 +246,9 @@ public sealed class ConcordKit : IKit
     private void Lamp(CanvasItem ci, Rect2 r, Color col, float a)
     {
         float k = r.Size.X / 64f; Vector2 cc = r.Position + r.Size / 2;
-        ci.DrawCircle(cc, 30 * k, A(C.Deep, a), true, -1, true);
-        ci.DrawCircle(cc, 25 * k, A(Colors.Black, a), true, -1, true);
-        ci.DrawCircle(cc, 21 * k, A(col, a), true, -1, true);
+        Draw2D.Circle(ci, cc, 30 * k, A(C.Deep, a), true, -1, true);
+        Draw2D.Circle(ci, cc, 25 * k, A(Colors.Black, a), true, -1, true);
+        Draw2D.Circle(ci, cc, 21 * k, A(col, a), true, -1, true);
     }
 
     // Concord icons, 48 units square (docs/mockups/lib/concord.js ccIcon and the icon guide, docs/design/icon-guide.html):

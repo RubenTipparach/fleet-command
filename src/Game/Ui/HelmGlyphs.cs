@@ -17,8 +17,8 @@ public static class HelmGlyphs
         float lw = Math.Max(3, r * 0.24f), P = Mathf.Pi;
         void Head(float x, float y, float a, float l, float w) =>
             Pen.FillAbs(g, new[] { new Vector2(x, y), new Vector2(x - Mathf.Cos(a) * l - Mathf.Sin(a) * w, y - Mathf.Sin(a) * l + Mathf.Cos(a) * w), new Vector2(x - Mathf.Cos(a) * l + Mathf.Sin(a) * w, y - Mathf.Sin(a) * l - Mathf.Cos(a) * w) }, col);
-        void Line(float width, params (float X, float Y)[] pts) => g.DrawPolyline(pts.Select(p => new Vector2(p.X, p.Y)).ToArray(), col, width, true);
-        void Target(float x, float y, float rr) { g.DrawArc(new Vector2(x, y), rr, 0, Mathf.Tau, 28, col, lw * 0.6f, true); g.DrawCircle(new Vector2(x, y), rr * 0.35f, col, true, -1, true); }
+        void Line(float width, params (float X, float Y)[] pts) => Draw2D.Polyline(g, pts.Select(p => new Vector2(p.X, p.Y)).ToArray(), col, width, true);
+        void Target(float x, float y, float rr) { Draw2D.Arc(g, new Vector2(x, y), rr, 0, Mathf.Tau, 28, col, lw * 0.6f, true); Draw2D.Circle(g, new Vector2(x, y), rr * 0.35f, col, true, -1, true); }
         // a road-sign turn: a stem up from the bottom, the bend by deg toward dir (-1 left, 1 right), a short run, a head;
         // built at the origin, measured, and centred in the key
         void Turn(float deg, int dir, float scale = 1)
@@ -36,7 +36,7 @@ public static class HelmGlyphs
             var all = pts.Concat(new[] { tip, w0, w1 }).ToArray();
             float x0 = all.Min(q => q.X), x1 = all.Max(q => q.X), y0 = all.Min(q => q.Y), y1 = all.Max(q => q.Y);
             var o = new Vector2(cx - (x0 + x1) / 2, cy - (y0 + y1) / 2);
-            g.DrawPolyline(pts.Select(q => q + o).ToArray(), col, lw, true);
+            Draw2D.Polyline(g, pts.Select(q => q + o).ToArray(), col, lw, true);
             Pen.FillAbs(g, new[] { tip + o, w0 + o, w1 + o }, col);
         }
         switch (kind)
@@ -51,8 +51,8 @@ public static class HelmGlyphs
             {
                 Turn(70, 1, 0.85f);
                 float x0 = cx + r * 0.55f, y0 = cy - r * 0.55f;
-                g.DrawLine(new Vector2(x0 - r * 0.3f, y0), new Vector2(x0 + r * 0.3f, y0), col, lw * 0.55f, true);
-                g.DrawLine(new Vector2(x0, y0 - r * 0.3f), new Vector2(x0, y0 + r * 0.3f), col, lw * 0.55f, true);
+                Draw2D.Line(g, new Vector2(x0 - r * 0.3f, y0), new Vector2(x0 + r * 0.3f, y0), col, lw * 0.55f, true);
+                Draw2D.Line(g, new Vector2(x0, y0 - r * 0.3f), new Vector2(x0, y0 + r * 0.3f), col, lw * 0.55f, true);
                 break;
             }
             case "intercept":
@@ -73,8 +73,8 @@ public static class HelmGlyphs
             {
                 int d = orbitDir;
                 float R2 = r * 0.6f, a0 = -P / 2 + d * 0.35f, a1 = a0 + d * 1.55f * P;
-                if (kind == "orbit") g.DrawCircle(new Vector2(cx, cy), r * 0.18f, col, true, -1, true);
-                g.DrawArc(new Vector2(cx, cy), R2, Math.Min(a0, a1), Math.Max(a0, a1), 40, col, lw, true);
+                if (kind == "orbit") Draw2D.Circle(g, new Vector2(cx, cy), r * 0.18f, col, true, -1, true);
+                Draw2D.Arc(g, new Vector2(cx, cy), R2, Math.Min(a0, a1), Math.Max(a0, a1), 40, col, lw, true);
                 Head(cx + Mathf.Cos(a1 + d * 0.32f) * R2, cy + Mathf.Sin(a1 + d * 0.32f) * R2, a1 + d * (P / 2 + 0.16f), r * 0.42f, r * 0.34f);
                 break;
             }
@@ -89,7 +89,7 @@ public static class HelmGlyphs
                 Target(cx + r * 0.05f, cy - r * 0.62f, r * 0.26f);
                 var p0 = new Vector2(cx - r * 0.62f, cy + r * 0.8f); var ctl = new Vector2(cx + r * 0.02f, cy - r * 0.62f); var p3 = new Vector2(cx + r * 0.45f, cy + r * 0.42f);
                 var curve = new PathBuilder().To(p0.X, p0.Y).Quad(ctl.X, ctl.Y, p3.X, p3.Y, 16);
-                g.DrawPolyline(curve.Pts.ToArray(), col, lw, true);
+                Draw2D.Polyline(g, curve.Pts.ToArray(), col, lw, true);
                 float a = Mathf.Atan2(p3.Y - ctl.Y, p3.X - ctl.X);
                 Head(p3.X + Mathf.Cos(a) * r * 0.36f, p3.Y + Mathf.Sin(a) * r * 0.36f, a, r * 0.4f, r * 0.32f);
                 break;

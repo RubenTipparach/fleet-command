@@ -50,7 +50,7 @@ public sealed partial class StationPanel
         string id = f.Id;
         HitState st = Ui.Reg($"ct.{f.Id}", r, _ => B.Lock(id), null, new Tip(Aiming.ContactName(B, f), new (string, string, Color?)[] { ("Class", Aiming.ContactClass(B, f), null), ("Range", $"{Rules.DistKm(s, f):0.0} km", null) }));
         if (on || st.Hot) Kit.Shape(this, r, 20, on ? C.Deep : new Color(C.Deep, 0.5f));
-        DrawCircle(new Vector2(x + 18, y + 20), 7, Aiming.ContactColor(C, s, f), true, -1, true);
+        Draw2D.Circle(this, new Vector2(x + 18, y + 20), 7, Aiming.ContactColor(C, s, f), true, -1, true);
         Text(Big ? $"{Aiming.ContactName(B, f)} · {Aiming.ContactClass(B, f)}" : Aiming.ContactName(B, f), x + 34, y + 27, 20, C.Text, HorizontalAlignment.Left, w - 34 - 150);
         Lbl($"{Geometry.HeadingDeg(Rules.Bearing(s, f.X, f.Z)):000}", x + w - 96, y + 26, 0, C.Lilac, HorizontalAlignment.Right);
         Num($"{Rules.DistKm(s, f):0.0} km", x + w - 8, y + 28, 0, C.Sky, HorizontalAlignment.Right, 20);

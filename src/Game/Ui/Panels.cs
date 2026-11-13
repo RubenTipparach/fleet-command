@@ -124,9 +124,9 @@ public sealed partial class RadarPanel : ConsolePanel
         Ui.Reg("radar", dr, _ => X.Act.Expand(Region), null, new Tip("Tactical map"));
         Vector2 c = dr.GetCenter();
         float rr = 120 * 0.4f;
-        foreach (float f in new[] { 0.5f, 1f }) DrawArc(c, rr * f, 0, Mathf.Tau, 48, C.Deep, 1.5f, true);
+        foreach (float f in new[] { 0.5f, 1f }) Draw2D.Arc(this, c, rr * f, 0, Mathf.Tau, 48, C.Deep, 1.5f, true);
         // your sensors' reach, a faint ring (beyond it an enemy is an unknown contact: Battle.Identified)
-        DrawArc(c, (float)Math.Min(1.08, B.SensorKm(Me) / ScaleKm) * rr, 0, Mathf.Tau, 48, new Color(C.Sky, 0.35f), 1, true);
+        Draw2D.Arc(this, c, (float)Math.Min(1.08, B.SensorKm(Me) / ScaleKm) * rr, 0, Mathf.Tau, 48, new Color(C.Sky, 0.35f), 1, true);
         // the nebula plumes on the dial (RadarPanel.Map's colours), each kept inside its rim
         foreach (NebulaDef n in B.Rules.Nebulae)
         {
@@ -134,18 +134,18 @@ public sealed partial class RadarPanel : ConsolePanel
             float r = (float)(km / ScaleKm) * rr, pr = Math.Min((float)(n.RM / 1000 / ScaleKm) * rr, 1.08f * rr - r);
             if (pr < 2) continue;
             var p = c + new Vector2((float)(Math.Sin(br) * r), (float)(-Math.Cos(br) * r));
-            DrawCircle(p, pr, new Color(PlumeColor(n), 0.16f), true, -1, true);
-            DrawArc(p, pr, 0, Mathf.Tau, 32, new Color(PlumeColor(n), 0.55f), 1, true);
+            Draw2D.Circle(this, p, pr, new Color(PlumeColor(n), 0.16f), true, -1, true);
+            Draw2D.Arc(this, p, pr, 0, Mathf.Tau, 32, new Color(PlumeColor(n), 0.55f), 1, true);
         }
         foreach (Ship o in B.Ships)
         {
             if (!o.Alive || o == Me || !B.Detected(Me, o)) continue;   // a cloaked ship unseen is not on the radar
             double km = Rules.DistKm(Me, o), br = Rules.Bearing(Me, o.X, o.Z), r = Math.Min(1.08, km / ScaleKm) * rr;
             var p = c + new Vector2((float)(Math.Sin(br) * r), (float)(-Math.Cos(br) * r));
-            DrawCircle(p, 120 * 0.035f, Aiming.ContactColor(C, Me, o), true, -1, true);
-            if (o.Id == Me.Target) DrawArc(p, 120 * 0.07f, 0, Mathf.Tau, 20, C.Sky, 2, true);
+            Draw2D.Circle(this, p, 120 * 0.035f, Aiming.ContactColor(C, Me, o), true, -1, true);
+            if (o.Id == Me.Target) Draw2D.Arc(this, p, 120 * 0.07f, 0, Mathf.Tau, 20, C.Sky, 2, true);
         }
-        DrawCircle(c, 120 * 0.03f, C.Sky, true, -1, true);
+        Draw2D.Circle(this, c, 120 * 0.03f, C.Sky, true, -1, true);
         float bx = x + 128, bw = Size.X - 128 - 80;
         Kit.Piece(this, "frame.inset", new Rect2(bx, y + 6, bw, 120));
         Pairs("rr", bx + 14, y + 52, new (string, string, Color?)[] { ("", B.SeenFoes(Me).Count().ToString(), null), ($"hostile · {ScaleKm:0} km", "", null) });
@@ -162,7 +162,7 @@ public sealed partial class TopStrip : ConsolePanel
 {
     protected override void DrawPanel()
     {
-        DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
+        Draw2D.Rect(this, new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
         Kit.Piece(this, Sk.JoinedStrips ? "strip.top.join" : "strip.top", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
         double hullFrac = s.Hull / s.Class.HullHp;
@@ -197,7 +197,7 @@ public sealed partial class BottomStrip : ConsolePanel
 {
     protected override void DrawPanel()
     {
-        DrawRect(new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
+        Draw2D.Rect(this, new Rect2(Vector2.Zero, Size), Colors.Black); // the strip stands on black, never over the battle (owner, 2026-11-04)
         Kit.Piece(this, Sk.JoinedStrips ? "strip.bottom.join" : "strip.bottom", new Rect2(Vector2.Zero, Size));
         Ship s = Me;
         StripMeter("bottom", s.V / (B.Tuning.SpeedPerBoxMS * 10), $"Speed {Math.Round(s.V)} m/s");
@@ -266,7 +266,7 @@ public sealed partial class BottomStrip : ConsolePanel
             if (ready && !anomaly) Kit.Shape(this, r, h / 2, new Color(1, 1, 1, 0.28f * pulse));
         }
         // the plot's progress, a thin line along the key's foot
-        if (plotting) DrawRect(new Rect2(r.Position.X + h / 2, r.End.Y - 4, (r.Size.X - h) * (float)wp.Plot, 4), C.Lilac);
+        if (plotting) Draw2D.Rect(this, new Rect2(r.Position.X + h / 2, r.End.Y - 4, (r.Size.X - h) * (float)wp.Plot, 4), C.Lilac);
         if (st.Hot) Kit.Shape(this, r.Grow(1), h / 2 + 1, C.Sky, 2);
         string lab = wp.Out > 0 ? "JUMPING" : starved ? "NEED POWER" : blocked ? (anomaly ? "Q-G FIELD" : "BLOCKED") : plotting && f >= 1 ? $"PLOT {Math.Floor(wp.Plot * 100)}%" : "WARP";
         Color col = !wp.Armed ? Sk.R.Ghost : starved || blocked ? C.Caution : ready || f > 0.55f ? KeyFace.Ink(Kit, ready ? C.Accord : C.Signal) : C.Sky;
@@ -295,7 +295,7 @@ public sealed partial class MenuCard : ConsolePanel
 
     protected override void DrawPanel()
     {
-        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
+        Draw2D.Rect(this, new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("sheet.block", new Rect2(Vector2.Zero, Size));
         // sized to its four keys, 56 px a row, and the frame round them (it held five before Display moved to Options)
         int Rows = X.Coop != null ? 5 : 4;
@@ -343,7 +343,7 @@ public sealed partial class OptionsCard : ConsolePanel
 
     protected override void DrawPanel()
     {
-        DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
+        Draw2D.Rect(this, new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.78f));
         Ui.Reg("opt.block", new Rect2(Vector2.Zero, Size));
         float w = Math.Min(640, Size.X - 32), h = 64 + 56 * AudioSettings.Buses.Length + 72 + 72 + 48;
         var at = new Rect2((Size.X - w) / 2, (Size.Y - h) / 2, w, h);
@@ -389,6 +389,12 @@ public sealed partial class TooltipLayer : Control
     public override void _Process(double delta) => QueueRedraw();
 
     public override void _Draw()
+    {
+        DrawItem();
+        Draw2D.Flush(this);   // the untextured shapes collected, sent as one draw
+    }
+
+    private void DrawItem()
     {
         Tip? tip = _x.Tips.Tip;
         if (tip == null) return;
