@@ -431,6 +431,8 @@ public sealed partial class Main : Node
                 _x.State.RaidMountOpen = false; _x.State.TransportTab = "hit"; _x.State.CargoView = "sup";
                 set();
                 Relayout();
+                // panels redraw on a shared tick or when touched (ConsolePanel), so a state set here reaches them by a touch
+                foreach (ConsolePanel p in _panels.Values) p.Touch();
                 _menu.Visible = _x.State.MenuOpen;
                 for (int i = 0; i < 3; i++) await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
                 var ids = new HashSet<string>();
