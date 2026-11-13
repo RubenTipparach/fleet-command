@@ -79,7 +79,7 @@ public sealed partial class Battle
             double conf = Rules.Confinement(s);
             if (conf < 1)
                 for (int i = 0; i < rx.Coils.Length; i++)
-                    rx.Coils[i] = Math.Clamp(rx.Coils[i] + (_reactorRng.Next() - 0.5) * 2 * R.DriftPerS * (1 - Rules.OfficerSkill(s, "power") * drift) * (1 - conf) * dt * R.DriftX, -1, 1);
+                    rx.Coils[i] = Math.Clamp(rx.Coils[i] + (_reactorRng.Next() - 0.5) * 2 * R.DriftPerS * (1 - Rules.OfficerSkill(s, "power") * drift) * Math.Max(0, 1 - s.Skill("drift")) * (1 - conf) * dt * R.DriftX, -1, 1);
             double heatIn = R.HeatFullPctS * Rules.Output(s) / s.Class.ReactorE + R.HeatMisalignPctS * Rules.Misalignment(s);
             rx.Temp = Math.Max(R.TempFloorPct, rx.Temp + (heatIn - R.CoolPerFlow * Rules.Cooling(s) * rx.Temp) * dt);
             bool offline = Rules.CoolantOffline(s), critical = offline || rx.Temp >= R.CriticalPct;

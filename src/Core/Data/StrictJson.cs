@@ -187,6 +187,24 @@ public sealed class StrictJson
         return rows;
     }
 
+    /// <summary>A required array of [name, number] pairs (a crew skill's abilities and their changes), each number finite.</summary>
+    public List<(string Name, double Value)> NamedNums(string key)
+    {
+        JsonElement v = Get(key);
+        if (v.ValueKind != JsonValueKind.Array) throw new DataError($"{Where}.{key}: expected an array");
+        var rows = new List<(string, double)>();
+        int i = 0;
+        foreach (JsonElement row in v.EnumerateArray())
+        {
+            if (row.ValueKind != JsonValueKind.Array || row.GetArrayLength() != 2 || row[0].ValueKind != JsonValueKind.String || row[1].ValueKind != JsonValueKind.Number
+                || !double.IsFinite(row[1].GetDouble()))
+                throw new DataError($"{Where}.{key}[{i}]: expected [name, number]");
+            rows.Add((row[0].GetString() ?? "", row[1].GetDouble()));
+            i++;
+        }
+        return rows;
+    }
+
     /// <summary>A child object by key, for maps whose keys are ids (classes, weapons).</summary>
     public StrictJson Child(string key) => Obj(key);
 

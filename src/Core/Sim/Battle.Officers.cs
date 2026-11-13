@@ -41,6 +41,21 @@ public sealed partial class Battle
         }
     }
 
+    /// <summary>Mans the flagship with the campaign crew's learned skills (change crew-leveling; Campaign.CrewBonus): each
+    /// ability's total goes on the flagship, read by that ability's rule (Ship.Skill), and the comms officer's Coordination
+    /// (wing_hit) goes on every other ship of its side as a better chance to hit. Non-finite or negative totals are refused.</summary>
+    public void ManCrew(string flagshipId, IReadOnlyDictionary<string, double> bonus)
+    {
+        Ship? f = ShipById(flagshipId);
+        if (f == null) return;
+        foreach (var (ab, v) in bonus.OrderBy(kv => kv.Key, System.StringComparer.Ordinal))
+        {
+            if (!double.IsFinite(v) || v < 0) continue;
+            if (ab == "wing_hit") { foreach (Ship w in _ships.Where(w => w != f && w.Side == f.Side && w.Class.Shape != "station")) w.SkillBonus["hit"] = w.Skill("hit") + v; }
+            else f.SkillBonus[ab] = f.Skill(ab) + v;
+        }
+    }
+
     /// <summary>An officer's rank name in their ship's faction, full or short.</summary>
     public string RankOf(StationOfficer o, bool brief = false) => Data.Systems.Officers.RankName(ShipById(o.Ship)?.Faction.Id ?? "", o.Rank, brief);
 

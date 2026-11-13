@@ -43,6 +43,8 @@ public sealed partial class GameFlow : Node
     public int LoSlot;
     /// <summary>The crew station whose list of officers on offer is open.</summary>
     public string? CrewStation;
+    /// <summary>The skill picked on the crew tab's tree (its id), shown with Learn beside the tree.</summary>
+    public string? CrewSkill;
 
     // the battle under way: the mission and its plan, or a skirmish
     public Offer? Running { get; private set; }
@@ -441,7 +443,13 @@ public sealed partial class GameFlow : Node
             await Loading(sc.Name, async report =>
             {
                 await Step(report, 0.2f, "Plotting the engagement", () => { });
-                await Step(report, 0.6f, "Bringing the ships in", () => _startBattle(sc));
+                await Step(report, 0.6f, "Bringing the ships in", () =>
+                {
+                    _startBattle(sc);
+                    // a mission's flagship is manned by the campaign crew's learned skills (change crew-leveling)
+                    if (Plan != null && Camp != null && Camp.S.Fleet.Count > 0 && Plan.FleetShips.FirstOrDefault(kv => kv.Value == Camp.S.Fleet[0].Id).Key is { } flag)
+                        X.Battle.ManCrew(flag, Camp.CrewBonus());
+                });
                 await Step(report, 0.9f, "Manning the console", () => Go(FlowScreen.Battle));
             });
             await FadeIn();

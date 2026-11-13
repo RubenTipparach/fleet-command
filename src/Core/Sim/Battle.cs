@@ -366,17 +366,18 @@ public sealed partial class Battle
             WeaponMode w = Rules.Mode(m);
             // point defence and missiles charge from their own generators, whatever weapons control's state; every other
             // mount draws on the capacitor, then the battery, and stops once weapons control is disabled (weapon-targeting)
-            if (m.Weapon.OwnPower) { m.Charge = Math.Min(1, m.Charge + dt / w.ChargeS); continue; }
+            double chargeX = 1 + s.Skill("charge");   // the tactical officer's Gunnery skills
+            if (m.Weapon.OwnPower) { m.Charge = Math.Min(1, m.Charge + dt * chargeX / w.ChargeS); continue; }
             if (!Rules.ControlUp(s)) continue;
             double need = w.CostE * dt / w.ChargeS;
             if (s.Capacitor >= need) s.Capacitor -= need;
             else if (s.Battery >= need) s.Battery -= need;
             else continue;
-            m.Charge = Math.Min(1, m.Charge + dt / w.ChargeS);
+            m.Charge = Math.Min(1, m.Charge + dt * chargeX / w.ChargeS);
         }
         if (s.ShieldsHold)   // a cloak's shields neither hold nor regenerate (Battle.Cloak.cs), nor a tripped core's (Battle.Nebula.cs)
         {
-            double r = s.Power["shields"] * s.Brown * Tuning.ShieldRegenPerES * dt * s.Sys["shields"];
+            double r = s.Power["shields"] * s.Brown * Tuning.ShieldRegenPerES * dt * s.Sys["shields"] * (1 + s.Skill("shield_rate"));
             for (int i = 0; i < 6; i++)
             {
                 double add = s.Reinforce >= 0 ? r * 0.5 / 6 + (i == s.Reinforce ? r * 0.5 : 0) : r / 6;
@@ -418,13 +419,13 @@ public sealed partial class Battle
         else if (s.Broke > 0) s.HOrder = s.H;
         else
         {
-            double turn = c.TurnDegS * Geometry.Deg * dt * (0.5 + 0.5 * s.Sys["engines"]) * (s.Erratic ? Tuning.ErraticTurn : 1) * s.SurgeTurnX;
+            double turn = c.TurnDegS * Geometry.Deg * dt * (0.5 + 0.5 * s.Sys["engines"]) * (s.Erratic ? Tuning.ErraticTurn : 1) * s.SurgeTurnX * (1 + s.Skill("turn"));
             double dh = Geometry.Wrap(s.HOrder - s.H);
             s.H = Geometry.Wrap(s.H + Math.Clamp(dh, -turn, turn));
         }
         if (s.Broke > 0) { s.V = 0; s.VOrder = 0; }
         if (s.Estop || s.EstopT > 0) s.VOrder = 0;
-        double vmax = Rules.MaxSpeed(s), goal = Math.Clamp(s.VOrder, -Tuning.ReverseMaxMS, vmax), a = c.AccelMS2 * dt * (s.Estop ? Tuning.EstopDecelX : 1) * s.SurgeAccelX;
+        double vmax = Rules.MaxSpeed(s), goal = Math.Clamp(s.VOrder, -Tuning.ReverseMaxMS, vmax), a = c.AccelMS2 * dt * (s.Estop ? Tuning.EstopDecelX : 1) * s.SurgeAccelX * (1 + s.Skill("accel"));
         s.V += Math.Clamp(goal - s.V, -a, a);
         if (s.Estop && Math.Abs(s.V) < 10) { s.V = 0; s.Estop = false; s.EstopT = Tuning.EstopHoldS; }
         var f = Geometry.Forward(s.H);
@@ -708,7 +709,14 @@ public sealed partial class Battle
                 var (px, pz) = MountWorld(s, m);
                 added.Add(new Shot { Kind = "beam", X = px, Z = pz, SX = px, SZ = pz, TX = threat.X, TZ = threat.Z, Life = 0.15, Color = m.Weapon.Color, Intercept = true, From = s.Id, Mount = s.Mounts.IndexOf(m), At = threat });
                 // a burst stops it pd_intercept_chance of the time; a blue or green missile needs two (its grade's pd_hits)
-                if (_hit.Next() < Tuning.PdInterceptChance && --threat.PdHitsLeft <= 0) { threat.Spent = true; threat.Life = 0; s.Intercepts++; }
+                if (_hit.Next() < Tuning.PdInterceptChance + s.Skill("pd") && --threat.PdHitsLeft <= 0)
+                {
+                    threat.Spent = true; threat.Life = 0; s.Intercepts++;
+                    // the tactical officer's Two at once: the same burst takes the next missile in range too
+                    if (s.Skill("pd_double") > 0 && _shots.FirstOrDefault(sh => sh.Kind == "missile" && sh.To == s.Id && !sh.Spent && sh.Lure == null && !sh.Lost
+                            && Geometry.Dist(sh.X, sh.Z, s.X, s.Z) / 1000 <= m.Weapon.Normal.RangeKm) is { } second
+                        && _hit.Next() < Tuning.PdInterceptChance + s.Skill("pd") && --second.PdHitsLeft <= 0) { second.Spent = true; second.Life = 0; s.Intercepts++; }
+                }
             }
         }
         _shots.AddRange(added);

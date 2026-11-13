@@ -91,7 +91,8 @@ public sealed partial class Rules
     public double Ew(Ship s, Ship t)
     {
         CloakSystems? c = CloakData;
-        double p = (_t.EcmStep * s.Eccm - _t.EcmStep * Math.Max(0, t.Ecm)) * (1 + (c?.Nebula.EwGainX ?? 0) * NebulaBetween(s, t));
+        // the comms officer's counter-jamming: that share of t's ECM countered
+        double p = (_t.EcmStep * s.Eccm - _t.EcmStep * Math.Max(0, t.Ecm) * (1 - Math.Min(1, s.Skill("jam")))) * (1 + (c?.Nebula.EwGainX ?? 0) * NebulaBetween(s, t));
         if (t.Passive) p -= c?.Sensors.PassiveHit ?? 0;
         if (t.Cloaked) p -= c?.Cloak.HitPenalty ?? 0;
         return p;
@@ -101,7 +102,7 @@ public sealed partial class Rules
     public double SweepKm(Ship s, int scienceOfficer = 0)
     {
         CloakRules c = (CloakData ?? throw new InvalidOperationException("the cloak's numbers are not set")).Cloak;
-        return c.BaseKm + c.PerEccmKm * s.Eccm + scienceOfficer * c.OfficerSweepKm;
+        return c.BaseKm + c.PerEccmKm * s.Eccm + scienceOfficer * c.OfficerSweepKm + s.Skill("sweep_km");
     }
 
     /// <summary>One side's shots in a volley aboard a ship: each of n marines fires once at p; the hits. The one rule for

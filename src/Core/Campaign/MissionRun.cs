@@ -246,6 +246,8 @@ public static class MissionRun
             {
                 string fac = ft.Eval(sc);
                 int delta = (int)Math.Round(ex.Num(sc));
+                // the comms officer's Diplomacy skills: more standing from every mission that gains it (data/campaign/crew.json)
+                if (delta > 0) delta += (int)Math.Round(c.CrewBonus().GetValueOrDefault("standing"));
                 if (fac == "" || delta == 0 || !c.S.Standing.ContainsKey(fac)) continue;
                 c.ChangeStanding(fac, delta);
                 d.Standing.Add((fac, delta, c.Standing(fac)));
@@ -307,6 +309,9 @@ public static class MissionRun
         if (plan != null && battle != null)
         {
             c.S.Battles++;
+            // every officer of the crew gains the battle's experience, by its grade (change crew-leveling)
+            d.CrewXp = c.BattleXp(grade);
+            c.CrewGains(d.CrewXp);
             foreach (var (bid, campId) in plan.FleetShips)
             {
                 Ship s = battle.ShipById(bid)!;

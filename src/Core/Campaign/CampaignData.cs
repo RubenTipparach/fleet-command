@@ -89,6 +89,9 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
     IReadOnlyDictionary<string, ShipSystem> Systems, IReadOnlyDictionary<string, string> Stock, IReadOnlyList<Supply> Supplies, MapDef Map,
     OfficerDef Officers, IReadOnlyList<string> Behaviours, IReadOnlyDictionary<string, MissionScript> Missions)
 {
+    /// <summary>The crew leveling rules and the stations' skill trees (data/campaign/crew.json).</summary>
+    public CrewDef Crew { get; init; } = null!;
+
     public IEnumerable<Hull> HullsOf(string side) => Hulls.Values.Where(h => h.Side == side).OrderBy(h => h.Tier);
     /// <summary>The side's hull of a tier, or its smallest when it has none of that tier.</summary>
     /// <summary>Whether a faction is finished enough to be in the world: it holds territory on the map (a seed). The others
@@ -308,7 +311,8 @@ public sealed record CampaignData(CampRules Rules, IReadOnlyDictionary<string, C
         root.Done();
 
         var missions = MissionLoader.LoadAll(missionFiles, read);
-        return new CampaignData(rules, factions, terrain, groups, tiers, hulls, systems, stock, supplies, map, officers, behaviours, missions);
+        return new CampaignData(rules, factions, terrain, groups, tiers, hulls, systems, stock, supplies, map, officers, behaviours, missions)
+            { Crew = CrewDef.Load(read(CrewDef.File), officers.Stations) };
     }
 
     // An array of arrays of strings and whole numbers, as the map's compact rows are written.

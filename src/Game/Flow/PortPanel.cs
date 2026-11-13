@@ -5,7 +5,8 @@
 //   what changing to it costs or refunds.
 // - Supplies: each supply as a row of boxes, carried out of what the ship holds, with -, +, Fill and Empty, and a key that
 //   restocks the whole fleet at once.
-// - Crew: the six stations and who serves at each, and the officers on offer as cards.
+// - Crew: the six stations and who serves at each, the picked officer's skill tree, and the officers on offer
+//   (PortPanel.Crew.cs).
 // Down the left, always: your fleet, each ship by its schematic with its hull, a Repair key, and a free berth leading to
 // the shipyard. At another faction's port that deals with you, the one tab is the Market (selling). Every price shown is
 // the Campaign's own quote, and every key pays through Campaign (src/Core/Campaign), so what the shop says is what it charges.
@@ -423,87 +424,6 @@ public sealed partial class PortPanel : FlowPanel
         int all = c.RestockQuote();
         Text(all > 0 ? $"Restocking every ship of the fleet to what it carries costs {all:N0} cr." : "Every ship is fully stocked.", b.Position.X, b.End.Y - 20, 17, C.Lilac, HorizontalAlignment.Left, b.Size.X - 340, 600);
         Button("sup.restock", new Rect2(b.End.X - 320, b.End.Y - 50, 320, 48), all > 0 ? $"Restock fleet: {all:N0} cr" : "Fleet stocked", () => Say(c.Restock(), "The fleet is restocked."), dis: all == 0 || all > c.S.Credits);
-    }
-
-    // ---- Crew --------------------------------------------------------------------------------------------------------
-
-    // Every station opens its list (owner, 2026-11-06: "for each crew slot, I should be able to click on it and always geta
-    // list, even when I hire someone. Always 3 experienced of various levels and 5 cadets"): the stations across the top,
-    // the picked one's officers on offer below, experienced on the left and cadets on the right.
-    private void Crew(Campaign.Campaign c, Rect2 b)
-    {
-        OfficerDef od = c.Data.Officers;
-        if (F.CrewStation == null || !od.Stations.Contains(F.CrewStation)) F.CrewStation = od.Stations[0];
-        Lbl("Your officers, one at each station: pick a station to see who is on offer", b.Position.X, b.Position.Y + 14, b.Size.X);
-        int n = od.Stations.Count;
-        float tw = (b.Size.X - 10 * (n - 1)) / n, th = 150, y = b.Position.Y + 24;
-        for (int i = 0; i < n; i++)
-        {
-            string st = od.Stations[i];
-            var r = new Rect2(b.Position.X + i * (tw + 10), y, tw, th);
-            Officer? o = c.AtStation(st);
-            bool picked = st == F.CrewStation;
-            HitState hs = Ui.Reg($"crew.station.{st}", r, _ => F.CrewStation = st);
-            Card(r, picked, hs.Hot);
-            Kit.Icon(this, StationIcon.GetValueOrDefault(st, "fleet"), new Rect2(r.Position.X + 14, r.Position.Y + 14, 30, 30), o != null ? C.Sky : C.Lilac);
-            Text(st.ToUpperInvariant(), r.Position.X + 52, r.Position.Y + 36, 17, picked ? C.Caution : C.Lilac, HorizontalAlignment.Left, tw - 60, 600, 1);
-            if (o != null)
-            {
-                Text(o.Name, r.Position.X + 14, r.Position.Y + 72, 19, C.Text, HorizontalAlignment.Left, tw - 24, 700);
-                Pips(r.Position.X + 14, r.Position.Y + 88, SkillOf(c, o));
-                Officer oo = o;
-                Button($"crew.dismiss.{st}", new Rect2(r.Position.X + 10, r.End.Y - 38, tw - 20, 30), "Dismiss", () => { c.Dismiss(oo); Say(null, $"{oo.Name} leaves the crew."); });
-            }
-            else
-            {
-                Text("Vacant", r.Position.X + 14, r.Position.Y + 72, 19, C.Lilac, HorizontalAlignment.Left, tw - 24, 600);
-                Para(od.Does.GetValueOrDefault(st, ""), r.Position.X + 14, r.Position.Y + 96, tw - 24, 14, C.Lilac, 2);
-            }
-        }
-
-        string pick = F.CrewStation;
-        Officer? now = c.AtStation(pick);
-        var offer = c.OnOffer(pick);
-        var exp = offer.Where(o => !c.IsCadet(o)).ToList();
-        var cadets = offer.Where(c.IsCadet).ToList();
-        float cy = y + th + 40, gap = 16, colw = (b.Size.X - gap) / 2;
-        int rows = Math.Max(1, Math.Max(exp.Count, cadets.Count));
-        float rh = Math.Min(96, (b.End.Y - cy - 10) / rows - 8);
-        Lbl($"{pick}: experienced officers", b.Position.X, cy - 10, colw);
-        Lbl($"{pick}: cadets", b.Position.X + colw + gap, cy - 10, colw);
-        for (int col = 0; col < 2; col++)
-        {
-            var list = col == 0 ? exp : cadets;
-            for (int k = 0; k < list.Count; k++)
-                OfficerRow(c, list[k], now, new Rect2(b.Position.X + col * (colw + gap), cy + k * (rh + 8), colw, rh));
-        }
-    }
-
-    private void OfficerRow(Campaign.Campaign c, Officer o, Officer? now, Rect2 r)
-    {
-        float hgt = r.Size.Y;
-        Kit.Piece(this, "frame.inset", r);
-        // initials in a disc: a portrait waits on the crew's art
-        float rad = Math.Min(26, hgt / 2 - 8);
-        var disc = r.Position + new Vector2(14 + rad, hgt / 2);
-        DrawCircle(disc, rad, C.Deep);
-        Kit.Icon(this, StationIcon.GetValueOrDefault(o.Station, "fleet"), new Rect2(disc - new Vector2(rad * 0.6f, rad * 0.6f), new Vector2(rad * 1.2f, rad * 1.2f)), C.Sky);
-        float tx = r.Position.X + 28 + 2 * rad, tww = r.End.X - tx - 180;
-        Text(o.Name, tx, r.Position.Y + hgt / 2 - 6, 19, C.Text, HorizontalAlignment.Left, tww, 700);
-        Pips(tx, r.Position.Y + hgt / 2 + 2, SkillOf(c, o));
-        Officer oo = o;
-        Button($"crew.hire.{o.Name}", new Rect2(r.End.X - 170, r.Position.Y + (hgt - 40) / 2, 160, 40), $"Hire {o.Cost:N0} cr", () => Say(c.Hire(oo), $"{oo.Name} takes the {oo.Station} station."), dis: o.Cost > c.S.Credits,
-            tip: now != null ? new Tip($"Replaces {now.Name}", new (string, string, Color?)[] { ("At", o.Station, null), ("Skill now", now.Skill, null) }) : null);
-    }
-
-    private static int SkillOf(Campaign.Campaign c, Officer o) => c.Data.Officers.Skills.ToList().FindIndex(s => s.Skill == o.Skill) + 1;
-
-    /// <summary>A skill as a row of pips, lit to the officer's level, with its name.</summary>
-    private void Pips(float x, float y, int level)
-    {
-        int n = Camp!.Data.Officers.Skills.Count;
-        for (int i = 0; i < n; i++) Kit.Shape(this, new Rect2(x + i * 18, y, 14, 14), 3, i < level ? C.Caution : C.Deep);
-        Text(level > 0 ? Camp.Data.Officers.Skills[level - 1].Skill : "", x + n * 18 + 8, y + 13, 15, C.Caution, HorizontalAlignment.Left, 120, 600);
     }
 
     // ---- Market (another faction's port) ---------------------------------------------------------------------------------

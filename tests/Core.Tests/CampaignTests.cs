@@ -758,7 +758,7 @@ public sealed class ShopTests
     }
 
     [Fact]
-    public void Every_station_offers_three_experienced_officers_at_different_levels_and_five_cadets()
+    public void Every_station_offers_three_experienced_officers_at_different_levels_and_five_ensigns()
     {
         Campaign.Campaign c = New();
         foreach (string st in c.Data.Officers.Stations)
@@ -767,33 +767,33 @@ public sealed class ShopTests
             Assert.Equal(5, offer.Count(c.IsCadet));
             var exp = offer.Where(o => !c.IsCadet(o)).ToList();
             Assert.Equal(3, exp.Count);
-            Assert.Equal(3, exp.Select(o => o.Skill).Distinct().Count());
+            Assert.Equal(3, exp.Select(o => o.Level).Distinct().Count());
+            Assert.All(offer, o => Assert.Empty(o.Skills));   // their points are the player's to place
         }
         var names = c.S.OfficerPool.Select(o => o.Name).ToList();
         Assert.Equal(names.Count, names.Distinct().Count());
     }
 
     [Fact]
-    public void A_station_keeps_its_list_after_a_hire_and_one_officer_serves_it()
+    public void A_station_keeps_its_list_after_a_hire_and_the_officer_it_replaces_transfers_out()
     {
         Campaign.Campaign c = New();
-        c.S.Credits = 100000;
+        c.S.Prestige = 1000;
         string st = c.Data.Officers.Stations[0];
         Officer a = c.OnOffer(st).First(o => !c.IsCadet(o));
+        int cost = c.HireCost(a);
         Assert.Null(c.Hire(a));
+        Assert.Equal(1000 - cost, c.S.Prestige);
         Assert.Same(a, c.AtStation(st));
         Assert.DoesNotContain(a, c.S.OfficerPool);
         Assert.Equal(3, c.OnOffer(st).Count(o => !c.IsCadet(o)));
         Assert.Equal(5, c.OnOffer(st).Count(c.IsCadet));
         Officer b = c.OnOffer(st).First(c.IsCadet);
-        Assert.Null(c.Hire(b));
+        int before = c.S.Prestige;
+        Assert.Null(c.Hire(b));   // an ensign is free; the officer it replaces leaves for their worth
+        Assert.Equal(before + c.Worth(a), c.S.Prestige);
         Assert.Same(b, c.AtStation(st));
-        Assert.Contains(a, c.S.OfficerPool);
-        Assert.Equal(3, c.OnOffer(st).Count(o => !c.IsCadet(o)));
-        Assert.Equal(5, c.OnOffer(st).Count(c.IsCadet));
-        c.Dismiss(b);
-        Assert.Null(c.AtStation(st));
-        Assert.Contains(b, c.S.OfficerPool);
+        Assert.DoesNotContain(a, c.S.Crew);
         Assert.Equal(8, c.OnOffer(st).Count);
     }
 

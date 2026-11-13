@@ -106,7 +106,7 @@ public sealed partial class Battle
             fi.T -= dt;
             if (fi.T > 0) continue;
             fi.T = Sr.VolleyS;
-            double pa = Sr.HitChance + chief * Sr.OfficerAboard + (fi.Ambush ? Sr.AmbushBonus + chief * Sr.OfficerAmbush : 0);
+            double pa = Sr.HitChance + chief * Sr.OfficerAboard + s.Skill("aboard") + (fi.Ambush ? Sr.AmbushBonus + chief * Sr.OfficerAmbush + s.Skill("ambush") : 0);
             int ha = Rules.Volley(fi.A.N, pa, _secRng), hb = fi.Ambush ? 0 : Rules.Volley(fi.B.N, Sr.HitChance, _secRng);
             fi.B.N = Math.Max(0, fi.B.N - ha); fi.A.N = Math.Max(0, fi.A.N - hb); fi.Ambush = false;
             if (s == Player) Say("Security", $"{fi.A.Id} in {RoomOf(sec, fi.A).Name}: {ha} boarder{(ha == 1 ? "" : "s")} down, {hb} of ours. {fi.A.N} against {fi.B.N}.");
