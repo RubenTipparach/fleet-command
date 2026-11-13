@@ -36,7 +36,7 @@ public sealed record CrewLayout(float StageW, float StageH, float LaneX0, float 
 /// give, the rate between experience and prestige, what an officer is worth and costs by level, the pool, and the trees.</summary>
 public sealed record CrewDef(int Levels, IReadOnlyList<string> Ranks, IReadOnlyList<int> RankLevel, IReadOnlyList<int> XpNext, int XpBattle,
     IReadOnlyDictionary<string, double> GradeX, int XpTurn, int XpPerPrestige, int WorthPerLevel, int HirePerLevel, IReadOnlyList<int> PoolLevels,
-    int Retrain, IReadOnlyDictionary<string, CrewTree> Trees, CrewLayout Layout)
+    int Retrain, IReadOnlyDictionary<string, CrewTree> Trees, CrewLayout Layout, IReadOnlyDictionary<string, IReadOnlyList<string>> Covers)
 {
     /// <summary>The path, relative to data/.</summary>
     public const string File = "campaign/crew.json";
@@ -80,6 +80,12 @@ public sealed record CrewDef(int Levels, IReadOnlyList<string> Ranks, IReadOnlyL
         int[] pool = root.IntList("pool_levels");
         if (pool.Any(l => l < 1 || l > levels)) throw new DataError($"{W}.pool_levels: levels from 1 to {levels}");
 
+        StrictJson cv = root.Obj("covers");
+        var covers = stations.ToDictionary(st => st, st => (IReadOnlyList<string>)cv.StrList(st));
+        cv.Done();
+        var battle = covers.Values.SelectMany(v => v).ToList();
+        if (battle.Count != OfficersDef.Stations.Length || OfficersDef.Stations.Any(b => battle.Count(x => x == b) != 1))
+            throw new DataError($"{W}.covers: every battle station ({string.Join(", ", OfficersDef.Stations)}) under exactly one campaign station");
         StrictJson lo = root.Obj("layout");
         double[] stage = lo.NumList("stage_px"), lane = lo.NumList("lane_x"), tierY = lo.NumList("tier_y");
         var layout = new CrewLayout((float)stage[0], (float)stage[1], (float)lane[0], (float)lane[1], tierY.Select(v => (float)v).ToList(), (float)lo.Num("themes_y"));
@@ -126,6 +132,6 @@ public sealed record CrewDef(int Levels, IReadOnlyList<string> Ranks, IReadOnlyL
         tr.Done();
         root.Done();
         if (trees.Values.SelectMany(t => t.Skills).Any(s => s.Depth > layout.TierY.Count)) throw new DataError($"{W}.layout.tier_y: a height for every depth");
-        return new CrewDef(levels, ranks, rankLevel, xpNext, xpBattle, gradeX, xpTurn, xpPerPrestige, worth, hire, pool, retrain, trees, layout);
+        return new CrewDef(levels, ranks, rankLevel, xpNext, xpBattle, gradeX, xpTurn, xpPerPrestige, worth, hire, pool, retrain, trees, layout, covers);
     }
 }

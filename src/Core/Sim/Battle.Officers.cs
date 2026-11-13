@@ -56,8 +56,26 @@ public sealed partial class Battle
         }
     }
 
-    /// <summary>An officer's rank name in their ship's faction, full or short.</summary>
-    public string RankOf(StationOfficer o, bool brief = false) => Data.Systems.Officers.RankName(ShipById(o.Ship)?.Faction.Id ?? "", o.Rank, brief);
+    /// <summary>Seats the campaign crew on the flagship (change crew-leveling, design "The two officer systems"): the
+    /// roster's officers leave it, and each campaign officer takes the battle stations theirs covers (crew.json covers),
+    /// carrying their card; a station with no campaign officer is vacant. What they bring is their learned skills
+    /// (ManCrew), so their roster skill is 0.</summary>
+    public void SeatCrew(string flagshipId, IReadOnlyList<CrewSeat> seats)
+    {
+        Ship? f = ShipById(flagshipId);
+        if (f == null) return;
+        f.Crew.Clear();
+        foreach (string st in OfficersDef.Stations) f.Officers[st] = null;
+        foreach (CrewSeat seat in seats)
+        {
+            var o = new StationOfficer($"{f.Id}.crew.{seat.Card.Station}", f.Id, seat.Name, seat.Rank, seat.Stations.FirstOrDefault() ?? "", 0) { Card = seat.Card };
+            f.Crew.Add(o);
+            foreach (string st in seat.Stations) if (OfficersDef.Stations.Contains(st)) f.Officers[st] = o;
+        }
+    }
+
+    /// <summary>An officer's rank name in their ship's faction, full or short; a campaign officer's is their campaign rank.</summary>
+    public string RankOf(StationOfficer o, bool brief = false) => o.Card?.Rank ?? Data.Systems.Officers.RankName(ShipById(o.Ship)?.Faction.Id ?? "", o.Rank, brief);
 
     /// <summary>The next officer for a station's slot of the ship you command: those in reserve (in no other slot), in
     /// roster order, after the one there now.</summary>

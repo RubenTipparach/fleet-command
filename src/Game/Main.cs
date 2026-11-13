@@ -763,7 +763,20 @@ public sealed partial class Main : Node
                     f.SelectHex((c.S.AtC, c.S.AtR));
                 }
                 if (what == "debrief") { Offer m = Find("shakedown")!; FlyTo(m); f.Launch(m); await Settle(); }
-                if (what is "battle" or "debrief-battle")
+                if (what == "battle-crew")
+                {
+                    // a seasoned crew hired in port (a helm commander with skills learned, an engineering lieutenant, an ensign
+                    // at tactical), then a patrol, the pointer on the helm officer's slot for their hover card (change crew-leveling)
+                    c.S.Prestige += 300;
+                    foreach (var (st, lvl) in new[] { ("Helm", 7), ("Engineering", 3), ("Tactical", 1) })
+                    {
+                        Officer o = c.S.OfficerPool.Where(x => x.Station == st && x.Level == lvl).First();
+                        c.Hire(o);
+                        c.SetAuto(o, true);
+                    }
+                    c.AtStation("Helm")!.Xp = 640;
+                }
+                if (what is "battle" or "debrief-battle" or "battle-crew")
                 {
                     Offer m = Find("patrol")!;
                     FlyTo(m);
@@ -774,6 +787,15 @@ public sealed partial class Main : Node
                     b.HelmOrder("intercept");
                     b.SetSpeed(b.Rules.MaxSpeed(b.Player));
                     for (int i = 0; i < 600; i++) b.Step();
+                    if (what == "battle-crew")
+                    {
+                        _x.State.Station = "helm";
+                        foreach (ConsolePanel p in _panels.Values) p.Touch();
+                        await Frames(30);
+                        var slot = Sources().SelectMany(src => src.Controls()).First(k => k.Id == "off.helm");
+                        GetViewport().PushInput(new InputEventMouseMotion { Position = slot.R.GetCenter(), GlobalPosition = slot.R.GetCenter() });
+                        await Frames(30);
+                    }
                     if (what == "debrief-battle") { b.EndWithdrawn(); while (f.Screen == FlowScreen.Battle) await Frames(10); await Settle(); }
                 }
                 break;

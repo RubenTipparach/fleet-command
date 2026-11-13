@@ -51,3 +51,13 @@ needs and whether it can be learned.
 #### Scenario: A locked keystone
 - **WHEN** the player hovers over a station's keystone with one crossover learned
 - **THEN** the tooltip names both crossovers it needs and says it is locked
+
+### Requirement: The flagship's slots show the campaign crew
+In a campaign battle the flagship's station slots SHALL hold the campaign officers, each in the battle stations their
+station covers, and hovering over a slot SHALL show that officer's level, rank, experience against the next level and
+every skill they have learned.
+
+#### Scenario: An engineering officer covers power and repair
+- **WHEN** the crew has a level 4 engineering officer with one skill learned and no helm officer
+- **THEN** the flagship's power and repair slots hold that officer, whose card shows level 4, their experience and that skill
+- **AND** the helm slot is vacant
